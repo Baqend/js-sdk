@@ -24,11 +24,11 @@ jspa.metamodel.SingularAttribute = jspa.metamodel.Attribute.inherit({
 		}
 	},
 	
-	getJsonValue: function(state) {
-		return this.declaringType.toJsonValue(state, this.getValue(state.entity));
+	getDatabaseValue: function(state) {
+		return this.declaringType.toValue(state, this.getValue(state));
 	},
 	
-	setJsonValue: function(state, json) {
-		this.setValue(this.declaringType.fromJsonValue(state, json));
+	setDatabaseValue: function(state, json) {
+		this.setValue(state, this.declaringType.fromValue(state, json));
 	}
 });

@@ -59,19 +59,19 @@ jspa.metamodel.Type = Object.inherit({
 	
 	/**
 	 * @param {jspa.util.State} state
-	 * @param {Object} value
+	 * @param {Object} data
 	 * @returns {Object}
 	 */
-	toJsonValue: function(state, value) {
-		return value;
+	toValue: function(state, data) {
+		return data;
 	},
 	
 	/**
 	 * @param {jspa.util.State} state
-	 * @param {Object} json
+	 * @param {Object} value
 	 * @returns {Object}
 	 */
-	fromJsonValue: function(state, json) {
-		return this.classUtil.conv(this, json);
+	fromValue: function(state, value) {
+		return this.classUtil.conv(this, value);
 	}
 });

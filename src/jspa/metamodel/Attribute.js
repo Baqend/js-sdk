@@ -70,11 +70,11 @@ jspa.metamodel.Attribute = Object.inherit({
 	 * @param obj
 	 * @returns 
 	 */
-	getValue: function(entity) {
-		return this.declaringType.classUtil.conv(this.typeConstructor, this.accessor.getValue(entity, this));
+	getValue: function(state) {
+		return this.declaringType.classUtil.conv(this.typeConstructor, this.accessor.getValue(state.entity, this));
 	},
 	
-	setValue: function(entity, value) {
-		this.accessor.setValue(entity, this, value);
+	setValue: function(state, value) {
+		this.accessor.setValue(state.entity, this, value);
 	}
 });

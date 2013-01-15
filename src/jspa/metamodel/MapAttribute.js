@@ -20,25 +20,27 @@ jspa.metamodel.MapAttribute = jspa.metamodel.PluralAttribute.inherit({
 		this.keyType = keyType;
 	},
 	
-	getJsonValue: function(state) {
-		var value = this.getValue(state.entity);
+	getDatabaseValue: function(state) {
+		var value = this.getValue(state);
 		
 		if (value) {
+			if (!value.isInstanceOf(this.trackedConstructor)) {
+				value = new this.trackedConstructor(value);
+				value.__jspaEntity__ = state.entity;
+				this.setValue(state, value);
+			}
+			
 			var json = [];
 			for (var iter = value.items(); iter.hasNext; ) {
 				var item = iter.next();
-				var key = this.keyType.toJsonValue(state, item[0]);
+				var key = this.keyType.toValue(state, item[0]);
 				if (item[0] === null || key !== null) {
 					json.push({
 						key: key,
-						value: this.elementType.toJsonValue(state, item[1])
+						value: this.elementType.toValue(state, item[1])
 					});
 				}
 			}
-			
-			var trackedValue = this.track(value);
-			if (trackedValue != value)
-				this.setValue(state, trackedValue);
 			
 			return json;
 		} else {
@@ -46,21 +48,22 @@ jspa.metamodel.MapAttribute = jspa.metamodel.PluralAttribute.inherit({
 		}
 	},
 	
-	setJsonValue: function(state, json) {
+	setDatabaseValue: function(state, json) {
 		var value = null;
 		if (json) {			
-			value = this.getValue(state.entity);
+			value = this.getValue(state);
 			
-			if (value) {
+			if (value && value.isInstanceOf(this.trackedConstructor)) {
 				value.clear();
+			} else {
+				value = new this.trackedConstructor();
+				value.__jspaEntity__ = state.entity;
 			}
-			
-			value = this.track(state, value);
 			
 			for (var i = 0, len = json.length; i < len; ++i) {
 				var item = json[i];
-				var key = this.keyType.fromJsonValue(state, item.key);
-				value.set(key, this.elementType.fromJsonValue(state, item.value));
+				var key = this.keyType.fromValue(state, item.key);
+				value.set(key, this.elementType.fromValue(state, item.value));
 			}
 		}
 

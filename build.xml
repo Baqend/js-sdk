@@ -4,14 +4,14 @@
    	
     <typedef name="sortdependency" classname="classjs.tools.SortDependency" classpath="tool/sort-dependency.jar"/>
 	
-	<property name="build.path" value="build/jspa.js"/>
+	<property name="build.file" value="build/jspa.js"/>
 	
-	<uptodate property="js.uptodate" targetfile="${build.path}">
+	<uptodate property="js.uptodate" targetfile="${build.file}">
         <srcfiles dir="src" includes="**/*.js"/>
     </uptodate>
 	
     <target name="merge" unless="js.uptodate" description="Merge the sources">
-    	<concat destfile="${build.path}" fixlastline="true" >
+    	<concat destfile="${build.file}" fixlastline="true" >
             <sortdependency>
                    <fileset dir="src"/>
             </sortdependency>
@@ -19,7 +19,7 @@
     </target>
 	
 	<target name="clean" description="Clean the merged file">
-	    <delete file="${build.path}"/>    
+	    <delete file="${build.file}"/>    
     </target>
 	
 	<target name="run" depends="merge">

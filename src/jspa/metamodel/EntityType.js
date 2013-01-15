@@ -100,25 +100,25 @@ jspa.metamodel.EntityType = jspa.metamodel.Type.inherit({
 		return this.declaredAttributes[name] || null;
 	},
 	
-	fromJson: function(state, json) {
-		if (json) {			
-			return state.entityManager.getReference(json);
+	fromValue: function(state, value) {
+		if (value) {			
+			return state.entityManager.getReference(value);
 		} else {
 			return null;
 		}
 	},
 	
-	toJson: function(state, value) {
-		value = this.superCall(state, value);
+	toValue: function(state, data) {
+		value = this.superCall(state, data);
 		
 		if (value) {
 			var valueState = value.__jspaState__;
 			if (valueState && !valueState.isDeleted) {					
-				var json = valueState.getIdentifier();
-				if (!json)
+				var data = valueState.getIdentifier();
+				if (!data)
 					state.isDirty = true;
 				
-				return json;
+				return data;
 			}
 		}
 		

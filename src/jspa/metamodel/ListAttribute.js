@@ -5,14 +5,9 @@ jspa.metamodel.ListAttribute = jspa.metamodel.PluralAttribute.inherit({
 	 */
 	collectionType: jspa.metamodel.PluralAttribute.CollectionType.LIST,
 	
-	track: function(state, value) {
-		if (value && value.isInstanceOf(jspa.collection.List)) {
-			return value;
-		} else {
-			var trackedCollection = this.typeConstructor.__jspaCollection__;
-			if (!trackedCollection) {
-				this.typeConstructor.__jspaCollection__ = trackedCollection = 
-			}
-		}
+	initialize: function(declaringType, name, typeConstructor, elementType) {
+		this.superCall(declaringType, name, typeConstructor, elementType);
+		
+		this.trackedConstructor = typeConstructor.inherit(jspa.collection.List, {});
 	}
 });
