@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<project name="jspa" default="merge" basedir=".">
+   	
+    <typedef name="sortdependency" classname="classjs.tools.SortDependency" classpath="tool/sort-dependency.jar"/>
+	
+	<property name="build.path" value="build/jspa.js"/>
+	
+	<uptodate property="js.uptodate" targetfile="${build.path}">
+        <srcfiles dir="src" includes="**/*.js"/>
+    </uptodate>
+	
+    <target name="merge" unless="js.uptodate" description="Merge the sources">
+    	<concat destfile="${build.path}" fixlastline="true" >
+            <sortdependency>
+                   <fileset dir="src"/>
+            </sortdependency>
+        </concat>  
+    </target>
+	
+	<target name="clean" description="Clean the merged file">
+	    <delete file="${build.path}"/>    
+    </target>
+	
+	<target name="run" depends="merge">
+		<exec executable="node">
+			<arg value="tests/test.js"/>
+		</exec>
+	</target>
+	
+</project>
