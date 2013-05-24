@@ -1,8 +1,8 @@
 if (!Object.inherit)
-	require('./class.js');
+	require('../lib/jahcode.js');
 
 if (typeof util === 'undefined')
-	var util = require('./lib/util.js');
+	var util = require('../lib/util.js');
 
 var jspa = {
 	error: {},

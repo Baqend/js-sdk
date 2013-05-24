@@ -84,17 +84,17 @@ jspa.metamodel.ModelBuilder = Object.inherit({
 	
 	buildAttribute: function(model, name, identifier) {
 		if (identifier.indexOf('/db/_native.collection') == 0) {
-			var collectionType = identifier.substring(0, identifier.indexOf('<'));
+			var collectionType = identifier.substring(0, identifier.indexOf('['));
 			
-			var elementType = identifier.substring(identifier.indexOf('<') + 1, identifier.indexOf('>')).trim();
+			var elementType = identifier.substring(identifier.indexOf('[') + 1, identifier.indexOf(']')).trim();
 			switch (collectionType) {
-				case '/db/_native.collection/Collection':
+				case '/db/_native.collection.Collection':
 					return new jspa.metamodel.CollectionAttribute(model, name, util.Collection, this.getModel(elementType));
-				case '/db/_native.collection/List':
+				case '/db/_native.collection.List':
 					return new jspa.metamodel.ListAttribute(model, name, util.List, this.getModel(elementType));
-				case '/db/_native.collection/Set':
+				case '/db/_native.collection.Set':
 					return new jspa.metamodel.SetAttribute(model, name, util.Set, this.getModel(elementType));
-				case '/db/_native.collection/Map':
+				case '/db/_native.collection.Map':
 					var keyType = elementType.substring(0, elementType.indexOf(',')).trim();
 					elementType = elementType.substring(elementType.indexOf(',')).trim();
 					

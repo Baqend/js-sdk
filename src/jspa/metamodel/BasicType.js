@@ -12,7 +12,7 @@ jspa.metamodel.BasicType = jspa.metamodel.Type.inherit({
 	 */
 	initialize: function(identifier, typeConstructor) {
 		if (identifier.indexOf('/') == -1)
-			identifier = '/db/_native/' + identifier;
+			identifier = '/db/_native.' + identifier;
 		
 		this.superCall(identifier, typeConstructor);
 	}

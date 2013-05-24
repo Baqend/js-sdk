@@ -19,7 +19,7 @@ jspa.metamodel.Metamodel = Object.inherit({
 		this.addBaseType(new jspa.metamodel.BasicType('Short', Number));
 		this.addBaseType(new jspa.metamodel.BasicType('Date', Date));
 		
-		var objectModel = new jspa.metamodel.EntityType('/db/_native/Object', null, Object);
+		var objectModel = new jspa.metamodel.EntityType('/db/_native.Object', null, Object);
 		objectModel.declaredAttributes = {};
 		objectModel.declaredId = new jspa.metamodel.SingularAttribute(objectModel, jspa.metamodel.Attribute.Speacial.ID, this.baseType(String));
 		objectModel.declaredVersion = new jspa.metamodel.SingularAttribute(objectModel, jspa.metamodel.Attribute.Speacial.VERSION, this.baseType(String));

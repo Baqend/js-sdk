@@ -1,6 +1,6 @@
 var context;
 if (!jspa) {
-	var jspa = require('./lib/jspa.js');
+	var jspa = require('../build/jspa.js');
 	context = global;
 } else {
 	context = window;
@@ -28,7 +28,7 @@ context.OtherPersClass = Object.inherit({
 	}
 });
 
-var factory = new jspa.EntityManagerFactory('http://localhost/');
+var factory = new jspa.EntityManagerFactory('http://localhost:8080');
 var pu = factory.persistenceUnitUtil;
 var em = factory.createEntityManager();
 
