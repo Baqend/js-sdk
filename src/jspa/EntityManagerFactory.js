@@ -7,17 +7,15 @@ jspa.EntityManagerFactory = Object.inherit(util.EventTarget, {
 		}
 	},
 	
+	isDefining: false,
+	
 	/**
 	 * @constructor
 	 * @memberOf jspa.EntityManagerFactory
-	 * @param host
+	 * @param {String} host 
+	 * @param {Number} [port]  
 	 */
 	initialize: function(host, port) {
-		if (!host && typeof window !== 'undefined') {
-			host = window.location.host;
-			port = window.location.port;
-		}
-		
 		this.connector = jspa.connector.Connector.create(host, port);
 		this.metamodel = new jspa.metamodel.Metamodel();
 		this.persistenceUnitUtil = new jspa.PersistenceUnitUtil(this.metamodel);
@@ -42,16 +40,18 @@ jspa.EntityManagerFactory = Object.inherit(util.EventTarget, {
 	},
 	
 	ready: function(models) {
-		for (var identifier in models) {			
-			this.metamodel.addEntityType(models[identifier]);
-		}
-			
-		if (this.trigger('ready')) {
-			for (var i = 0, queue; queue = this.pendingQueues[i]; ++i) {
-				queue.resume();
+		if (!this.isDefining) {			
+			for (var identifier in models) {			
+				this.metamodel.addEntityType(models[identifier]);
 			}
 			
-			this.pendingQueues = null;
+			if (this.trigger('ready')) {
+				for (var i = 0, queue; queue = this.pendingQueues[i]; ++i) {
+					queue.resume();
+				}
+				
+				this.pendingQueues = null;
+			}
 		}
 	},
 	
@@ -71,5 +71,25 @@ jspa.EntityManagerFactory = Object.inherit(util.EventTarget, {
 		}
 		
 		return entityManager;
+	},
+	
+	define: function(model) {
+		this.isDefining = true;
+		
+		var msg = new jspa.message.PostAllSchemas(this.metamodel, model);
+		
+		var self = this;
+		msg.on('receive', function() {
+			self.isDefining = false;
+			self.ready(msg.models);
+		});
+		
+		msg.on('error', function(e) {
+			self.isDefining = false;
+			jspa.EntityManagerFactory.onError(e);
+		});
+		
+		if (msg.send())
+			this.connector.send(msg);
 	}
 });

@@ -72,7 +72,7 @@ jspa.metamodel.ModelBuilder = Object.inherit({
 			var attributes = {};
 			for (var name in fields) {
 				if (fields.hasOwnProperty(name)) {
-					this.attributes[name] = this.buildAttribute(model, name, fields[name]);
+					attributes[name] = this.buildAttribute(model, name, fields[name]);
 				}
 			}
 			

@@ -1,15 +1,21 @@
 
-jspa.message.GetAllSchemas = jspa.message.Message.inherit({
+
+jspa.message.PostAllSchemas = jspa.message.Message.inherit({
 	/**
 	 * @constructor
 	 * @super jspa.message.Message
 	 * @memberOf jspa.message.GetAllSchemas
 	 * @param {jspa.metamodel.Metamodel}
 	 */
-	initialize: function(metamodel) {
-		this.superCall('get', '/db/all_schemas');
+	initialize: function(metamodel, model) {
+		this.superCall('post', '/db/all_schemas');
 		
 		this.metamodel = metamodel;
+		this.model = model;
+	},
+	
+	doSend: function() {
+		this.request.entity = this.model;
 	},
 	
 	doReceive: function() {

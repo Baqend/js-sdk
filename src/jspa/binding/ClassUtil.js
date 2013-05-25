@@ -9,7 +9,7 @@ jspa.binding.ClassUtil = Object.inherit({
 		},
 		
 		loadClass: function(model) {
-			var el = /\/db\/([\w\.]*)\/([\w\.]*)/.exec(model.identifier);
+			var el = /\/db\/([\w\.]*)\.(\w*)/.exec(model.identifier);
 
 			var namespace = el[1];
 			var className = el[2];

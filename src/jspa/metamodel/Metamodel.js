@@ -60,12 +60,16 @@ jspa.metamodel.Metamodel = Object.inherit({
 	},
 	
 	addBaseType: function(baseType) {
-		baseType.init(this.classUtil);
-		this.baseTypes[baseType.identifier] = baseType;
+		if (!this.baseTypes[baseType.identifier]) {
+			baseType.init(this.classUtil);
+			this.baseTypes[baseType.identifier] = baseType;
+		}
 	},
 	
 	addEntityType: function(entityType) {
-		entityType.init(this.classUtil);
-		this.entities[entityType.identifier] = entityType;
+		if (!this.entities[entityType.identifier]) {			
+			entityType.init(this.classUtil);
+			this.entities[entityType.identifier] = entityType;
+		}
 	}
 });

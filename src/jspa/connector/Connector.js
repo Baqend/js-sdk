@@ -1,6 +1,11 @@
 jspa.connector.Connector = Object.inherit({
 	extend: {
 		create: function(host, port) {
+			if (!host && typeof window !== 'undefined') {
+				host = window.location.host;
+				port = window.location.port;
+			}
+			
 			if (host.indexOf('/') != -1) {
 				var matches = /^http:\/\/([^\/:]*)(:(\d*))?\/?$/.exec(host);
 				if (matches) {

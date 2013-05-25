@@ -64,11 +64,13 @@ jspa.metamodel.EntityType = jspa.metamodel.Type.inherit({
 	 * 
 	 */
 	init: function(classUtil) {
-		this.superCall(classUtil);
-		
 		if (!this.typeConstructor) {
-			this.typeConstructor = this.classUtil.loadClass(this);			
+			this.typeConstructor = classUtil.loadClass(this);
+
+			this.superCall(classUtil);
 			this.classUtil.enhance(this, this.typeConstructor);
+		} else {
+			this.superCall(classUtil);
 		}
 	},
 	
