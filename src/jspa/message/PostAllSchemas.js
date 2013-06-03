@@ -7,15 +7,15 @@ jspa.message.PostAllSchemas = jspa.message.Message.inherit({
 	 * @memberOf jspa.message.GetAllSchemas
 	 * @param {jspa.metamodel.Metamodel}
 	 */
-	initialize: function(metamodel, model) {
+	initialize: function(metamodel, types) {
 		this.superCall('post', '/db/all_schemas');
 		
 		this.metamodel = metamodel;
-		this.model = model;
+		this.types = types;
 	},
 	
 	doSend: function() {
-		this.request.entity = this.model;
+		this.request.entity = this.types;
 	},
 	
 	doReceive: function() {

@@ -22,9 +22,9 @@ jspa.Query = jspa.util.QueueConnector.inherit(util.EventTarget, {
 	getResultList: function(context, onSuccess, onError) {
 		var result = new jspa.Result(this, context, onSuccess, onError);
 		this.yield(function() {
-			var model = this.resultClass? this.entityManager.metamodel.entity(this.resultClass): null;
+			var type = this.resultClass? this.entityManager.metamodel.entity(this.resultClass): null;
 			if (!this.qlString) {
-				this.send(new jspa.message.GetAllOids(model, this.firstResult, this.maxResults), function(e) {
+				this.send(new jspa.message.GetAllOids(type, this.firstResult, this.maxResults), function(e) {
 					this.createResultList(e.target.oids, result);
 				}, function(e) {
 					result.trigger(e);

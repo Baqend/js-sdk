@@ -10,7 +10,7 @@ jspa.metamodel.Attribute = Object.inherit({
 			ONE_TO_ONE: 6
 		},
 
-		Speacial: {		
+		Special: {		
 			ID: '__jspaId__',
 			VERSION: '__jspaVersion__'
 		}
@@ -66,15 +66,18 @@ jspa.metamodel.Attribute = Object.inherit({
 	},
 	
 	/**
-	 * 
-	 * @param obj
-	 * @returns 
+	 * @param {Object} state
+	 * @returns {any}
 	 */
-	getValue: function(state) {
-		return this.declaringType.classUtil.conv(this.typeConstructor, this.accessor.getValue(state.entity, this));
+	getValue: function(entity) {
+		return this.declaringType.classUtil.conv(this.typeConstructor, this.accessor.getValue(entity, this));
 	},
 	
-	setValue: function(state, value) {
-		this.accessor.setValue(state.entity, this, value);
+	/**
+	 * @param {Object} state
+	 * @param {any} value
+	 */
+	setValue: function(entity, value) {
+		this.accessor.setValue(entity, this, value);
 	}
 });

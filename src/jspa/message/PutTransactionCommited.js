@@ -1,4 +1,4 @@
-jspa.message.PutTransactionCommited = jspa.message.Message.inherit({
+jspa.message.PutTransactionCommitted = jspa.message.Message.inherit({
 	/**
 	 * @constructor
 	 * @super jspa.message.TransactionalMessage
@@ -6,7 +6,7 @@ jspa.message.PutTransactionCommited = jspa.message.Message.inherit({
 	 * @param jspa.EntityTransaction transaction
 	 */
 	initialize: function(tid, readSet) {
-		this.superCall('put', '/transaction/' + tid + '/commited', readSet);
+		this.superCall('put', '/transaction/' + tid + '/committed', readSet);
 	},
 	
 	doReceive: function() {

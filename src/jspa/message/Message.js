@@ -26,8 +26,7 @@ jspa.message.Message = Object.inherit(util.EventTarget, {
 			this.doSend();
 			return this.trigger('send');
 		} catch (e) {
-			if (!e.isInstanceOf(jspa.error.PersistentError))
-				e = new jspa.error.PersistentError(e.message, e);
+			e = jspa.error.PersistentError(e);
 			
 			this.trigger(e);
 			return false;
@@ -39,8 +38,7 @@ jspa.message.Message = Object.inherit(util.EventTarget, {
 			this.doReceive();
 			this.trigger('receive');
 		} catch (e) {
-			if (!e.isInstanceOf(jspa.error.PersistentError))
-				e = new jspa.error.PersistentError(e.message, e);
+			e = jspa.error.PersistentError(e);
 			
 			this.trigger(e);
 		}

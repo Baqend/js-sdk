@@ -63,7 +63,15 @@ jspa.EntityTransaction = jspa.util.QueueConnector.inherit(util.EventTarget, {
 					result.trigger(e);
 				});
 			} else {
-				this.send(new jspa.message.PutTransactionCommited(this.tid, this.readSet), function(e) {
+				var readSet = [];
+				for (var identifier in this.readSet) {
+					readSet.push({
+						"oid": identifier,
+						"version": this.readSet[identifier]
+					});
+				}
+				
+				this.send(new jspa.message.PutTransactionCommitted(this.tid, readSet), function(e) {
 					this.tid = null;
 					this.readSet = null;
 					this.changeSet = null;
@@ -78,7 +86,7 @@ jspa.EntityTransaction = jspa.util.QueueConnector.inherit(util.EventTarget, {
 							if (version == 'DELETED' || state.isDeleted) {
 								self.entityManager.removeReference(entity);
 							} else {								
-								state.setDatabaseValue(state.model.version, version);
+								state.setDatabaseValue(state.type.version, version);
 							}
 						}
 					}

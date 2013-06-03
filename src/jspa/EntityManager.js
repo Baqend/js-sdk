@@ -38,19 +38,19 @@ jspa.EntityManager = jspa.util.QueueConnector.inherit(util.EventTarget, {
 	 * @param {String} oid
 	 */
 	getReference: function(entityClass, oid) {
-		var identifier, model;
+		var identifier, type;
 		if (entityClass.isInstanceOf(String)) {
 			identifier = entityClass;
-			model = this.metamodel.entity(identifier.substring(0, identifier.lastIndexOf('/')));
+			type = this.metamodel.entity(identifier.substring(0, identifier.lastIndexOf('/')));
 		} else {
-			model = this.metamodel.entity(entityClass);
-			identifier = model.identifier + '/' + oid;
+			type = this.metamodel.entity(entityClass);
+			identifier = type.identifier + '/' + oid;
 		}
 		
 		var entity = this.entities[identifier];
 		if (!entity) {
-			entity = model.create();
-			model.id.setValue(entity, identifier);
+			entity = type.create();
+			type.id.setValue(entity, identifier);
 			this.replaceReference(null, entity);
 		}
 		
@@ -112,7 +112,7 @@ jspa.EntityManager = jspa.util.QueueConnector.inherit(util.EventTarget, {
 		if (!state)
 			return false;
 			
-		var identifier = state.model.id.getValue(entity);
+		var identifier = state.type.id.getValue(entity);
 		return identifier && !state.isDeleted && this.entities[identifier] === entity;
 	},
 	
@@ -154,7 +154,7 @@ jspa.EntityManager = jspa.util.QueueConnector.inherit(util.EventTarget, {
 			if (state.isLoaded) {
 				result.trigger('success', entity);
 			} else {
-				var tid = 0, identifier = state.model.id.getValue(entity);
+				var tid = 0, identifier = state.type.id.getValue(entity);
 				if (this.transaction.isChanged(identifier))
 					tid = this.transaction.tid;
 				
@@ -175,18 +175,18 @@ jspa.EntityManager = jspa.util.QueueConnector.inherit(util.EventTarget, {
 	},
 	
 	findBlocked: function(entityClass, oid) {
-		var state, model;
+		var state, type;
 		if (entityClass.isInstanceOf(jspa.util.State)) {
 			state = entityClass;
-			model = state.model;
+			type = state.type;
 		} else {
 			var entity = this.getReference(entityClass, oid);
-			model = this.metamodel.entity(entity.constructor);
-			state = model.state.getValue(entity);
+			type = this.metamodel.entity(entity.constructor);
+			state = entity.__jspaState__;
 		}
 		
 		if (!state.isLoaded) {
-			var tid = 0, identifier = model.id.getValue(state.entity);
+			var tid = 0, identifier = type.id.getValue(state.entity);
 			if (this.transaction.isChanged(identifier))
 				tid = this.transaction.tid;
 			
@@ -194,7 +194,7 @@ jspa.EntityManager = jspa.util.QueueConnector.inherit(util.EventTarget, {
 
 			if (state.isDeleted) {
 				this.removeReference(state.entity);
-				throw new jspa.error.EntityNotFoundError(model.id.getValue(state.entity));
+				throw new jspa.error.EntityNotFoundError(type.id.getValue(state.entity));
 			}
 		}
 		
@@ -219,10 +219,10 @@ jspa.EntityManager = jspa.util.QueueConnector.inherit(util.EventTarget, {
 					var msg = null;
 					if (state.isTemporary) {
 						msg = new jspa.message.PostObject(state);
-						msg.temporaryIdentifier = model.id.getValue(entity);
+						msg.temporaryIdentifier = state.type.id.getValue(entity);
 						msg.on('receive', function(e) {
 							var state = e.target.state;
-							var identifier = state.model.id.getValue(state.entity);
+							var identifier = state.type.id.getValue(state.entity);
 							self.transaction.setChanged(identifier);
 							
 							self.replaceReference(e.target.temporaryIdentifier, state.entity);
@@ -234,7 +234,7 @@ jspa.EntityManager = jspa.util.QueueConnector.inherit(util.EventTarget, {
 						msg = new jspa.message.DeleteObject(state);
 						msg.on('receive', function(e) {
 							var state = e.target.state;
-							var identifier = state.model.id.getValue(state.entity);
+							var identifier = state.type.id.getValue(state.entity);
 							self.transaction.setChanged(identifier);
 							
 							if (!self.transaction.isActive)
@@ -250,7 +250,7 @@ jspa.EntityManager = jspa.util.QueueConnector.inherit(util.EventTarget, {
 							if (e.target.state.isDeleted) {
 								self.removeReference(state.entity);
 							} else {
-								var identifier = state.model.id.getValue(state.entity);
+								var identifier = state.type.id.getValue(state.entity);
 								self.transaction.setChanged(identifier);
 							}				
 						});
@@ -307,13 +307,13 @@ jspa.EntityManager = jspa.util.QueueConnector.inherit(util.EventTarget, {
 	merge: function(entity, context, onSuccess, onError) {
 		var result = new jspa.Result(this, context, onSuccess, onError);
 		this.yield(function() {
-			var model = this.metamodel.entity(entity.constructor);
-			var identifier = model.id.getValue(entity);
+			var type = this.metamodel.entity(entity.constructor);
+			var identifier = type.id.getValue(entity);
 			if (identifier) {
 				this.find(identifier, this, function(e, persistentEntity) {
 					if (persistentEntity && persistentEntity.constructor == entity.constructor) {
-						var model = this.metamodel.entity(persistentEntity.constructor);
-						for (var iter = model.attributes(); iter.hasNext; ) {
+						var type = this.metamodel.entity(persistentEntity.constructor);
+						for (var iter = type.attributes(); iter.hasNext; ) {
 							var attribute = iter.next();
 							
 							attribute.setValue(persistentEntity, attribute.getValue(entity));							
@@ -347,7 +347,7 @@ jspa.EntityManager = jspa.util.QueueConnector.inherit(util.EventTarget, {
 				this.addReference(entity);
 				result.trigger('success', entity);
 			} catch (e) {
-				result.trigger(e);
+				result.trigger(jspa.error.PersistentError(e));
 			}
 		});
 		return result;
@@ -366,13 +366,13 @@ jspa.EntityManager = jspa.util.QueueConnector.inherit(util.EventTarget, {
 			if (!this.contains(entity)) {
 				result.trigger(new jspa.error.IllegalEntityError(entity));
 			} else {
-				var model = this.metamodel.entity(entity.constructor);
-				var state = model.state.getValue(entity);
+				var type = this.metamodel.entity(entity.constructor);
+				var state = entity.__jspaState__;
 				
 				if (state.isTemporary) {				
 					result.trigger(new jspa.error.IllegalEntityError(entity));
 				} else {
-					var tid = 0, identifier = model.id.getValue(entity);
+					var tid = 0, identifier = type.id.getValue(entity);
 					if (this.transaction.isChanged(identifier))
 						tid = this.transaction.tid;
 					
@@ -412,9 +412,9 @@ jspa.EntityManager = jspa.util.QueueConnector.inherit(util.EventTarget, {
 					}
 				}
 			} else {
-				var model = this.metamodel.entity(entity.constructor);
-				if (model) {
-					var identity = model.id.getValue(entity);
+				var type = this.metamodel.entity(entity.constructor);
+				if (type) {
+					var identity = type.id.getValue(entity);
 					if (identity)
 						result.trigger(new jspa.error.EntityExistsError(identity));
 				} else {
@@ -430,38 +430,38 @@ jspa.EntityManager = jspa.util.QueueConnector.inherit(util.EventTarget, {
 	addReference: function(entity) {
 		var state = entity.__jspaState__;
 
-		var model;
+		var type;
 		if (!this.contains(entity)) {
 			if (state && state.isDeleted) {
 				state.setPersistent();
 			} else {
-				model = this.metamodel.entity(entity.constructor);
-				if (!model)
+				type = this.metamodel.entity(entity.constructor);
+				if (!type)
 					throw new jspa.error.IllegalEntityError(entity);
 				
-				var identity = model.id.getValue(entity);
+				var identity = type.id.getValue(entity);
 				if (identity)
 					throw new jspa.error.EntityExistsException(identity);
 				
-				var temporaryIdentifier = '/temporary/' + model.identifier.substring(4);
+				var temporaryIdentifier = '/temporary/' + type.identifier.substring(4);
 				temporaryIdentifier += '/' + (++this.newOidCounter);
 				
-				model.id.setValue(entity, temporaryIdentifier);
+				type.id.setValue(entity, temporaryIdentifier);
 				
 				state = this.replaceReference(null, entity);
 				state.setTemporary();
 			}
 		}
 			
-		model = state.model;
+		type = state.type;
 		
-		for (var iter = model.attributes(); iter.hasNext; ) {			
-			var attribute = iter.next();
-			var value = attribute.getValue(entity);
+		for (var iter = type.attributes(); iter.hasNext; ) {	
+			var attribute = iter.next();		
 			if (attribute.isAssociation) {
-				value = attribute.type.castValue(value);
-				if (value)
+				var value = attribute.getValue(entity);
+				if (value) {
 					this.addReference(value);
+				}
 			}
 		}
 	},
@@ -473,11 +473,11 @@ jspa.EntityManager = jspa.util.QueueConnector.inherit(util.EventTarget, {
 		
 		var state = entity.__jspaState__;
 		if (!state) {
-			var model = this.metamodel.entity(entity.constructor);
-			state = new jspa.util.State(this, model, entity);
+			var type = this.metamodel.entity(entity.constructor);
+			state = new jspa.util.State(this, type, entity);
 		}
 		
-		this.entities[state.model.id.getValue(entity)] = entity;
+		this.entities[state.type.id.getValue(entity)] = entity;
 		
 		return state;
 	},
@@ -488,6 +488,6 @@ jspa.EntityManager = jspa.util.QueueConnector.inherit(util.EventTarget, {
 			throw new jspa.error.IllegalEntityError(entity);
 		
 		entity.__jspaState__ = null;
-		delete this.entities[state.model.id.getValue(entity)];
+		delete this.entities[state.type.id.getValue(entity)];
 	}
 });

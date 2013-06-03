@@ -72,6 +72,6 @@ jspa.metamodel.Type = Object.inherit({
 	 * @returns {Object}
 	 */
 	fromValue: function(state, value) {
-		return this.classUtil.conv(this, value);
+		return this.classUtil.conv(this.typeConstructor, value);
 	}
 });

@@ -8,7 +8,7 @@ jspa.message.PostObject = jspa.message.Message.inherit({
 	 * @param {jspa.util.State} state
 	 */
 	initialize: function(state) {
-		this.superCall('post', '/db');
+		this.superCall('post', state.type.identifier);
 		
 		this.state = state;
 	},
@@ -19,7 +19,7 @@ jspa.message.PostObject = jspa.message.Message.inherit({
 	
 	doReceive: function() {
 		switch (this.response.statusCode) {
-			case 200:
+			case 201:
 			case 202:
 				this.state.setDatabaseObjectInfo(this.response.entity['_objectInfo']);
 				this.state.setPersistent();

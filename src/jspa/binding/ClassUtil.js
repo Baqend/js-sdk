@@ -98,15 +98,15 @@ jspa.binding.ClassUtil = Object.inherit({
 	 * @param {jspa.metamodel.EntityType} type
 	 * @returns {Object}
 	 */
-	conv: function(model, object) {
+	conv: function(typeConstructor, object) {
 		if (object === null || object === undefined) {
 			return null;
 		}
 		
-		if (object.isInstanceOf && object.isInstanceOf(model.typeConstructor)) {
+		if (object.isInstanceOf && object.isInstanceOf(typeConstructor)) {
 			return object;
 		} else {			
-			return model.typeConstructor.conv(object);
+			return typeConstructor.conv(object);
 		}
 	},
 	
@@ -124,7 +124,9 @@ jspa.binding.ClassUtil = Object.inherit({
 	 */
 	enhance: function(type, typeConstructor) {
 		for (var name in type.declaredAttributes) {
-			this.enhanceProperty(type, type.declaredAttributes[name], typeConstructor);
+			if (name != jspa.metamodel.Attribute.Special.ID && name != jspa.metamodel.Attribute.Special.VERSION) {				
+				this.enhanceProperty(type, type.declaredAttributes[name], typeConstructor);	
+			}
 		}
 	},
 	

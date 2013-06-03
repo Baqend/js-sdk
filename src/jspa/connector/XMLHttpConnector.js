@@ -14,17 +14,18 @@ jspa.connector.XMLHttpConnector = jspa.connector.Connector.inherit({
 		var xhr = new XMLHttpRequest();
 		
 		var url = 'http://' + this.host + ':' + this.port + message.request.path;
-		console.log(url);
-		xhr.open(message.request.method, url, !sync);
-		
-		var entity = this.prepareRequestEntity(message);
+		console.log(message.request.method + ' ' + url);
+
 		if (!sync)			
 			xhr.onreadystatechange = this.readyStateChange.bind(this, xhr, message);
 		
+		xhr.open(message.request.method, url, !sync);
+
+		var entity = this.prepareRequestEntity(message);
 		var headers = message.request.headers;
 		for (var name in headers)
 			xhr.setRequestHeader(name, headers[name]);
-		
+
 		xhr.send(entity);
 		
 		if (sync)

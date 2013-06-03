@@ -10,9 +10,8 @@ jspa.util.QueueConnector = Object.inherit({
 	},
 	
 	send: function(message, success, error) {
-		var self = this;
+		var event, self = this;
 		
-		var event;
 		message.on('receive', function(e) {
 			event = e;
 			self.queue.resume();
@@ -23,14 +22,12 @@ jspa.util.QueueConnector = Object.inherit({
 			self.queue.resume();
 		});
 		
-		if (success && error) {			
+		if (success && error) {
 			this.yield(function() {
-				if (!event.defaultPrevented) {
-					if (event.name = 'success') {
-						success.call(this, event);
-					} else {
-						error.call(this, event);
-					}
+				if (event.type == 'receive') {
+					success.call(self, event);
+				} else {
+					error.call(self, event);
 				}
 			});
 		}

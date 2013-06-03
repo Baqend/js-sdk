@@ -1,22 +1,27 @@
 jspa.metamodel.EntityType = jspa.metamodel.Type.inherit({
-	AttributeIterator: util.Iterator.inherit({
-		initialize: function(model) {
-			this.model = model;
+	AttributeIterator: Object.inherit(util.Iterator, {
+		initialize: function(type) {
+			this.type = type;
 			
-			this.index = 0;
+			this.initAttr();
 			this.next();
 		},
 		
+		initAttr: function() {
+			this.index = 0;
+			this.names = Object.getOwnPropertyNames(this.type.declaredAttributes);
+		},
+		
 		next: function() {
-			var attribute = this.model.declaredAttributes[this.index];
+			var attribute = this.type.declaredAttributes[this.names[this.index]];
 			
 			this.index++;
-			while (this.model && this.model.declaredAttributes.length == this.index) {
-				this.model = this.supertype;
-				this.index = 0;
+			
+			while (this.names.length == this.index && (this.type = this.type.supertype)) {
+				this.initAttr();	
 			}
 			
-			this.hasNext = this.model != null;
+			this.hasNext = this.type != null;
 			
 			return attribute;
 		}
@@ -111,12 +116,12 @@ jspa.metamodel.EntityType = jspa.metamodel.Type.inherit({
 	},
 	
 	toValue: function(state, data) {
-		value = this.superCall(state, data);
+		var value = this.superCall(state, data);
 		
 		if (value) {
 			var valueState = value.__jspaState__;
 			if (valueState && !valueState.isDeleted) {					
-				var data = valueState.getIdentifier();
+				var data = valueState.getReference();
 				if (!data)
 					state.isDirty = true;
 				

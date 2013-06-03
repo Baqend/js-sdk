@@ -5,12 +5,12 @@ jspa.message.GetAllOids = jspa.message.Message.inherit({
 	 * @memberOf jspa.message.GetAllOids
 	 * @param jspa.EntityTransaction transaction
 	 */
-	initialize: function(model, start, count) {
-		this.superCall('get', this.createUri(model, start, count));
+	initialize: function(type, start, count) {
+		this.superCall('get', this.createUri(type, start, count));
 	},
 	
-	createUri: function(model, start, count) {
-		var uri = (model? model.identifier: '/db') + '/all_objects';
+	createUri: function(type, start, count) {
+		var uri = (type? type.identifier: '/db') + '/all_oids';
 		
 		if (start > 0)
 			uri += ';start=' + start;

@@ -8,7 +8,7 @@ jspa.message.GetObject = jspa.message.Message.inherit({
 	 * @param {Boolean} useTransactionalView
 	 */
 	initialize: function(state, tid) {
-		var id = state.getDatabaseValue(state.model.id);
+		var id = state.getIdentifier();
 		
 		if (tid) {
 			id = id.replace('/db/', '/transaction/' + tid + '/dbview/');
@@ -20,7 +20,7 @@ jspa.message.GetObject = jspa.message.Message.inherit({
 	},
 	
 	doSend: function() {
-		var version = this.state.getDatabaseValue(this.state.model.version);
+		var version = this.state.getVersion();
 		if (version) {			
 			Object.extend(this.request.headers, {
 				'cache-control': 'max-age=0, no-cache',
@@ -32,8 +32,6 @@ jspa.message.GetObject = jspa.message.Message.inherit({
 				this.request.headers['if-none-match'] = version == '*'? version: '"' + version + '"';
 			}
 		}
-		
-		this.request.entity = this.state.getDatabaseObject();
 	},
 	
 	doReceive: function() {

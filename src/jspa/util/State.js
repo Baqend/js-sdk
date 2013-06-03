@@ -9,26 +9,24 @@ jspa.util.State = Object.inherit({
 		},
 		
 		readAccess: function(entity) {
-			if (!entity.__jspaLoaded__) {
-				var state = entity.__jspaState__;					
-				if (state) {
-					state.makeAvailable();
-				}
-				
-				if (!entity.__jspaLoaded__) {
-					throw new jspa.error.PersistentError('Object state can not be initialized.', e);
-				}
+			var state = entity.__jspaState__;					
+			if (state) {
+				state.makeAvailable();
+			}
+
+			if (entity.__jspaNotAvailable__) {
+				throw new jspa.error.PersistentError('Object state can not be initialized.');
 			}
 		},
 		
 		writeAccess: function(entity) {
-			var state = this.__jspaState__;
+			var state = entity.__jspaState__;
 			if (state) {
 				state.makeDirty();
 			}
-			
-			if (!this.__jspaLoaded__) {
-				throw new jspa.error.PersistentError('Object state can not be initialized.', e);
+
+			if (entity.__jspaNotAvailable__) {
+				throw new jspa.error.PersistentError('Object state can not be initialized.');
 			}
 		}
 	},
@@ -71,7 +69,7 @@ jspa.util.State = Object.inherit({
 		this.type = type;
 		this.entity = entity;
 		this.entity.__jspaState__ = this;
-		this.entity.__jspaLoaded__ = false;
+		this.entity.__jspaNotAvailable__ = true;
 		
 		this.isDirty = false;
 		this.state = jspa.util.State.Type.PERSISTENT;
@@ -80,8 +78,8 @@ jspa.util.State = Object.inherit({
 	},
 	
 	setTemporary: function() {
-		if (!this.entity.__jspaLoaded__) {
-			this.entity.__jspaLoaded__ = true;
+		if (this.entity.__jspaNotAvailable__) {
+			this.entity.__jspaNotAvailable__ = false;
 			this.state = jspa.util.State.Type.TEMPORARY;
 			this.isDirty = true;
 		}
@@ -113,18 +111,18 @@ jspa.util.State = Object.inherit({
 	 */
 	makeDirty: function() {
 		if (this.enabled) {
-			if (!this.entity.__jspaLoaded__) {
+			if (this.entity.__jspaNotAvailable__) {
 				this.makeAvailable();
 			}
 			
-			if (!isDeleted) {				
+			if (!this.isDeleted) {				
 				this.isDirty = true;
 			}
 		}
 	},
 	
 	makeAvailable: function() {
-		if (this.enabled && !this.entity.__jspaLoaded__) {
+		if (this.enabled && this.entity.__jspaNotAvailable__) {
 			try {				
 				this.entityManager.findBlocked(this);
 			} catch (e) {}
@@ -132,7 +130,15 @@ jspa.util.State = Object.inherit({
 	},
 	
 	getIdentifier: function() {
-		var value = this.type.id.getDatabaseValue(this.entity);
+		return this.type.id.getDatabaseValue(this);
+	},
+	
+	getVersion: function() {
+		return this.type.version.getDatabaseValue(this);
+	},
+	
+	getReference: function() {
+		var value = this.type.id.getDatabaseValue(this);
 		
 		if (this.isTemporary) {
 			var transaction = this.entityManager.transaction;
@@ -151,7 +157,7 @@ jspa.util.State = Object.inherit({
 			'class': this.type.identifier
 		};
 		
-		var oid = this.getIdentifier();
+		var oid = this.getReference();
 		if (oid) {
 			info['oid'] = oid;
 		}
@@ -194,7 +200,7 @@ jspa.util.State = Object.inherit({
 				if (!values) 
 					values = {};
 				
-				values[name] = attributes[name].getDatabaseValue(state); 
+				values[name] = attributes[name].getDatabaseValue(this); 
 			}
 			
 			if (values)
@@ -207,8 +213,9 @@ jspa.util.State = Object.inherit({
 	
 	setDatabaseObject: function(json) {
 		this.setDatabaseObjectInfo(json['_objectInfo']);
-		
+
 		this.disable();
+		this.entity.__jspaNotAvailable__ = false;
 		
 		var type = this.type;
 		do {
@@ -216,13 +223,12 @@ jspa.util.State = Object.inherit({
 			var values = json[type.identifier];
 			
 			for (var name in attributes) {
-				value = attributes[name].setDatabaseValue(this, values[name]);
+				attributes[name].setDatabaseValue(this, values[name]);
 			}
 		} while (type = type.supertype);
 		
 		this.enable();
 
-		this.entity.__jspaLoaded__ = true;
 		this.isDirty = false;
 	}
 });

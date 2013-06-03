@@ -9,6 +9,10 @@ jspa.metamodel.ModelBuilder = Object.inherit({
 		this.objectType = metamodel.entity(Object);
 	},
 	
+	/**
+	 * @param {String} identifier
+	 * @returns {jspa.metamodel.EntityType}
+	 */
 	getModel: function(identifier) {
 		var model = null;
 		if (identifier.indexOf('/db/_native') == 0) {
@@ -31,6 +35,10 @@ jspa.metamodel.ModelBuilder = Object.inherit({
 		}		
 	},
 	
+	/**
+	 * @param {Object}
+	 * @returns {Object[jspa.metamodel.EntityType]} 
+	 */
 	buildModels: function(modelDescriptors) {
 		this.modelDescriptors = {};
 		for (var i = 0, modelDescriptor; modelDescriptor = modelDescriptors[i]; ++i) {
@@ -50,6 +58,10 @@ jspa.metamodel.ModelBuilder = Object.inherit({
 		return this.models;
 	},
 	
+	/**
+	 * @param {String} identifier
+	 * @returns {jspa.metamodel.EntityType}
+	 */
 	buildModel: function(identifier) {
 		var modelDescriptor = this.modelDescriptors[identifier];
 		if (modelDescriptor) {
@@ -65,6 +77,10 @@ jspa.metamodel.ModelBuilder = Object.inherit({
 		}
 	},
 	
+	/**
+	 * @param {jspa.metamodel.EntityType} model
+	 * @returns {Object[jspa.metamodel.Attribute]}
+	 */
 	buildAttributes: function(model) {
 		if (model.identifier in this.models) {
 			var fields = this.modelDescriptors[model.identifier]['fields'];
@@ -82,6 +98,12 @@ jspa.metamodel.ModelBuilder = Object.inherit({
 		}
 	},
 	
+	/**
+	 * @param {jspa.metamodel.EntityType} model
+	 * @param {String} name
+	 * @param {String} identifier
+	 * @returns {jspa.metamodel.Attribute}
+	 */
 	buildAttribute: function(model, name, identifier) {
 		if (identifier.indexOf('/db/_native.collection') == 0) {
 			var collectionType = identifier.substring(0, identifier.indexOf('['));

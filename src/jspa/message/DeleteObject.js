@@ -8,13 +8,13 @@ jspa.message.DeleteObject = jspa.message.Message.inherit({
 	 * @param {jspa.util.State} state
 	 */
 	initialize: function(state) {
-		this.superCall('delete', state.getDatabaseValue(state.model.id));
+		this.superCall('delete', state.getIdentifier());
 		
 		this.state = state;
 	},
 	
 	doSend: function() {
-		var version = this.state.getDatabaseValue(this.state.model.version);
+		var version = this.state.getVersion();
 		if (version) {
 			Object.extend(this.request.headers, {
 				'if-match': version == '*'? version: '"' + version + '"'

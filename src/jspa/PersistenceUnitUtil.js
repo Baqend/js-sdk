@@ -17,8 +17,8 @@ jspa.PersistenceUnitUtil = Object.inherit({
 	 * @param {jspa.util.State} state
 	 */
 	getIdentifier: function(entity) {
-		var model = this.metamodel.entity(entity.constructor);
-		var identifier = model.id.getValue(entity);
+		var type = this.metamodel.entity(classOf(entity));
+		var identifier = type.id.getValue(entity);
 		if (identifier && identifier.indexOf('/temporary/') != 0) {
 			return identifier.substring(identifier.lastIndexOf('/') + 1);
 		}
@@ -43,7 +43,7 @@ jspa.PersistenceUnitUtil = Object.inherit({
 			if (!attributeName) {
 				return true;
 			} else {
-				var attribute = model.getAttribute(attributeName);
+				var attribute = state.type.getAttribute(attributeName);
 				if (attribute.isAssociation) {
 					var value = attribute.getValue(entity);
 					return !value || this.isLoaded(value);

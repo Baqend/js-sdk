@@ -7,9 +7,9 @@ if (!jspa) {
 }
 
 context.PersClass = Object.inherit({
-	initialize : function(ref, value, persRef) {
+	initialize : function(ref, name, persRef) {
 		this.ref = ref;
-		this.value = value;
+		this.name = name;
 		this.persRef = persRef;
 	}
 });
@@ -29,33 +29,26 @@ context.OtherPersClass = Object.inherit({
 });
 
 var schema = [ {
-	"class" : "/db/test.persistent.Coffee",
+	"class" : "/db/test.persistent.PersClass",
 	"fields" : {
-		"caffeine" : "/db/_native.Float",
-		"name" : "/db/_native.String",
-		"countryCode" : "/db/_native.Integer",
-		"parent" : "/db/test.persistent.Coffee"
+		"ref" : "/db/test.persistent.OtherPersClass",
+		"name" : "/db/_native.Integer",
+		"persRef" : "/db/test.persistent.PersClass"
 	}
 }, {
-	"class" : "/db/test.persistent.TestClass",
+	"class" : "/db/test.persistent.ChildPersClass",
+	"superClass" : "/db/test.persistent.PersClass",
 	"fields" : {
-		"testString" : "/db/_native.String",
-		"testBoolean" : "/db/_native.Boolean",
-		"testLong" : "/db/_native.Long"
+		"name" : "/db/_native.String"
 	}
 }, {
-	"class" : "/db/test.persistent.TestChildClass",
-	"superClass" : "/db/test.persistent.TestClass",
+	"class" : "/db/test.persistent.OtherPersClass",
 	"fields" : {
-		"testDouble" : "/db/_native.Double",
-		"testByte" : "/db/_native.Byte",
-		"testInteger" : "/db/_native.Integer",
-		"testFloat" : "/db/_native.Float",
-		"testRef" : "/db/test.persistent.TestClass"
+		"value" : "/db/_native.Integer"
 	}
 } ];
 
-var factory = new jspa.EntityManagerFactory('http://localhost:80');
+var factory = new jspa.EntityManagerFactory('http://localhost:8080');
 //factory.define(schema);
 
 var pu = factory.persistenceUnitUtil;
@@ -74,7 +67,7 @@ em.yield(function() {
 
 	em.refresh(p1, function() {
 		console.log(ref == p1.persRef);
-		p1.value = 303;
+		p1.name = 303;
 		em.flush();
 	});
 });
@@ -83,9 +76,9 @@ em.clear();
 
 em.transaction.begin(function() {
 	em.find(PersClass, id, function(e, obj) {
-		console.log(obj.value);
+		console.log(obj.name);
 		em.refresh(obj, function() {
-			console.log(obj.value);
+			console.log(obj.name);
 		});
 	});
 	em.transaction.commit();
@@ -111,7 +104,7 @@ em.clear();
 em.yield(function() {
 	console.log('ID:' + id);
 	em.find(PersClass, id, function(e, obj) {
-		console.log(obj.value);
+		console.log(obj.name);
 
 		if (!pu.isLoaded(obj, 'persRef')) {
 			em.refresh(obj.persRef, function() {
@@ -131,20 +124,11 @@ em.yield(function() {
 
 em.yield(function() {
 	var query = em.createQuery(null, PersClass);
-	query.getResultList(function(e, result) {
-		for ( var i = 0, pers; pers = result[i]; ++i) {
-			console.log('ID: ' + pu.getIdentifier(pers) + ': ' + pers.value);
-		}
-	});
-});
-
-em.yield(function() {
-	var query = em.createQuery(null, PersClass);
 	query.maxResults = 3;
 	query.getResultList(function(e, result) {
 		console.log('first 3 Persons:');
 		for ( var i = 0, pers; pers = result[i]; ++i) {
-			console.log('ID: ' + pu.getIdentifier(pers) + ': ' + pers.value);
+			console.log('ID: ' + pu.getIdentifier(pers) + ': ' + pers.name);
 		}
 	});
 });
@@ -158,10 +142,10 @@ em.yield(function() {
 		em.detach(cls);
 		em.find(PersClass, id, function(e, entity) {
 			console.log(cls != entity);
-			cls.value = 200;
+			cls.name = 200;
 			em.merge(cls, function(e, merged) {
 				console.log(merged == entity);
-				console.log(merged.value == 200);
+				console.log(merged.name == 200);
 				em.flush();
 			});
 		});

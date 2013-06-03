@@ -1,4 +1,4 @@
-jspa.util.Queue = Object.inherit({
+jspa.util.Queue = Object.inherit(Bind, {
 	
 	extend: {
 		State: {
@@ -94,9 +94,6 @@ jspa.util.Queue = Object.inherit({
 			if (context)
 				callback = callback.bind(context);
 			
-			if (!this.currentQueue)
-				this.currentQueue = [];
-			
 			this.currentQueue.push(callback);
 		}
 		
@@ -108,28 +105,30 @@ jspa.util.Queue = Object.inherit({
 			return;
 
 		this.state = jspa.util.Queue.State.RUNNING;
-		while (this.isRunning && this.queue.length) {
-			this.currentQueue = null;
-			
-			try {				
-				var callback = this.queue.shift();
-				callback();
-			} catch (e) {
-				console.log(e);
-				this.stop();
-			}
-			
-			if (this.currentQueue != null)
-				Array.prototype.unshift.apply(this.queue, this.currentQueue);
-			
-			this.currentQueue = this.queue;
+				
+		this.currentQueue = [];
+		
+		try {				
+			var callback = this.queue.shift();
+			callback();
+		} catch (e) {
+			console.log(e);
+			this.stop();
 		}
+		
+		if (this.currentQueue.length)
+			Array.prototype.unshift.apply(this.queue, this.currentQueue);
+		
+		this.currentQueue = this.queue;
 		
 		if (this.isRunning) {
 			if (this.isPrevented) {
 				this.state = jspa.util.Queue.State.STOPPED;
 			} else {
 				this.state = jspa.util.Queue.State.PAUSED;
+				
+				if (this.queue.length)
+					window.setTimeout(this.bind.run, 1);
 			}
 		}
 	},
