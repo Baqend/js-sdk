@@ -2,7 +2,7 @@ jspa.EntityManagerFactory = Object.inherit(util.EventTarget, {
 	extend: {
 		onError: function(e) {
 			if (!e.defaultPrevented) {				
-				console.error(e);
+				throw e;
 			}
 		}
 	},
@@ -15,7 +15,7 @@ jspa.EntityManagerFactory = Object.inherit(util.EventTarget, {
 	 * @param {String} host 
 	 * @param {Number} [port]  
 	 */
-	initialize: function(host, port) {
+	initialize: function(host, port) { 
 		this.connector = jspa.connector.Connector.create(host, port);
 		this.metamodel = new jspa.metamodel.Metamodel();
 		this.persistenceUnitUtil = new jspa.PersistenceUnitUtil(this.metamodel);
@@ -40,18 +40,37 @@ jspa.EntityManagerFactory = Object.inherit(util.EventTarget, {
 	},
 	
 	ready: function(models) {
-		if (!this.isDefining) {			
-			for (var identifier in models) {			
-				this.metamodel.addEntityType(models[identifier]);
-			}
-			
-			if (this.trigger('ready')) {
-				for (var i = 0, queue; queue = this.pendingQueues[i]; ++i) {
-					queue.resume();
-				}
+		if (this.newModel) {
+			var toStore = this.newModel.filter(function(el, i){
+				return !(el["class"] in models);
+			});
+			this.newModel = null;
+			if(toStore.length > 0) {
+				var msg = new jspa.message.PostAllSchemas(this.metamodel, toStore);
 				
-				this.pendingQueues = null;
+				var self = this;
+				msg.on('receive', function() {
+					self.ready(msg.models);
+				});
+				
+				msg.on('error', function(e) {
+					jspa.EntityManagerFactory.onError(e);
+				});
+				
+				if (msg.send())
+					this.connector.send(msg);
+				return;
 			}
+		}
+		for (var identifier in models) {			
+			this.metamodel.addEntityType(models[identifier]);
+		}
+		
+		if (this.trigger('ready')) {
+			for (var i = 0, queue; queue = this.pendingQueues[i]; ++i) {
+				queue.resume();
+			}
+			this.pendingQueues = null;
 		}
 	},
 	
@@ -74,22 +93,6 @@ jspa.EntityManagerFactory = Object.inherit(util.EventTarget, {
 	},
 	
 	define: function(model) {
-		this.isDefining = true;
-		
-		var msg = new jspa.message.PostAllSchemas(this.metamodel, model);
-		
-		var self = this;
-		msg.on('receive', function() {
-			self.isDefining = false;
-			self.ready(msg.models);
-		});
-		
-		msg.on('error', function(e) {
-			self.isDefining = false;
-			jspa.EntityManagerFactory.onError(e);
-		});
-		
-		if (msg.send())
-			this.connector.send(msg);
+		this.newModel = model;
 	}
 });

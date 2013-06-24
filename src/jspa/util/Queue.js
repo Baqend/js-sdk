@@ -112,7 +112,7 @@ jspa.util.Queue = Object.inherit(Bind, {
 			var callback = this.queue.shift();
 			callback();
 		} catch (e) {
-			console.log(e);
+			throw e;
 			this.stop();
 		}
 		
@@ -128,7 +128,7 @@ jspa.util.Queue = Object.inherit(Bind, {
 				this.state = jspa.util.Queue.State.PAUSED;
 				
 				if (this.queue.length)
-					window.setTimeout(this.bind.run, 1);
+					setTimeout(this.bind.run, 1);
 			}
 		}
 	},
