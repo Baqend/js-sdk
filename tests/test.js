@@ -16,10 +16,10 @@ var tests = {
 		});
 
 		context.ChildPersClass = PersClass.inherit({
-			initialize : function(ref, value, persRef, name) {
-				this.superCall(ref, value, persRef);
+			initialize : function(ref, name, persRef, value) {
+				this.superCall(ref, name, persRef);
 
-				this.name = name;
+				this.value = value;
 			}
 		});
 
@@ -79,7 +79,7 @@ var tests = {
 		em.clear();
 
 		em.transaction.begin(function() {
-			em.find(PersClass, id, function(e, obj) {
+			em.find(PersClass, id, function(obj) {
 				console.log(obj.name);
 				em.refresh(obj, function() {
 					console.log(obj.name);
@@ -107,7 +107,7 @@ var tests = {
 
 		em.yield(function() {
 			console.log('ID:' + id);
-			em.find(PersClass, id, function(e, obj) {
+			em.find(PersClass, id, function(obj) {
 				console.log(obj.name);
 
 				if (!pu.isLoaded(obj, 'persRef')) {
@@ -129,7 +129,7 @@ var tests = {
 		em.yield(function() {
 			var query = em.createQuery(null, PersClass);
 			query.maxResults = 3;
-			query.getResultList(function(e, result) {
+			query.getResultList(function(result) {
 				console.log('first 3 Persons:');
 				for ( var i = 0, pers; pers = result[i]; ++i) {
 					console.log('ID: ' + pu.getIdentifier(pers) + ': '
@@ -145,10 +145,10 @@ var tests = {
 			em.flush(function() {
 				id = pu.getIdentifier(cls);
 				em.detach(cls);
-				em.find(PersClass, id, function(e, entity) {
+				em.find(PersClass, id, function(entity) {
 					console.log(cls != entity);
 					cls.name = 200;
-					em.merge(cls, function(e, merged) {
+					em.merge(cls, function(merged) {
 						console.log(merged == entity);
 						console.log(merged.name == 200);
 						em.flush();
@@ -159,7 +159,7 @@ var tests = {
 
 		em.yield(function() {
 			var query = em.createQuery(null, PersClass);
-			query.getResultList(function(e, result) {
+			query.getResultList(function(result) {
 				for ( var i = 0, pers; pers = result[i]; ++i) {
 					em.remove(pers);
 				}
@@ -192,4 +192,4 @@ var tests = {
 
 tests.init();
 
-exports.tests = tests;
+//exports.tests = tests;

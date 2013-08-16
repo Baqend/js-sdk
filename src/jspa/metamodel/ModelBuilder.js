@@ -105,7 +105,7 @@ jspa.metamodel.ModelBuilder = Object.inherit({
 	 * @returns {jspa.metamodel.Attribute}
 	 */
 	buildAttribute: function(model, name, identifier) {
-		if (identifier.indexOf('/db/_native.collection') == 0) {
+		if (!this.metamodel.baseType(identifier) && identifier.indexOf('/db/_native.collection') == 0) {
 			var collectionType = identifier.substring(0, identifier.indexOf('['));
 			
 			var elementType = identifier.substring(identifier.indexOf('[') + 1, identifier.indexOf(']')).trim();

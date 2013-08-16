@@ -47,89 +47,80 @@ jspa.util.Queue = Object.inherit(Bind, {
 		this.currentQueue = [];
 		this.queue = this.currentQueue;
 		
-		this.state = jspa.util.Queue.State.PAUSED;
+		this.state = jspa.util.Queue.State.STOPPED;
 		
 		this.count = 0;
 		this.prevented = false;
 	},
 	
-	wait: function(count) {
-		if (count === undefined)
-			count = 1;
+	wait: function(context, promise) {
+		if (!this.isRunning && this.isPrevented)
+			throw new Error("The queue was prevented");
 		
-		if (count > 0) {			
-			if (this.isRunning || this.isPaused) {
-				this.state = jspa.util.Queue.State.WAITING;
+		var deferred = new jspa.Deferred();	
+		
+		var self = this;
+		this.currentQueue.push(function() {
+			if (promise) {
+				promise.done(function() {
+					var args = arguments;
+					self.run(function() {
+						deferred.resolveWith(context, args);
+					});
+				}).fail(function() {
+					var args = arguments;
+					self.run(function() {
+						deferred.rejectWith(context, args);
+					});
+				});
+			} else {
+				self.run(function() {
+					deferred.resolveWith(context);
+				});
 			}
-			
-			if (this.isWaiting) {
-				this.count += count;
-			}
-		}
+		});
+		
+		this.next();
+		
+		return deferred;
 	},
 	
-	resume: function(count) {
-		if (count === undefined)
-			count = 1;
-		
-		if (this.isWaiting && count > 0) {
-			this.count -= count;
-			if (this.count < 0)
-				this.count = 0;
-			
-			if (this.count == 0) {				
-				this.state = jspa.util.Queue.State.PAUSED;
-				this.run();
-			}
-		}
-	},
-	
-	add: function(context, callback) {
-		if (!callback) {
-			callback = context;
-			context = null;
-		}
-		
-		if (callback && !this.isPrevented) {
-			if (context)
-				callback = callback.bind(context);
-			
-			this.currentQueue.push(callback);
-		}
-		
-		this.run();
-	},
-	
-	run: function() {
-		if (!this.isPaused)
-			return;
+	start: function() {
+		if (this.isStopped && !this.isPrevented) {
+			this.state = jspa.util.Queue.State.PAUSED;
+		}		
 
+		this.next();
+	},
+	
+	run: function(callback) {
+		if (!this.isWaiting)
+			throw new Error('Illegal state ' + this.state);
+		
 		this.state = jspa.util.Queue.State.RUNNING;
-				
+		
 		this.currentQueue = [];
 		
-		try {				
-			var callback = this.queue.shift();
-			callback();
-		} catch (e) {
-			throw e;
-			this.stop();
-		}
+		callback();
 		
 		if (this.currentQueue.length)
 			Array.prototype.unshift.apply(this.queue, this.currentQueue);
 		
 		this.currentQueue = this.queue;
 		
-		if (this.isRunning) {
-			if (this.isPrevented) {
-				this.state = jspa.util.Queue.State.STOPPED;
-			} else {
-				this.state = jspa.util.Queue.State.PAUSED;
-				
-				if (this.queue.length)
-					setTimeout(this.bind.run, 1);
-			}
+		this.state = jspa.util.Queue.State.PAUSED;
+		
+		this.next();
+	},
+	
+	next: function() {
+		if (this.isPaused && this.queue.length) {
+			this.state = jspa.util.Queue.State.WAITING;
+			setTimeout(this.queue.shift(), 1);
+		}
+		
+		if (this.isPrevented && !this.queue.length) {
+			this.state = jspa.util.Queue.State.STOPPED;
 		}
 	},
 	

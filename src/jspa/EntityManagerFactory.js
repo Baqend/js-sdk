@@ -1,9 +1,9 @@
 jspa.EntityManagerFactory = Object.inherit(util.EventTarget, {
 	extend: {
-		onError: function(e) {
-			if (!e.defaultPrevented) {				
-				throw e;
-			}
+		onError: function(e) {	
+			console.log(e);
+			
+			throw e;
 		}
 	},
 	
@@ -22,21 +22,18 @@ jspa.EntityManagerFactory = Object.inherit(util.EventTarget, {
 		
 		this.pendingQueues = [];
 		
-		this.on('error', jspa.EntityManagerFactory.onError);
-		
 		var msg = new jspa.message.GetAllSchemas(this.metamodel);
-		
-		var self = this;
-		msg.on('receive', function() {
-			self.ready(msg.models);
-		});
-		
-		msg.on('error', function(e) {
+		this.connector.send(this, msg).then(function(msg) {
+			return this.ready(msg.models);
+		}).done(function() {
+			for (var i = 0, queue; queue = this.pendingQueues[i]; ++i) {
+				queue.start();
+			}
+			
+			this.pendingQueues = null;
+		}).fail(function(e) {
 			jspa.EntityManagerFactory.onError(e);
 		});
-		
-		if (msg.send())
-			this.connector.send(msg);
 	},
 	
 	ready: function(models) {
@@ -45,32 +42,17 @@ jspa.EntityManagerFactory = Object.inherit(util.EventTarget, {
 				return !(el["class"] in models);
 			});
 			this.newModel = null;
+			
 			if(toStore.length > 0) {
 				var msg = new jspa.message.PostAllSchemas(this.metamodel, toStore);
-				
-				var self = this;
-				msg.on('receive', function() {
-					self.ready(msg.models);
+				return this.connector.send(this, msg).then(function(msg) {
+					this.ready(msg.models);
 				});
-				
-				msg.on('error', function(e) {
-					jspa.EntityManagerFactory.onError(e);
-				});
-				
-				if (msg.send())
-					this.connector.send(msg);
-				return;
 			}
-		}
-		for (var identifier in models) {			
-			this.metamodel.addEntityType(models[identifier]);
 		}
 		
-		if (this.trigger('ready')) {
-			for (var i = 0, queue; queue = this.pendingQueues[i]; ++i) {
-				queue.resume();
-			}
-			this.pendingQueues = null;
+		for (var identifier in models) {			
+			this.metamodel.addEntityType(models[identifier]);
 		}
 	},
 	

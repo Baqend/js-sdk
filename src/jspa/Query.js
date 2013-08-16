@@ -19,51 +19,66 @@ jspa.Query = jspa.util.QueueConnector.inherit(util.EventTarget, {
 	/**
 	 * Execute a SELECT query and return the query results as a List.
 	 */
-	getResultList: function(context, onSuccess, onError) {
-		var result = new jspa.Result(this, context, onSuccess, onError);
-		this.yield(function() {
+	getResultList: function(doneCallback, failCallback) {
+		return this.yield().then(function() {
 			var type = this.resultClass? this.entityManager.metamodel.entity(this.resultClass): null;
 			if (!this.qlString) {
-				this.send(new jspa.message.GetAllOids(type, this.firstResult, this.maxResults), function(e) {
-					this.createResultList(e.target.oids, result);
-				}, function(e) {
-					result.trigger(e);
+				var result = this.send(new jspa.message.GetAllOids(type, this.firstResult, this.maxResults)).then(function(msg) {
+					return this.createResultList(msg.oids);
 				});
+				
+				return this.wait(result);
 			}
-		});
-		
-		return result;
+		}).then(doneCallback, failCallback);
 	},
 	
 	/**
 	 * Execute a SELECT query that returns a single result.
 	 */
-	getSingleResult: function(context, callback) {
-		
+	getSingleResult: function(doneCallback, failCallback) {
+		return this.yield().then(function() {
+			var type = this.resultClass? this.entityManager.metamodel.entity(this.resultClass): null;
+			if (!this.qlString) {
+				var result = this.send(new jspa.message.GetAllOids(type, this.firstResult, 1)).then(function(msg) {
+					return this.createResultList(msg.oids);
+				});
+				
+				this.wait(result).then(function() {
+					return result.length? result[0]: null;
+				});
+			}
+		}).then(doneCallback, failCallback);
 	},
 	
-	createResultList: function(oids, result) {
-		var self = this;
+	createResultList: function(oids) {
 		var list = new Array(oids.length);
 		
-		for (var i = 0, oid; oid = oids[i]; ++i) {
-			var entity = list[i] = this.entityManager.getReference(oid);
+		var pending = [];
+		oids.forEach(function(oid, index) {
+			var entity = list[index] = this.entityManager.getReference(oid);
 			var state = entity.__jspaState__;
 			
 			if (!state.isLoaded) {
-				var msg = new jspa.message.GetObject(state);
-				msg.on('receive', function(e) {
-					if (e.target.state.isDeleted) {
-						self.entityManager.removeReference(e.target.state.entity);
+				var promise = this.send(new jspa.message.GetObject(state)).done(function(msg) {					
+					if (msg.state.isDeleted) {
+						this.entityManager.removeReference(msg.state.entity);
+						list[index] = null;
 					}
+				}).fail(function(e) {
+					console.log(e);
 				});
-				this.send(msg);
+				
+				pending.push(promise);
 			}	
-		}
+		}, this);
 		
-		this.yield(function() {
-			result.trigger('success', list);
-		});
+		if (pending.length) {			
+			return jspa.Promise.when(pending).then(function() {
+				return [list];
+			});
+		} else {
+			return [list];
+		}
 	}
 });
 

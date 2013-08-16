@@ -77,15 +77,12 @@ jspa.EntityManager = jspa.util.QueueConnector.inherit(util.EventTarget, {
 	 * Clear the persistence context, causing all managed entities to become detached. 
 	 * Changes made to entities that have not been flushed to the database will not be persisted. 
 	 */
-	clear: function(context, onSuccess, onError) {
-		var result = new jspa.Result(this, context, onSuccess, onError);
-		this.yield(function() {			
+	clear: function(doneCallback, failCallback) {
+		return this.yield().then(function() {			
 			for (var identifier in this.entities) {
 				this.removeReference(this.entities[identifier]);
 			}
-			result.trigger('success');
-		});
-		return result;
+		}).then(doneCallback, failCallback);
 	},
 	
 	/**
@@ -95,11 +92,10 @@ jspa.EntityManager = jspa.util.QueueConnector.inherit(util.EventTarget, {
 	 * If this method is called when the entity manager is associated with an active transaction, 
 	 * the persistence context remains managed until the transaction completes. 
 	 */
-	close: function() {
-		this.clear();
-		this.yield(function() {	
-			this.queue.stop();
-		});
+	close: function(doneCallback, failCallback) {
+		var result = this.clear(doneCallback, failCallback);
+		this.queue.stop();
+		return result;
 	},
 	
 	/**
@@ -122,13 +118,11 @@ jspa.EntityManager = jspa.util.QueueConnector.inherit(util.EventTarget, {
 	 * will not be synchronized to the database. Entities which previously referenced the detached entity will continue to reference it. 
 	 * @param entity - entity instance 
 	 */
-	detach: function(entity, context, onSuccess, onError) {
-		var result = new jspa.Result(this, context, onSuccess, onError);
-		this.yield(function() {			
+	detach: function(entity, doneCallback, failCallback) {
+		return this.yield().then(function() {			
 			this.removeReference(entity);
-			result.trigger('success', entity);
-		});
-		return result;
+			return entity;
+		}).then(doneCallback, failCallback);
 	},
 	
 	/**
@@ -136,42 +130,31 @@ jspa.EntityManager = jspa.util.QueueConnector.inherit(util.EventTarget, {
 	 * If the entity instance is contained in the persistence context, it is returned from there.
 	 * @param {Function} entityClass - entity class
 	 * @param {String} oid - Object ID
-	 * @param {Object} context -
-	 * @param {Function} a callback the found entity instance or null if the entity does not exist 
 	 */
-	find: function(entityClass, oid, context, onSuccess, onError) {
-		if (entityClass.isInstanceOf(String)) {
-			onError = onSuccess;
-			onSuccess = context;
-			context = oid;
-		}
-		
-		var result = new jspa.Result(this, context, onSuccess, onError);
-		this.yield(function() {
+	find: function(entityClass, oid, doneCallback, failCallback) {
+		return this.yield().then(function() {
 			var entity = this.getReference(entityClass, oid);
 			var state = entity.__jspaState__;
 			
 			if (state.isLoaded) {
-				result.trigger('success', entity);
+				return entity;
 			} else {
 				var tid = 0, identifier = state.type.id.getValue(entity);
 				if (this.transaction.isChanged(identifier))
 					tid = this.transaction.tid;
 				
-				this.send(new jspa.message.GetObject(state, tid), function(e) {
+				var result = this.send(new jspa.message.GetObject(state, tid)).then(function() {
 					if (state.isDeleted) {
 						this.removeReference(entity);
 						entity = null;
 					}
 					
-					result.trigger('success', entity);
-				}, function(e) {
-					result.trigger(e);
+					return entity;
 				});
+				
+				return this.wait(result);
 			}			
-		});
-		
-		return result;
+		}).then(doneCallback, failCallback);
 	},
 	
 	findBlocked: function(entityClass, oid) {
@@ -203,114 +186,96 @@ jspa.EntityManager = jspa.util.QueueConnector.inherit(util.EventTarget, {
 	
 	/**
 	 * Synchronize the persistence context to the underlying database. 
-	 * @param context
-	 * @param callback
 	 */
-	flush: function(context, onSuccess, onError) {
-		var errors = new jspa.error.BulkPersistentError();
-		var self = this;
-		
-		this.yield(function() {			
+	flush: function(doneCallback, failCallback) {
+		var result = this.yield().then(function() {	
+			var promises = [];
+			
 			for (var identifier in this.entities) {
 				var entity = this.entities[identifier];
 				var state = entity.__jspaState__;
 				
 				if (state.isDirty) {
-					var msg = null;
+					var promise;
 					if (state.isTemporary) {
-						msg = new jspa.message.PostObject(state);
+						var msg = new jspa.message.PostObject(state);
 						msg.temporaryIdentifier = state.type.id.getValue(entity);
-						msg.on('receive', function(e) {
-							var state = e.target.state;
+						
+						promise = this.send(msg).done(function(msg) {
+							var state = msg.state;
 							var identifier = state.type.id.getValue(state.entity);
-							self.transaction.setChanged(identifier);
 							
-							self.replaceReference(e.target.temporaryIdentifier, state.entity);
-						});
-						msg.on('error', function(e) {
-							errors.add(e);
+							this.transaction.setChanged(identifier);
+							this.replaceReference(msg.temporaryIdentifier, state.entity);
 						});
 					} else if (state.isDeleted) {
-						msg = new jspa.message.DeleteObject(state);
-						msg.on('receive', function(e) {
-							var state = e.target.state;
+						promise = this.send(new jspa.message.DeleteObject(state)).done(function(msg) {
+							var state = msg.state;
 							var identifier = state.type.id.getValue(state.entity);
-							self.transaction.setChanged(identifier);
+							this.transaction.setChanged(identifier);
 							
-							if (!self.transaction.isActive)
-								self.removeReference(state.entity);
-						});
-						msg.on('error', function(e) {
-							errors.add(e);
+							if (!this.transaction.isActive)
+								this.removeReference(state.entity);
 						});
 					} else {
-						msg = new jspa.message.PutObject(state);
-						msg.on('receive', function(e) {
-							var state = e.target.state;
-							if (e.target.state.isDeleted) {
-								self.removeReference(state.entity);
+						promise = this.send(new jspa.message.PutObject(state)).done(function(msg) {
+							var state = msg.state;
+							if (msg.state.isDeleted) {
+								this.removeReference(state.entity);
 							} else {
 								var identifier = state.type.id.getValue(state.entity);
-								self.transaction.setChanged(identifier);
+								this.transaction.setChanged(identifier);
 							}				
 						});
-						msg.on('error', function(e) {
-							errors.add(e);
-						});
 					}
-						
-					this.send(msg);
+					
+					promises.push(promise);
 				}
 			}
-		});
+			
+			if (promises.length)
+				return jspa.Promise.when(promises);
+		}).then(function() {
+			if (!this.transaction.isActive) {
+				var promises = [];
 				
-		this.yield(function() {
-			if (!this.transaction.isActive && !errors.causes.length) {
 				//update all objects which have referenced a temporary object
 				for (var identifier in this.entities) {
 					var entity = this.entities[identifier];
 					var state = entity.__jspaState__;
 					
 					if (state.isDirty) {
-						var msg = new jspa.message.PutObject(state);
-						msg.on('receive', function(e) {
-							if (e.target.state.isDeleted) {
-								self.removeReference(e.target.state.entity);
+						promise = this.send(new jspa.message.PutObject(state)).done(function(msg) {
+							if (msg.state.isDeleted) {
+								this.removeReference(msg.state.entity);
 							}
 						});
-						msg.on('error', function(e) {
-							errors.add(e);
-						});
-						this.send(msg);
+						
+						promises.push(promise);
 					}
 				}
+				
+				if (promises.length)
+					return jspa.Promise.when(promises);
 			}
 		});
 		
-		var result = new jspa.Result(this, context, onSuccess, onError);
-		this.yield(function() {
-			if (errors.length) {
-				result.trigger(new jspa.error.BulkPersistentError(errors));
-			} else {
-				result.trigger('success');
-			}
-		});
-		return result;
+		return this.wait(result).then(doneCallback, failCallback);
 	},
 	
 	/**
 	 * Merge the state of the given entity into the current persistence context. 
-	 * @param entity - entity instance 
-	 * @param context - the context where the this variable in the called callback points to
-	 * @param callback(entity) callback the managed instance that the state was merged to 
+	 * 
+	 * @param T the entity type
+	 * @param {T} entity - entity instance 
+	 * @return {Promise<T>} the promise will be called with the managed instance that the state was merged to 
 	 */
-	merge: function(entity, context, onSuccess, onError) {
-		var result = new jspa.Result(this, context, onSuccess, onError);
-		this.yield(function() {
+	merge: function(entity, doneCallback, failCallback) {
+		return this.yield().then(function() {
 			var type = this.metamodel.entity(entity.constructor);
 			var identifier = type.id.getValue(entity);
 			if (identifier) {
-				this.find(identifier, this, function(e, persistentEntity) {
+				return this.find(identifier).then(function(persistentEntity) {
 					if (persistentEntity && persistentEntity.constructor == entity.constructor) {
 						var type = this.metamodel.entity(persistentEntity.constructor);
 						for (var iter = type.attributes(); iter.hasNext; ) {
@@ -319,89 +284,66 @@ jspa.EntityManager = jspa.util.QueueConnector.inherit(util.EventTarget, {
 							attribute.setValue(persistentEntity, attribute.getValue(entity));							
 						}
 
-						result.trigger('success', persistentEntity);
+						return persistentEntity;
 					} else {
-						result.trigger(new jspa.error.EntityNotFoundError(identifier));
+						throw new jspa.error.EntityNotFoundError(identifier);
 					}
-				}, function(e) {
-					result.trigger(e);
 				});
 			} else {
-				result.trigger(new jspa.error.IllegalEntityError(entity));
+				throw new jspa.error.IllegalEntityError(entity);
 			}
-		});
-		
-		return result;
+		}).then(doneCallback, failCallback);
 	},
 	
 	/**
 	 * Make an instance managed and persistent. 
 	 * @param entity - entity instance 
-	 * @param context
-	 * @param callback
 	 */
-	persist: function(entity, context, onSuccess, onError) {
-		var result = new jspa.Result(this, context, onSuccess, onError);
-		this.yield(function() {
-			try {				
-				this.addReference(entity);
-				result.trigger('success', entity);
-			} catch (e) {
-				result.trigger(jspa.error.PersistentError(e));
-			}
-		});
-		return result;
+	persist: function(entity, doneCallback, failCallback) {
+		return this.yield().then(function() {	
+			this.addReference(entity);
+			return entity;
+		}).then(doneCallback, failCallback);
 	},
 	
 	/**
 	 * Refresh the state of the instance from the database, overwriting changes made to the entity, if any. 
 	 * @param entity - entity instance 
-	 * @param context
-	 * @param callback(entity) The refreshed entity will passed to the callback or <code>null</code> if 
-	 * 	the entity no longer exists in the database
 	 */
-	refresh: function(entity, context, onSuccess, onError) {
-		var result = new jspa.Result(this, context, onSuccess, onError);
-		this.yield(function() {
+	refresh: function(entity, doneCallback, failCallback) {
+		return this.yield().then(function() {
 			if (!this.contains(entity)) {
-				result.trigger(new jspa.error.IllegalEntityError(entity));
+				throw new jspa.error.IllegalEntityError(entity);
 			} else {
 				var type = this.metamodel.entity(entity.constructor);
 				var state = entity.__jspaState__;
 				
 				if (state.isTemporary) {				
-					result.trigger(new jspa.error.IllegalEntityError(entity));
+					throw new jspa.error.IllegalEntityError(entity);
 				} else {
 					var tid = 0, identifier = type.id.getValue(entity);
 					if (this.transaction.isChanged(identifier))
 						tid = this.transaction.tid;
 					
-					this.send(new jspa.message.GetObject(state, tid), function() {
+					var result = this.send(new jspa.message.GetObject(state, tid)).then(function() {
 						if (state.isDeleted) {
 							this.removeReference(entity);	
-							result.trigger(new jspa.error.EntityNotFoundError(identifier));
-						} else {							
-							result.trigger('success');
+							throw new jspa.error.EntityNotFoundError(identifier);
 						}
-					}, function(e) {
-						result.trigger(e);
 					});
+					
+					return this.wait(result);
 				}
 			}
-		});
-		
-		return result;
+		}).then(doneCallback, failCallback);
 	},
 	
 	/**
 	 * Remove the entity instance. 
 	 * @param entity - entity instance 
-	 * @param context
-	 * @param callback
 	 */
-	remove: function(entity, context, onSuccess, onError) {
-		var result = new jspa.Result(this, context, onSuccess, onError);
-		this.yield(function() {
+	remove: function(entity, doneCallback, failCallback) {
+		return this.yield().then(function() {
 			var state = entity.__jspaState__;
 			if (state) {					
 				if (this.contains(entity)) {
@@ -415,16 +357,14 @@ jspa.EntityManager = jspa.util.QueueConnector.inherit(util.EventTarget, {
 				var type = this.metamodel.entity(entity.constructor);
 				if (type) {
 					var identity = type.id.getValue(entity);
-					if (identity)
-						result.trigger(new jspa.error.EntityExistsError(identity));
+					if (identity) {						
+						throw new jspa.error.EntityExistsError(identity);
+					}
 				} else {
-					result.trigger(new jspa.error.IllegalEntityError(entity));
+					throw new jspa.error.IllegalEntityError(entity);
 				}
 			}
-			
-			result.trigger('success');
-		});
-		return result;
+		}).then(doneCallback, failCallback);
 	},
 	
 	addReference: function(entity) {

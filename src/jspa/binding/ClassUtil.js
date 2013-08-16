@@ -43,7 +43,7 @@ jspa.binding.ClassUtil = Object.inherit({
 				n = n[fragment];
 			}
 			
-			var cls = n && n[className] || context[className];
+			var cls = n && n[className] /* || context[className] */; // name clash with dom classes
 			
 			if (cls) {
 				return cls;

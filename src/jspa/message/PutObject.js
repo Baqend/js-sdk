@@ -14,11 +14,10 @@ jspa.message.PutObject = jspa.message.Message.inherit({
 	
 	doSend: function() {
 		var version = this.state.getVersion();
-		if (version) {
-			Object.extend(this.request.headers, {
-				'if-match': version == '*'? version: '"' + version + '"'
-			});
-		}
+		
+		Object.extend(this.request.headers, {
+			'if-match': !version || version == '*'? '*': '"' + version + '"'
+		});
 		
 		this.request.entity = this.state.getDatabaseObject();
 	},

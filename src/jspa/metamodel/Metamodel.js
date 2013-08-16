@@ -18,6 +18,14 @@ jspa.metamodel.Metamodel = Object.inherit({
 		this.addBaseType(new jspa.metamodel.BasicType('Byte', Number));
 		this.addBaseType(new jspa.metamodel.BasicType('Short', Number));
 		this.addBaseType(new jspa.metamodel.BasicType('Date', Date));
+
+		this.addBaseType(new jspa.metamodel.BasicType('collection.Properties', Object.inherit({
+			extend: {
+				conv: function(obj) {
+					return obj;
+				}
+			}
+		})));
 		
 		var objectModel = new jspa.metamodel.EntityType('/db/_native.Object', null, Object);
 		objectModel.declaredAttributes = {};

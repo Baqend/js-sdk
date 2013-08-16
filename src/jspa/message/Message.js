@@ -1,4 +1,4 @@
-jspa.message.Message = Object.inherit(util.EventTarget, {
+jspa.message.Message = Object.inherit({
 	/**
 	 * @constructor
 	 * @memberOf jspa.message.Message
@@ -19,29 +19,6 @@ jspa.message.Message = Object.inherit(util.EventTarget, {
 			headers: {},
 			entity: null
 		};
-	},
-	
-	send: function() {
-		try {
-			this.doSend();
-			return this.trigger('send');
-		} catch (e) {
-			e = jspa.error.PersistentError(e);
-			
-			this.trigger(e);
-			return false;
-		}
-	},
-	
-	receive: function() {
-		try {
-			this.doReceive();
-			this.trigger('receive');
-		} catch (e) {
-			e = jspa.error.PersistentError(e);
-			
-			this.trigger(e);
-		}
 	},
 	
 	doSend: function() {

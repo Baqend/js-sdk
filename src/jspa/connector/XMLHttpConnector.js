@@ -8,18 +8,17 @@ jspa.connector.XMLHttpConnector = jspa.connector.Connector.inherit({
 	/**
 	 * @memberOf jspa.connector.XMLHttpConnector
 	 * @param {jspa.message.Message} message
-	 * @param {Boolean} sync
 	 */
-	send: function(message, sync) {
+	doSend: function(message) {
 		var xhr = new XMLHttpRequest();
 		
 		var url = 'http://' + this.host + ':' + this.port + message.request.path;
 		console.log(message.request.method + ' ' + url);
 
-		if (!sync)			
+		if (message.deferred)			
 			xhr.onreadystatechange = this.readyStateChange.bind(this, xhr, message);
 		
-		xhr.open(message.request.method, url, !sync);
+		xhr.open(message.request.method, url, !!message.deferred);
 
 		var entity = this.prepareRequestEntity(message);
 		var headers = message.request.headers;
@@ -28,17 +27,17 @@ jspa.connector.XMLHttpConnector = jspa.connector.Connector.inherit({
 
 		xhr.send(entity);
 		
-		if (sync)
-			this.receive(xhr, message);
+		if (!message.deferred)
+			this.doReceive(xhr, message);
 	},
 	
 	readyStateChange: function(xhr, message) {
 		if (xhr.readyState == 4) {
-			this.receive(xhr, message);
+			this.doReceive(xhr, message);
 		}
 	},
 	
-	receive: function(xhr, message) {
+	doReceive: function(xhr, message) {
 		message.response.statusCode = xhr.status;
 		
 		var headers = message.response.headers;
@@ -46,6 +45,6 @@ jspa.connector.XMLHttpConnector = jspa.connector.Connector.inherit({
 			headers[name] = xhr.getResponseHeader(name);
 		
 		message.response.entity = this.prepareResponseEntity(xhr.responseText);
-		message.receive();
+		this.receive(message);
 	}
 });

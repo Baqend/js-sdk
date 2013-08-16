@@ -4,6 +4,24 @@ jspa.error.CommunicationError = jspa.error.PersistentError.inherit({
 		this.superCall('Communication failed by handling the ' + state + ' for ' + 
 				httpMessage.request.method + ' ' + httpMessage.request.path);
 		
-		this.httpMessage = httpMessage;
+		this.stack = 'CommunicationError\n';
+		
+		var cause = httpMessage.response.entity;
+		
+		this.stack += cause.message || '';
+		
+		while (cause) {			
+			this.stack += 'Serverside Caused by ' + cause.className + ' ' + cause.message + '\n';
+			
+			var stackTrace = cause.stackTrace;
+			for (var i = 0; i < stackTrace.length; ++i) {
+				var el = stackTrace[i];
+
+				this.stack += '  at ' + el.className + '.' + el.methodName;
+				this.stack += ' (' + el.fileName + ':' + el.lineNumber + ')\n';
+			}
+			
+			cause = cause.cause;
+		}	
 	}
 });

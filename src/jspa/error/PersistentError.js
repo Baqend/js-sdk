@@ -1,4 +1,4 @@
-jspa.error.PersistentError = Error.inherit(util.Event, {
+jspa.error.PersistentError = Error.inherit({
 	cause: null,
 	
 	extend: {
@@ -15,7 +15,5 @@ jspa.error.PersistentError = Error.inherit(util.Event, {
 		if (cause) {
 			this.cause = cause;
 		}
-		
-		this.initEvent('error', true, true);
 	}
 });

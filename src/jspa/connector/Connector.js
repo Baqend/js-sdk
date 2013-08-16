@@ -43,11 +43,50 @@ jspa.connector.Connector = Object.inherit({
 
 	/**
 	 * @param {jspa.message.Message} message
-	 * @param {Object} context
-	 * @param {Function} context.callback()
 	 */
-	send: function(message, context, callback) {
-		throw new Error('Connector.send() not implemented');
+	send: function(context, message, sync) {
+		if (!sync) {			
+			message.deferred = new jspa.Deferred();
+			message.context = context;
+		}
+		
+		try {
+			message.doSend();
+			this.doSend(message);
+		} catch (e) {
+			e = jspa.error.PersistentError(e);
+			
+			if (!message.deferred) {
+				throw e;
+			} else {				
+				message.deferred.rejectWith(context, [e]);
+			}
+		}
+		
+		if (message.deferred)
+			return message.deferred.promise;
+	},
+	
+	receive: function(message) {
+		try {
+			message.doReceive();
+		} catch (e) {
+			e = jspa.error.PersistentError(e);
+
+			if (!message.deferred) {
+				throw e;
+			} else {				
+				message.deferred.rejectWith(message.context, [e]);
+			}
+		}
+		
+		if (message.deferred) {			
+			message.deferred.resolveWith(message.context, [message]);
+		}
+	},
+	
+	doSend: function() {
+		throw new Error('Connector.doSend() not implemented');
 	},
 	
 	/**
@@ -55,7 +94,7 @@ jspa.connector.Connector = Object.inherit({
 	 */
 	prepareRequestEntity: function(message) {
 		if (message.request.entity) {
-			message.request.headers['Content-Type'] = 'application/json';
+			message.request.headers['Content-Type'] = 'application/json;charset=utf-8';
 			return JSON.stringify(message.request.entity);
 		} else {
 			return null;

@@ -30,76 +30,64 @@ jspa.EntityTransaction = jspa.util.QueueConnector.inherit(util.EventTarget, {
 	/**
 	 * Start a resource transaction.
 	 */
-	begin: function(context, onSuccess, onError) {
-		var result = new jspa.Result(this, context, onSuccess, onError);
-		this.yield(function() {
-			this.send(new jspa.message.PostTransaction(), function(e) {
-				this.tid = e.target.tid;
+	begin: function(doneCallback, failCallback) {
+		return this.yield().then(function() {
+			var result = this.send(new jspa.message.PostTransaction()).done(function(msg) {
+				this.tid = msg.tid;
 
 				this.rollbackOnly = false;
 				this.readSet = {};
 				this.changeSet = {};
-				
-				result.trigger('success');
-			}, function(e) {
-				result.trigger(e);
 			});
-		});
-		return result;
+			
+			return this.wait(result);
+		}).then(doneCallback, failCallback);
 	},
 	
 	/**
 	 * Commit the current resource transaction, writing any unflushed changes to the database. 
 	 */
-	commit: function(context, onSuccess, onError) {
-		this.entityManager.flush(this);
-		
-		var result = new jspa.Result(this, context, onSuccess, onError);
-		this.yield(function() {
+	commit: function(doneCallback, failCallback) {
+		return this.yield().then(function() {
 			if (this.getRollbackOnly()) {
-				this.rollback(function() {
-					result.trigger(new jspa.error.RollbackError());
-				}, function(e) {
-					result.trigger(e);
+				return this.rollback().then(function() {
+					throw new jspa.error.RollbackError();
 				});
 			} else {
-				var readSet = [];
-				for (var identifier in this.readSet) {
-					readSet.push({
-						"oid": identifier,
-						"version": this.readSet[identifier]
-					});
-				}
-				
-				this.send(new jspa.message.PutTransactionCommitted(this.tid, readSet), function(e) {
-					this.tid = null;
-					this.readSet = null;
-					this.changeSet = null;
-					
-					var oids = e.target.oids;
-					for (oid in oids) {
-						var version = oids[oid];
-						var entity = this.entityManager.entities[oid];
-						
-						if (entity) {
-							var state = entity.__jspaState__;
-							if (version == 'DELETED' || state.isDeleted) {
-								self.entityManager.removeReference(entity);
-							} else {								
-								state.setDatabaseValue(state.type.version, version);
-							}
-						}
+				return this.wait(this.entityManager.flush()).then(function() {
+					var readSet = [];
+					for (var identifier in this.readSet) {
+						readSet.push({
+							"oid": identifier,
+							"version": this.readSet[identifier]
+						});
 					}
 					
-					result.trigger('success');
-				}, function(e) {
-					this.entityManager.clear();
-					result.trigger(e);
+					var result = this.send(new jspa.message.PutTransactionCommitted(this.tid, readSet));
+					
+					return this.wait(result).then(function(msg) {
+						this.tid = null;
+						this.readSet = null;
+						this.changeSet = null;
+						
+						var oids = msg.oids;
+						for (oid in oids) {
+							var version = oids[oid];
+							var entity = this.entityManager.entities[oid];
+							
+							if (entity) {
+								var state = entity.__jspaState__;
+								if (version == 'DELETED' || state.isDeleted) {
+									this.entityManager.removeReference(entity);
+								} else {								
+									state.setDatabaseValue(state.type.version, version);
+								}
+							}
+						}
+					});
 				});
 			}
-		});
-		
-		return result;
+		}).then(doneCallback, failCallback);
 	},
 	
 	/**
@@ -113,33 +101,28 @@ jspa.EntityTransaction = jspa.util.QueueConnector.inherit(util.EventTarget, {
 	/**
 	 * Roll back the current resource transaction. 
 	 */
-	rollback: function(context, onSuccess, onError) {
-		var result = new jspa.Result(this, context, onSuccess, onError);
-		this.yield(function() {
-			this.send(new jspa.message.PutTransactionAborted(this.tid), function() {
+	rollback: function(doneCallback, failCallback) {
+		return this.yield().then(function() {
+			var result = this.send(new jspa.message.PutTransactionAborted(this.tid));
+			
+			this.wait(result).then(function() {
 				this.tid = null;
 				this.readSet = null;
 				this.changeSet = null;
-				this.entityManager.clear();
-				result.trigger('success');
-			}, function(e) {
-				this.entityManager.clear();
-				result.trigger(e);
+				return this.entityManager.clear();
+			}, function() {
+				return this.entityManager.clear();
 			});
-		});
-		
-		return result;
+		}).then(doneCallback, failCallback);
 	},
 	
 	/**
 	 * Mark the current resource transaction so that the only possible outcome of the transaction is for the transaction to be rolled back. 
 	 */
 	setRollbackOnly: function(context, onSuccess) {
-		var result = new jspa.Result(this, context, onSuccess, onError);
-		this.yield(function() {
+		return this.yield().done(function() {
 			this.rollbackOnly = true;
 		});
-		return result;
 	},
 	
 	isRead: function(identifier) {

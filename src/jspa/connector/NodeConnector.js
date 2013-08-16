@@ -16,10 +16,9 @@ jspa.connector.NodeConnector = jspa.connector.Connector.inherit({
 	/**
 	 * @memberOf jspa.connector.XMLHttpConnector
 	 * @param {jspa.message.Message} message
-	 * @param {Boolean} sync
 	 */
-	send: function(message, sync) {
-		if (sync)
+	doSend: function(message) {
+		if (!message.deferred)
 			throw new Error('Blocking IO is not supported');
 		
 		message.request.host = this.host;
@@ -28,12 +27,13 @@ jspa.connector.NodeConnector = jspa.connector.Connector.inherit({
 		var self = this;
 		var entity = this.prepareRequestEntity(message);
 		
-		message.request.headers['Content-Length'] = entity? entity.length: 0;
+		if (entity)
+			message.request.headers['Transfer-Encoding'] = 'chunked';
 		
 		var req = this.http.request(message.request, function(res) {
 			var data = '';
 			
-			res.setEncoding('utf8');
+			res.setEncoding('utf-8');
 			res.on('data', function(chunk) {
 				data += chunk;
 			});
@@ -41,16 +41,16 @@ jspa.connector.NodeConnector = jspa.connector.Connector.inherit({
 				message.response.statusCode = res.statusCode;
 				message.response.headers = res.headers;
 				message.response.entity = self.prepareResponseEntity(data);
-				message.receive();
+				self.receive(message);
 			});
 		});
-		
+
 		req.on('error', function() {
-			message.receive();
+			self.receive(message);
 		});
 		
 		if (entity)
-			req.write(entity);
+			req.write(entity, 'utf8');
 		
 		req.end();
 	}
