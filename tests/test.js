@@ -55,6 +55,8 @@ var tests = {
 		tests.factory = factory;
 		tests.em = factory.createEntityManager();
 		tests.pu = factory.persistenceUnitUtil;
+		//TODO: Why???
+		tests.em.clear();
 	},
 
 	mainTest : function(factory, em, pu, ready) {
@@ -189,7 +191,8 @@ var tests = {
 		}
 	}
 };
-
 tests.init();
 
-//exports.tests = tests;
+if(typeof window === "undefined") {
+	exports.tests = tests;
+}
