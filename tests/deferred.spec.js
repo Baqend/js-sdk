@@ -99,7 +99,7 @@ describe("Deferred", function() {
     	var called = false;
     	
     	deferred.done(function() {
-    		expect(this).toBe(deferred.promise);
+    		expect(this).toBe(deferred.promise());
     		
     		called = true;
     	});
@@ -148,7 +148,7 @@ describe("Deferred", function() {
     	deferred.resolve(123);
         
         deferred.done(function(val) {
-    		expect(this).toBe(deferred.promise);
+    		expect(this).toBe(deferred.promise());
     		expect(val).toBe(123);
     		called = true;
         });
@@ -232,7 +232,7 @@ describe("Deferred", function() {
     });
 
     it("should provide a promise", function() {
-    	var promise = deferred.promise;
+    	var promise = deferred.promise();
     	
     	expect(promise).not.toBe(deferred);
     	
@@ -368,7 +368,7 @@ describe("Deferred", function() {
         		expect(true).toBeFalsy();
         	}).fail(function(e) {
         		called = true;
-        		expect(e.isInstanceOf(Error)).toBeTruthy();
+        		expect(Error.isInstance(e)).toBeTruthy();
         	});
         	
             deferred.resolve(1, 'test', false);
@@ -429,7 +429,7 @@ describe("Deferred", function() {
         	var def = new jspa.Deferred();
     		
     		var promise = deferred.then(function(a, b, c) {
-        		return def.promise;
+        		return def.promise();
         	}).done(function(a, b, c) {
         		expect(a).toBe(5);
         		expect(b).toBe('foo');

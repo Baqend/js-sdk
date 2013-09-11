@@ -1,8 +1,11 @@
+/**
+ * @class jspa.EntityManager
+ */
 jspa.EntityManager = jspa.util.QueueConnector.inherit(util.EventTarget, {
 	
 	/**
 	 * Determine whether the entity manager is open. 
-	 * @returns {Boolean} true until the entity manager has been closed
+	 * @type {Boolean} true until the entity manager has been closed
 	 */
 	isOpen: {
 		get: function() {
@@ -12,20 +15,17 @@ jspa.EntityManager = jspa.util.QueueConnector.inherit(util.EventTarget, {
 	
 	/**
 	 * @constructor
-	 * @memberOf jspa.EntityManager
 	 * @param {jspa.EntityManagerFactory} entityManagerFactory
 	 */
 	initialize: function(entityManagerFactory) {
 		this.superCall(new jspa.util.Queue(), entityManagerFactory.connector);
 		this.entities = {};
-		
+
 		this.newOidCounter = 0;
 		
 		this.entityManagerFactory = entityManagerFactory;
 		this.metamodel = entityManagerFactory.metamodel;
 		this.transaction = new jspa.EntityTransaction(this);
-		
-		this.parent = entityManagerFactory;
 	},
 	
 	/**
@@ -34,12 +34,12 @@ jspa.EntityManager = jspa.util.QueueConnector.inherit(util.EventTarget, {
 	 * The application should not expect that the instance state will be available upon detachment, 
 	 * unless it was accessed by the application while the entity manager was open.
 	 * 
-	 * @param {Function} entityClass
-	 * @param {String} oid
+	 * @param {(Function|String)} entityClass
+	 * @param {String=} oid
 	 */
 	getReference: function(entityClass, oid) {
 		var identifier, type;
-		if (entityClass.isInstanceOf(String)) {
+		if (String.isInstance(entityClass)) {
 			identifier = entityClass;
 			type = this.metamodel.entity(identifier.substring(0, identifier.lastIndexOf('/')));
 		} else {
@@ -50,8 +50,7 @@ jspa.EntityManager = jspa.util.QueueConnector.inherit(util.EventTarget, {
 		var entity = this.entities[identifier];
 		if (!entity) {
 			entity = type.create();
-			type.id.setValue(entity, identifier);
-			this.replaceReference(null, entity);
+			this.replaceReference(null, identifier, entity);
 		}
 		
 		return entity;
@@ -104,7 +103,7 @@ jspa.EntityManager = jspa.util.QueueConnector.inherit(util.EventTarget, {
 	 * @returns {Boolean} boolean indicating if entity is in persistence context
 	 */
 	contains: function(entity) {
-		var state = entity.__jspaState__;
+		var state = jspa.util.State.get(entity);
 		if (!state)
 			return false;
 			
@@ -116,7 +115,7 @@ jspa.EntityManager = jspa.util.QueueConnector.inherit(util.EventTarget, {
 	 * Remove the given entity from the persistence context, causing a managed entity to become detached. 
 	 * Unflushed changes made to the entity if any (including removal of the entity), 
 	 * will not be synchronized to the database. Entities which previously referenced the detached entity will continue to reference it. 
-	 * @param entity - entity instance 
+	 * @param {Object} entity - entity instance
 	 */
 	detach: function(entity, doneCallback, failCallback) {
 		return this.yield().then(function() {			
@@ -128,13 +127,15 @@ jspa.EntityManager = jspa.util.QueueConnector.inherit(util.EventTarget, {
 	/**
 	 * Find by object ID. Search for an entity of the specified oid. 
 	 * If the entity instance is contained in the persistence context, it is returned from there.
-	 * @param {Function} entityClass - entity class
-	 * @param {String} oid - Object ID
+	 * @param {(Function|String)} entityClass - entity class
+	 * @param {String=} oid - Object ID
+     * @param {Function=} doneCallback
+     * @param {function=} failCallback
 	 */
 	find: function(entityClass, oid, doneCallback, failCallback) {
 		return this.yield().then(function() {
 			var entity = this.getReference(entityClass, oid);
-			var state = entity.__jspaState__;
+			var state = jspa.util.State.get(entity);
 			
 			if (state.isLoaded) {
 				return entity;
@@ -159,13 +160,13 @@ jspa.EntityManager = jspa.util.QueueConnector.inherit(util.EventTarget, {
 	
 	findBlocked: function(entityClass, oid) {
 		var state, type;
-		if (entityClass.isInstanceOf(jspa.util.State)) {
+		if (jspa.util.State.isInstance(entityClass)) {
 			state = entityClass;
 			type = state.type;
 		} else {
 			var entity = this.getReference(entityClass, oid);
 			type = this.metamodel.entity(entity.constructor);
-			state = entity.__jspaState__;
+			state = jspa.util.State.get(entity);
 		}
 		
 		if (!state.isLoaded) {
@@ -193,7 +194,7 @@ jspa.EntityManager = jspa.util.QueueConnector.inherit(util.EventTarget, {
 			
 			for (var identifier in this.entities) {
 				var entity = this.entities[identifier];
-				var state = entity.__jspaState__;
+				var state = jspa.util.State.get(entity);
 				
 				if (state.isDirty) {
 					var promise;
@@ -203,16 +204,16 @@ jspa.EntityManager = jspa.util.QueueConnector.inherit(util.EventTarget, {
 						
 						promise = this.send(msg).done(function(msg) {
 							var state = msg.state;
-							var identifier = state.type.id.getValue(state.entity);
+							var id = state.type.id.getValue(state.entity);
 							
-							this.transaction.setChanged(identifier);
-							this.replaceReference(msg.temporaryIdentifier, state.entity);
+							this.transaction.setChanged(id);
+							this.replaceReference(msg.temporaryIdentifier, id, state.entity);
 						});
 					} else if (state.isDeleted) {
 						promise = this.send(new jspa.message.DeleteObject(state)).done(function(msg) {
 							var state = msg.state;
-							var identifier = state.type.id.getValue(state.entity);
-							this.transaction.setChanged(identifier);
+							var id = state.type.id.getValue(state.entity);
+							this.transaction.setChanged(id);
 							
 							if (!this.transaction.isActive)
 								this.removeReference(state.entity);
@@ -223,8 +224,8 @@ jspa.EntityManager = jspa.util.QueueConnector.inherit(util.EventTarget, {
 							if (msg.state.isDeleted) {
 								this.removeReference(state.entity);
 							} else {
-								var identifier = state.type.id.getValue(state.entity);
-								this.transaction.setChanged(identifier);
+								var id = state.type.id.getValue(state.entity);
+								this.transaction.setChanged(id);
 							}				
 						});
 					}
@@ -242,10 +243,10 @@ jspa.EntityManager = jspa.util.QueueConnector.inherit(util.EventTarget, {
 				//update all objects which have referenced a temporary object
 				for (var identifier in this.entities) {
 					var entity = this.entities[identifier];
-					var state = entity.__jspaState__;
+					var state = jspa.util.State.get(entity);
 					
 					if (state.isDirty) {
-						promise = this.send(new jspa.message.PutObject(state)).done(function(msg) {
+						var promise = this.send(new jspa.message.PutObject(state)).done(function(msg) {
 							if (msg.state.isDeleted) {
 								this.removeReference(msg.state.entity);
 							}
@@ -297,7 +298,7 @@ jspa.EntityManager = jspa.util.QueueConnector.inherit(util.EventTarget, {
 	
 	/**
 	 * Make an instance managed and persistent. 
-	 * @param entity - entity instance 
+	 * @param {Object} entity - entity instance
 	 */
 	persist: function(entity, doneCallback, failCallback) {
 		return this.yield().then(function() {	
@@ -308,20 +309,19 @@ jspa.EntityManager = jspa.util.QueueConnector.inherit(util.EventTarget, {
 	
 	/**
 	 * Refresh the state of the instance from the database, overwriting changes made to the entity, if any. 
-	 * @param entity - entity instance 
+	 * @param {Object} entity - entity instance
 	 */
 	refresh: function(entity, doneCallback, failCallback) {
 		return this.yield().then(function() {
 			if (!this.contains(entity)) {
 				throw new jspa.error.IllegalEntityError(entity);
 			} else {
-				var type = this.metamodel.entity(entity.constructor);
-				var state = entity.__jspaState__;
+				var state = jspa.util.State.get(entity);
 				
 				if (state.isTemporary) {				
 					throw new jspa.error.IllegalEntityError(entity);
 				} else {
-					var tid = 0, identifier = type.id.getValue(entity);
+					var tid = 0, identifier = state.type.id.getValue(entity);
 					if (this.transaction.isChanged(identifier))
 						tid = this.transaction.tid;
 					
@@ -340,11 +340,11 @@ jspa.EntityManager = jspa.util.QueueConnector.inherit(util.EventTarget, {
 	
 	/**
 	 * Remove the entity instance. 
-	 * @param entity - entity instance 
+	 * @param {Object} entity - entity instance
 	 */
 	remove: function(entity, doneCallback, failCallback) {
 		return this.yield().then(function() {
-			var state = entity.__jspaState__;
+			var state = jspa.util.State.get(entity);
 			if (state) {					
 				if (this.contains(entity)) {
 					if (state.isTemporary) {					
@@ -368,7 +368,7 @@ jspa.EntityManager = jspa.util.QueueConnector.inherit(util.EventTarget, {
 	},
 	
 	addReference: function(entity) {
-		var state = entity.__jspaState__;
+		var state = jspa.util.State.get(entity);
 
 		var type;
 		if (!this.contains(entity)) {
@@ -381,14 +381,12 @@ jspa.EntityManager = jspa.util.QueueConnector.inherit(util.EventTarget, {
 				
 				var identity = type.id.getValue(entity);
 				if (identity)
-					throw new jspa.error.EntityExistsException(identity);
+					throw new jspa.error.EntityExistsError(identity);
 				
 				var temporaryIdentifier = '/temporary/' + type.identifier.substring(4);
 				temporaryIdentifier += '/' + (++this.newOidCounter);
-				
-				type.id.setValue(entity, temporaryIdentifier);
-				
-				state = this.replaceReference(null, entity);
+
+				state = this.replaceReference(null, temporaryIdentifier, entity);
 				state.setTemporary();
 			}
 		}
@@ -406,28 +404,31 @@ jspa.EntityManager = jspa.util.QueueConnector.inherit(util.EventTarget, {
 		}
 	},
 	
-	replaceReference: function(oldIdentifier, entity) {
+	replaceReference: function(oldIdentifier, newIdentifier, entity) {
 		if (oldIdentifier in this.entities) {
 			delete this.entities[oldIdentifier];
 		}
 		
-		var state = entity.__jspaState__;
+		var state = jspa.util.State.get(entity);
 		if (!state) {
 			var type = this.metamodel.entity(entity.constructor);
 			state = new jspa.util.State(this, type, entity);
 		}
+
+        state.type.id.setValue(entity, newIdentifier);
 		
-		this.entities[state.type.id.getValue(entity)] = entity;
+		this.entities[newIdentifier] = entity;
 		
 		return state;
 	},
 	
 	removeReference: function(entity) {
-		var state = entity.__jspaState__;
+		var state = jspa.util.State.get(entity);
 		if (!state)
 			throw new jspa.error.IllegalEntityError(entity);
 		
-		entity.__jspaState__ = null;
+		state.remove();
+
 		delete this.entities[state.type.id.getValue(entity)];
 	}
 });

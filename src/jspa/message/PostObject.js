@@ -1,10 +1,10 @@
-
+/**
+ * @class jspa.message.PostObject
+ * @extends jspa.message.Message
+ */
 jspa.message.PostObject = jspa.message.Message.inherit({
 	/**
 	 * @constructor
-	 * @super jspa.message.TransactionalMessage
-	 * @memberOf jspa.message.PostObject
-	 * @param {jspa.Transaction} transaction
 	 * @param {jspa.util.State} state
 	 */
 	initialize: function(state) {

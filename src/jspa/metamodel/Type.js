@@ -1,3 +1,6 @@
+/**
+ * @class jspa.metamodel.Type
+ */
 jspa.metamodel.Type = Object.inherit({
 	extend: {
 		PersistenceType: {
@@ -7,30 +10,44 @@ jspa.metamodel.Type = Object.inherit({
 			MAPPED_SUPERCLASS: 3
 		}
 	},
-	
+
+    /**
+     * @type {Boolean}
+     */
 	isBasic: {
 		get: function() {
 			return this.persistenceType == jspa.metamodel.Type.PersistenceType.BASIC;
 		}
 	},
-	
+
+    /**
+     * @type {Boolean}
+     */
 	isEmbeddable: {
 		get: function() {
 			return this.persistenceType == jspa.metamodel.Type.PersistenceType.EMBEDDABLE;
 		}
 	},
-	
+
+    /**
+     * @type {Boolean}
+     */
 	isEntity: {
 		get: function() {
 			return this.persistenceType == jspa.metamodel.Type.PersistenceType.ENTITY;
 		}
 	},
-	
+
+    /**
+     * @type {Boolean}
+     */
 	isMappedSuperclass: {
 		get: function() {
 			return this.persistenceType == jspa.metamodel.Type.PersistenceType.MAPPED_SUPERCLASS;
 		}
 	},
+
+    persistenceType: -1,
 	
 	/**
 	 * @constructor
@@ -42,10 +59,13 @@ jspa.metamodel.Type = Object.inherit({
 		this.identifier = identifier;
 		this.typeConstructor = typeConstructor;
 	},
-	
+
+    /**
+     * @param {jspa.binding.ClassUtil} classUtil
+     */
 	init: function(classUtil) {
 		this.classUtil = classUtil;
-		
+
 		if (!this.classUtil.getIdentifier(this.typeConstructor))
 			this.classUtil.setIdentifier(this.typeConstructor, this.identifier);
 	},
@@ -59,19 +79,16 @@ jspa.metamodel.Type = Object.inherit({
 	
 	/**
 	 * @param {jspa.util.State} state
-	 * @param {Object} data
-	 * @returns {Object}
+	 * @param {Object} value
+	 * @returns {*}
 	 */
-	toValue: function(state, data) {
-		return data;
-	},
+	toDatabaseValue: function(state, value) {},
 	
 	/**
 	 * @param {jspa.util.State} state
-	 * @param {Object} value
-	 * @returns {Object}
+     * @param {Object} currentValue
+	 * @param {*} value
+	 * @returns {*}
 	 */
-	fromValue: function(state, value) {
-		return this.classUtil.conv(this.typeConstructor, value);
-	}
+	fromDatabaseValue: function(state, currentValue, value) {}
 });

@@ -1,6 +1,6 @@
 jspa.connector.NodeConnector = jspa.connector.Connector.inherit({
 	extend: {
-		isUseable: function(host, port) {
+		isUsable: function(host, port) {
 			if (!this.prototype.http) {
 				try {
 					var http = require('http');
@@ -40,7 +40,7 @@ jspa.connector.NodeConnector = jspa.connector.Connector.inherit({
 			res.on('end', function() {
 				message.response.statusCode = res.statusCode;
 				message.response.headers = res.headers;
-				message.response.entity = self.prepareResponseEntity(data);
+				self.prepareResponseEntity(message, data);
 				self.receive(message);
 			});
 		});

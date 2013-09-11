@@ -1,10 +1,18 @@
+/**
+ * @class jspa.metamodel.ListAttribute
+ * @extends jspa.metamodel.PluralAttribute
+ */
 jspa.metamodel.ListAttribute = jspa.metamodel.PluralAttribute.inherit({
-	/**
-	 * @super jspa.metamodel.PluralAttribute
-	 * @memberOf jspa.metamodel.ListAttribute
-	 */
+
 	collectionType: jspa.metamodel.PluralAttribute.CollectionType.LIST,
-	
+
+    /**
+     * @constructor
+     * @param {jspa.metamodel.EntityType} declaringType
+     * @param {String} name
+     * @param {Function} typeConstructor
+     * @param {jspa.metamodel.Type} elementType
+     */
 	initialize: function(declaringType, name, typeConstructor, elementType) {
 		this.superCall(declaringType, name, typeConstructor, elementType);
 		

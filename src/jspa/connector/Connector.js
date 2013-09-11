@@ -1,5 +1,13 @@
+/**
+ * @class jspa.connector.Connector
+ */
 jspa.connector.Connector = Object.inherit({
 	extend: {
+        /**
+         * @param {String} host
+         * @param {Number} port
+         * @return {jspa.connector.Connector}
+         */
 		create: function(host, port) {
 			if (!host && typeof window !== 'undefined') {
 				host = window.location.host;
@@ -19,20 +27,19 @@ jspa.connector.Connector = Object.inherit({
 			if (!port)
 				port = 80;
 			
-			for (name in jspa.connector) {
+			for (var name in jspa.connector) {
 				var connector = jspa.connector[name];
-				if (connector.isUseable && connector.isUseable(host, port)) {
+				if (connector.isUsable && connector.isUsable(host, port)) {
 					return new connector(host, port);
 				}
 			}
 			
-			throw new Error('No connector is useable for the requested connection');
+			throw new Error('No connector is usable for the requested connection');
 		}
 	},
 	
 	/**
 	 * @constructor
-	 * @memberOf jspa.connector.Connector
 	 * @param {String} host
 	 * @param {Integer} port
 	 */
@@ -42,7 +49,10 @@ jspa.connector.Connector = Object.inherit({
 	},
 
 	/**
+     * @param {*} context
 	 * @param {jspa.message.Message} message
+     * @param {Boolean} sync
+     * @returns {jspa.Promise}
 	 */
 	send: function(context, message, sync) {
 		if (!sync) {			
@@ -64,9 +74,12 @@ jspa.connector.Connector = Object.inherit({
 		}
 		
 		if (message.deferred)
-			return message.deferred.promise;
+			return message.deferred.promise();
 	},
-	
+
+    /**
+     * @param {jspa.message.Message} message
+     */
 	receive: function(message) {
 		try {
 			message.doReceive();
@@ -84,8 +97,11 @@ jspa.connector.Connector = Object.inherit({
 			message.deferred.resolveWith(message.context, [message]);
 		}
 	},
-	
-	doSend: function() {
+
+    /**
+     * @param {jspa.message.Message} message
+     */
+	doSend: function(message) {
 		throw new Error('Connector.doSend() not implemented');
 	},
 	
@@ -100,13 +116,17 @@ jspa.connector.Connector = Object.inherit({
 			return null;
 		}
 	},
-	
-	prepareResponseEntity: function(data) {
+
+    /**
+     * @param {jspa.message.Message} message
+     * @param {Object} data
+     */
+	prepareResponseEntity: function(message, data) {
 		var entity = null;
 		if (data && data.length > 0) {
 			entity = JSON.parse(data);
 		}
 		
-		return entity;
+		message.response.entity = entity;
 	}
 });

@@ -1,4 +1,8 @@
+/**
+ * @class jspa.metamodel.Attribute
+ */
 jspa.metamodel.Attribute = Object.inherit({
+
 	extend: {
 		PersistentAttributeType: {
 			BASIC: 0,
@@ -8,11 +12,6 @@ jspa.metamodel.Attribute = Object.inherit({
 			MANY_TO_ONE: 4,
 			ONE_TO_MANY: 5,
 			ONE_TO_ONE: 6
-		},
-
-		Special: {		
-			ID: '__jspaId__',
-			VERSION: '__jspaVersion__'
 		}
 	},
 	
@@ -37,27 +36,17 @@ jspa.metamodel.Attribute = Object.inherit({
 	/**
 	 * @type {Boolean}
 	 */
-	isId: {
-		get: function() {
-			return this.declaringType.id == this;
-		}
-	},
+	isId: false,
 
 	/**
 	 * @type {Boolean}
 	 */
-	isVersion: {
-		get: function() {
-			return this.declaringType.version == this;
-		}
-	},
+	isVersion: false,
 	
 	/**
 	 * @constructor
-	 * @memberOf jspa.metamodel.Attribute
 	 * @param {jspa.metamodel.EntityType} declaringType
 	 * @param {String} name
-	 * @param {Function} typeConstructor
 	 */
 	initialize: function(declaringType, name) {
 		this.accessor = new jspa.binding.Accessor();
@@ -66,18 +55,25 @@ jspa.metamodel.Attribute = Object.inherit({
 	},
 	
 	/**
-	 * @param {Object} state
-	 * @returns {any}
+	 * @param {Object} entity
+	 * @returns {*}
 	 */
 	getValue: function(entity) {
-		return this.declaringType.classUtil.conv(this.typeConstructor, this.accessor.getValue(entity, this));
+        if (this.isId || this.isVersion)
+            return entity._objectInfo[this.name];
+
+        return this.typeConstructor.asInstance(this.accessor.getValue(entity, this));
 	},
 	
 	/**
-	 * @param {Object} state
-	 * @param {any} value
+	 * @param {Object} entity
+	 * @param {*} value
 	 */
 	setValue: function(entity, value) {
-		this.accessor.setValue(entity, this, value);
+        if (this.isId || this.isVersion) {
+            entity._objectInfo[this.name] = value;
+        } else {
+            this.accessor.setValue(entity, this, value);
+        }
 	}
 });

@@ -1,40 +1,15 @@
-jspa.metamodel.EntityType = jspa.metamodel.Type.inherit({
-	AttributeIterator: Object.inherit(util.Iterator, {
-		initialize: function(type) {
-			this.type = type;
-			
-			this.initAttr();
-			this.next();
-		},
-		
-		initAttr: function() {
-			this.index = 0;
-			this.names = Object.getOwnPropertyNames(this.type.declaredAttributes);
-		},
-		
-		next: function() {
-			var attribute = this.type.declaredAttributes[this.names[this.index]];
-			
-			this.index++;
-			
-			while (this.names.length == this.index && (this.type = this.type.supertype)) {
-				this.initAttr();	
-			}
-			
-			this.hasNext = this.type != null;
-			
-			return attribute;
-		}
-	}),
-	
+/**
+ * @class jspa.metamodel.EntityType
+ * @extends jspa.metamodel.ManagedType
+ */
+jspa.metamodel.EntityType = jspa.metamodel.ManagedType.inherit({
 	persistenceType: jspa.metamodel.Type.PersistenceType.ENTITY,
 	
-	declaredAttributes: null,
 	declaredId: null,
 	declaredVersion: null,
 	
 	/**
-	 * @returns {String}
+	 * @type {String}
 	 */
 	id: {
 		get: function() {
@@ -43,91 +18,80 @@ jspa.metamodel.EntityType = jspa.metamodel.Type.inherit({
 	},
 	
 	/**
-	 * @returns {String}
+	 * @type {String}
 	 */
 	version: { 
 		get: function() {
 			return this.declaredVersion || this.supertype.version;
 		}
 	},
-	
-	/** 
-	 * @constructor
-	 * @super jspa.metamodel.Type
-	 * @memberOf jspa.metamodel.EntityType
-	 * @param {String} identifier
-	 * @param {jspa.metamodel.EntityType} supertype
-	 * @param {Function} typeConstructor
-	 */
-	initialize: function(identifier, supertype, typeConstructor) {
-		this.superCall(identifier, typeConstructor);
 
-		this.supertype = supertype;
-	},
-	
-	/**
-	 * 
-	 */
-	init: function(classUtil) {
-		if (!this.typeConstructor) {
-			this.typeConstructor = classUtil.loadClass(this);
+    /**
+     * @constructor
+     * @param {String} identifier
+     * @param {jspa.metamodel.EntityType} supertype
+     * @param {Function} typeConstructor
+     */
+    initialize: function(identifier, supertype, typeConstructor) {
+        this.superCall(identifier, typeConstructor);
 
-			this.superCall(classUtil);
-			this.classUtil.enhance(this, this.typeConstructor);
-		} else {
-			this.superCall(classUtil);
-		}
-	},
-	
-	attributes: function() {
-		return new this.AttributeIterator(this);
-	},
-	
-	/**
-	 * @type jspa.metamodel.Attribute
-	 * @param {String} name
-	 * @returns {jspa.metamodel.Attribute}
-	 */
-	getAttribute: function(name) {
-		if (name in this.declaredAttributes) {			
-			return this.declaredAttributes[name];
-		} else if (this.supertype) {
-			return this.supertype.getAttribute(name);
-		} else {
-			return null;
-		}
-	},
-	
-	/**
-	 * @type jspa.metamodel.Attribute
-	 * @param {String} name
-	 * @returns {jspa.metamodel.Attribute}
-	 */
-	getDeclaredAttribute: function(name) {
-		return this.declaredAttributes[name] || null;
-	},
-	
-	fromValue: function(state, value) {
-		if (value) {			
+        this.supertype = supertype;
+    },
+
+    /**
+     * @param {jspa.util.State} state
+     * @param {*} obj
+     * @param {Object} value
+     * @return {*}
+     */
+	fromDatabaseValue: function(state, obj, value) {
+        if (state.entity == obj) {
+            this.superCall(state, obj, value);
+            return obj;
+        } else if (value) {
 			return state.entityManager.getReference(value);
 		} else {
 			return null;
 		}
 	},
-	
-	toValue: function(state, data) {
-		var value = this.superCall(state, data);
-		
-		if (value) {
-			var valueState = value.__jspaState__;
-			if (valueState && !valueState.isDeleted) {					
-				var data = valueState.getReference();
-				if (!data)
-					state.isDirty = true;
-				
-				return data;
-			}
-		}
+
+    /**
+     * @param {jspa.util.State} state
+     * @param {*} obj
+     * @return {Object}
+     */
+	toDatabaseValue: function(state, obj) {
+        if (state.entity == obj) {
+            var value = this.superCall(state, obj);
+            var info = value._objectInfo;
+
+            var oid = state.getReference();
+            if (oid) {
+                info['oid'] = oid;
+            }
+
+            var version = state.getVersion();
+            if (version) {
+                info['version'] = version;
+            }
+
+            var transaction = state.getTransactionIdentifier();
+            if (transaction) {
+                info['transaction'] = transaction;
+            }
+
+            return value;
+        } else if (this.typeConstructor.isInstance(obj)) {
+            var valueState = jspa.util.State.get(obj);
+            if (valueState && !valueState.isDeleted) {
+                var data = valueState.getReference();
+                if (data) {
+                    return data;
+                } else {
+                    state.isDirty = true;
+                }
+            }
+        }
 		
 		return null;
 	}

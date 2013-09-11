@@ -1,9 +1,10 @@
+/**
+ * @class jspa.message.PostTransaction
+ * @extends jspa.message.Message
+ */
 jspa.message.PostTransaction = jspa.message.Message.inherit({
 	/**
 	 * @constructor
-	 * @super jspa.message.TransactionalMessage
-	 * @memberOf jspa.message.PostTransaction
-	 * @param jspa.EntityTransaction transaction
 	 */
 	initialize: function() {
 		this.superCall('post', '/transaction');

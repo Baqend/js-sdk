@@ -1,5 +1,11 @@
-jspa.EntityManagerFactory = Object.inherit(util.EventTarget, {
+/**
+ * @class jspa.EntityManagerFactory
+ */
+jspa.EntityManagerFactory = Object.inherit({
 	extend: {
+        /**
+         * @param {Error} e
+         */
 		onError: function(e) {	
 			console.log(e);
 			
@@ -11,7 +17,6 @@ jspa.EntityManagerFactory = Object.inherit(util.EventTarget, {
 	
 	/**
 	 * @constructor
-	 * @memberOf jspa.EntityManagerFactory
 	 * @param {String} host 
 	 * @param {Number} [port]  
 	 */

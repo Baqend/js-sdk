@@ -1,6 +1,6 @@
 jspa.connector.XMLHttpConnector = jspa.connector.Connector.inherit({
 	extend: {
-		isUseable: function(host, port) {
+		isUsable: function(host, port) {
 			return typeof XMLHttpRequest != 'undefined';
 		}
 	},
@@ -44,7 +44,7 @@ jspa.connector.XMLHttpConnector = jspa.connector.Connector.inherit({
 		for (var name in headers)
 			headers[name] = xhr.getResponseHeader(name);
 		
-		message.response.entity = this.prepareResponseEntity(xhr.responseText);
+		this.prepareResponseEntity(message, xhr.responseText);
 		this.receive(message);
 	}
 });

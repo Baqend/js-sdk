@@ -1,5 +1,16 @@
-jspa.Query = jspa.util.QueueConnector.inherit(util.EventTarget, {
+/**
+ * @class jspa.Query
+ * @extends jspa.util.QueueConnector
+ */
+jspa.Query = jspa.util.QueueConnector.inherit({
+    /**
+     * @type Number
+     */
 	firstResult: 0,
+
+    /**
+     * @type Number
+     */
 	maxResults: Number.MAX_VALUE,
 	
 	/**
@@ -12,8 +23,6 @@ jspa.Query = jspa.util.QueueConnector.inherit(util.EventTarget, {
 		this.superCall(entityManager.queue, entityManager.connector);
 		this.entityManager = entityManager;
 		this.qlString = qlString;
-		
-		this.parent = entityManager;
 	},
 	
 	/**
@@ -56,7 +65,7 @@ jspa.Query = jspa.util.QueueConnector.inherit(util.EventTarget, {
 		var pending = [];
 		oids.forEach(function(oid, index) {
 			var entity = list[index] = this.entityManager.getReference(oid);
-			var state = entity.__jspaState__;
+			var state = jspa.util.State.get(entity);
 			
 			if (!state.isLoaded) {
 				var promise = this.send(new jspa.message.GetObject(state)).done(function(msg) {					
@@ -82,11 +91,13 @@ jspa.Query = jspa.util.QueueConnector.inherit(util.EventTarget, {
 	}
 });
 
+/**
+ * @class jspa.TypedQuery
+ * @extends jspa.Query
+ */
 jspa.TypedQuery = jspa.Query.inherit({
 	/**
 	 * @constructor
-	 * @super jspa.Query
-	 * @memberOf jspa.TypedQuery
 	 * @param {jspa.EntityManager} entityManager
 	 * @param {String} qlString
 	 * @param {Function} resultClass

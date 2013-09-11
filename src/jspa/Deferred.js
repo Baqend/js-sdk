@@ -1,10 +1,13 @@
+/**
+ * @class jspa.Promise
+ */
 jspa.Promise = Object.inherit(Bind, {
 	extend : {
 		/**
 		 * Provides a way to execute callback functions based on one or more
 		 * objects, usually Deferred objects that represent asynchronous events.
 		 * 
-		 * @param {jspa.Promise} args... The promises to aggregate
+		 * @param {...jspa.Promise} args The promises to aggregate
 		 * 
 		 * @returns {jspa.Promise} an aggregated promise
 		 */
@@ -26,13 +29,16 @@ jspa.Promise = Object.inherit(Bind, {
 				});
 			});
 
-			return aggrDeferred.promise;
+			return aggrDeferred.promise();
 		}
 	},
 
+    /**
+     * @constructor
+     * @param {jspa.Deferred} deferred
+     */
 	initialize : function(deferred) {
 		this.deferred = deferred;
-		this.promise = this;
 	},
 
 	/**
@@ -44,24 +50,31 @@ jspa.Promise = Object.inherit(Bind, {
 		}
 	},
 
+    /**
+     * Return this object.
+     *
+     * @return {jspa.Promise}
+     */
+    promise: function() {
+        return this;
+    },
+
 	/**
 	 * Add handlers to be called when the Deferred object is either resolved or
 	 * rejected.
 	 * 
-	 * @param {Function}
-	 *            callback
+	 * @param {Function} callback
 	 */
 	always : function(callback) {
-		this.deferred.done(callback);
-		this.deferred.fail(callback);
-		return this.promise;
+		this.done(callback);
+		this.fail(callback);
+		return this.promise();
 	},
 
 	/**
 	 * Add handlers to be called when the Deferred object is resolved.
 	 * 
-	 * @param {Function}
-	 *            callback
+	 * @param {Function} callback
 	 */
 	done : function(callback) {
 		if (callback) {			
@@ -72,14 +85,13 @@ jspa.Promise = Object.inherit(Bind, {
 			}
 		}
 
-		return this.promise;
+		return this.promise();
 	},
 
 	/**
 	 * Add handlers to be called when the Deferred object is rejected.
 	 * 
-	 * @param {Function}
-	 *            callback
+	 * @param {Function} callback
 	 */
 	fail : function(callback) {
 		if (callback) {			
@@ -90,27 +102,35 @@ jspa.Promise = Object.inherit(Bind, {
 			}
 		}
 
-		return this.promise;
+		return this.promise();
 	},
 
 	/**
 	 * Add handlers to be called when the Deferred object is resolved, rejected,
 	 * or still in progress.
+     *
+     * @param {Function=} doneFilter
+     * @param {Function=} failFilter
+     * @returns {jspa.Promise}
 	 */
 	then : function(doneFilter, failFilter) {
-		var newDeferred = new jspa.Deferred();
+        if (doneFilter || failFilter) {
+            var newDeferred = new jspa.Deferred();
 
-		this.done(this.filter(newDeferred, doneFilter, 'resolve'));
-		this.fail(this.filter(newDeferred, failFilter, 'reject'));
+            this.done(this.filter(newDeferred, doneFilter, 'resolve'));
+            this.fail(this.filter(newDeferred, failFilter, 'reject'));
 
-		return newDeferred;
+            return newDeferred.promise();
+        } else {
+            return this.promise();
+        }
 	},
 
 	filter : function(newDeferred, filter, defaultAction) {
-		var promise = this.promise;
+		var promise = this.promise();
 		
 		return function() {
-			var context = this == promise? newDeferred.promise: this;
+			var context = this == promise? newDeferred.promise(): this;
 			
 			if (filter) {
 				var returned;
@@ -123,7 +143,7 @@ jspa.Promise = Object.inherit(Bind, {
 
 				if (returned !== undefined) {
 					if (returned && returned.promise) {
-						returned.promise.done(function() {
+						returned.promise().done(function() {
 							return newDeferred.resolveWith(this, arguments);
 						}).fail(function() {
 							return newDeferred.rejectWith(this, arguments);
@@ -160,13 +180,11 @@ jspa.Deferred = jspa.Promise.inherit({
 	 * 
 	 * @return {jspa.Promise}
 	 */
-	promise : {
-		get : function() {
-			if (!this._promise)
-				this._promise = new jspa.Promise(this);
+	promise: function() {
+        if (!this._promise)
+            this._promise = new jspa.Promise(this);
 
-			return this._promise;
-		}
+        return this._promise;
 	},
 
 	/**
@@ -181,7 +199,7 @@ jspa.Deferred = jspa.Promise.inherit({
 	 * context and args.
 	 */
 	rejectWith : function(context, args) {
-		context = context || this.promise;
+		context = context || this.promise();
 		
 		if (this.state == 'pending') {
 			this._state = 'rejected';
@@ -207,7 +225,7 @@ jspa.Deferred = jspa.Promise.inherit({
 	 * context and args.
 	 */
 	resolveWith : function(context, args) {
-		context = context || this.promise;
+		context = context || this.promise();
 		
 		if (this.state == 'pending') {
 			this._state = 'resolved';
@@ -222,7 +240,7 @@ jspa.Deferred = jspa.Promise.inherit({
 	},
 
 	call : function(callbacks) {
-		callbacks = callbacks.isInstanceOf(Array) ? callbacks: [ callbacks ];
+		callbacks = Array.isInstance(callbacks) ? callbacks: [ callbacks ];
 
 		for ( var i = 0, callback; callback = callbacks[i]; ++i) {
 			callback.apply(this.thisArg, this.args);

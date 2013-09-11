@@ -1,9 +1,11 @@
+/**
+ * @class jspa.PersistenceUnitUtil
+ */
 jspa.PersistenceUnitUtil = Object.inherit({
 	
 	/**
 	 * @constructor
-	 * @memberOf jspa.PersistentUtil
-	 * @param {jspa.Metamodel} metamodel
+	 * @param {jspa.metamodel.Metamodel} metamodel
 	 */
 	initialize: function(metamodel) {
 		this.metamodel = metamodel;
@@ -14,7 +16,7 @@ jspa.PersistenceUnitUtil = Object.inherit({
 	 * insert has occurred. Returns null if the entity does not yet have an id.
 	 * 
 	 * @param {Object} entity
-	 * @param {jspa.util.State} state
+	 * @param {jspa.util.State} entity
 	 */
 	getIdentifier: function(entity) {
 		var type = this.metamodel.entity(classOf(entity));
@@ -34,7 +36,7 @@ jspa.PersistenceUnitUtil = Object.inherit({
 	 * @returns {Boolean} false if entity's state has not been loaded or if the attribute state has not been loaded, else true
 	 */
 	isLoaded: function(entity, attributeName) {
-		var state = entity.__jspaState__;
+		var state = jspa.util.State.get(entity);
 		if (!state) {
 			return true;
 		} else if (!state.isLoaded) {

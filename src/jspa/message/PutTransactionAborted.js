@@ -1,9 +1,11 @@
+/**
+ * @class jspa.message.PutTransactionAborted
+ * @extends jspa.message.Message
+ */
 jspa.message.PutTransactionAborted = jspa.message.Message.inherit({
 	/**
 	 * @constructor
-	 * @super jspa.message.TransactionalMessage
-	 * @memberOf jspa.message.PutTransactionAborted
-	 * @param jspa.EntityTransaction transaction
+	 * @param {String} tid
 	 */
 	initialize: function(tid) {
 		this.superCall('put', '/transaction/' + tid + '/aborted');

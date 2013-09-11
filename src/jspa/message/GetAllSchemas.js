@@ -1,9 +1,10 @@
-
+/**
+ * @class jspa.message.GetAllSchemas
+ * @extends jspa.message.Message
+ */
 jspa.message.GetAllSchemas = jspa.message.Message.inherit({
 	/**
 	 * @constructor
-	 * @super jspa.message.Message
-	 * @memberOf jspa.message.GetAllSchemas
 	 * @param {jspa.metamodel.Metamodel}
 	 */
 	initialize: function(metamodel) {

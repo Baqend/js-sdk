@@ -1,14 +1,24 @@
+/**
+ * @class jspa.message.GetAllOids
+ * @extends jspa.message.Message
+ */
 jspa.message.GetAllOids = jspa.message.Message.inherit({
 	/**
 	 * @constructor
-	 * @super jspa.message.Message
-	 * @memberOf jspa.message.GetAllOids
-	 * @param jspa.EntityTransaction transaction
+	 * @param {jspa.metamodel.EntityType} type
+     * @param {number} start
+     * @param {number} count
 	 */
 	initialize: function(type, start, count) {
 		this.superCall('get', this.createUri(type, start, count));
 	},
-	
+
+    /**
+     * @constructor
+     * @param {jspa.metamodel.EntityType} type
+     * @param {number} start
+     * @param {number} count
+     */
 	createUri: function(type, start, count) {
 		var uri = (type? type.identifier: '/db') + '/all_oids';
 		

@@ -1,7 +1,9 @@
+/**
+ * @class jspa.metamodel.ModelBuilder
+ */
 jspa.metamodel.ModelBuilder = Object.inherit({
 	/**
 	 * @constructor
-	 * @memberOf jspa.metamodel.ModelBuilder
 	 * @param {jspa.metamodel.Metamodel} metamodel
 	 */
 	initialize: function(metamodel) {
@@ -37,7 +39,7 @@ jspa.metamodel.ModelBuilder = Object.inherit({
 	
 	/**
 	 * @param {Object}
-	 * @returns {Object[jspa.metamodel.EntityType]} 
+	 * @returns {jspa.metamodel.EntityType[]}
 	 */
 	buildModels: function(modelDescriptors) {
 		this.modelDescriptors = {};
@@ -51,7 +53,7 @@ jspa.metamodel.ModelBuilder = Object.inherit({
 				var model = this.getModel(identifier);
 				model.declaredAttributes = this.buildAttributes(model);				
 			} catch (e) {
-				console.log('Can\'t create model for entity class ' + identifier);
+				throw new jspa.error.PersistentError('Can\'t create model for entity class ' + identifier, e);
 			}
 		}
 		
@@ -79,7 +81,7 @@ jspa.metamodel.ModelBuilder = Object.inherit({
 	
 	/**
 	 * @param {jspa.metamodel.EntityType} model
-	 * @returns {Object[jspa.metamodel.Attribute]}
+	 * @returns {jspa.metamodel.Attribute[]}
 	 */
 	buildAttributes: function(model) {
 		if (model.identifier in this.models) {
@@ -105,20 +107,18 @@ jspa.metamodel.ModelBuilder = Object.inherit({
 	 * @returns {jspa.metamodel.Attribute}
 	 */
 	buildAttribute: function(model, name, identifier) {
-		if (!this.metamodel.baseType(identifier) && identifier.indexOf('/db/_native.collection') == 0) {
+		if (identifier.indexOf('/db/_native.collection') == 0) {
 			var collectionType = identifier.substring(0, identifier.indexOf('['));
 			
 			var elementType = identifier.substring(identifier.indexOf('[') + 1, identifier.indexOf(']')).trim();
 			switch (collectionType) {
-				case '/db/_native.collection.Collection':
-					return new jspa.metamodel.CollectionAttribute(model, name, util.Collection, this.getModel(elementType));
 				case '/db/_native.collection.List':
 					return new jspa.metamodel.ListAttribute(model, name, util.List, this.getModel(elementType));
 				case '/db/_native.collection.Set':
 					return new jspa.metamodel.SetAttribute(model, name, util.Set, this.getModel(elementType));
 				case '/db/_native.collection.Map':
 					var keyType = elementType.substring(0, elementType.indexOf(',')).trim();
-					elementType = elementType.substring(elementType.indexOf(',')).trim();
+					elementType = elementType.substring(elementType.indexOf(',') + 1).trim();
 					
 					return new jspa.metamodel.MapAttribute(model, name, util.Map, this.getModel(keyType), this.getModel(elementType));
 				default:

@@ -1,11 +1,12 @@
-
-
+/**
+ * @class jspa.message.PostAllSchemas
+ * @extends jspa.message.Message
+ */
 jspa.message.PostAllSchemas = jspa.message.Message.inherit({
 	/**
 	 * @constructor
-	 * @super jspa.message.Message
-	 * @memberOf jspa.message.GetAllSchemas
-	 * @param {jspa.metamodel.Metamodel}
+	 * @param {jspa.metamodel.Metamodel} metamodel
+     * @param {String} types
 	 */
 	initialize: function(metamodel, types) {
 		this.superCall('post', '/db/all_schemas');

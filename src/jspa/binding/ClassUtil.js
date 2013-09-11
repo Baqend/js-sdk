@@ -1,3 +1,6 @@
+/**
+ * @class jspa.binding.ClassUtil
+ */
 jspa.binding.ClassUtil = Object.inherit({
 	extend: {
 		classLoaders: [],
@@ -70,7 +73,6 @@ jspa.binding.ClassUtil = Object.inherit({
 	},
 	
 	/**
-	 * @memberOf jspa.binding.ClassUtil
 	 * @param {Function} typeConstructor
 	 * @returns {String}
 	 */
@@ -95,22 +97,6 @@ jspa.binding.ClassUtil = Object.inherit({
 	},
 	
 	/**
-	 * @param {jspa.metamodel.EntityType} type
-	 * @returns {Object}
-	 */
-	conv: function(typeConstructor, object) {
-		if (object === null || object === undefined) {
-			return null;
-		}
-		
-		if (object.isInstanceOf && object.isInstanceOf(typeConstructor)) {
-			return object;
-		} else {			
-			return typeConstructor.conv(object);
-		}
-	},
-	
-	/**
 	 * @param {String} type
 	 * @returns {Function}
 	 */
@@ -123,9 +109,14 @@ jspa.binding.ClassUtil = Object.inherit({
 	 * @param {Function} typeConstructor
 	 */
 	enhance: function(type, typeConstructor) {
+        typeConstructor.prototype._objectInfo = {
+            'class': type.identifier
+        };
+
 		for (var name in type.declaredAttributes) {
-			if (name != jspa.metamodel.Attribute.Special.ID && name != jspa.metamodel.Attribute.Special.VERSION) {				
-				this.enhanceProperty(type, type.declaredAttributes[name], typeConstructor);	
+            var attribute = type.declaredAttributes[name];
+			if (!attribute.isId && !attribute.isVersion) {
+				this.enhanceProperty(type, attribute, typeConstructor);
 			}
 		}
 	},

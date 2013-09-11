@@ -1,19 +1,22 @@
-
+/**
+ * @class jspa.message.DeleteObject
+ * @extends jspa.message.Message
+ */
 jspa.message.DeleteObject = jspa.message.Message.inherit({
 	/**
 	 * @constructor
-	 * @super jspa.message.TransactionalMessage
-	 * @memberOf jspa.message.DeleteObject
 	 * @param {jspa.Transaction} transaction
 	 * @param {jspa.util.State} state
 	 */
 	initialize: function(state) {
 		this.superCall('delete', state.getIdentifier());
-		
+
 		this.state = state;
 	},
 	
 	doSend: function() {
+		this.request.entity = this.state.getDatabaseObjectInfo();
+		
 		var version = this.state.getVersion();
 		if (version) {
 			Object.extend(this.request.headers, {

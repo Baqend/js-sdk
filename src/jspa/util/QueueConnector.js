@@ -1,31 +1,50 @@
-
+/**
+ * @class jspa.util.QueueConnector
+ */
 jspa.util.QueueConnector = Object.inherit({
 	/**
 	 * @constructor
-	 * @memberOf jspa.util.QueueConnector
+     * @param {jspa.util.Queue} queue
+     * @param {jspa.connector.Connector} connector
 	 */
 	initialize: function(queue, connector) {
 		this.queue = queue;
 		this.connector = connector;
 	},
-	
+
+    /**
+     * @param {jspa.message.Message} message
+     * @return {jspa.Promise}
+     */
 	send: function(message) {
 		return this.connector.send(this, message);
 	},
-	
+
+    /**
+     * @param {jspa.message.Message} message
+     * @return {jspa.message.Message}
+     */
 	sendBlocked: function(message) {
 		this.connector.send(this, message, true);
 
 		return message;
 	},
-	
-	wait: function(promise, doneCallback, failCallback) {
-		return this.queue.wait(this, promise)
-			.done(doneCallback)
-			.fail(failCallback);
+
+    /**
+     * @param {jspa.Promise} promise
+     * @param {Function=}
+     * @param {Function=}
+     * @return {jspa.Promise}
+     */
+	wait: function(promise) {
+		return this.queue.wait(this, promise).fail(jspa.EntityManagerFactory.onError);
 	},
-	
+
+    /**
+     * @param {Function=} doneCallback
+     * @return {jspa.Promise}
+     */
 	yield: function(doneCallback) {
-		return this.queue.wait(this).done(doneCallback);
+		return this.queue.wait(this).then(doneCallback).fail(jspa.EntityManagerFactory.onError);
 	}
 });

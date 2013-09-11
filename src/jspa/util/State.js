@@ -1,3 +1,6 @@
+/**
+ * @class jspa.util.State
+ */
 jspa.util.State = Object.inherit({
 	
 	extend: {
@@ -7,25 +10,44 @@ jspa.util.State = Object.inherit({
 			DIRTY: 2,
 			DELETED: 3
 		},
+
+        /**
+         * @param {*} entity
+         */
+        get: function(entity) {
+            return entity._objectInfo && entity._objectInfo.state;
+        },
 		
-		readAccess: function(entity) {
-			var state = entity.__jspaState__;					
-			if (state) {
-				state.makeAvailable();
+		readAccess: function(obj) {
+            if (obj.__jspaEntity__)
+                obj = obj.__jspaEntity__;
+
+			var info = obj._objectInfo;
+            if (!info)
+                return;
+
+			if (info.state) {
+				info.state.makeAvailable();
 			}
 
-			if (entity.__jspaNotAvailable__) {
+			if (info.notAvailable) {
 				throw new jspa.error.PersistentError('Object state can not be initialized.');
 			}
 		},
 		
-		writeAccess: function(entity) {
-			var state = entity.__jspaState__;
-			if (state) {
-				state.makeDirty();
+		writeAccess: function(obj) {
+            if (obj.__jspaEntity__)
+                obj = obj.__jspaEntity__;
+
+            var info = obj._objectInfo;
+            if (!info)
+                return;
+
+			if (info.state) {
+				info.state.makeDirty();
 			}
 
-			if (entity.__jspaNotAvailable__) {
+			if (info.notAvailable) {
 				throw new jspa.error.PersistentError('Object state can not be initialized.');
 			}
 		}
@@ -59,17 +81,20 @@ jspa.util.State = Object.inherit({
 	},
 	
 	/**
-	 * @memberOf jspa.util.State
 	 * @param entityManager
 	 * @param {jspa.metamodel.EntityType} type
-	 * @param {Object} entity
+	 * @param {*} entity
 	 */
 	initialize: function(entityManager, type, entity) {
 		this.entityManager = entityManager;
 		this.type = type;
 		this.entity = entity;
-		this.entity.__jspaState__ = this;
-		this.entity.__jspaNotAvailable__ = true;
+
+        this.entity._objectInfo = {
+            'class': this.type.identifier,
+            'notAvailable': true,
+            'state': this
+        };
 		
 		this.isDirty = false;
 		this.state = jspa.util.State.Type.PERSISTENT;
@@ -78,8 +103,8 @@ jspa.util.State = Object.inherit({
 	},
 	
 	setTemporary: function() {
-		if (this.entity.__jspaNotAvailable__) {
-			this.entity.__jspaNotAvailable__ = false;
+		if (this.entity._objectInfo.notAvailable) {
+			this.entity._objectInfo.notAvailable = false;
 			this.state = jspa.util.State.Type.TEMPORARY;
 			this.isDirty = true;
 		}
@@ -106,12 +131,11 @@ jspa.util.State = Object.inherit({
 	},
 
 	/**
-	 * 
-	 * @param {String} fieldName
+	 *
 	 */
 	makeDirty: function() {
 		if (this.enabled) {
-			if (this.entity.__jspaNotAvailable__) {
+			if (this.entity._objectInfo.notAvailable) {
 				this.makeAvailable();
 			}
 			
@@ -122,23 +146,27 @@ jspa.util.State = Object.inherit({
 	},
 	
 	makeAvailable: function() {
-		if (this.enabled && this.entity.__jspaNotAvailable__) {
-			try {				
+		if (this.enabled && this.entity._objectInfo.notAvailable) {
+			try {
 				this.entityManager.findBlocked(this);
 			} catch (e) {}
 		}
 	},
+
+    remove: function() {
+        this.entity._objectInfo.state = null;
+    },
 	
 	getIdentifier: function() {
-		return this.type.id.getDatabaseValue(this);
+		return this.type.id.getDatabaseValue(this, this.entity);
 	},
 	
 	getVersion: function() {
-		return this.type.version.getDatabaseValue(this);
+		return this.type.version.getDatabaseValue(this, this.entity);
 	},
 	
 	getReference: function() {
-		var value = this.type.id.getDatabaseValue(this);
+		var value = this.getIdentifier();
 		
 		if (this.isTemporary) {
 			var transaction = this.entityManager.transaction;
@@ -151,6 +179,16 @@ jspa.util.State = Object.inherit({
 		
 		return value;
 	},
+
+    getTransactionIdentifier: function() {
+        var transaction = this.entityManager.transaction;
+
+        if (transaction.isActive) {
+            return '/transaction/' + transaction.tid;
+        }
+
+        return null;
+    },
 	
 	getDatabaseObjectInfo: function() {
 		var info = {
@@ -162,50 +200,31 @@ jspa.util.State = Object.inherit({
 			info['oid'] = oid;
 		}
 		
-		var version = this.type.version.getDatabaseValue(this);
+		var version = this.getVersion();
 		if (version) {
 			info['version'] = version;
 		}
-		
-		var transaction = this.entityManager.transaction;
-		if (transaction.isActive) {
-			info['transaction'] = '/transaction/' + transaction.tid;
-		}
+
+        var transaction = this.getTransactionIdentifier();
+        if (transaction) {
+            info['transaction'] = transaction;
+        }
 		
 		return info;
 	},
 	
 	setDatabaseObjectInfo: function(json) {
 		if (this.isTemporary)
-			this.type.id.setDatabaseValue(this, json['oid']);
+			this.type.id.setDatabaseValue(this, this.entity, json['oid']);
 		
-		this.type.version.setDatabaseValue(this, json['version']);
+		this.type.version.setDatabaseValue(this, this.entity, json['version']);
 	},
 
 	getDatabaseObject: function() {
-		var json = {
-			'_objectInfo': this.getDatabaseObjectInfo()
-		};
-		
 		this.disable();
-		
-		var type = this.type;
-		
+
 		this.isDirty = false;
-		do {
-			var attributes = type.declaredAttributes;
-			var values = null;
-			
-			for (var name in attributes) {
-				if (!values) 
-					values = {};
-				
-				values[name] = attributes[name].getDatabaseValue(this); 
-			}
-			
-			if (values)
-				json[type.identifier] = values;
-		} while (type = type.supertype);
+        var json = this.type.toDatabaseValue(this, this.entity);
 		
 		this.enable();
 		return json;
@@ -215,18 +234,10 @@ jspa.util.State = Object.inherit({
 		this.setDatabaseObjectInfo(json['_objectInfo']);
 
 		this.disable();
-		this.entity.__jspaNotAvailable__ = false;
-		
-		var type = this.type;
-		do {
-			var attributes = type.declaredAttributes;
-			var values = json[type.identifier];
-			
-			for (var name in attributes) {
-				attributes[name].setDatabaseValue(this, values[name]);
-			}
-		} while (type = type.supertype);
-		
+		this.entity._objectInfo.notAvailable = false;
+
+        this.type.fromDatabaseValue(this, this.entity, json);
+
 		this.enable();
 
 		this.isDirty = false;

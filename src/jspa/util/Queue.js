@@ -1,3 +1,6 @@
+/**
+ * @class jspa.util.Queue
+ */
 jspa.util.Queue = Object.inherit(Bind, {
 	
 	extend: {
@@ -8,31 +11,46 @@ jspa.util.Queue = Object.inherit(Bind, {
 			RUNNING: 3
 		}
 	},
-	
+
+    /**
+     * @type Boolean
+     */
 	isStopped: {
 		get: function() {
 			return this.state == jspa.util.Queue.State.STOPPED;
 		}
 	},
-	
+
+    /**
+     * @type Boolean
+     */
 	isPaused: {
 		get: function() {
 			return this.state == jspa.util.Queue.State.PAUSED;
 		}
 	},
-	
+
+    /**
+     * @type Boolean
+     */
 	isWaiting: {
 		get: function() {
 			return this.state == jspa.util.Queue.State.WAITING;
 		}
 	},
-	
+
+    /**
+     * @type Boolean
+     */
 	isRunning: {
 		get: function() {
 			return this.state == jspa.util.Queue.State.RUNNING;
 		}
 	},
-	
+
+    /**
+     * @type Boolean
+     */
 	isPrevented: {
 		get: function() {
 			return this.prevented;
@@ -41,7 +59,6 @@ jspa.util.Queue = Object.inherit(Bind, {
 
 	/**
 	 * @constructor
-	 * @memberOf jspa.util.Queue
 	 */
 	initialize: function() {
 		this.currentQueue = [];
@@ -52,7 +69,12 @@ jspa.util.Queue = Object.inherit(Bind, {
 		this.count = 0;
 		this.prevented = false;
 	},
-	
+
+    /**
+     * @param {*} context
+     * @param {jspa.Promise=} promise
+     * @return {jspa.Promise}
+     */
 	wait: function(context, promise) {
 		if (!this.isRunning && this.isPrevented)
 			throw new Error("The queue was prevented");
@@ -82,9 +104,9 @@ jspa.util.Queue = Object.inherit(Bind, {
 		
 		this.next();
 		
-		return deferred;
+		return deferred.promise();
 	},
-	
+
 	start: function() {
 		if (this.isStopped && !this.isPrevented) {
 			this.state = jspa.util.Queue.State.PAUSED;
@@ -92,7 +114,10 @@ jspa.util.Queue = Object.inherit(Bind, {
 
 		this.next();
 	},
-	
+
+    /**
+     * @param {Function} callback
+     */
 	run: function(callback) {
 		if (!this.isWaiting)
 			throw new Error('Illegal state ' + this.state);

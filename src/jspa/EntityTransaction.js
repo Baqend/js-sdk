@@ -1,3 +1,6 @@
+/**
+ * @class jspa.EntityTransaction
+ */
 jspa.EntityTransaction = jspa.util.QueueConnector.inherit(util.EventTarget, {
 
 	/**
@@ -12,7 +15,6 @@ jspa.EntityTransaction = jspa.util.QueueConnector.inherit(util.EventTarget, {
 	
 	/**
 	 * @constructor
-	 * @memberOf jspa.EntityTransaction
 	 * @param {jspa.EntityManager} entityManager
 	 */
 	initialize: function(entityManager) {
@@ -76,7 +78,7 @@ jspa.EntityTransaction = jspa.util.QueueConnector.inherit(util.EventTarget, {
 							var entity = this.entityManager.entities[oid];
 							
 							if (entity) {
-								var state = entity.__jspaState__;
+								var state = jspa.util.State.get(entity);
 								if (version == 'DELETED' || state.isDeleted) {
 									this.entityManager.removeReference(entity);
 								} else {								

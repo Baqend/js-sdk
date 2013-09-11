@@ -1,9 +1,10 @@
+/**
+ * @extends jspa.message.Message
+ * @class jspa.message.PutObject
+ */
 jspa.message.PutObject = jspa.message.Message.inherit({
 	/**
 	 * @constructor
-	 * @super jspa.message.TransactionalMessage
-	 * @memberOf jspa.message.PutObject
-	 * @param {jspa.Transaction} transaction
 	 * @param {jspa.util.State} state
 	 */
 	initialize: function(state) {

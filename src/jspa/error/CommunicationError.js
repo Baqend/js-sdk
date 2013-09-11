@@ -1,3 +1,7 @@
+/**
+ * @class jspa.error.CommunicationError
+ * @extends jspa.error.PersistentError
+ */
 jspa.error.CommunicationError = jspa.error.PersistentError.inherit({
 	initialize: function(httpMessage) {
 		var state = (httpMessage.response.statusCode == 0? 'Request': 'Response');
@@ -8,7 +12,8 @@ jspa.error.CommunicationError = jspa.error.PersistentError.inherit({
 		
 		var cause = httpMessage.response.entity;
 		
-		this.stack += cause.message || '';
+		if (cause)
+			this.stack += cause.message || '';
 		
 		while (cause) {			
 			this.stack += 'Serverside Caused by ' + cause.className + ' ' + cause.message + '\n';

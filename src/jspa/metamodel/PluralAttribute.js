@@ -1,6 +1,14 @@
+/**
+ * @class jspa.metamodel.PluralAttribute
+ * @extends jspa.metamodel.Attribute
+ */
 jspa.metamodel.PluralAttribute = jspa.metamodel.Attribute.inherit({
 	extend: {
-		CollectionType: {
+        /**
+         * @readonly
+         * @enum {number}
+         */
+        CollectionType: {
 			COLLECTION: 0,
 			LIST: 1,
 			MAP: 2,
@@ -12,8 +20,6 @@ jspa.metamodel.PluralAttribute = jspa.metamodel.Attribute.inherit({
 	
 	/**
 	 * @constructor
-	 * @memberOf jspa.metamodel.PluralAttribute
-	 * @super jspa.metamodel.Attribute
 	 * @param {jspa.metamodel.EntityType} declaringType
 	 * @param {String} name
 	 * @param {Function} typeConstructor
@@ -21,19 +27,25 @@ jspa.metamodel.PluralAttribute = jspa.metamodel.Attribute.inherit({
 	 */
 	initialize: function(declaringType, name, typeConstructor, elementType) {
 		this.superCall(declaringType, name);
-		
+
 		this.typeConstructor = typeConstructor;
 		this.elementType = elementType;
 	},
-	
-	getDatabaseValue: function(state) {
-		var value = this.getValue(state);
+
+    /**
+     * @param {jspa.util.State} state
+     * @param {*} obj
+     * @return {Object}
+     */
+	getDatabaseValue: function(state, obj) {
+		var value = this.getValue(obj);
 		
 		if (value) {
-			if (!value.isInstanceOf(this.trackedConstructor)) {
+            // convert normal collections to tracked collections
+			if (!this.trackedConstructor.isInstance(value)) {
 				value = new this.trackedConstructor(value);
 				value.__jspaEntity__ = state.entity;
-				this.setValue(state, value);
+				this.setValue(obj, value);
 			}
 			
 			var json = [];
@@ -42,7 +54,7 @@ jspa.metamodel.PluralAttribute = jspa.metamodel.Attribute.inherit({
 				if (el === null) {
 					json.push(el);
 				} else {					
-					el = this.elementType.toValue(state, el);
+					el = this.elementType.toDatabaseValue(state, el);
 					if (el !== null)
 						json.push(el);
 				}
@@ -53,22 +65,32 @@ jspa.metamodel.PluralAttribute = jspa.metamodel.Attribute.inherit({
 			return null;
 		}
 	},
-	
-	setDatabaseValue: function(state, json) {
+
+    /**
+     * @param {jspa.util.State} state
+     * @param {*} obj
+     * @param {Object} json
+     */
+	setDatabaseValue: function(state, obj, json) {
 		var value = null;
-		if (json) {
-			value = this.getValue(state);
+
+        if (json) {
+			value = this.getValue(obj);
 			
-			if (value && value.isInstanceOf(this.trackedConstructor)) {
-				value.clear();
-			} else {
+			if (!this.trackedConstructor.isInstance(value)) {
 				value = new this.trackedConstructor();
 				value.__jspaEntity__ = state.entity;
 			}
-			
+
+            var items = value.seq;
+            if (items.length > json.length)
+                items.splice(json.length, items.length - json.length);
+
 			for (var i = 0, len = json.length; i < len; ++i) {
-				value.add(this.elementType.fromValue(state, json[i]));
+                items[i] = this.elementType.fromDatabaseValue(state, items[i], json[i]);
 			}
+
+            value.size = json.length;
 		}
 		
 		this.setValue(state, value);

@@ -1,8 +1,12 @@
+/**
+ * @class jspa.message.Message
+ */
 jspa.message.Message = Object.inherit({
 	/**
 	 * @constructor
-	 * @memberOf jspa.message.Message
-	 * @param path
+     * @param {String} method
+	 * @param {String} path
+     * @param {Object} requestEntity
 	 */
 	initialize: function(method, path, requestEntity) {
 		this.request = {

@@ -1,13 +1,13 @@
+/**
+ * @class jspa.metamodel.MapAttribute
+ * @extends jspa.metamodel.PluralAttribute
+ */
 jspa.metamodel.MapAttribute = jspa.metamodel.PluralAttribute.inherit({
-	/**
-	 * @super jspa.metamodel.PluralAttribute
-	 * @memberOf jspa.metamodel.MapAttribute
-	 */
+
 	collectionType: jspa.metamodel.PluralAttribute.CollectionType.MAP,
 	
 	/**
 	 * @constructor
-	 * @memberOf jspa.metamodel.Attribute
 	 * @param {jspa.metamodel.EntityType} declaringType
 	 * @param {String} name
 	 * @param {Function} typeConstructor
@@ -19,17 +19,22 @@ jspa.metamodel.MapAttribute = jspa.metamodel.PluralAttribute.inherit({
 		
 		this.keyType = keyType;
 	},
-	
-	getDatabaseValue: function(state) {
-		var value = this.getValue(state);
-		
+
+    /**
+     * @param {jspa.util.State} state
+     * @param {*} obj
+     * @return {Object}
+     */
+	getDatabaseValue: function(state, obj) {
+		var value = this.getValue(obj);
+
 		if (value) {
-			if (!value.isInstanceOf(this.trackedConstructor)) {
+			if (!this.trackedConstructor.isInstance(value)) {
 				value = new this.trackedConstructor(value);
 				value.__jspaEntity__ = state.entity;
 				this.setValue(state, value);
 			}
-			
+
 			var json = [];
 			for (var iter = value.items(); iter.hasNext; ) {
 				var item = iter.next();
@@ -41,19 +46,23 @@ jspa.metamodel.MapAttribute = jspa.metamodel.PluralAttribute.inherit({
 					});
 				}
 			}
-			
+
 			return json;
 		} else {
 			return null;
 		}
 	},
-	
+
+    /**
+     * @param {jspa.util.State} state
+     * @param {Object} json
+     */
 	setDatabaseValue: function(state, json) {
 		var value = null;
 		if (json) {			
 			value = this.getValue(state);
 			
-			if (value && value.isInstanceOf(this.trackedConstructor)) {
+			if (this.trackedConstructor.isInstance(value)) {
 				value.clear();
 			} else {
 				value = new this.trackedConstructor();

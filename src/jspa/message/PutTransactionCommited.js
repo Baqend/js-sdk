@@ -1,9 +1,12 @@
+/**
+ * @class jspa.message.PutTransactionTidCommitted
+ * @extends jspa.message.Message
+ */
 jspa.message.PutTransactionCommitted = jspa.message.Message.inherit({
 	/**
 	 * @constructor
-	 * @super jspa.message.TransactionalMessage
-	 * @memberOf jspa.message.PutTransactionTidCommited
-	 * @param jspa.EntityTransaction transaction
+	 * @param {String} tid
+     * @param {Object} readSet
 	 */
 	initialize: function(tid, readSet) {
 		this.superCall('put', '/transaction/' + tid + '/committed', readSet);

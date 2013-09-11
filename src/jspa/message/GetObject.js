@@ -1,11 +1,12 @@
+/**
+ * @class jspa.message.GetObject
+ * @extends jspa.message.Message
+ */
 jspa.message.GetObject = jspa.message.Message.inherit({
 	/**
 	 * @constructor
-	 * @super jspa.message.TransactionalMessage
-	 * @memberOf jspa.message.GetObject
-	 * @param {jspa.Transaction} transaction
 	 * @param {jspa.util.State} state
-	 * @param {Boolean} useTransactionalView
+	 * @param {String} tid
 	 */
 	initialize: function(state, tid) {
 		var id = state.getIdentifier();

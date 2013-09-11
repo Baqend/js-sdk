@@ -56,7 +56,7 @@
 		});
 		
 		it("should run", function() {
-			var suc = false;
+			var suc = false, done = false;
 			runs(function() {
 				
 				em.yield().done(function() {
@@ -174,10 +174,14 @@
 					});
 				}).done(function() {
 					suc = true;
-				});
+				}).always(function() {
+                    done = true;
+                });
 			});
 			
-			waits(2000);
+			waitsFor(function() {
+                return done;
+            });
 			
 			runs(function() {
 				expect(suc).toBeTruthy();
