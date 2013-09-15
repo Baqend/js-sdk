@@ -206,7 +206,8 @@ jspa.Deferred = jspa.Promise.inherit({
 			this.thisArg = context;
 			this.args = args;
 
-			this.call(this.failCallbacks);
+			if (!this.call(this.failCallbacks))
+                jspa.EntityManagerFactory.onError.apply(jspa.EntityManagerFactory, args)
 
 			this.doneCallbacks = null;
 			this.failCallbacks = null;
@@ -245,5 +246,7 @@ jspa.Deferred = jspa.Promise.inherit({
 		for ( var i = 0, callback; callback = callbacks[i]; ++i) {
 			callback.apply(this.thisArg, this.args);
 		}
+
+        return i > 0;
 	}
 });

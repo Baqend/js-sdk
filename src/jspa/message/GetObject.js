@@ -29,7 +29,7 @@ jspa.message.GetObject = jspa.message.Message.inherit({
 			});
 			
 			// we can revalidate if the object is not dirty
-			if (this.state.isPersistent) {				
+			if (!this.state.isDirty) {
 				this.request.headers['if-none-match'] = version == '*'? version: '"' + version + '"';
 			}
 		}

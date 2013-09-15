@@ -38,7 +38,6 @@ jspa.util.QueueConnector = Object.inherit({
      */
 	wait: function(promise, doneCallback, failCallback) {
 		return this.queue.wait(this, promise)
-            .fail(jspa.EntityManagerFactory.onError)
             .then(doneCallback, failCallback);
 	},
 
@@ -47,6 +46,6 @@ jspa.util.QueueConnector = Object.inherit({
      * @return {jspa.Promise}
      */
 	yield: function(doneCallback) {
-		return this.queue.wait(this).then(doneCallback).fail(jspa.EntityManagerFactory.onError);
+		return this.queue.wait(this).then(doneCallback);
 	}
 });

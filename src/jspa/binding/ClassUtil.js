@@ -12,10 +12,10 @@ jspa.binding.ClassUtil = Object.inherit({
 		},
 		
 		loadClass: function(model) {
-			var el = /\/db\/([\w\.]*)\.(\w*)/.exec(model.identifier);
+			var el = /\/db\/(([\w\.]*)\.)?(\w*)/.exec(model.identifier);
 
 			var namespace = el[1];
-			var className = el[2];
+			var className = el[3];
 			
 			for (var i = this.classLoaders.length - 1, loader; loader = this.classLoaders[i]; --i) {
 				try {
@@ -39,12 +39,14 @@ jspa.binding.ClassUtil = Object.inherit({
 		
 		globalLoader: function(model, namespace, className) {
 			var context = typeof window != 'undefined'? window: global;
-			var fragments = namespace.split('.');
 			
 			var n = context;
-			for (var i = 0, fragment; n && (fragment = fragments[i]); ++i) {
-				n = n[fragment];
-			}
+            if (namespace) {
+                var fragments = namespace.split('.');
+                for (var i = 0, fragment; n && (fragment = fragments[i]); ++i) {
+                    n = n[fragment];
+                }
+            }
 			
 			var cls = n && n[className] /* || context[className] */; // name clash with dom classes
 			
@@ -116,9 +118,13 @@ jspa.binding.ClassUtil = Object.inherit({
 	 * @param {Function} typeConstructor
 	 */
 	enhance: function(type, typeConstructor) {
-        typeConstructor.prototype._objectInfo = {
-            'class': type.identifier
-        };
+        Object.defineProperty(typeConstructor.prototype, '_objectInfo', {
+            value: {
+                'class': type.identifier
+            },
+            writable: true,
+            enumerable: false
+        });
 
 		for (var name in type.declaredAttributes) {
             var attribute = type.declaredAttributes[name];
@@ -142,7 +148,8 @@ jspa.binding.ClassUtil = Object.inherit({
 				jspa.util.State.writeAccess(this);
 				this[name] = value;
 			},
-            configurable: true
+            configurable: true,
+            enumerable: true
 		});
 	}
 });

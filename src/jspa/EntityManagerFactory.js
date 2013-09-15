@@ -7,9 +7,8 @@ jspa.EntityManagerFactory = Object.inherit({
          * @param {Error} e
          */
 		onError: function(e) {	
-			console.log(e);
-			
-			throw e;
+			console.error(e);
+            throw e;
 		}
 	},
 	

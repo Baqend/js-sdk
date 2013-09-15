@@ -16,7 +16,7 @@ jspa.connector.XMLHttpConnector = jspa.connector.Connector.inherit({
 		var xhr = new XMLHttpRequest();
 		
 		var url = 'http://' + this.host + ':' + this.port + message.request.path;
-		console.log(message.request.method + ' ' + url);
+		//console.log(message.request.method + ' ' + url);
 
 		if (message.deferred)			
 			xhr.onreadystatechange = this.readyStateChange.bind(this, xhr, message);

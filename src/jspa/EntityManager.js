@@ -65,8 +65,8 @@ jspa.EntityManager = jspa.util.QueueConnector.inherit({
 	 * if the optional resultClass argument is provided, the select list of the query must contain
 	 * only a single item, which must be assignable to the type specified by the resultClass argument.
 	 * 
-	 * @param qlString - a query string
-	 * @param resultClass - the optional type of the query result
+	 * @param {String|Object} qlString - a query string
+	 * @param {String|Function=} resultClass - the optional type of the query result
 	 */
 	createQuery: function(qlString, resultClass) {
 		if (resultClass) {

@@ -10,7 +10,7 @@ jspa.connector.Connector = Object.inherit({
          */
 		create: function(host, port) {
 			if (!host && typeof window !== 'undefined') {
-				host = window.location.host;
+				host = window.location.hostname;
 				port = window.location.port;
 			}
 			
