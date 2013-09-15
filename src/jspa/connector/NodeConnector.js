@@ -1,3 +1,7 @@
+/**
+ * @class jspa.connector.NodeConnector
+ * @extends jspa.connector.Connector
+ */
 jspa.connector.NodeConnector = jspa.connector.Connector.inherit({
 	extend: {
 		isUsable: function(host, port) {
@@ -14,7 +18,6 @@ jspa.connector.NodeConnector = jspa.connector.Connector.inherit({
 	},
 	
 	/**
-	 * @memberOf jspa.connector.XMLHttpConnector
 	 * @param {jspa.message.Message} message
 	 */
 	doSend: function(message) {

@@ -2,6 +2,12 @@
  * @class jspa.message.Message
  */
 jspa.message.Message = Object.inherit({
+
+    /**
+     * @type {jspa.Deferred}
+     */
+    deferred: null,
+
 	/**
 	 * @constructor
      * @param {String} method
@@ -25,9 +31,7 @@ jspa.message.Message = Object.inherit({
 		};
 	},
 	
-	doSend: function() {
-	},
+	doSend: function() {},
 	
-	doReceive: function() {
-	}
+	doReceive: function() {}
 });

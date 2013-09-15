@@ -21,6 +21,10 @@ jspa.metamodel.ModelBuilder = Object.inherit({
 			model = this.metamodel.baseType(identifier);
 		} else {
 			model = this.metamodel.entity(identifier);
+            if (!model)  {
+                model = this.metamodel.embeddable(identifier);
+            }
+
 			if (!model && identifier in this.models) {
 				model = this.models[identifier];
 			}
@@ -69,8 +73,13 @@ jspa.metamodel.ModelBuilder = Object.inherit({
 		if (modelDescriptor) {
 			var superTypeIdentifier = modelDescriptor['superClass'];
 			var superType = superTypeIdentifier? this.getModel(superTypeIdentifier): this.objectType;
-			
-			var type = new jspa.metamodel.EntityType(identifier, superType);
+
+            var type;
+            if (modelDescriptor.embedded) {
+                type = new jspa.metamodel.EmbeddableType(identifier)
+            } else {
+                type = new jspa.metamodel.EntityType(identifier, superType);
+            }
 			
 			this.models[identifier] = type;
 			return type;			
@@ -113,14 +122,14 @@ jspa.metamodel.ModelBuilder = Object.inherit({
 			var elementType = identifier.substring(identifier.indexOf('[') + 1, identifier.indexOf(']')).trim();
 			switch (collectionType) {
 				case '/db/_native.collection.List':
-					return new jspa.metamodel.ListAttribute(model, name, util.List, this.getModel(elementType));
+					return new jspa.metamodel.ListAttribute(model, name, jspa.List, this.getModel(elementType));
 				case '/db/_native.collection.Set':
-					return new jspa.metamodel.SetAttribute(model, name, util.Set, this.getModel(elementType));
+					return new jspa.metamodel.SetAttribute(model, name, jspa.Set, this.getModel(elementType));
 				case '/db/_native.collection.Map':
 					var keyType = elementType.substring(0, elementType.indexOf(',')).trim();
 					elementType = elementType.substring(elementType.indexOf(',') + 1).trim();
 					
-					return new jspa.metamodel.MapAttribute(model, name, util.Map, this.getModel(keyType), this.getModel(elementType));
+					return new jspa.metamodel.MapAttribute(model, name, jspa.Map, this.getModel(keyType), this.getModel(elementType));
 				default:
 					throw new TypeError('no collection available for ' + identifier); 
 			}

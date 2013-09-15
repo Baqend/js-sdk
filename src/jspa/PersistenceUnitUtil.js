@@ -32,7 +32,7 @@ jspa.PersistenceUnitUtil = Object.inherit({
 	 * determine the load state of an entity passed as a reference.
 	 * 
 	 * @param {Object} entity - entity instance whose load state is to be determined
-	 * @param {String} attributeName - optional name of attribute whose load state is to be determined
+	 * @param {String=} attributeName - optional name of attribute whose load state is to be determined
 	 * @returns {Boolean} false if entity's state has not been loaded or if the attribute state has not been loaded, else true
 	 */
 	isLoaded: function(entity, attributeName) {

@@ -1,9 +1,6 @@
 if (!Object.inherit)
 	require('../lib/jahcode.js');
 
-if (typeof util === 'undefined')
-	var util = require('../lib/util.js');
-
 var jspa = {
 	error: {},
 	connector: {},

@@ -21,7 +21,7 @@ jspa.message.PostObject = jspa.message.Message.inherit({
 		switch (this.response.statusCode) {
 			case 201:
 			case 202:
-				this.state.setDatabaseObjectInfo(this.response.entity['_objectInfo']);
+				this.state.setDatabaseObject(this.response.entity);
 				this.state.setPersistent();
 				break;
 			case 404:

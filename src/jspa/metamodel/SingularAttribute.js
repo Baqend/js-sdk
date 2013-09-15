@@ -11,6 +11,11 @@ jspa.metamodel.SingularAttribute = jspa.metamodel.Attribute.inherit({
 	},
 
     /**
+     * @type Number
+     */
+    persistentAttributeType: -1,
+
+    /**
      * @constructor
      * @param {jspa.metamodel.EntityType} declaringType
      * @param {String} name

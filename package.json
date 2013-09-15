@@ -1,0 +1,23 @@
+{
+  "name": "jspa",
+  "version": "0.0.1",
+  "description": "A JavaScript JPA implementation for the Orestes-Server",
+  "author": {
+    "name": "Florian Buecklers",
+    "email": "fbuecklers@gmail.com"
+  },
+  "homepage": "http://orestes.info",
+  "main": "build/jspa.js",
+  "devDependencies": {
+    "jasmine-node": "1.7.x",
+    "uglify-js": "2.3.x"
+  }, 
+  "scripts": {
+    "test": "jasmine-node test",
+    "build": "node tool/merge.js src build/jspa.js",
+    "minify": "uglifyjs build/jspa.js --source-map=build/jspa.map -c -m -o build/jspa.min.js --comments /\\/*!/"
+  },
+  "engines": {
+    "node": ">=0.2.0"
+  }
+}

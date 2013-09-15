@@ -12,14 +12,38 @@ jspa.metamodel.Metamodel = Object.inherit({
 		
 		this.classUtil = new jspa.binding.ClassUtil();
 
-		this.addBaseType(new jspa.metamodel.BasicType('Boolean', Boolean));
-		this.addBaseType(new jspa.metamodel.BasicType('Float', Number));
-		this.addBaseType(new jspa.metamodel.BasicType('Integer', Number));
-		this.addBaseType(new jspa.metamodel.BasicType('String', String));
+		this.addType(new jspa.metamodel.BasicType('Boolean', Boolean));
 
-        this.addBaseType(new jspa.metamodel.BasicType('Date', Date));
-        this.addBaseType(new jspa.metamodel.BasicType('DateTime', Date));
-        this.addBaseType(new jspa.metamodel.BasicType('Time', Date));
+		this.addType(new jspa.metamodel.BasicType('Float', Number));
+		this.addType(new jspa.metamodel.BasicType('Integer', Number));
+		this.addType(new jspa.metamodel.BasicType('String', String));
+
+        this.addType(new (jspa.metamodel.BasicType.inherit({
+            toDatabaseValue: function(state, currentValue) {
+                var value = this.superCall(state, currentValue);
+                if (value) {
+                    value = value.toISOString();
+                    value = value.substring(0, value.indexOf('T'));
+                }
+                return value;
+            }
+        }))('Date', Date));
+
+        this.addType(new (jspa.metamodel.BasicType.inherit({
+            toDatabaseValue: function(state, currentValue) {
+                var value = this.superCall(state, currentValue);
+                if (value) {
+                    value = value.toISOString();
+                    value = value.substring(value.indexOf('T') + 1);
+                }
+                return value;
+            },
+            fromDatabaseValue: function(state, currentValue, json) {
+                return this.superCall(state, currentValue, json? 'T' + json: json);
+            }
+        }))('Time', Date));
+
+        this.addType(new jspa.metamodel.BasicType('DateTime', Date));
 		
 		var objectModel = new jspa.metamodel.EntityType('/db/_native.Object', null, Object);
 		objectModel.declaredAttributes = {};
@@ -29,7 +53,7 @@ jspa.metamodel.Metamodel = Object.inherit({
 		objectModel.declaredVersion = new jspa.metamodel.SingularAttribute(objectModel, 'version', this.baseType(String));
         objectModel.declaredVersion.isVersion = true;
 
-		this.addEntityType(objectModel);
+		this.addType(objectModel);
 	},
 
     /**
@@ -65,6 +89,9 @@ jspa.metamodel.Metamodel = Object.inherit({
 	 * @returns {jspa.metamodel.BasicType}
 	 */
 	baseType: function(typeConstructor) {
+        if (String.isInstance(typeConstructor) && typeConstructor.indexOf('_native.') == -1)
+            typeConstructor = '/db/_native.' + typeConstructor;
+
         var identifier = this.identifierArg(typeConstructor);
 		return identifier? this.baseTypes[identifier]: null;
 	},
@@ -78,24 +105,20 @@ jspa.metamodel.Metamodel = Object.inherit({
         return identifier? this.embeddables[identifier]: null;
     },
 	
-	addBaseType: function(baseType) {
-		if (!this.baseTypes[baseType.identifier]) {
-			baseType.init(this.classUtil);
-			this.baseTypes[baseType.identifier] = baseType;
-		}
-	},
+	addType: function(type) {
+        var types;
 
-    addEntityType: function(entityType) {
-        if (!this.entities[entityType.identifier]) {
-            entityType.init(this.classUtil);
-            this.entities[entityType.identifier] = entityType;
+        if (type.isBasic) {
+            types = this.baseTypes;
+        } else if (type.isEmbeddable) {
+            types = this.embeddables;
+        } else if (type.isEntity) {
+            types = this.entities;
         }
-    },
 
-    addEmbeddableType: function(embeddable) {
-        if (!this.entities[embeddable.identifier]) {
-            embeddable.init(this.classUtil);
-            this.embeddables[embeddable.identifier] = embeddable;
+        if (!(type.identifier in types)) {
+            type.init(this.classUtil);
+            types[type.identifier] = type;
         }
-    }
+	}
 });

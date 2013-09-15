@@ -62,7 +62,7 @@ jspa.metamodel.Attribute = Object.inherit({
         if (this.isId || this.isVersion)
             return entity._objectInfo[this.name];
 
-        return this.typeConstructor.asInstance(this.accessor.getValue(entity, this));
+        return this.accessor.getValue(entity, this);
 	},
 	
 	/**

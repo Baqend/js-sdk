@@ -26,7 +26,7 @@ jspa.message.PutObject = jspa.message.Message.inherit({
 	doReceive: function() {
 		switch (this.response.statusCode) {
 			case 200:
-				this.state.setDatabaseObjectInfo(this.response.entity['_objectInfo']);
+				this.state.setDatabaseObject(this.response.entity);
 				//mark as persistent in next case
 			case 202:
 				this.state.setPersistent();

@@ -65,7 +65,7 @@ jspa.connector.Connector = Object.inherit({
 			this.doSend(message);
 		} catch (e) {
 			e = jspa.error.PersistentError(e);
-			
+
 			if (!message.deferred) {
 				throw e;
 			} else {				

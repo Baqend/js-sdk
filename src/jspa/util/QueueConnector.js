@@ -32,12 +32,14 @@ jspa.util.QueueConnector = Object.inherit({
 
     /**
      * @param {jspa.Promise} promise
-     * @param {Function=}
-     * @param {Function=}
+     * @param {Function=} doneCallback
+     * @param {Function=} failCallback
      * @return {jspa.Promise}
      */
-	wait: function(promise) {
-		return this.queue.wait(this, promise).fail(jspa.EntityManagerFactory.onError);
+	wait: function(promise, doneCallback, failCallback) {
+		return this.queue.wait(this, promise)
+            .fail(jspa.EntityManagerFactory.onError)
+            .then(doneCallback, failCallback);
 	},
 
     /**

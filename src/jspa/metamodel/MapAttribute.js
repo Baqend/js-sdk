@@ -18,6 +18,7 @@ jspa.metamodel.MapAttribute = jspa.metamodel.PluralAttribute.inherit({
 		this.superCall(declaringType, name, typeConstructor, elementType);
 		
 		this.keyType = keyType;
+        this.trackedConstructor = typeConstructor.inherit(jspa.collection.Map, {});
 	},
 
     /**
@@ -32,17 +33,17 @@ jspa.metamodel.MapAttribute = jspa.metamodel.PluralAttribute.inherit({
 			if (!this.trackedConstructor.isInstance(value)) {
 				value = new this.trackedConstructor(value);
 				value.__jspaEntity__ = state.entity;
-				this.setValue(state, value);
+				this.setValue(obj, value);
 			}
 
 			var json = [];
 			for (var iter = value.items(); iter.hasNext; ) {
 				var item = iter.next();
-				var key = this.keyType.toValue(state, item[0]);
+				var key = this.keyType.toDatabaseValue(state, item[0]);
 				if (item[0] === null || key !== null) {
 					json.push({
 						key: key,
-						value: this.elementType.toValue(state, item[1])
+						value: this.elementType.toDatabaseValue(state, item[1])
 					});
 				}
 			}
@@ -55,27 +56,36 @@ jspa.metamodel.MapAttribute = jspa.metamodel.PluralAttribute.inherit({
 
     /**
      * @param {jspa.util.State} state
+     * @param {*} obj
      * @param {Object} json
      */
-	setDatabaseValue: function(state, json) {
+	setDatabaseValue: function(state, obj, json) {
 		var value = null;
 		if (json) {			
-			value = this.getValue(state);
+			value = this.getValue(obj);
 			
-			if (this.trackedConstructor.isInstance(value)) {
-				value.clear();
-			} else {
+			if (!this.trackedConstructor.isInstance(value)) {
 				value = new this.trackedConstructor();
 				value.__jspaEntity__ = state.entity;
 			}
-			
+
+            var keys = value.seq;
+            var vals = value.vals;
+
+            if (keys.length > json.length) {
+                keys.splice(json.length, keys.length - json.length);
+                vals.splice(json.length, vals.length - json.length);
+            }
+
 			for (var i = 0, len = json.length; i < len; ++i) {
 				var item = json[i];
-				var key = this.keyType.fromValue(state, item.key);
-				value.set(key, this.elementType.fromValue(state, item.value));
+				keys[i] = this.keyType.fromDatabaseValue(state, keys[i], item.key);
+				vals[i] = this.elementType.fromDatabaseValue(state, vals[i], item.value);
 			}
+
+            value.size = json.length;
 		}
 
-		this.setValue(state.entity, value);
+		this.setValue(obj, value);
 	}
 });

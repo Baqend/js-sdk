@@ -1,7 +1,7 @@
 /**
  * @class jspa.EntityManager
  */
-jspa.EntityManager = jspa.util.QueueConnector.inherit(util.EventTarget, {
+jspa.EntityManager = jspa.util.QueueConnector.inherit({
 	
 	/**
 	 * Determine whether the entity manager is open. 
@@ -40,6 +40,10 @@ jspa.EntityManager = jspa.util.QueueConnector.inherit(util.EventTarget, {
 	getReference: function(entityClass, oid) {
 		var identifier, type;
 		if (String.isInstance(entityClass)) {
+            if (String.isInstance(oid)) {
+                entityClass += '/' + oid;
+            }
+
 			identifier = entityClass;
 			type = this.metamodel.entity(identifier.substring(0, identifier.lastIndexOf('/')));
 		} else {
@@ -87,7 +91,7 @@ jspa.EntityManager = jspa.util.QueueConnector.inherit(util.EventTarget, {
 	/**
 	 * Close an application-managed entity manager. After the close method has been invoked, 
 	 * all methods on the EntityManager instance and any Query and TypedQuery objects obtained from it 
-	 * will throw the IllegalStateError except for getTransaction, and isOpen (which will return false). 
+	 * will throw the IllegalStateError except for transaction, and isOpen (which will return false).
 	 * If this method is called when the entity manager is associated with an active transaction, 
 	 * the persistence context remains managed until the transaction completes. 
 	 */
@@ -186,7 +190,9 @@ jspa.EntityManager = jspa.util.QueueConnector.inherit(util.EventTarget, {
 	},
 	
 	/**
-	 * Synchronize the persistence context to the underlying database. 
+	 * Synchronize the persistence context to the underlying database.
+     *
+     * @returns {jspa.Promise}
 	 */
 	flush: function(doneCallback, failCallback) {
 		var result = this.yield().then(function() {	
@@ -266,10 +272,9 @@ jspa.EntityManager = jspa.util.QueueConnector.inherit(util.EventTarget, {
 	
 	/**
 	 * Merge the state of the given entity into the current persistence context. 
-	 * 
-	 * @param T the entity type
-	 * @param {T} entity - entity instance 
-	 * @return {Promise<T>} the promise will be called with the managed instance that the state was merged to 
+	 *
+	 * @param {*} entity - entity instance
+	 * @return {jspa.Promise} the promise will be called with the managed instance that the state was merged to
 	 */
 	merge: function(entity, doneCallback, failCallback) {
 		return this.yield().then(function() {
@@ -324,7 +329,8 @@ jspa.EntityManager = jspa.util.QueueConnector.inherit(util.EventTarget, {
 					var tid = 0, identifier = state.type.id.getValue(entity);
 					if (this.transaction.isChanged(identifier))
 						tid = this.transaction.tid;
-					
+
+                    state.isDirty = false; // allow incoming changes to overwrite local changes
 					var result = this.send(new jspa.message.GetObject(state, tid)).then(function() {
 						if (state.isDeleted) {
 							this.removeReference(entity);	

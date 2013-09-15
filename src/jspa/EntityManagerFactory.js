@@ -56,8 +56,9 @@ jspa.EntityManagerFactory = Object.inherit({
 			}
 		}
 		
-		for (var identifier in models) {			
-			this.metamodel.addEntityType(models[identifier]);
+		for (var identifier in models) {
+            var type = models[identifier];
+            this.metamodel.addType(type);
 		}
 	},
 	

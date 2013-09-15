@@ -3,7 +3,7 @@
  * @extends jspa.metamodel.Type
  */
 jspa.metamodel.ManagedType = jspa.metamodel.Type.inherit({
-	AttributeIterator: Object.inherit(util.Iterator, {
+	AttributeIterator: Object.inherit(jspa.Iterator, {
 		nextAttr: null,
 
         initialize: function(type) {
@@ -113,7 +113,7 @@ jspa.metamodel.ManagedType = jspa.metamodel.Type.inherit({
     toDatabaseValue: function(state, obj) {
         var value = null;
 
-        if (obj) {
+        if (this.typeConstructor.isInstance(obj)) {
             value = {
                 _objectInfo: {
                     'class': this.identifier

@@ -25,7 +25,11 @@ jspa.metamodel.BasicType = jspa.metamodel.Type.inherit({
      * @returns {Object}
      */
     toDatabaseValue: function(state, currentValue) {
-        return currentValue;
+        if (currentValue === null || currentValue === undefined) {
+            return null;
+        }
+
+        return this.typeConstructor.asInstance(currentValue);
     },
 
     /**

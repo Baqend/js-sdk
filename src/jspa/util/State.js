@@ -233,13 +233,15 @@ jspa.util.State = Object.inherit({
 	setDatabaseObject: function(json) {
 		this.setDatabaseObjectInfo(json['_objectInfo']);
 
-		this.disable();
-		this.entity._objectInfo.notAvailable = false;
+        this.entity._objectInfo.notAvailable = false;
 
-        this.type.fromDatabaseValue(this, this.entity, json);
+        //refresh values only if the object was not changed
+        if (!this.isDirty) {
+            this.disable();
 
-		this.enable();
+            this.type.fromDatabaseValue(this, this.entity, json);
 
-		this.isDirty = false;
+            this.enable();
+        }
 	}
 });

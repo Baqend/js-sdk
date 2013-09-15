@@ -1,7 +1,7 @@
 /**
  * @class jspa.EntityTransaction
  */
-jspa.EntityTransaction = jspa.util.QueueConnector.inherit(util.EventTarget, {
+jspa.EntityTransaction = jspa.util.QueueConnector.inherit({
 
 	/**
 	 * Indicate whether a resource transaction is in progress. 
@@ -73,7 +73,7 @@ jspa.EntityTransaction = jspa.util.QueueConnector.inherit(util.EventTarget, {
 						this.changeSet = null;
 						
 						var oids = msg.oids;
-						for (oid in oids) {
+						for (var oid in oids) {
 							var version = oids[oid];
 							var entity = this.entityManager.entities[oid];
 							

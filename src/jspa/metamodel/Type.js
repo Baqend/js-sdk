@@ -47,6 +47,9 @@ jspa.metamodel.Type = Object.inherit({
 		}
 	},
 
+    /**
+     * @type Number
+     */
     persistenceType: -1,
 	
 	/**

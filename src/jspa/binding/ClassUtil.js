@@ -31,7 +31,7 @@ jspa.binding.ClassUtil = Object.inherit({
 		},
 		
 		removeClassLoader: function(classLoader) {
-			var index = this.classLoaders.indexOf(classLoaders);
+			var index = this.classLoaders.indexOf(classLoader);
 			if (index != -1) {
 				this.classLoaders.splice(index, 1);
 			}
@@ -51,7 +51,7 @@ jspa.binding.ClassUtil = Object.inherit({
 			if (cls) {
 				return cls;
 			} else {
-				throw new TypeError('The class was not found in the global context');
+				throw new TypeError('The class was not found in the global context.');
 			}
 		},
 		
@@ -63,12 +63,19 @@ jspa.binding.ClassUtil = Object.inherit({
 				}
 			}
 			
-			throw TypeError('The class was not found in the parent modules');
+			throw new TypeError('The class was not found in the parent modules.');
 		},
 		
 		proxyLoader: function(model) {
-			console.log('Initialize proxy class for ' + model.identifier);
-			return model.supertype.typeConstructor.inherit({});
+            if (model.isEntity) {
+                console.log('Initialize proxy class for entity ' + model.identifier + '.');
+                return model.supertype.typeConstructor.inherit({});
+            } else if (model.isEmbeddable) {
+                console.log('Initialize proxy class for embeddable ' + model.identifier + '.');
+                return Object.inherit({});
+            } else {
+                throw new TypeError('No proxy class can be initialized.');
+            }
 		}
 	},
 	
@@ -97,7 +104,7 @@ jspa.binding.ClassUtil = Object.inherit({
 	},
 	
 	/**
-	 * @param {String} type
+	 * @param {String} model
 	 * @returns {Function}
 	 */
 	loadClass: function(model) {
@@ -115,9 +122,7 @@ jspa.binding.ClassUtil = Object.inherit({
 
 		for (var name in type.declaredAttributes) {
             var attribute = type.declaredAttributes[name];
-			if (!attribute.isId && !attribute.isVersion) {
-				this.enhanceProperty(type, attribute, typeConstructor);
-			}
+			this.enhanceProperty(type, attribute, typeConstructor);
 		}
 	},
 	
@@ -136,7 +141,8 @@ jspa.binding.ClassUtil = Object.inherit({
 			set: function(value) {
 				jspa.util.State.writeAccess(this);
 				this[name] = value;
-			}
+			},
+            configurable: true
 		});
 	}
 });

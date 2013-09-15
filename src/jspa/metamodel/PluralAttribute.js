@@ -49,7 +49,7 @@ jspa.metamodel.PluralAttribute = jspa.metamodel.Attribute.inherit({
 			}
 			
 			var json = [];
-			for (var iter = value.values(); iter.hasNext; ) {
+			for (var iter = value.iterator(); iter.hasNext; ) {
 				var el = iter.next();
 				if (el === null) {
 					json.push(el);
@@ -93,6 +93,6 @@ jspa.metamodel.PluralAttribute = jspa.metamodel.Attribute.inherit({
             value.size = json.length;
 		}
 		
-		this.setValue(state, value);
+		this.setValue(obj, value);
 	}
 });
