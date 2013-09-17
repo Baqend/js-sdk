@@ -44,7 +44,11 @@ jspa.metamodel.PluralAttribute = jspa.metamodel.Attribute.inherit({
             // convert normal collections to tracked collections
 			if (!this.trackedConstructor.isInstance(value)) {
 				value = new this.trackedConstructor(value);
-				value.__jspaEntity__ = state.entity;
+
+                Object.defineProperty(value, '__jspaEntity__', {
+                    value: state.entity
+                });
+
 				this.setValue(obj, value);
 			}
 			
@@ -79,7 +83,10 @@ jspa.metamodel.PluralAttribute = jspa.metamodel.Attribute.inherit({
 			
 			if (!this.trackedConstructor.isInstance(value)) {
 				value = new this.trackedConstructor();
-				value.__jspaEntity__ = state.entity;
+
+                Object.defineProperty(value, '__jspaEntity__', {
+                    value: state.entity
+                });
 			}
 
             var items = value.seq;

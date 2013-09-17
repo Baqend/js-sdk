@@ -14,7 +14,10 @@ jspa.metamodel.EmbeddableType = jspa.metamodel.ManagedType.inherit({
     fromDatabaseValue: function(state, obj, value) {
         if (!obj && value) {
             obj = this.create();
-            obj.__jspaEntity__ = state.entity;
+
+            Object.defineProperty(obj, '__jspaEntity__', {
+                value: state.entity
+            });
         }
 
         return this.superCall(state, obj, value);

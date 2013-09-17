@@ -7,13 +7,11 @@ jspa.error.CommunicationError = jspa.error.PersistentError.inherit({
 		var state = (httpMessage.response.statusCode == 0? 'Request': 'Response');
 		this.superCall('Communication failed by handling the ' + state + ' for ' + 
 				httpMessage.request.method + ' ' + httpMessage.request.path);
-		
-		this.stack = 'CommunicationError\n';
-		
+
 		var cause = httpMessage.response.entity;
 		
 		if (cause)
-			this.stack += cause.message || '';
+			this.stack += cause.message || 'CommunicationError';
 		
 		while (cause) {			
 			this.stack += 'Serverside Caused by ' + cause.className + ' ' + cause.message + '\n';

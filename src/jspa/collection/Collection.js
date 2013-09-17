@@ -1,7 +1,5 @@
 jspa.collection.Collection = Trait.inherit({
 
-    __jspaEntity__: null,
-
     size: {
         get: function() {
             jspa.util.State.readAccess(this);

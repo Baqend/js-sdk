@@ -32,7 +32,11 @@ jspa.metamodel.MapAttribute = jspa.metamodel.PluralAttribute.inherit({
 		if (value) {
 			if (!this.trackedConstructor.isInstance(value)) {
 				value = new this.trackedConstructor(value);
-				value.__jspaEntity__ = state.entity;
+
+                Object.defineProperty(value, '__jspaEntity__', {
+                    value: state.entity
+                });
+
 				this.setValue(obj, value);
 			}
 
@@ -66,7 +70,9 @@ jspa.metamodel.MapAttribute = jspa.metamodel.PluralAttribute.inherit({
 			
 			if (!this.trackedConstructor.isInstance(value)) {
 				value = new this.trackedConstructor();
-				value.__jspaEntity__ = state.entity;
+                Object.defineProperty(value, '__jspaEntity__', {
+                    value: state.entity
+                });
 			}
 
             var keys = value.seq;

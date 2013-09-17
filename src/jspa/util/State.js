@@ -90,11 +90,13 @@ jspa.util.State = Object.inherit({
 		this.type = type;
 		this.entity = entity;
 
-        this.entity._objectInfo = {
-            'class': this.type.identifier,
-            'notAvailable': true,
-            'state': this
-        };
+        Object.defineProperty(this.entity, '_objectInfo', {
+            value: {
+                'class': this.type.identifier,
+                'notAvailable': true,
+                'state': this
+            }
+        });
 		
 		this.isDirty = false;
 		this.state = jspa.util.State.Type.PERSISTENT;

@@ -23,7 +23,7 @@ jspa.message.GetBucketQuery = jspa.message.Message.inherit({
 	createUri: function(type, query, start, count) {
 		var uri = type.identifier;
 
-        uri += '?query=' + encodeURI(query);
+        uri += '?query=' + encodeURIComponent(query);
 
 		if (start > 0)
 			uri += '?start=' + start;
