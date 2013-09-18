@@ -7,15 +7,18 @@
     "email": "fbuecklers@gmail.com"
   },
   "homepage": "http://orestes.info",
-  "main": "build/jspa.js",
+  "main": "dist/jspa.js",
+  "dependencies": {
+    "jahcode": ">=1.1.0"
+  },
   "devDependencies": {
     "jasmine-node": "1.7.x",
     "uglify-js": "2.3.x"
   }, 
   "scripts": {
     "test": "jasmine-node test",
-    "build": "node tool/merge.js src build/jspa.js",
-    "minify": "uglifyjs build/jspa.js --source-map=build/jspa.map -c -m -o build/jspa.min.js --comments /\\/*!/"
+    "build": "node tool/merge.js src dist/jspa.js",
+    "minify": "uglifyjs dist/jspa.js --source-map=dist/jspa.map -c -m -o dist/jspa.min.js --comments /\\/*!/"
   },
   "engines": {
     "node": ">=0.2.0"

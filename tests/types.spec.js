@@ -8,7 +8,7 @@ test = {
     type: {
         Embeddable: function() {}
     }
-}
+};
 
 var o1 = new test.bucket.Value();
 var o2 = new test.bucket.Value();
@@ -152,7 +152,7 @@ describe('Test entity type', function() {
                         expect(getType(def[i])).not.toBeNull();
                     }
                 } else {
-                    // entitiesif (def[i] == TEST_BUCKET) {
+                    // entities
                     expect(getType(def[2])).not.toBeNull();
                 }
             }
@@ -519,7 +519,7 @@ describe('Test entity type', function() {
 
                 var obj = new wrapper();
                 var val = new embedded();
-                val.value, value;
+                val.value = value;
                 obj.embedded = val;
 
                 em.persist(obj);
@@ -551,53 +551,3 @@ describe('Test entity type', function() {
         }.bind(null, name));
     }
 });
-
-/*
-
-    @Test
-    public void testAsEmbeddedValue() throws BucketNotFound, SchemaNotCompatible {
-        ClassHolder wrapper = new ClassHolder(new Bucket(holder.getBucket().getName() + "EmbeddedWrapper"), false);
-        ClassHolder embedded = new ClassHolder(new Bucket(holder.getBucket().getName() + "Embedded"), true);
-
-        wrapper.init(new ClassFieldHolder[] {
-            new ClassFieldHolder("embedded", embedded.getBucket())
-        });
-
-        embedded.init(new ClassFieldHolder[] {
-            new ClassFieldHolder("value", fieldType, genericArgs)
-        });
-
-        schema.addAll(Arrays.asList(wrapper, embedded));
-        OrestesClass w = (OrestesClass) schema.get(wrapper.getBucket());
-        OrestesClass e = (OrestesClass) schema.get(embedded.getBucket());
-
-        OrestesObject object = new OrestesObject(w);
-        OrestesObject val = new OrestesObject(e);
-        val.setValue(e.getField("value"), value);
-        object.setValue(w.getField("embedded"), val);
-
-        object = client.store(object);
-
-        val = (OrestesObject) object.getValue(w.getField("embedded"));
-        assertNotNull(val);
-        assertEquals(value, val.getValue(e.getField("value")));
-
-        object = client.load(object.getId());
-
-        val = (OrestesObject) object.getValue(w.getField("embedded"));
-        assertNotNull(val);
-        assertEquals(value, val.getValue(e.getField("value")));
-    }
-
-    private void assertFieldEquals(DBClassField field, Bucket type, Bucket... genericParamaters)
-    throws BucketNotFound {
-        assertSame(schema.get(type), field.getTypeSchema());
-
-        assertEquals(field.getGenericParamaterSchemas().length, genericParamaters.length);
-
-        int count = 0;
-        for (Bucket param : genericParamaters) {
-            assertSame(schema.get(param), field.getGenericParamaterSchemas()[count++]);
-        }
-    }
-}*/
