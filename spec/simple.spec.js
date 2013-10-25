@@ -1,27 +1,49 @@
+if (typeof require !== 'undefined') {
+    var jspa = require('../dist/jspa.js');
+}
+
 (function(global) {
 	var schema = [ {
 		"class" : "/db/test.persistent.PersClass",
-		"fields" : {
-			"ref" : "/db/test.persistent.OtherPersClass",
-			"name" : "/db/_native.Integer",
-			"persRef" : "/db/test.persistent.PersClass"
-		}
+		"fields" : [
+            {
+			    "name": "ref",
+                "type": "/db/test.persistent.OtherPersClass"
+            },
+            {
+			    "name" : "name",
+                "type": "/db/_native.Integer"
+            },
+            {
+                "name": "persRef",
+                "type": "/db/test.persistent.PersClass"
+            }
+		]
 	}, {
 		"class" : "/db/test.persistent.ChildPersClass",
 		"superClass" : "/db/test.persistent.PersClass",
-		"fields" : {
-			"value" : "/db/_native.String"
-		}
+		"fields" : [
+            {
+			    "name": "value",
+                "type": "/db/_native.String"
+            }
+		]
 	}, {
 		"class" : "/db/test.persistent.OtherPersClass",
-		"fields" : {
-			"value" : "/db/_native.Integer"
-		}
+		"fields" : [
+            {
+                "name": "value",
+                "type": "/db/_native.Integer"
+            }
+		]
 	} ];
-	
-	global.test = {
+
+
+    global.test = global.test || {};
+
+    Object.extend(global.test, {
 		persistent: {}
-	};
+	});
 	
 	var PersClass = global.test.persistent.PersClass = Object.inherit({
 		initialize : function(ref, name, persRef) {
@@ -58,9 +80,8 @@
 		it("should run", function() {
 			var suc = false, done = false;
 			runs(function() {
-				
+				var id;
 				em.yield().done(function() {
-					var id;
 					var ref = new PersClass(null, 202, null);
 					var p1 = new PersClass(null, 101, ref);
 					

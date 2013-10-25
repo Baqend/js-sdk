@@ -1,0 +1,66 @@
+[
+    {
+        "class": "/db/test.persistent.Coffee",
+        "fields": [
+            {
+                "name": "caffeine",
+                "type": "/db/_native.Float"
+            },
+            {
+                "name": "name",
+                "type": "/db/_native.String"
+            },
+            {
+                "name": "countryCode",
+                "type": "/db/_native.Integer"
+            },
+            {
+                "name": "parent",
+                "type": "/db/test.persistent.Coffee"
+            }
+        ]
+    },
+    {
+        "class": "/db/test.persistent.TestClass",
+        "fields": [
+            {
+                "name": "testString",
+                "type": "/db/_native.String"
+            },
+            {
+                "name": "testBoolean",
+                "type": "/db/_native.Boolean"
+            },
+            {
+                "name": "testLong",
+                "type": "/db/_native.Long"
+            }
+        ]
+    },
+    {
+        "class": "/db/test.persistent.TestChildClass",
+        "superClass": "/db/test.persistent.TestClass",
+        "fields": [
+            {
+                "name": "testDouble",
+                "type": "/db/_native.Double"
+            },
+            {
+                "name": "testByte",
+                "type": "/db/_native.Byte"
+            },
+            {
+                "name": "testInteger",
+                "type": "/db/_native.Integer"
+            },
+            {
+                "name": "testFloat",
+                "type": "/db/_native.Float"
+            },
+            {
+                "name": "testRef",
+                "type": "/db/test.persistent.TestClass"
+            }
+        ]
+    }
+]

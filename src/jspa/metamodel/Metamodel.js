@@ -46,7 +46,7 @@ jspa.metamodel.Metamodel = Object.inherit({
         this.addType(new jspa.metamodel.BasicType('DateTime', Date));
 		
 		var objectModel = new jspa.metamodel.EntityType('/db/_native.Object', null, Object);
-		objectModel.declaredAttributes = {};
+		objectModel.declaredAttributes = [];
 		objectModel.declaredId = new jspa.metamodel.SingularAttribute(objectModel, 'oid', this.baseType(String));
         objectModel.declaredId.isId = true;
 

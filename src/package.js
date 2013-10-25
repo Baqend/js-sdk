@@ -1,5 +1,5 @@
 if (!Object.inherit)
-	require('../lib/jahcode.js');
+	require('jahcode');
 
 var jspa = {
 	error: {},

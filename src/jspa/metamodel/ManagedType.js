@@ -5,17 +5,11 @@
 jspa.metamodel.ManagedType = jspa.metamodel.Type.inherit({
 	AttributeIterator: Object.inherit(jspa.Iterator, {
 		nextAttr: null,
+        index: 0,
 
         initialize: function(type) {
 			this.type = type;
-
-            this.initAttr();
             this.next();
-		},
-		
-		initAttr: function() {
-            this.index = 0;
-            this.names = Object.getOwnPropertyNames(this.type.declaredAttributes);
 		},
 
         /**
@@ -24,13 +18,13 @@ jspa.metamodel.ManagedType = jspa.metamodel.Type.inherit({
 		next: function() {
 			var attr = this.nextAttr;
 
-            while (this.names.length == this.index && (this.type = this.type.supertype)) {
-                this.initAttr();
+            while (this.type.declaredAttributes.length == this.index && (this.type = this.type.supertype)) {
+                this.index = 0;
             }
 			
 			this.hasNext = this.type != null;
             if (this.hasNext) {
-                this.nextAttr = this.type.declaredAttributes[this.names[this.index++]];
+                this.nextAttr = this.type.declaredAttributes[this.index++];
             }
 
 			return attr;
@@ -68,13 +62,13 @@ jspa.metamodel.ManagedType = jspa.metamodel.Type.inherit({
 	 * @returns {jspa.metamodel.Attribute}
 	 */
 	getAttribute: function(name) {
-		if (name in this.declaredAttributes) {			
-			return this.declaredAttributes[name];
-		} else if (this.supertype) {
-			return this.supertype.getAttribute(name);
-		} else {
-			return null;
-		}
+        var attr = this.getDeclaredAttribute(name);
+
+        if (!attr && this.supertype) {
+            attr = this.supertype.getAttribute(name);
+        }
+
+		return attr;
 	},
 	
 	/**
@@ -82,7 +76,13 @@ jspa.metamodel.ManagedType = jspa.metamodel.Type.inherit({
 	 * @returns {jspa.metamodel.Attribute}
 	 */
 	getDeclaredAttribute: function(name) {
-        return this.declaredAttributes[name] || null;
+        for (var i = 0, attr; attr = this.declaredAttributes[i]; ++i) {
+            if (attr.name == name) {
+                return attr;
+            }
+        }
+
+        return null;
 	},
 
     /**

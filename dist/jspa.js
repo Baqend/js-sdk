@@ -1,5 +1,5 @@
 if (!Object.inherit)
-	require('../lib/jahcode.js');
+	require('jahcode');
 
 var jspa = {
 	error: {},
@@ -14,6 +14,293 @@ var jspa = {
 if (typeof module !== 'undefined')
 	module.exports = jspa;
 	
+/**
+ * @class jspa.binding.Accessor
+ */
+jspa.binding.Accessor = Object.inherit({
+	/**
+	 * @param {Object} object
+	 * @param {jspa.metamodel.Attribute} attribute
+	 * @returns {*}
+	 */
+	getValue: function(object, attribute) {
+		return object[attribute.name];
+	},
+	 
+	/**
+	 * @param {Object} object
+	 * @param {jspa.metamodel.Attribute} attribute
+	 * @param {*} value
+	 */
+	setValue: function(object, attribute, value) {
+		object[attribute.name] = value;
+	}
+});
+/**
+ * @class jspa.binding.ClassUtil
+ */
+jspa.binding.ClassUtil = Object.inherit({
+	extend: {
+		classLoaders: [],
+		
+		initialize: function() {
+			this.addClassLoader(this.proxyLoader);
+			this.addClassLoader(this.globalLoader);
+			this.addClassLoader(this.moduleLoader);
+		},
+		
+		loadClass: function(model) {
+			var el = /\/db\/(([\w\.]*)\.)?(\w*)/.exec(model.identifier);
+
+			var namespace = el[1];
+			var className = el[3];
+			
+			for (var i = this.classLoaders.length - 1, loader; loader = this.classLoaders[i]; --i) {
+				try {
+					return loader(model, namespace, className);
+				} catch (e) {}
+			}
+			
+			throw new TypeError('The class for ' + model.identifier + ' was not found!');
+		},
+		
+		addClassLoader: function(classLoader) {
+			this.classLoaders.push(classLoader);
+		},
+		
+		removeClassLoader: function(classLoader) {
+			var index = this.classLoaders.indexOf(classLoader);
+			if (index != -1) {
+				this.classLoaders.splice(index, 1);
+			}
+		},
+		
+		globalLoader: function(model, namespace, className) {
+			var context = typeof window != 'undefined'? window: global;
+			
+			var n = context;
+            if (namespace) {
+                var fragments = namespace.split('.');
+                for (var i = 0, fragment; n && (fragment = fragments[i]); ++i) {
+                    n = n[fragment];
+                }
+            }
+			
+			var cls = n && n[className] /* || context[className] */; // name clash with dom classes
+			
+			if (cls) {
+				return cls;
+			} else {
+				throw new TypeError('The class was not found in the global context.');
+			}
+		},
+		
+		moduleLoader: function(model, namespace, name) {
+			var mod = module;
+			while (mod = mod.parent) {
+				if (name in mod) {
+					return name[mod];
+				}
+			}
+			
+			throw new TypeError('The class was not found in the parent modules.');
+		},
+		
+		proxyLoader: function(model) {
+            if (model.isEntity) {
+                console.log('Initialize proxy class for entity ' + model.identifier + '.');
+                return model.supertype.typeConstructor.inherit({});
+            } else if (model.isEmbeddable) {
+                console.log('Initialize proxy class for embeddable ' + model.identifier + '.');
+                return Object.inherit({});
+            } else {
+                throw new TypeError('No proxy class can be initialized.');
+            }
+		}
+	},
+	
+	/**
+	 * @param {Function} typeConstructor
+	 * @returns {String}
+	 */
+	getIdentifier: function(typeConstructor) {
+		return typeConstructor.__jspaId__;
+	},
+	
+	/**
+	 * @param {Function}
+	 * @param {String} identifier
+	 */
+	setIdentifier: function(typeConstructor, identifier) {
+		typeConstructor.__jspaId__ = identifier;
+	},
+	
+	/**
+	 * @param {jspa.metamodel.EntityType} type
+	 * @returns {Object}
+	 */
+	create: function(type) {
+		return Object.create(type.typeConstructor.prototype);
+	},
+	
+	/**
+	 * @param {String} model
+	 * @returns {Function}
+	 */
+	loadClass: function(model) {
+		return jspa.binding.ClassUtil.loadClass(model);
+	},
+	
+	/**
+	 * @param {jspa.metamodel.EntityType} type
+	 * @param {Function} typeConstructor
+	 */
+	enhance: function(type, typeConstructor) {
+        Object.defineProperty(typeConstructor.prototype, '_objectInfo', {
+            value: {
+                'class': type.identifier
+            },
+            writable: true,
+            enumerable: false
+        });
+
+		for (var name in type.declaredAttributes) {
+            var attribute = type.declaredAttributes[name];
+			this.enhanceProperty(type, attribute, typeConstructor);
+		}
+	},
+	
+	/**
+	 * @param {jspa.metamodel.EntityType} type
+	 * @param {jspa.metamodel.Attribute} attribute
+	 * @param {Function} typeConstructor
+	 */
+	enhanceProperty: function(type, attribute, typeConstructor) {
+		var name = '_' + attribute.name;
+		Object.defineProperty(typeConstructor.prototype, attribute.name, {
+			get: function() {
+				jspa.util.State.readAccess(this);
+				return this[name];
+			},
+			set: function(value) {
+				jspa.util.State.writeAccess(this);
+				this[name] = value;
+			},
+            configurable: true,
+            enumerable: true
+		});
+	}
+});
+
+
+jspa.collection.Collection = Trait.inherit({
+
+    size: {
+        get: function() {
+            jspa.util.State.readAccess(this);
+            return this._size;
+        },
+        set: function(value) {
+            this._size = value;
+        }
+    },
+
+    has: function(element) {
+        jspa.util.State.readAccess(this);
+        return this.superCall(element);
+    },
+
+    add: function(element) {
+        jspa.util.State.writeAccess(this);
+        this.superCall(element);
+    },
+
+    remove: function(element) {
+        jspa.util.State.writeAccess(this);
+        this.superCall(element);
+    },
+
+    items: function() {
+        jspa.util.State.readAccess(this);
+        return this.superCall();
+    },
+
+    iterator: function() {
+        jspa.util.State.readAccess(this);
+        return this.superCall();
+    },
+
+    toString: function() {
+        jspa.util.State.readAccess(this);
+        return this.superCall();
+    },
+
+    toJSON: function() {
+        jspa.util.State.readAccess(this);
+        return this.superCall();
+    }
+});
+jspa.collection.List = jspa.collection.Collection.inherit({
+	get: function(index) {
+		jspa.util.State.readAccess(this);
+		return this.superCall(index);
+	},
+	
+	set: function(index, value) {
+		jspa.util.State.writeAccess(this);
+		this.superCall(index, value);
+	},
+	
+	indexOf: function(value) {
+		jspa.util.State.readAccess(this);
+		return this.superCall(value);
+	},
+	
+	lastIndexOf: function(value) {
+		jspa.util.State.readAccess(this);
+		return this.superCall(value);
+	}
+});
+jspa.collection.Map = jspa.collection.Collection.inherit({
+	hasKey: function(key) {
+		jspa.util.State.readAccess(this);
+		return this.superCall(key);
+	},
+	
+	hasValue: function(value) {
+		jspa.util.State.readAccess(this);
+		return this.superCall(value);
+	},
+	
+	get: function(key) {
+		jspa.util.State.readAccess(this);
+		return this.superCall(key);
+	},
+	
+	set: function(key, value) {
+		jspa.util.State.writeAccess(this);
+		this.superCall(key, value);
+	},
+	
+	removeKey: function(key) {
+		jspa.util.State.writeAccess(this);
+		this.superCall(key);
+	},
+	
+	removeValue: function(value) {
+		jspa.util.State.writeAccess(this);
+		this.superCall(value);
+	},
+	
+	keys: function() {
+		jspa.util.State.readAccess(this);
+		return this.superCall();
+	}
+});
+
+jspa.collection.Set = jspa.collection.Collection.inherit({
+});
+
 jspa.StopIteration = Error.inherit({
     initialize: function() {
         this.superCall('No such element.');
@@ -426,6 +713,252 @@ jspa.Map = jspa.Collection.inherit({
         return map;
     }
 });
+
+/**
+ * @class jspa.connector.Connector
+ */
+jspa.connector.Connector = Object.inherit({
+	extend: {
+        /**
+         * @param {String} host
+         * @param {Number} port
+         * @return {jspa.connector.Connector}
+         */
+		create: function(host, port) {
+			if (!host && typeof window !== 'undefined') {
+				host = window.location.hostname;
+				port = window.location.port;
+			}
+			
+			if (host.indexOf('/') != -1) {
+				var matches = /^http:\/\/([^\/:]*)(:(\d*))?\/?$/.exec(host);
+				if (matches) {
+					host = matches[1];
+					port = matches[3];
+				} else {
+					throw new Error('The connection uri host ' + host + ' seems not to be valid');
+				}
+			}
+			
+			if (!port)
+				port = 80;
+			
+			for (var name in jspa.connector) {
+				var connector = jspa.connector[name];
+				if (connector.isUsable && connector.isUsable(host, port)) {
+					return new connector(host, port);
+				}
+			}
+			
+			throw new Error('No connector is usable for the requested connection');
+		}
+	},
+	
+	/**
+	 * @constructor
+	 * @param {String} host
+	 * @param {Integer} port
+	 */
+	initialize: function(host, port) {
+		this.host = host;
+		this.port = port;
+	},
+
+	/**
+     * @param {*} context
+	 * @param {jspa.message.Message} message
+     * @param {Boolean} sync
+     * @returns {jspa.Promise}
+	 */
+	send: function(context, message, sync) {
+		if (!sync) {			
+			message.deferred = new jspa.Deferred();
+			message.context = context;
+		}
+		
+		try {
+			message.doSend();
+			this.doSend(message);
+		} catch (e) {
+			e = jspa.error.PersistentError(e);
+
+			if (!message.deferred) {
+				throw e;
+			} else {				
+				message.deferred.rejectWith(context, [e]);
+			}
+		}
+		
+		if (message.deferred)
+			return message.deferred.promise();
+	},
+
+    /**
+     * @param {jspa.message.Message} message
+     */
+	receive: function(message) {
+		try {
+			message.doReceive();
+		} catch (e) {
+			e = jspa.error.PersistentError(e);
+
+			if (!message.deferred) {
+				throw e;
+			} else {				
+				message.deferred.rejectWith(message.context, [e]);
+			}
+		}
+		
+		if (message.deferred) {			
+			message.deferred.resolveWith(message.context, [message]);
+		}
+	},
+
+    /**
+     * @param {jspa.message.Message} message
+     */
+	doSend: function(message) {
+		throw new Error('Connector.doSend() not implemented');
+	},
+	
+	/**
+	 * @param {jspa.message.Message} message
+	 */
+	prepareRequestEntity: function(message) {
+		if (message.request.entity) {
+			message.request.headers['Content-Type'] = 'application/json;charset=utf-8';
+			return JSON.stringify(message.request.entity);
+		} else {
+			return null;
+		}
+	},
+
+    /**
+     * @param {jspa.message.Message} message
+     * @param {Object} data
+     */
+	prepareResponseEntity: function(message, data) {
+		var entity = null;
+		if (data && data.length > 0) {
+			entity = JSON.parse(data);
+		}
+		
+		message.response.entity = entity;
+	}
+});
+/**
+ * @class jspa.connector.NodeConnector
+ * @extends jspa.connector.Connector
+ */
+jspa.connector.NodeConnector = jspa.connector.Connector.inherit({
+	extend: {
+		isUsable: function(host, port) {
+			if (!this.prototype.http) {
+				try {
+					var http = require('http');
+					if (http.ClientRequest) {
+						this.prototype.http = http;
+					} 
+				} catch (e) {};
+			}
+			return Boolean(this.prototype.http);
+		}
+	},
+	
+	/**
+	 * @param {jspa.message.Message} message
+	 */
+	doSend: function(message) {
+		if (!message.deferred)
+			throw new Error('Blocking IO is not supported');
+		
+		message.request.host = this.host;
+		message.request.port = this.port;
+		
+		var self = this;
+		var entity = this.prepareRequestEntity(message);
+		
+		if (entity)
+			message.request.headers['Transfer-Encoding'] = 'chunked';
+		
+		var req = this.http.request(message.request, function(res) {
+			var data = '';
+			
+			res.setEncoding('utf-8');
+			res.on('data', function(chunk) {
+				data += chunk;
+			});
+			res.on('end', function() {
+				message.response.statusCode = res.statusCode;
+				message.response.headers = res.headers;
+				self.prepareResponseEntity(message, data);
+				self.receive(message);
+			});
+		});
+
+		req.on('error', function() {
+			self.receive(message);
+		});
+		
+		if (entity)
+			req.write(entity, 'utf8');
+		
+		req.end();
+	}
+});
+/**
+ * @class jspa.connector.XMLHttpConnector
+ * @extends jspa.connector.Connector
+ */
+jspa.connector.XMLHttpConnector = jspa.connector.Connector.inherit({
+	extend: {
+		isUsable: function(host, port) {
+			return typeof XMLHttpRequest != 'undefined';
+		}
+	},
+	
+	/**
+	 * @param {jspa.message.Message} message
+	 */
+	doSend: function(message) {
+		var xhr = new XMLHttpRequest();
+		
+		var url = 'http://' + this.host + ':' + this.port + message.request.path;
+		//console.log(message.request.method + ' ' + url);
+
+		if (message.deferred)			
+			xhr.onreadystatechange = this.readyStateChange.bind(this, xhr, message);
+		
+		xhr.open(message.request.method, url, !!message.deferred);
+
+		var entity = this.prepareRequestEntity(message);
+		var headers = message.request.headers;
+		for (var name in headers)
+			xhr.setRequestHeader(name, headers[name]);
+
+		xhr.send(entity);
+		
+		if (!message.deferred)
+			this.doReceive(xhr, message);
+	},
+	
+	readyStateChange: function(xhr, message) {
+		if (xhr.readyState == 4) {
+			this.doReceive(xhr, message);
+		}
+	},
+	
+	doReceive: function(xhr, message) {
+		message.response.statusCode = xhr.status;
+		
+		var headers = message.response.headers;
+		for (var name in headers)
+			headers[name] = xhr.getResponseHeader(name);
+		
+		this.prepareResponseEntity(message, xhr.responseText);
+		this.receive(message);
+	}
+});
 /**
  * @class jspa.Promise
  */
@@ -677,7 +1210,8 @@ jspa.Deferred = jspa.Promise.inherit({
 
         return i > 0;
 	}
-});/**
+});
+/**
  * @class jspa.util.QueueConnector
  */
 jspa.util.QueueConnector = Object.inherit({
@@ -727,7 +1261,8 @@ jspa.util.QueueConnector = Object.inherit({
 	yield: function(doneCallback) {
 		return this.queue.wait(this).then(doneCallback);
 	}
-});/**
+});
+/**
  * @class jspa.EntityManager
  */
 jspa.EntityManager = jspa.util.QueueConnector.inherit({
@@ -1166,7 +1701,8 @@ jspa.EntityManager = jspa.util.QueueConnector.inherit({
 
 		delete this.entities[state.type.id.getValue(entity)];
 	}
-});/**
+});
+/**
  * @class jspa.EntityManagerFactory
  */
 jspa.EntityManagerFactory = Object.inherit({
@@ -1250,7 +1786,8 @@ jspa.EntityManagerFactory = Object.inherit({
 	define: function(model) {
 		this.newModel = model;
 	}
-});/**
+});
+/**
  * @class jspa.EntityTransaction
  */
 jspa.EntityTransaction = jspa.util.QueueConnector.inherit({
@@ -1399,7 +1936,1601 @@ jspa.EntityTransaction = jspa.util.QueueConnector.inherit({
 			this.changeSet[identifier] = true;
 		}
 	}
-});/**
+});
+/**
+ * @class jspa.error.PersistentError
+ * @extends Error
+ */
+jspa.error.PersistentError = Error.inherit({
+	cause: null,
+	
+	extend: {
+		conv: function(e) {
+			if (Error.isInstance(e)) {
+				return new this(null, e);
+			}
+		}
+	},
+
+    /**
+     * @constructor
+     * @param {String} message
+     * @param {Error} cause
+     */
+	initialize: function(message, cause) {
+		this.superCall(message? message: 'An unexpected persistent error occured. ' + cause? cause.message: '');
+		
+		if (cause) {
+			this.cause = cause;
+            this.stack += 'Caused By: ' + cause.message + ' ' + cause.stack;
+		}
+	}
+});
+/**
+ * @class jspa.error.CommunicationError
+ * @extends jspa.error.PersistentError
+ */
+jspa.error.CommunicationError = jspa.error.PersistentError.inherit({
+	initialize: function(httpMessage) {
+		var state = (httpMessage.response.statusCode == 0? 'Request': 'Response');
+		this.superCall('Communication failed by handling the ' + state + ' for ' + 
+				httpMessage.request.method + ' ' + httpMessage.request.path);
+
+		var cause = httpMessage.response.entity;
+		
+		if (cause)
+			this.stack += cause.message || 'CommunicationError';
+		
+		while (cause) {			
+			this.stack += 'Serverside Caused by ' + cause.className + ' ' + cause.message + '\n';
+			
+			var stackTrace = cause.stackTrace;
+			for (var i = 0; i < stackTrace.length; ++i) {
+				var el = stackTrace[i];
+
+				this.stack += '  at ' + el.className + '.' + el.methodName;
+				this.stack += ' (' + el.fileName + ':' + el.lineNumber + ')\n';
+			}
+			
+			cause = cause.cause;
+		}	
+	}
+});
+/**
+ * @class jspa.error.EntityExistsError
+ * @extends jspa.error.PersistentError
+ */
+jspa.error.EntityExistsError = jspa.error.PersistentError.inherit({
+    /**
+     * @constructor
+     * @param {String} identity
+     */
+    initialize: function(identity) {
+		this.superCall('Entity ' + identity + ' exists already');
+		
+		this.identity = identity;
+	}
+});
+/**
+ * @class jspa.error.EntityNotFoundError
+ * @extends jspa.error.PersistentError
+ */
+jspa.error.EntityNotFoundError = jspa.error.PersistentError.inherit({
+    /**
+     * @constructor
+     * @param {String} identity
+     */
+    initialize: function(identity) {
+		this.superCall('Entity ' + identity + ' is not found');
+		
+		this.identity = identity;
+	}
+});
+/**
+ * @class jspa.error.IllegalEntityError
+ * @extends jspa.error.PersistentError
+ */
+jspa.error.IllegalEntityError = jspa.error.PersistentError.inherit({
+    /**
+     * @constructor
+     * @param {*} entity
+     */
+    initialize: function(entity) {
+		this.superCall('Entity ' + entity + ' is not a valid entity');
+		
+		this.entity = entity;
+	}
+});
+/**
+ * @class jspa.error.RollbackError
+ * @extends jspa.error.PersistentError
+ */
+jspa.error.RollbackError = jspa.error.PersistentError.inherit({
+    /**
+     * @constructor
+     * @param {Error} cause
+     */
+    initialize: function(cause) {
+		this.superCall('The transaction has been rollbacked', cause);
+	}
+});
+
+/**
+ * @class jspa.message.Message
+ */
+jspa.message.Message = Object.inherit({
+
+    /**
+     * @type {jspa.Deferred}
+     */
+    deferred: null,
+
+	/**
+	 * @constructor
+     * @param {String} method
+	 * @param {String} path
+     * @param {Object} requestEntity
+	 */
+	initialize: function(method, path, requestEntity) {
+		this.request = {
+			method: method,
+			path: path,
+			headers: {
+				'accept': 'application/json'
+			},
+			entity: requestEntity? requestEntity: null
+		};
+		
+		this.response = {
+			statusCode: 0,
+			headers: {},
+			entity: null
+		};
+	},
+	
+	doSend: function() {},
+	
+	doReceive: function() {}
+});
+/**
+ * @class jspa.message.DeleteObject
+ * @extends jspa.message.Message
+ */
+jspa.message.DeleteObject = jspa.message.Message.inherit({
+	/**
+	 * @constructor
+	 * @param {jspa.Transaction} transaction
+	 * @param {jspa.util.State} state
+	 */
+	initialize: function(state) {
+		this.superCall('delete', state.getIdentifier());
+
+		this.state = state;
+	},
+	
+	doSend: function() {
+		this.request.entity = this.state.getDatabaseObjectInfo();
+		
+		var version = this.state.getVersion();
+		if (version) {
+			Object.extend(this.request.headers, {
+				'if-match': version == '*'? version: '"' + version + '"'
+			});
+		}
+	},
+	
+	doReceive: function() {
+		switch (this.response.statusCode) {
+			case 202:
+			case 204:
+			case 404:
+				this.state.setDeleted();
+				break;
+			default:
+				throw new jspa.error.CommunicationError(this);
+		}
+	}
+});
+/**
+ * @class jspa.message.GetAllOids
+ * @extends jspa.message.Message
+ */
+jspa.message.GetAllOids = jspa.message.Message.inherit({
+	/**
+	 * @constructor
+	 * @param {jspa.metamodel.EntityType} type
+     * @param {number} start
+     * @param {number} count
+	 */
+	initialize: function(type, start, count) {
+		this.superCall('get', this.createUri(type, start, count));
+	},
+
+    /**
+     * @constructor
+     * @param {jspa.metamodel.EntityType} type
+     * @param {number} start
+     * @param {number} count
+     */
+	createUri: function(type, start, count) {
+		var uri = (type? type.identifier: '/db') + '/all_oids';
+		
+		if (start > 0)
+			uri += ';start=' + start;
+		
+		if (count < Number.MAX_VALUE)
+			uri += ';count=' + count;
+		
+		return uri;
+	},
+	
+	doReceive: function() {
+		if (this.response.statusCode == 200)
+			this.oids = this.response.entity;
+		else
+			throw new jspa.error.CommunicationError(this);
+	}
+});
+/**
+ * @class jspa.message.GetAllSchemas
+ * @extends jspa.message.Message
+ */
+jspa.message.GetAllSchemas = jspa.message.Message.inherit({
+	/**
+	 * @constructor
+	 * @param {jspa.metamodel.Metamodel}
+	 */
+	initialize: function(metamodel) {
+		this.superCall('get', '/db/all_schemas');
+		
+		this.metamodel = metamodel;
+	},
+	
+	doReceive: function() {
+		if (this.response.statusCode == 200) {
+			var builder = new jspa.metamodel.ModelBuilder(this.metamodel);
+			this.models = builder.buildModels(this.response.entity);
+		} else {
+			throw new jspa.error.CommunicationError(this);
+		}
+	}
+});
+
+/**
+ * @class jspa.message.GetBucketQuery
+ * @extends jspa.message.Message
+ */
+jspa.message.GetBucketQuery = jspa.message.Message.inherit({
+	/**
+	 * @constructor
+	 * @param {jspa.metamodel.EntityType} type
+     * @param {String} query
+     * @param {number} start
+     * @param {number} count
+	 */
+	initialize: function(type, query, start, count) {
+		this.superCall('get', this.createUri(type, query, start, count));
+	},
+
+    /**
+     * @param {jspa.metamodel.EntityType} type
+     * @param {String} query
+     * @param {number} start
+     * @param {number} count
+     */
+	createUri: function(type, query, start, count) {
+		var uri = type.identifier;
+
+        uri += '?query=' + encodeURIComponent(query);
+
+		if (start > 0)
+			uri += '?start=' + start;
+		
+		if (count < Number.MAX_VALUE)
+			uri += '?count=' + count;
+		
+		return uri;
+	},
+	
+	doReceive: function() {
+		if (this.response.statusCode == 200)
+			this.oids = this.response.entity;
+		else
+			throw new jspa.error.CommunicationError(this);
+	}
+});
+/**
+ * @class jspa.message.GetObject
+ * @extends jspa.message.Message
+ */
+jspa.message.GetObject = jspa.message.Message.inherit({
+	/**
+	 * @constructor
+	 * @param {jspa.util.State} state
+	 * @param {String} tid
+	 */
+	initialize: function(state, tid) {
+		var id = state.getIdentifier();
+		
+		if (tid) {
+			id = id.replace('/db/', '/transaction/' + tid + '/dbview/');
+		}
+		
+		this.superCall('get', id);
+		
+		this.state = state;
+	},
+	
+	doSend: function() {
+		var version = this.state.getVersion();
+		if (version) {			
+			Object.extend(this.request.headers, {
+				'cache-control': 'max-age=0, no-cache',
+				'pragma': 'no-cache'
+			});
+			
+			// we can revalidate if the object is not dirty
+			if (!this.state.isDirty) {
+				this.request.headers['if-none-match'] = version == '*'? version: '"' + version + '"';
+			}
+		}
+	},
+	
+	doReceive: function() {
+		switch (this.response.statusCode) {
+			case 304:			
+				break;
+			case 200:
+				this.state.setDatabaseObject(this.response.entity);
+				this.state.setPersistent();
+				break;
+			case 404:
+				this.state.setDeleted();
+				break;
+			default:
+				throw new jspa.error.CommunicationError(this);
+		}
+	}
+});
+/**
+ * @class jspa.message.PostAllSchemas
+ * @extends jspa.message.Message
+ */
+jspa.message.PostAllSchemas = jspa.message.Message.inherit({
+	/**
+	 * @constructor
+	 * @param {jspa.metamodel.Metamodel} metamodel
+     * @param {String} types
+	 */
+	initialize: function(metamodel, types) {
+		this.superCall('post', '/db/all_schemas');
+		
+		this.metamodel = metamodel;
+		this.types = types;
+	},
+	
+	doSend: function() {
+		this.request.entity = this.types;
+	},
+	
+	doReceive: function() {
+		if (this.response.statusCode == 200) {
+			var builder = new jspa.metamodel.ModelBuilder(this.metamodel);
+			this.models = builder.buildModels(this.response.entity);
+		} else {
+			throw new jspa.error.CommunicationError(this);
+		}
+	}
+});
+/**
+ * @class jspa.message.PostObject
+ * @extends jspa.message.Message
+ */
+jspa.message.PostObject = jspa.message.Message.inherit({
+	/**
+	 * @constructor
+	 * @param {jspa.util.State} state
+	 */
+	initialize: function(state) {
+		this.superCall('post', state.type.identifier);
+		
+		this.state = state;
+	},
+	
+	doSend: function() {
+		this.request.entity = this.state.getDatabaseObject();
+	},
+	
+	doReceive: function() {
+		switch (this.response.statusCode) {
+			case 201:
+			case 202:
+				this.state.setDatabaseObject(this.response.entity);
+				this.state.setPersistent();
+				break;
+			case 404:
+				this.state.setDeleted();
+				break;
+			default:
+				throw new jspa.error.CommunicationError(this);
+		}
+	}
+});
+
+/**
+ * @class jspa.message.PostTransaction
+ * @extends jspa.message.Message
+ */
+jspa.message.PostTransaction = jspa.message.Message.inherit({
+	/**
+	 * @constructor
+	 */
+	initialize: function() {
+		this.superCall('post', '/transaction');
+		
+		Object.extend(this.response.headers, {
+			'location': null
+		});
+	},
+	
+	doReceive: function() {
+		if (this.response.statusCode == 201) {
+			this.tid = this.response.headers['location'].split('/transaction/').pop();
+		} else
+			throw new jspa.error.CommunicationError(this);
+	}
+});
+/**
+ * @extends jspa.message.Message
+ * @class jspa.message.PutObject
+ */
+jspa.message.PutObject = jspa.message.Message.inherit({
+	/**
+	 * @constructor
+	 * @param {jspa.util.State} state
+	 */
+	initialize: function(state) {
+		this.superCall('put', state.getIdentifier());
+		
+		this.state = state;
+	},
+	
+	doSend: function() {
+		var version = this.state.getVersion();
+		
+		Object.extend(this.request.headers, {
+			'if-match': !version || version == '*'? '*': '"' + version + '"'
+		});
+		
+		this.request.entity = this.state.getDatabaseObject();
+	},
+	
+	doReceive: function() {
+		switch (this.response.statusCode) {
+			case 200:
+				this.state.setDatabaseObject(this.response.entity);
+				//mark as persistent in next case
+			case 202:
+				this.state.setPersistent();
+				break;
+			case 404: 
+				this.state.setDeleted();
+				break;
+			default:
+				throw new jspa.error.CommunicationError(this);
+		}
+	}
+});
+/**
+ * @class jspa.message.PutTransactionAborted
+ * @extends jspa.message.Message
+ */
+jspa.message.PutTransactionAborted = jspa.message.Message.inherit({
+	/**
+	 * @constructor
+	 * @param {String} tid
+	 */
+	initialize: function(tid) {
+		this.superCall('put', '/transaction/' + tid + '/aborted');
+	},
+	
+	doReceive: function() {
+		if (this.response.statusCode != 202)
+			throw new jspa.error.CommunicationError(this);
+	}
+});
+/**
+ * @class jspa.message.PutTransactionTidCommitted
+ * @extends jspa.message.Message
+ */
+jspa.message.PutTransactionCommitted = jspa.message.Message.inherit({
+	/**
+	 * @constructor
+	 * @param {String} tid
+     * @param {Object} readSet
+	 */
+	initialize: function(tid, readSet) {
+		this.superCall('put', '/transaction/' + tid + '/committed', readSet);
+	},
+	
+	doReceive: function() {
+		switch (this.response.statusCode) {
+			case 200:
+				this.oids = this.response.entity;
+				break;
+			case 412:
+				throw new jspa.error.RollbackError();
+			default:
+				throw new jspa.error.CommunicationError(this);
+		}
+	}
+});
+/**
+ * @class jspa.metamodel.Attribute
+ */
+jspa.metamodel.Attribute = Object.inherit({
+
+	extend: {
+		PersistentAttributeType: {
+			BASIC: 0,
+			ELEMENT_COLLECTION: 1,
+			EMBEDDED: 2,
+			MANY_TO_MANY: 3,
+			MANY_TO_ONE: 4,
+			ONE_TO_MANY: 5,
+			ONE_TO_ONE: 6
+		}
+	},
+	
+	/**
+	 * @type Boolean
+	 */
+	isAssociation: {
+		get: function() {
+			return this.persistentAttributeType > jspa.metamodel.Attribute.PersistentAttributeType.EMBEDDED;
+		}
+	},
+	
+	/**
+	 * @type {Boolean}
+	 */
+	isCollection: {
+		get: function() {
+			return this.persistentAttributeType == jspa.metamodel.Attribute.PersistentAttributeType.ELEMENT_COLLECTION;
+		}
+	},
+
+	/**
+	 * @type {Boolean}
+	 */
+	isId: false,
+
+	/**
+	 * @type {Boolean}
+	 */
+	isVersion: false,
+	
+	/**
+	 * @constructor
+	 * @param {jspa.metamodel.EntityType} declaringType
+	 * @param {String} name
+	 */
+	initialize: function(declaringType, name) {
+		this.accessor = new jspa.binding.Accessor();
+		this.declaringType = declaringType;
+		this.name = name;
+	},
+	
+	/**
+	 * @param {Object} entity
+	 * @returns {*}
+	 */
+	getValue: function(entity) {
+        if (this.isId || this.isVersion)
+            return entity._objectInfo[this.name];
+
+        return this.accessor.getValue(entity, this);
+	},
+	
+	/**
+	 * @param {Object} entity
+	 * @param {*} value
+	 */
+	setValue: function(entity, value) {
+        if (this.isId || this.isVersion) {
+            entity._objectInfo[this.name] = value;
+        } else {
+            this.accessor.setValue(entity, this, value);
+        }
+	}
+});
+/**
+ * @class jspa.metamodel.Type
+ */
+jspa.metamodel.Type = Object.inherit({
+	extend: {
+		PersistenceType: {
+			BASIC: 0,
+			EMBEDDABLE: 1,
+			ENTITY: 2,
+			MAPPED_SUPERCLASS: 3
+		}
+	},
+
+    /**
+     * @type {Boolean}
+     */
+	isBasic: {
+		get: function() {
+			return this.persistenceType == jspa.metamodel.Type.PersistenceType.BASIC;
+		}
+	},
+
+    /**
+     * @type {Boolean}
+     */
+	isEmbeddable: {
+		get: function() {
+			return this.persistenceType == jspa.metamodel.Type.PersistenceType.EMBEDDABLE;
+		}
+	},
+
+    /**
+     * @type {Boolean}
+     */
+	isEntity: {
+		get: function() {
+			return this.persistenceType == jspa.metamodel.Type.PersistenceType.ENTITY;
+		}
+	},
+
+    /**
+     * @type {Boolean}
+     */
+	isMappedSuperclass: {
+		get: function() {
+			return this.persistenceType == jspa.metamodel.Type.PersistenceType.MAPPED_SUPERCLASS;
+		}
+	},
+
+    /**
+     * @type Number
+     */
+    persistenceType: -1,
+	
+	/**
+	 * @constructor
+	 * @memberOf jspa.metamodel.Type
+	 * @param {String} identifier
+	 * @param {Function} typeConstructor
+	 */
+	initialize: function(identifier, typeConstructor) {
+		this.identifier = identifier;
+		this.typeConstructor = typeConstructor;
+	},
+
+    /**
+     * @param {jspa.binding.ClassUtil} classUtil
+     */
+	init: function(classUtil) {
+		this.classUtil = classUtil;
+
+		if (!this.classUtil.getIdentifier(this.typeConstructor))
+			this.classUtil.setIdentifier(this.typeConstructor, this.identifier);
+	},
+	
+	/**
+	 * @returns {Object}
+	 */
+	create: function() {
+		return this.classUtil.create(this);
+	},
+	
+	/**
+	 * @param {jspa.util.State} state
+	 * @param {Object} value
+	 * @returns {*}
+	 */
+	toDatabaseValue: function(state, value) {},
+	
+	/**
+	 * @param {jspa.util.State} state
+     * @param {Object} currentValue
+	 * @param {*} value
+	 * @returns {*}
+	 */
+	fromDatabaseValue: function(state, currentValue, value) {}
+});
+/**
+ * @class jspa.metamodel.BasicType
+ * @extends jspa.metamodel.Type
+ */
+jspa.metamodel.BasicType = jspa.metamodel.Type.inherit({
+	persistenceType: jspa.metamodel.Type.PersistenceType.BASIC,
+	
+	isCollection: false,
+	
+	/**
+	 * @constructor
+	 * @param {String} identifier
+	 * @param {Function} typeConstructor
+	 */
+	initialize: function(identifier, typeConstructor) {
+		if (identifier.indexOf('/') == -1)
+			identifier = '/db/_native.' + identifier;
+
+		this.superCall(identifier, typeConstructor);
+	},
+
+    /**
+     * @param {jspa.util.State} state
+     * @param {Object} currentValue
+     * @returns {Object}
+     */
+    toDatabaseValue: function(state, currentValue) {
+        if (currentValue === null || currentValue === undefined) {
+            return null;
+        }
+
+        return this.typeConstructor.asInstance(currentValue);
+    },
+
+    /**
+     * @param {jspa.util.State} state
+     * @param {*} currentValue
+     * @param {*} value
+     * @returns {*}
+     */
+    fromDatabaseValue: function(state, currentValue, value) {
+        if (value === null || value === undefined) {
+            return null;
+        }
+
+        return this.typeConstructor.asInstance(value);
+    }
+});
+/**
+ * @class jspa.metamodel.PluralAttribute
+ * @extends jspa.metamodel.Attribute
+ */
+jspa.metamodel.PluralAttribute = jspa.metamodel.Attribute.inherit({
+	extend: {
+        /**
+         * @readonly
+         * @enum {number}
+         */
+        CollectionType: {
+			COLLECTION: 0,
+			LIST: 1,
+			MAP: 2,
+			SET: 3
+		}
+	},
+	
+	persistentAttributeType: jspa.metamodel.Attribute.PersistentAttributeType.ELEMENT_COLLECTION,
+	
+	/**
+	 * @constructor
+	 * @param {jspa.metamodel.EntityType} declaringType
+	 * @param {String} name
+	 * @param {Function} typeConstructor
+	 * @param {jspa.metamodel.Type} elementType
+	 */
+	initialize: function(declaringType, name, typeConstructor, elementType) {
+		this.superCall(declaringType, name);
+
+		this.typeConstructor = typeConstructor;
+		this.elementType = elementType;
+	},
+
+    /**
+     * @param {jspa.util.State} state
+     * @param {*} obj
+     * @return {Object}
+     */
+	getDatabaseValue: function(state, obj) {
+		var value = this.getValue(obj);
+		
+		if (value) {
+            // convert normal collections to tracked collections
+			if (!this.trackedConstructor.isInstance(value)) {
+				value = new this.trackedConstructor(value);
+
+                Object.defineProperty(value, '__jspaEntity__', {
+                    value: state.entity
+                });
+
+				this.setValue(obj, value);
+			}
+			
+			var json = [];
+			for (var iter = value.iterator(); iter.hasNext; ) {
+				var el = iter.next();
+				if (el === null) {
+					json.push(el);
+				} else {					
+					el = this.elementType.toDatabaseValue(state, el);
+					if (el !== null)
+						json.push(el);
+				}
+			}
+
+			return json;
+		} else {
+			return null;
+		}
+	},
+
+    /**
+     * @param {jspa.util.State} state
+     * @param {*} obj
+     * @param {Object} json
+     */
+	setDatabaseValue: function(state, obj, json) {
+		var value = null;
+
+        if (json) {
+			value = this.getValue(obj);
+			
+			if (!this.trackedConstructor.isInstance(value)) {
+				value = new this.trackedConstructor();
+
+                Object.defineProperty(value, '__jspaEntity__', {
+                    value: state.entity
+                });
+			}
+
+            var items = value.seq;
+            if (items.length > json.length)
+                items.splice(json.length, items.length - json.length);
+
+			for (var i = 0, len = json.length; i < len; ++i) {
+                items[i] = this.elementType.fromDatabaseValue(state, items[i], json[i]);
+			}
+
+            value.size = json.length;
+		}
+		
+		this.setValue(obj, value);
+	}
+});
+/**
+ * @class jspa.metamodel.CollectionAttribute
+ * @extends jspa.metamodel.PluralAttribute
+ */
+jspa.metamodel.CollectionAttribute = jspa.metamodel.PluralAttribute.inherit({
+
+    collectionType: jspa.metamodel.PluralAttribute.CollectionType.COLLECTION,
+
+    /**
+     * @constructor
+     * @param {jspa.metamodel.EntityType} declaringType
+     * @param {String} name
+     * @param {Function} typeConstructor
+     * @param {jspa.metamodel.Type} elementType
+     */
+	initialize: function(declaringType, name, typeConstructor, elementType) {
+		this.superCall(declaringType, name, typeConstructor, elementType);
+
+		this.trackedConstructor = typeConstructor.inherit(jspa.collection.Collection, {});
+	}
+});
+/**
+ * @class jspa.metamodel.ManagedType
+ * @extends jspa.metamodel.Type
+ */
+jspa.metamodel.ManagedType = jspa.metamodel.Type.inherit({
+	AttributeIterator: Object.inherit(jspa.Iterator, {
+		nextAttr: null,
+        index: 0,
+
+        initialize: function(type) {
+			this.type = type;
+            this.next();
+		},
+
+        /**
+         * @return {jspa.metamodel.Attribute}
+         */
+		next: function() {
+			var attr = this.nextAttr;
+
+            while (this.type.declaredAttributes.length == this.index && (this.type = this.type.supertype)) {
+                this.index = 0;
+            }
+			
+			this.hasNext = this.type != null;
+            if (this.hasNext) {
+                this.nextAttr = this.type.declaredAttributes[this.index++];
+            }
+
+			return attr;
+		}
+	}),
+
+    /**
+     * @type {jspa.metamodel.Attribute[]}
+     */
+	declaredAttributes: null,
+	
+	/**
+	 * @param {jspa.binding.ClassUtil} classUtil
+	 */
+	init: function(classUtil) {
+		if (!this.typeConstructor) {
+			this.typeConstructor = classUtil.loadClass(this);
+
+			this.superCall(classUtil);
+			this.classUtil.enhance(this, this.typeConstructor);
+		} else {
+			this.superCall(classUtil);
+		}
+	},
+
+    /**
+     * @return {jspa.metamodel.ManagedType.AttributeIterator}
+     */
+	attributes: function() {
+		return new this.AttributeIterator(this);
+	},
+	
+	/**
+	 * @param {!String} name
+	 * @returns {jspa.metamodel.Attribute}
+	 */
+	getAttribute: function(name) {
+        var attr = this.getDeclaredAttribute(name);
+
+        if (!attr && this.supertype) {
+            attr = this.supertype.getAttribute(name);
+        }
+
+		return attr;
+	},
+	
+	/**
+	 * @param {String} name
+	 * @returns {jspa.metamodel.Attribute}
+	 */
+	getDeclaredAttribute: function(name) {
+        for (var i = 0, attr; attr = this.declaredAttributes[i]; ++i) {
+            if (attr.name == name) {
+                return attr;
+            }
+        }
+
+        return null;
+	},
+
+    /**
+     * @param {jspa.util.State} state
+     * @param {*} obj
+     * @param {Object} value
+     * @return {*}
+     */
+    fromDatabaseValue: function(state, obj, value) {
+        if (value && value._objectInfo['class'] == this.identifier) {
+            for (var iter = this.attributes(); iter.hasNext; ) {
+                var attribute = iter.next();
+
+                attribute.setDatabaseValue(state, obj, value[attribute.name]);
+            }
+        } else {
+            obj = null;
+        }
+
+        return obj;
+    },
+
+    /**
+     * @param {jspa.util.State} state
+     * @param {*} obj
+     * @return {Object}
+     */
+    toDatabaseValue: function(state, obj) {
+        var value = null;
+
+        if (this.typeConstructor.isInstance(obj)) {
+            value = {
+                _objectInfo: {
+                    'class': this.identifier
+                }
+            };
+
+            for (var iter = this.attributes(); iter.hasNext; ) {
+                var attribute = iter.next();
+
+                value[attribute.name] = attribute.getDatabaseValue(state, obj);
+            }
+        }
+
+        return value;
+    }
+});
+/**
+ * @class jspa.metamodel.EmbeddableType
+ * @extends jspa.metamodel.ManagedType
+ */
+jspa.metamodel.EmbeddableType = jspa.metamodel.ManagedType.inherit({
+	persistenceType: jspa.metamodel.Type.PersistenceType.EMBEDDABLE,
+
+    /**
+     * @param {jspa.util.State} state
+     * @param {*} obj
+     * @param {Object} value
+     * @return {*}
+     */
+    fromDatabaseValue: function(state, obj, value) {
+        if (!obj && value) {
+            obj = this.create();
+
+            Object.defineProperty(obj, '__jspaEntity__', {
+                value: state.entity
+            });
+        }
+
+        return this.superCall(state, obj, value);
+    }
+});
+/**
+ * @class jspa.metamodel.EntityType
+ * @extends jspa.metamodel.ManagedType
+ */
+jspa.metamodel.EntityType = jspa.metamodel.ManagedType.inherit({
+	persistenceType: jspa.metamodel.Type.PersistenceType.ENTITY,
+	
+	declaredId: null,
+	declaredVersion: null,
+	
+	/**
+	 * @type {String}
+	 */
+	id: {
+		get: function() {
+			return this.declaredId || this.supertype.id;
+		}
+	},
+	
+	/**
+	 * @type {String}
+	 */
+	version: { 
+		get: function() {
+			return this.declaredVersion || this.supertype.version;
+		}
+	},
+
+    /**
+     * @constructor
+     * @param {String} identifier
+     * @param {jspa.metamodel.EntityType} supertype
+     * @param {Function} typeConstructor
+     */
+    initialize: function(identifier, supertype, typeConstructor) {
+        this.superCall(identifier, typeConstructor);
+
+        this.supertype = supertype;
+    },
+
+    /**
+     * @param {jspa.util.State} state
+     * @param {*} obj
+     * @param {Object} value
+     * @return {*}
+     */
+	fromDatabaseValue: function(state, obj, value) {
+        if (state.entity == obj) {
+            this.superCall(state, obj, value);
+            return obj;
+        } else if (value) {
+			return state.entityManager.getReference(value);
+		} else {
+			return null;
+		}
+	},
+
+    /**
+     * @param {jspa.util.State} state
+     * @param {*} obj
+     * @return {Object}
+     */
+	toDatabaseValue: function(state, obj) {
+        if (state.entity == obj) {
+            var value = this.superCall(state, obj);
+            var info = value._objectInfo;
+
+            var oid = state.getReference();
+            if (oid) {
+                info['oid'] = oid;
+            }
+
+            var version = state.getVersion();
+            if (version) {
+                info['version'] = version;
+            }
+
+            var transaction = state.getTransactionIdentifier();
+            if (transaction) {
+                info['transaction'] = transaction;
+            }
+
+            return value;
+        } else if (this.typeConstructor.isInstance(obj)) {
+            var valueState = jspa.util.State.get(obj);
+            if (valueState && !valueState.isDeleted) {
+                var data = valueState.getReference();
+                if (data) {
+                    return data;
+                } else {
+                    state.isDirty = true;
+                }
+            }
+        }
+		
+		return null;
+	}
+});
+/**
+ * @class jspa.metamodel.ListAttribute
+ * @extends jspa.metamodel.PluralAttribute
+ */
+jspa.metamodel.ListAttribute = jspa.metamodel.PluralAttribute.inherit({
+
+	collectionType: jspa.metamodel.PluralAttribute.CollectionType.LIST,
+
+    /**
+     * @constructor
+     * @param {jspa.metamodel.EntityType} declaringType
+     * @param {String} name
+     * @param {Function} typeConstructor
+     * @param {jspa.metamodel.Type} elementType
+     */
+	initialize: function(declaringType, name, typeConstructor, elementType) {
+		this.superCall(declaringType, name, typeConstructor, elementType);
+		
+		this.trackedConstructor = typeConstructor.inherit(jspa.collection.List, {});
+	}
+});
+/**
+ * @class jspa.metamodel.MapAttribute
+ * @extends jspa.metamodel.PluralAttribute
+ */
+jspa.metamodel.MapAttribute = jspa.metamodel.PluralAttribute.inherit({
+
+	collectionType: jspa.metamodel.PluralAttribute.CollectionType.MAP,
+	
+	/**
+	 * @constructor
+	 * @param {jspa.metamodel.EntityType} declaringType
+	 * @param {String} name
+	 * @param {Function} typeConstructor
+	 * @param {jspa.metamodel.Type} keyType
+	 * @param {jspa.metamodel.Type} elementType
+	 */
+	initialize: function(declaringType, name, typeConstructor, keyType, elementType) {
+		this.superCall(declaringType, name, typeConstructor, elementType);
+		
+		this.keyType = keyType;
+        this.trackedConstructor = typeConstructor.inherit(jspa.collection.Map, {});
+	},
+
+    /**
+     * @param {jspa.util.State} state
+     * @param {*} obj
+     * @return {Object}
+     */
+	getDatabaseValue: function(state, obj) {
+		var value = this.getValue(obj);
+
+		if (value) {
+			if (!this.trackedConstructor.isInstance(value)) {
+				value = new this.trackedConstructor(value);
+
+                Object.defineProperty(value, '__jspaEntity__', {
+                    value: state.entity
+                });
+
+				this.setValue(obj, value);
+			}
+
+			var json = [];
+			for (var iter = value.items(); iter.hasNext; ) {
+				var item = iter.next();
+				var key = this.keyType.toDatabaseValue(state, item[0]);
+				if (item[0] === null || key !== null) {
+					json.push({
+						key: key,
+						value: this.elementType.toDatabaseValue(state, item[1])
+					});
+				}
+			}
+
+			return json;
+		} else {
+			return null;
+		}
+	},
+
+    /**
+     * @param {jspa.util.State} state
+     * @param {*} obj
+     * @param {Object} json
+     */
+	setDatabaseValue: function(state, obj, json) {
+		var value = null;
+		if (json) {			
+			value = this.getValue(obj);
+			
+			if (!this.trackedConstructor.isInstance(value)) {
+				value = new this.trackedConstructor();
+                Object.defineProperty(value, '__jspaEntity__', {
+                    value: state.entity
+                });
+			}
+
+            var keys = value.seq;
+            var vals = value.vals;
+
+            if (keys.length > json.length) {
+                keys.splice(json.length, keys.length - json.length);
+                vals.splice(json.length, vals.length - json.length);
+            }
+
+			for (var i = 0, len = json.length; i < len; ++i) {
+				var item = json[i];
+				keys[i] = this.keyType.fromDatabaseValue(state, keys[i], item.key);
+				vals[i] = this.elementType.fromDatabaseValue(state, vals[i], item.value);
+			}
+
+            value.size = json.length;
+		}
+
+		this.setValue(obj, value);
+	}
+});
+/**
+ * @class jspa.metamodel.Metamodel
+ */
+jspa.metamodel.Metamodel = Object.inherit({
+	/**
+	 * @constructor
+	 */
+	initialize: function() {
+		this.baseTypes = {};
+		this.entities = {};
+        this.embeddables = {};
+		
+		this.classUtil = new jspa.binding.ClassUtil();
+
+		this.addType(new jspa.metamodel.BasicType('Boolean', Boolean));
+
+		this.addType(new jspa.metamodel.BasicType('Float', Number));
+		this.addType(new jspa.metamodel.BasicType('Integer', Number));
+		this.addType(new jspa.metamodel.BasicType('String', String));
+
+        this.addType(new (jspa.metamodel.BasicType.inherit({
+            toDatabaseValue: function(state, currentValue) {
+                var value = this.superCall(state, currentValue);
+                if (value) {
+                    value = value.toISOString();
+                    value = value.substring(0, value.indexOf('T'));
+                }
+                return value;
+            }
+        }))('Date', Date));
+
+        this.addType(new (jspa.metamodel.BasicType.inherit({
+            toDatabaseValue: function(state, currentValue) {
+                var value = this.superCall(state, currentValue);
+                if (value) {
+                    value = value.toISOString();
+                    value = value.substring(value.indexOf('T') + 1);
+                }
+                return value;
+            },
+            fromDatabaseValue: function(state, currentValue, json) {
+                return this.superCall(state, currentValue, json? 'T' + json: json);
+            }
+        }))('Time', Date));
+
+        this.addType(new jspa.metamodel.BasicType('DateTime', Date));
+		
+		var objectModel = new jspa.metamodel.EntityType('/db/_native.Object', null, Object);
+		objectModel.declaredAttributes = [];
+		objectModel.declaredId = new jspa.metamodel.SingularAttribute(objectModel, 'oid', this.baseType(String));
+        objectModel.declaredId.isId = true;
+
+		objectModel.declaredVersion = new jspa.metamodel.SingularAttribute(objectModel, 'version', this.baseType(String));
+        objectModel.declaredVersion.isVersion = true;
+
+		this.addType(objectModel);
+	},
+
+    /**
+     * @param {(Function|String)} arg
+     * @return {String}
+     */
+    identifierArg: function(arg) {
+        var identifier;
+        if (String.isInstance(arg)) {
+            identifier = arg;
+
+            if (identifier.indexOf('/db/') != 0) {
+                identifier = '/db/' + arg;
+            }
+        } else {
+            identifier = this.classUtil.getIdentifier(arg);
+        }
+
+        return identifier;
+    },
+	
+	/**
+	 * @param {(Function|String)} typeConstructor
+	 * @returns {jspa.metamodel.EntityType}
+	 */
+	entity: function(typeConstructor) {
+		var identifier = this.identifierArg(typeConstructor);
+		return identifier? this.entities[identifier]: null;
+	},
+	
+	/**
+	 * @param {(Function|String)} typeConstructor
+	 * @returns {jspa.metamodel.BasicType}
+	 */
+	baseType: function(typeConstructor) {
+        if (String.isInstance(typeConstructor) && typeConstructor.indexOf('_native.') == -1)
+            typeConstructor = '/db/_native.' + typeConstructor;
+
+        var identifier = this.identifierArg(typeConstructor);
+		return identifier? this.baseTypes[identifier]: null;
+	},
+
+    /**
+     * @param {(Function|String)} typeConstructor
+     * @returns {jspa.metamodel.EmbeddableType}
+     */
+    embeddable: function(typeConstructor) {
+        var identifier = this.identifierArg(typeConstructor);
+        return identifier? this.embeddables[identifier]: null;
+    },
+	
+	addType: function(type) {
+        var types;
+
+        if (type.isBasic) {
+            types = this.baseTypes;
+        } else if (type.isEmbeddable) {
+            types = this.embeddables;
+        } else if (type.isEntity) {
+            types = this.entities;
+        }
+
+        if (!(type.identifier in types)) {
+            type.init(this.classUtil);
+            types[type.identifier] = type;
+        }
+	}
+});
+/**
+ * @class jspa.metamodel.ModelBuilder
+ */
+jspa.metamodel.ModelBuilder = Object.inherit({
+	/**
+	 * @constructor
+	 * @param {jspa.metamodel.Metamodel} metamodel
+	 */
+	initialize: function(metamodel) {
+		this.metamodel = metamodel;
+		this.objectType = metamodel.entity(Object);
+	},
+	
+	/**
+	 * @param {String} identifier
+	 * @returns {jspa.metamodel.EntityType}
+	 */
+	getModel: function(identifier) {
+		var model = null;
+		if (identifier.indexOf('/db/_native') == 0) {
+			model = this.metamodel.baseType(identifier);
+		} else {
+			model = this.metamodel.entity(identifier);
+            if (!model)  {
+                model = this.metamodel.embeddable(identifier);
+            }
+
+			if (!model && identifier in this.models) {
+				model = this.models[identifier];
+			}
+			
+			if (!model) {
+				model = this.buildModel(identifier);
+			}
+		}
+		
+		if (model) {
+			return model;
+		} else {			
+			throw new TypeError('no model available for ' + identifier);
+		}		
+	},
+	
+	/**
+	 * @param {Object}
+	 * @returns {jspa.metamodel.EntityType[]}
+	 */
+	buildModels: function(modelDescriptors) {
+		this.modelDescriptors = {};
+		for (var i = 0, modelDescriptor; modelDescriptor = modelDescriptors[i]; ++i) {
+			this.modelDescriptors[modelDescriptor['class']] = modelDescriptor;
+		}
+		
+		this.models = {};
+		for (var identifier in this.modelDescriptors) {
+			try {
+				var model = this.getModel(identifier);
+				model.declaredAttributes = this.buildAttributes(model);				
+			} catch (e) {
+				throw new jspa.error.PersistentError('Can\'t create model for entity class ' + identifier, e);
+			}
+		}
+		
+		return this.models;
+	},
+	
+	/**
+	 * @param {String} identifier
+	 * @returns {jspa.metamodel.EntityType}
+	 */
+	buildModel: function(identifier) {
+		var modelDescriptor = this.modelDescriptors[identifier];
+		if (modelDescriptor) {
+			var superTypeIdentifier = modelDescriptor['superClass'];
+			var superType = superTypeIdentifier? this.getModel(superTypeIdentifier): this.objectType;
+
+            var type;
+            if (modelDescriptor.embedded) {
+                type = new jspa.metamodel.EmbeddableType(identifier)
+            } else {
+                type = new jspa.metamodel.EntityType(identifier, superType);
+            }
+			
+			this.models[identifier] = type;
+			return type;			
+		} else {
+			return null;
+		}
+	},
+	
+	/**
+	 * @param {jspa.metamodel.EntityType} model
+	 * @returns {jspa.metamodel.Attribute[]}
+	 */
+	buildAttributes: function(model) {
+		if (model.identifier in this.models) {
+			var fields = this.modelDescriptors[model.identifier]['fields'];
+			
+			var attributes = [];
+			for (var i = 0, field; field = fields[i]; ++i) {
+				attributes.push(this.buildAttribute(model, field.name, field.type));
+			}
+			
+			return attributes;
+		} else {
+			return null;
+		}
+	},
+	
+	/**
+	 * @param {jspa.metamodel.EntityType} model
+	 * @param {String} name
+	 * @param {String} identifier
+	 * @returns {jspa.metamodel.Attribute}
+	 */
+	buildAttribute: function(model, name, identifier) {
+		if (identifier.indexOf('/db/_native.collection') == 0) {
+			var collectionType = identifier.substring(0, identifier.indexOf('['));
+			
+			var elementType = identifier.substring(identifier.indexOf('[') + 1, identifier.indexOf(']')).trim();
+			switch (collectionType) {
+				case '/db/_native.collection.List':
+					return new jspa.metamodel.ListAttribute(model, name, jspa.List, this.getModel(elementType));
+				case '/db/_native.collection.Set':
+					return new jspa.metamodel.SetAttribute(model, name, jspa.Set, this.getModel(elementType));
+				case '/db/_native.collection.Map':
+					var keyType = elementType.substring(0, elementType.indexOf(',')).trim();
+					elementType = elementType.substring(elementType.indexOf(',') + 1).trim();
+					
+					return new jspa.metamodel.MapAttribute(model, name, jspa.Map, this.getModel(keyType), this.getModel(elementType));
+				default:
+					throw new TypeError('no collection available for ' + identifier); 
+			}
+		} else {
+			return new jspa.metamodel.SingularAttribute(model, name, this.getModel(identifier));
+		}
+	}
+});
+/**
+ * @class jspa.metamodel.SetAttribute
+ * @extends jspa.metamodel.PluralAttribute
+ */
+jspa.metamodel.SetAttribute = jspa.metamodel.PluralAttribute.inherit({
+
+    collectionType: jspa.metamodel.PluralAttribute.CollectionType.SET,
+
+    /**
+     * @constructor
+     * @param {jspa.metamodel.EntityType} declaringType
+     * @param {String} name
+     * @param {Function} typeConstructor
+     * @param {jspa.metamodel.Type} elementType
+     */
+	initialize: function(declaringType, name, typeConstructor, elementType) {
+		this.superCall(declaringType, name, typeConstructor, elementType);
+
+		this.trackedConstructor = typeConstructor.inherit(jspa.collection.Set, {});
+	}
+});
+/**
+ * @class jspa.metamodel.SingularAttribute
+ * @extends jspa.metamodel.Attribute
+ */
+jspa.metamodel.SingularAttribute = jspa.metamodel.Attribute.inherit({
+	
+	typeConstructor: {
+		get: function() {
+			return this.type.typeConstructor;
+		}
+	},
+
+    /**
+     * @type Number
+     */
+    persistentAttributeType: -1,
+
+    /**
+     * @constructor
+     * @param {jspa.metamodel.EntityType} declaringType
+     * @param {String} name
+     * @param {jspa.metamodel.Type} type
+     */
+	initialize: function(declaringType, name, type) {
+		this.superCall(declaringType, name);
+		
+		this.type = type;
+
+		switch (type.persistenceType) {
+			case jspa.metamodel.Type.PersistenceType.BASIC:				
+				this.persistentAttributeType = jspa.metamodel.Attribute.PersistentAttributeType.BASIC;
+				break;
+			case jspa.metamodel.Type.PersistenceType.EMBEDDABLE:
+				this.persistentAttributeType = jspa.metamodel.Attribute.PersistentAttributeType.EMBEDDED;
+				break;
+			case jspa.metamodel.Type.PersistenceType.ENTITY:
+				this.persistentAttributeType = jspa.metamodel.Attribute.PersistentAttributeType.ONE_TO_MANY;
+				break;
+		}
+	},
+
+    /**
+     * @param {jspa.util.State} state
+     * @param {*} obj
+     * @return {*}
+     */
+	getDatabaseValue: function(state, obj) {
+		return this.type.toDatabaseValue(state, this.getValue(obj));
+	},
+
+    /**
+     * @param {jspa.util.State} state
+     * @param {*} obj
+     * @param {*} value
+     */
+	setDatabaseValue: function(state, obj, value) {
+		this.setValue(obj, this.type.fromDatabaseValue(state, this.getValue(obj), value));
+	}
+});
+/**
  * @class jspa.PersistenceUnitUtil
  */
 jspa.PersistenceUnitUtil = Object.inherit({
@@ -1456,7 +3587,8 @@ jspa.PersistenceUnitUtil = Object.inherit({
 			}
 		}
 	}
-});/**
+});
+/**
  * @class jspa.Query
  * @extends jspa.util.QueueConnector
  */
@@ -1566,2092 +3698,8 @@ jspa.TypedQuery = jspa.Query.inherit({
 		this.superCall(entityManager, qlString);
 		this.resultClass = resultClass;
 	}
-});/**
- * @class jspa.binding.Accessor
- */
-jspa.binding.Accessor = Object.inherit({
-	/**
-	 * @param {Object} object
-	 * @param {jspa.metamodel.Attribute} attribute
-	 * @returns {*}
-	 */
-	getValue: function(object, attribute) {
-		return object[attribute.name];
-	},
-	 
-	/**
-	 * @param {Object} object
-	 * @param {jspa.metamodel.Attribute} attribute
-	 * @param {*} value
-	 */
-	setValue: function(object, attribute, value) {
-		object[attribute.name] = value;
-	}
-});/**
- * @class jspa.binding.ClassUtil
- */
-jspa.binding.ClassUtil = Object.inherit({
-	extend: {
-		classLoaders: [],
-		
-		initialize: function() {
-			this.addClassLoader(this.proxyLoader);
-			this.addClassLoader(this.globalLoader);
-			this.addClassLoader(this.moduleLoader);
-		},
-		
-		loadClass: function(model) {
-			var el = /\/db\/(([\w\.]*)\.)?(\w*)/.exec(model.identifier);
-
-			var namespace = el[1];
-			var className = el[3];
-			
-			for (var i = this.classLoaders.length - 1, loader; loader = this.classLoaders[i]; --i) {
-				try {
-					return loader(model, namespace, className);
-				} catch (e) {}
-			}
-			
-			throw new TypeError('The class for ' + model.identifier + ' was not found!');
-		},
-		
-		addClassLoader: function(classLoader) {
-			this.classLoaders.push(classLoader);
-		},
-		
-		removeClassLoader: function(classLoader) {
-			var index = this.classLoaders.indexOf(classLoader);
-			if (index != -1) {
-				this.classLoaders.splice(index, 1);
-			}
-		},
-		
-		globalLoader: function(model, namespace, className) {
-			var context = typeof window != 'undefined'? window: global;
-			
-			var n = context;
-            if (namespace) {
-                var fragments = namespace.split('.');
-                for (var i = 0, fragment; n && (fragment = fragments[i]); ++i) {
-                    n = n[fragment];
-                }
-            }
-			
-			var cls = n && n[className] /* || context[className] */; // name clash with dom classes
-			
-			if (cls) {
-				return cls;
-			} else {
-				throw new TypeError('The class was not found in the global context.');
-			}
-		},
-		
-		moduleLoader: function(model, namespace, name) {
-			var mod = module;
-			while (mod = mod.parent) {
-				if (name in mod) {
-					return name[mod];
-				}
-			}
-			
-			throw new TypeError('The class was not found in the parent modules.');
-		},
-		
-		proxyLoader: function(model) {
-            if (model.isEntity) {
-                console.log('Initialize proxy class for entity ' + model.identifier + '.');
-                return model.supertype.typeConstructor.inherit({});
-            } else if (model.isEmbeddable) {
-                console.log('Initialize proxy class for embeddable ' + model.identifier + '.');
-                return Object.inherit({});
-            } else {
-                throw new TypeError('No proxy class can be initialized.');
-            }
-		}
-	},
-	
-	/**
-	 * @param {Function} typeConstructor
-	 * @returns {String}
-	 */
-	getIdentifier: function(typeConstructor) {
-		return typeConstructor.__jspaId__;
-	},
-	
-	/**
-	 * @param {Function}
-	 * @param {String} identifier
-	 */
-	setIdentifier: function(typeConstructor, identifier) {
-		typeConstructor.__jspaId__ = identifier;
-	},
-	
-	/**
-	 * @param {jspa.metamodel.EntityType} type
-	 * @returns {Object}
-	 */
-	create: function(type) {
-		return Object.create(type.typeConstructor.prototype);
-	},
-	
-	/**
-	 * @param {String} model
-	 * @returns {Function}
-	 */
-	loadClass: function(model) {
-		return jspa.binding.ClassUtil.loadClass(model);
-	},
-	
-	/**
-	 * @param {jspa.metamodel.EntityType} type
-	 * @param {Function} typeConstructor
-	 */
-	enhance: function(type, typeConstructor) {
-        Object.defineProperty(typeConstructor.prototype, '_objectInfo', {
-            value: {
-                'class': type.identifier
-            },
-            writable: true,
-            enumerable: false
-        });
-
-		for (var name in type.declaredAttributes) {
-            var attribute = type.declaredAttributes[name];
-			this.enhanceProperty(type, attribute, typeConstructor);
-		}
-	},
-	
-	/**
-	 * @param {jspa.metamodel.EntityType} type
-	 * @param {jspa.metamodel.Attribute} attribute
-	 * @param {Function} typeConstructor
-	 */
-	enhanceProperty: function(type, attribute, typeConstructor) {
-		var name = '_' + attribute.name;
-		Object.defineProperty(typeConstructor.prototype, attribute.name, {
-			get: function() {
-				jspa.util.State.readAccess(this);
-				return this[name];
-			},
-			set: function(value) {
-				jspa.util.State.writeAccess(this);
-				this[name] = value;
-			},
-            configurable: true,
-            enumerable: true
-		});
-	}
-});
-
-jspa.collection.Collection = Trait.inherit({
-
-    size: {
-        get: function() {
-            jspa.util.State.readAccess(this);
-            return this._size;
-        },
-        set: function(value) {
-            this._size = value;
-        }
-    },
-
-    has: function(element) {
-        jspa.util.State.readAccess(this);
-        return this.superCall(element);
-    },
-
-    add: function(element) {
-        jspa.util.State.writeAccess(this);
-        this.superCall(element);
-    },
-
-    remove: function(element) {
-        jspa.util.State.writeAccess(this);
-        this.superCall(element);
-    },
-
-    items: function() {
-        jspa.util.State.readAccess(this);
-        return this.superCall();
-    },
-
-    iterator: function() {
-        jspa.util.State.readAccess(this);
-        return this.superCall();
-    },
-
-    toString: function() {
-        jspa.util.State.readAccess(this);
-        return this.superCall();
-    },
-
-    toJSON: function() {
-        jspa.util.State.readAccess(this);
-        return this.superCall();
-    }
-});jspa.collection.List = jspa.collection.Collection.inherit({
-	get: function(index) {
-		jspa.util.State.readAccess(this);
-		return this.superCall(index);
-	},
-	
-	set: function(index, value) {
-		jspa.util.State.writeAccess(this);
-		this.superCall(index, value);
-	},
-	
-	indexOf: function(value) {
-		jspa.util.State.readAccess(this);
-		return this.superCall(value);
-	},
-	
-	lastIndexOf: function(value) {
-		jspa.util.State.readAccess(this);
-		return this.superCall(value);
-	}
-});jspa.collection.Map = jspa.collection.Collection.inherit({
-	hasKey: function(key) {
-		jspa.util.State.readAccess(this);
-		return this.superCall(key);
-	},
-	
-	hasValue: function(value) {
-		jspa.util.State.readAccess(this);
-		return this.superCall(value);
-	},
-	
-	get: function(key) {
-		jspa.util.State.readAccess(this);
-		return this.superCall(key);
-	},
-	
-	set: function(key, value) {
-		jspa.util.State.writeAccess(this);
-		this.superCall(key, value);
-	},
-	
-	removeKey: function(key) {
-		jspa.util.State.writeAccess(this);
-		this.superCall(key);
-	},
-	
-	removeValue: function(value) {
-		jspa.util.State.writeAccess(this);
-		this.superCall(value);
-	},
-	
-	keys: function() {
-		jspa.util.State.readAccess(this);
-		return this.superCall();
-	}
-});
-jspa.collection.Set = jspa.collection.Collection.inherit({
-});/**
- * @class jspa.connector.Connector
- */
-jspa.connector.Connector = Object.inherit({
-	extend: {
-        /**
-         * @param {String} host
-         * @param {Number} port
-         * @return {jspa.connector.Connector}
-         */
-		create: function(host, port) {
-			if (!host && typeof window !== 'undefined') {
-				host = window.location.hostname;
-				port = window.location.port;
-			}
-			
-			if (host.indexOf('/') != -1) {
-				var matches = /^http:\/\/([^\/:]*)(:(\d*))?\/?$/.exec(host);
-				if (matches) {
-					host = matches[1];
-					port = matches[3];
-				} else {
-					throw new Error('The connection uri host ' + host + ' seems not to be valid');
-				}
-			}
-			
-			if (!port)
-				port = 80;
-			
-			for (var name in jspa.connector) {
-				var connector = jspa.connector[name];
-				if (connector.isUsable && connector.isUsable(host, port)) {
-					return new connector(host, port);
-				}
-			}
-			
-			throw new Error('No connector is usable for the requested connection');
-		}
-	},
-	
-	/**
-	 * @constructor
-	 * @param {String} host
-	 * @param {Integer} port
-	 */
-	initialize: function(host, port) {
-		this.host = host;
-		this.port = port;
-	},
-
-	/**
-     * @param {*} context
-	 * @param {jspa.message.Message} message
-     * @param {Boolean} sync
-     * @returns {jspa.Promise}
-	 */
-	send: function(context, message, sync) {
-		if (!sync) {			
-			message.deferred = new jspa.Deferred();
-			message.context = context;
-		}
-		
-		try {
-			message.doSend();
-			this.doSend(message);
-		} catch (e) {
-			e = jspa.error.PersistentError(e);
-
-			if (!message.deferred) {
-				throw e;
-			} else {				
-				message.deferred.rejectWith(context, [e]);
-			}
-		}
-		
-		if (message.deferred)
-			return message.deferred.promise();
-	},
-
-    /**
-     * @param {jspa.message.Message} message
-     */
-	receive: function(message) {
-		try {
-			message.doReceive();
-		} catch (e) {
-			e = jspa.error.PersistentError(e);
-
-			if (!message.deferred) {
-				throw e;
-			} else {				
-				message.deferred.rejectWith(message.context, [e]);
-			}
-		}
-		
-		if (message.deferred) {			
-			message.deferred.resolveWith(message.context, [message]);
-		}
-	},
-
-    /**
-     * @param {jspa.message.Message} message
-     */
-	doSend: function(message) {
-		throw new Error('Connector.doSend() not implemented');
-	},
-	
-	/**
-	 * @param {jspa.message.Message} message
-	 */
-	prepareRequestEntity: function(message) {
-		if (message.request.entity) {
-			message.request.headers['Content-Type'] = 'application/json;charset=utf-8';
-			return JSON.stringify(message.request.entity);
-		} else {
-			return null;
-		}
-	},
-
-    /**
-     * @param {jspa.message.Message} message
-     * @param {Object} data
-     */
-	prepareResponseEntity: function(message, data) {
-		var entity = null;
-		if (data && data.length > 0) {
-			entity = JSON.parse(data);
-		}
-		
-		message.response.entity = entity;
-	}
-});/**
- * @class jspa.connector.NodeConnector
- * @extends jspa.connector.Connector
- */
-jspa.connector.NodeConnector = jspa.connector.Connector.inherit({
-	extend: {
-		isUsable: function(host, port) {
-			if (!this.prototype.http) {
-				try {
-					var http = require('http');
-					if (http.ClientRequest) {
-						this.prototype.http = http;
-					} 
-				} catch (e) {};
-			}
-			return Boolean(this.prototype.http);
-		}
-	},
-	
-	/**
-	 * @param {jspa.message.Message} message
-	 */
-	doSend: function(message) {
-		if (!message.deferred)
-			throw new Error('Blocking IO is not supported');
-		
-		message.request.host = this.host;
-		message.request.port = this.port;
-		
-		var self = this;
-		var entity = this.prepareRequestEntity(message);
-		
-		if (entity)
-			message.request.headers['Transfer-Encoding'] = 'chunked';
-		
-		var req = this.http.request(message.request, function(res) {
-			var data = '';
-			
-			res.setEncoding('utf-8');
-			res.on('data', function(chunk) {
-				data += chunk;
-			});
-			res.on('end', function() {
-				message.response.statusCode = res.statusCode;
-				message.response.headers = res.headers;
-				self.prepareResponseEntity(message, data);
-				self.receive(message);
-			});
-		});
-
-		req.on('error', function() {
-			self.receive(message);
-		});
-		
-		if (entity)
-			req.write(entity, 'utf8');
-		
-		req.end();
-	}
-});/**
- * @class jspa.error.PersistentError
- * @extends Error
- */
-jspa.error.PersistentError = Error.inherit({
-	cause: null,
-	
-	extend: {
-		conv: function(e) {
-			if (Error.isInstance(e)) {
-				return new this(null, e);
-			}
-		}
-	},
-
-    /**
-     * @constructor
-     * @param {String} message
-     * @param {Error} cause
-     */
-	initialize: function(message, cause) {
-		this.superCall(message? message: 'An unexpected persistent error occured. ' + cause? cause.message: '');
-		
-		if (cause) {
-			this.cause = cause;
-            this.stack += 'Caused By: ' + cause.message + ' ' + cause.stack;
-		}
-	}
-});/**
- * @class jspa.error.CommunicationError
- * @extends jspa.error.PersistentError
- */
-jspa.error.CommunicationError = jspa.error.PersistentError.inherit({
-	initialize: function(httpMessage) {
-		var state = (httpMessage.response.statusCode == 0? 'Request': 'Response');
-		this.superCall('Communication failed by handling the ' + state + ' for ' + 
-				httpMessage.request.method + ' ' + httpMessage.request.path);
-
-		var cause = httpMessage.response.entity;
-		
-		if (cause)
-			this.stack += cause.message || 'CommunicationError';
-		
-		while (cause) {			
-			this.stack += 'Serverside Caused by ' + cause.className + ' ' + cause.message + '\n';
-			
-			var stackTrace = cause.stackTrace;
-			for (var i = 0; i < stackTrace.length; ++i) {
-				var el = stackTrace[i];
-
-				this.stack += '  at ' + el.className + '.' + el.methodName;
-				this.stack += ' (' + el.fileName + ':' + el.lineNumber + ')\n';
-			}
-			
-			cause = cause.cause;
-		}	
-	}
-});/**
- * @class jspa.connector.XMLHttpConnector
- * @extends jspa.connector.Connector
- */
-jspa.connector.XMLHttpConnector = jspa.connector.Connector.inherit({
-	extend: {
-		isUsable: function(host, port) {
-			return typeof XMLHttpRequest != 'undefined';
-		}
-	},
-	
-	/**
-	 * @param {jspa.message.Message} message
-	 */
-	doSend: function(message) {
-		var xhr = new XMLHttpRequest();
-		
-		var url = 'http://' + this.host + ':' + this.port + message.request.path;
-		//console.log(message.request.method + ' ' + url);
-
-		if (message.deferred)			
-			xhr.onreadystatechange = this.readyStateChange.bind(this, xhr, message);
-		
-		xhr.open(message.request.method, url, !!message.deferred);
-
-		var entity = this.prepareRequestEntity(message);
-		var headers = message.request.headers;
-		for (var name in headers)
-			xhr.setRequestHeader(name, headers[name]);
-
-		xhr.send(entity);
-		
-		if (!message.deferred)
-			this.doReceive(xhr, message);
-	},
-	
-	readyStateChange: function(xhr, message) {
-		if (xhr.readyState == 4) {
-			this.doReceive(xhr, message);
-		}
-	},
-	
-	doReceive: function(xhr, message) {
-		message.response.statusCode = xhr.status;
-		
-		var headers = message.response.headers;
-		for (var name in headers)
-			headers[name] = xhr.getResponseHeader(name);
-		
-		this.prepareResponseEntity(message, xhr.responseText);
-		this.receive(message);
-	}
-});/**
- * @class jspa.error.EntityExistsError
- * @extends jspa.error.PersistentError
- */
-jspa.error.EntityExistsError = jspa.error.PersistentError.inherit({
-    /**
-     * @constructor
-     * @param {String} identity
-     */
-    initialize: function(identity) {
-		this.superCall('Entity ' + identity + ' exists already');
-		
-		this.identity = identity;
-	}
-});/**
- * @class jspa.error.IllegalEntityError
- * @extends jspa.error.PersistentError
- */
-jspa.error.IllegalEntityError = jspa.error.PersistentError.inherit({
-    /**
-     * @constructor
-     * @param {*} entity
-     */
-    initialize: function(entity) {
-		this.superCall('Entity ' + entity + ' is not a valid entity');
-		
-		this.entity = entity;
-	}
-});/**
- * @class jspa.error.EntityNotFoundError
- * @extends jspa.error.PersistentError
- */
-jspa.error.EntityNotFoundError = jspa.error.PersistentError.inherit({
-    /**
-     * @constructor
-     * @param {String} identity
-     */
-    initialize: function(identity) {
-		this.superCall('Entity ' + identity + ' is not found');
-		
-		this.identity = identity;
-	}
-});/**
- * @class jspa.error.RollbackError
- * @extends jspa.error.PersistentError
- */
-jspa.error.RollbackError = jspa.error.PersistentError.inherit({
-    /**
-     * @constructor
-     * @param {Error} cause
-     */
-    initialize: function(cause) {
-		this.superCall('The transaction has been rollbacked', cause);
-	}
 });
 /**
- * @class jspa.message.Message
- */
-jspa.message.Message = Object.inherit({
-
-    /**
-     * @type {jspa.Deferred}
-     */
-    deferred: null,
-
-	/**
-	 * @constructor
-     * @param {String} method
-	 * @param {String} path
-     * @param {Object} requestEntity
-	 */
-	initialize: function(method, path, requestEntity) {
-		this.request = {
-			method: method,
-			path: path,
-			headers: {
-				'accept': 'application/json'
-			},
-			entity: requestEntity? requestEntity: null
-		};
-		
-		this.response = {
-			statusCode: 0,
-			headers: {},
-			entity: null
-		};
-	},
-	
-	doSend: function() {},
-	
-	doReceive: function() {}
-});/**
- * @class jspa.message.DeleteObject
- * @extends jspa.message.Message
- */
-jspa.message.DeleteObject = jspa.message.Message.inherit({
-	/**
-	 * @constructor
-	 * @param {jspa.Transaction} transaction
-	 * @param {jspa.util.State} state
-	 */
-	initialize: function(state) {
-		this.superCall('delete', state.getIdentifier());
-
-		this.state = state;
-	},
-	
-	doSend: function() {
-		this.request.entity = this.state.getDatabaseObjectInfo();
-		
-		var version = this.state.getVersion();
-		if (version) {
-			Object.extend(this.request.headers, {
-				'if-match': version == '*'? version: '"' + version + '"'
-			});
-		}
-	},
-	
-	doReceive: function() {
-		switch (this.response.statusCode) {
-			case 202:
-			case 204:
-			case 404:
-				this.state.setDeleted();
-				break;
-			default:
-				throw new jspa.error.CommunicationError(this);
-		}
-	}
-});/**
- * @class jspa.message.GetAllOids
- * @extends jspa.message.Message
- */
-jspa.message.GetAllOids = jspa.message.Message.inherit({
-	/**
-	 * @constructor
-	 * @param {jspa.metamodel.EntityType} type
-     * @param {number} start
-     * @param {number} count
-	 */
-	initialize: function(type, start, count) {
-		this.superCall('get', this.createUri(type, start, count));
-	},
-
-    /**
-     * @constructor
-     * @param {jspa.metamodel.EntityType} type
-     * @param {number} start
-     * @param {number} count
-     */
-	createUri: function(type, start, count) {
-		var uri = (type? type.identifier: '/db') + '/all_oids';
-		
-		if (start > 0)
-			uri += ';start=' + start;
-		
-		if (count < Number.MAX_VALUE)
-			uri += ';count=' + count;
-		
-		return uri;
-	},
-	
-	doReceive: function() {
-		if (this.response.statusCode == 200)
-			this.oids = this.response.entity;
-		else
-			throw new jspa.error.CommunicationError(this);
-	}
-});/**
- * @class jspa.message.GetAllSchemas
- * @extends jspa.message.Message
- */
-jspa.message.GetAllSchemas = jspa.message.Message.inherit({
-	/**
-	 * @constructor
-	 * @param {jspa.metamodel.Metamodel}
-	 */
-	initialize: function(metamodel) {
-		this.superCall('get', '/db/all_schemas');
-		
-		this.metamodel = metamodel;
-	},
-	
-	doReceive: function() {
-		if (this.response.statusCode == 200) {
-			var builder = new jspa.metamodel.ModelBuilder(this.metamodel);
-			this.models = builder.buildModels(this.response.entity);
-		} else {
-			throw new jspa.error.CommunicationError(this);
-		}
-	}
-});
-/**
- * @class jspa.message.GetObject
- * @extends jspa.message.Message
- */
-jspa.message.GetObject = jspa.message.Message.inherit({
-	/**
-	 * @constructor
-	 * @param {jspa.util.State} state
-	 * @param {String} tid
-	 */
-	initialize: function(state, tid) {
-		var id = state.getIdentifier();
-		
-		if (tid) {
-			id = id.replace('/db/', '/transaction/' + tid + '/dbview/');
-		}
-		
-		this.superCall('get', id);
-		
-		this.state = state;
-	},
-	
-	doSend: function() {
-		var version = this.state.getVersion();
-		if (version) {			
-			Object.extend(this.request.headers, {
-				'cache-control': 'max-age=0, no-cache',
-				'pragma': 'no-cache'
-			});
-			
-			// we can revalidate if the object is not dirty
-			if (!this.state.isDirty) {
-				this.request.headers['if-none-match'] = version == '*'? version: '"' + version + '"';
-			}
-		}
-	},
-	
-	doReceive: function() {
-		switch (this.response.statusCode) {
-			case 304:			
-				break;
-			case 200:
-				this.state.setDatabaseObject(this.response.entity);
-				this.state.setPersistent();
-				break;
-			case 404:
-				this.state.setDeleted();
-				break;
-			default:
-				throw new jspa.error.CommunicationError(this);
-		}
-	}
-});/**
- * @class jspa.message.GetBucketQuery
- * @extends jspa.message.Message
- */
-jspa.message.GetBucketQuery = jspa.message.Message.inherit({
-	/**
-	 * @constructor
-	 * @param {jspa.metamodel.EntityType} type
-     * @param {String} query
-     * @param {number} start
-     * @param {number} count
-	 */
-	initialize: function(type, query, start, count) {
-		this.superCall('get', this.createUri(type, query, start, count));
-	},
-
-    /**
-     * @param {jspa.metamodel.EntityType} type
-     * @param {String} query
-     * @param {number} start
-     * @param {number} count
-     */
-	createUri: function(type, query, start, count) {
-		var uri = type.identifier;
-
-        uri += '?query=' + encodeURIComponent(query);
-
-		if (start > 0)
-			uri += '?start=' + start;
-		
-		if (count < Number.MAX_VALUE)
-			uri += '?count=' + count;
-		
-		return uri;
-	},
-	
-	doReceive: function() {
-		if (this.response.statusCode == 200)
-			this.oids = this.response.entity;
-		else
-			throw new jspa.error.CommunicationError(this);
-	}
-});/**
- * @class jspa.message.PostAllSchemas
- * @extends jspa.message.Message
- */
-jspa.message.PostAllSchemas = jspa.message.Message.inherit({
-	/**
-	 * @constructor
-	 * @param {jspa.metamodel.Metamodel} metamodel
-     * @param {String} types
-	 */
-	initialize: function(metamodel, types) {
-		this.superCall('post', '/db/all_schemas');
-		
-		this.metamodel = metamodel;
-		this.types = types;
-	},
-	
-	doSend: function() {
-		this.request.entity = this.types;
-	},
-	
-	doReceive: function() {
-		if (this.response.statusCode == 200) {
-			var builder = new jspa.metamodel.ModelBuilder(this.metamodel);
-			this.models = builder.buildModels(this.response.entity);
-		} else {
-			throw new jspa.error.CommunicationError(this);
-		}
-	}
-});/**
- * @class jspa.message.PostObject
- * @extends jspa.message.Message
- */
-jspa.message.PostObject = jspa.message.Message.inherit({
-	/**
-	 * @constructor
-	 * @param {jspa.util.State} state
-	 */
-	initialize: function(state) {
-		this.superCall('post', state.type.identifier);
-		
-		this.state = state;
-	},
-	
-	doSend: function() {
-		this.request.entity = this.state.getDatabaseObject();
-	},
-	
-	doReceive: function() {
-		switch (this.response.statusCode) {
-			case 201:
-			case 202:
-				this.state.setDatabaseObject(this.response.entity);
-				this.state.setPersistent();
-				break;
-			case 404:
-				this.state.setDeleted();
-				break;
-			default:
-				throw new jspa.error.CommunicationError(this);
-		}
-	}
-});
-/**
- * @class jspa.message.PostTransaction
- * @extends jspa.message.Message
- */
-jspa.message.PostTransaction = jspa.message.Message.inherit({
-	/**
-	 * @constructor
-	 */
-	initialize: function() {
-		this.superCall('post', '/transaction');
-		
-		Object.extend(this.response.headers, {
-			'location': null
-		});
-	},
-	
-	doReceive: function() {
-		if (this.response.statusCode == 201) {
-			this.tid = this.response.headers['location'].split('/transaction/').pop();
-		} else
-			throw new jspa.error.CommunicationError(this);
-	}
-});/**
- * @extends jspa.message.Message
- * @class jspa.message.PutObject
- */
-jspa.message.PutObject = jspa.message.Message.inherit({
-	/**
-	 * @constructor
-	 * @param {jspa.util.State} state
-	 */
-	initialize: function(state) {
-		this.superCall('put', state.getIdentifier());
-		
-		this.state = state;
-	},
-	
-	doSend: function() {
-		var version = this.state.getVersion();
-		
-		Object.extend(this.request.headers, {
-			'if-match': !version || version == '*'? '*': '"' + version + '"'
-		});
-		
-		this.request.entity = this.state.getDatabaseObject();
-	},
-	
-	doReceive: function() {
-		switch (this.response.statusCode) {
-			case 200:
-				this.state.setDatabaseObject(this.response.entity);
-				//mark as persistent in next case
-			case 202:
-				this.state.setPersistent();
-				break;
-			case 404: 
-				this.state.setDeleted();
-				break;
-			default:
-				throw new jspa.error.CommunicationError(this);
-		}
-	}
-});/**
- * @class jspa.message.PutTransactionAborted
- * @extends jspa.message.Message
- */
-jspa.message.PutTransactionAborted = jspa.message.Message.inherit({
-	/**
-	 * @constructor
-	 * @param {String} tid
-	 */
-	initialize: function(tid) {
-		this.superCall('put', '/transaction/' + tid + '/aborted');
-	},
-	
-	doReceive: function() {
-		if (this.response.statusCode != 202)
-			throw new jspa.error.CommunicationError(this);
-	}
-});/**
- * @class jspa.metamodel.Attribute
- */
-jspa.metamodel.Attribute = Object.inherit({
-
-	extend: {
-		PersistentAttributeType: {
-			BASIC: 0,
-			ELEMENT_COLLECTION: 1,
-			EMBEDDED: 2,
-			MANY_TO_MANY: 3,
-			MANY_TO_ONE: 4,
-			ONE_TO_MANY: 5,
-			ONE_TO_ONE: 6
-		}
-	},
-	
-	/**
-	 * @type Boolean
-	 */
-	isAssociation: {
-		get: function() {
-			return this.persistentAttributeType > jspa.metamodel.Attribute.PersistentAttributeType.EMBEDDED;
-		}
-	},
-	
-	/**
-	 * @type {Boolean}
-	 */
-	isCollection: {
-		get: function() {
-			return this.persistentAttributeType == jspa.metamodel.Attribute.PersistentAttributeType.ELEMENT_COLLECTION;
-		}
-	},
-
-	/**
-	 * @type {Boolean}
-	 */
-	isId: false,
-
-	/**
-	 * @type {Boolean}
-	 */
-	isVersion: false,
-	
-	/**
-	 * @constructor
-	 * @param {jspa.metamodel.EntityType} declaringType
-	 * @param {String} name
-	 */
-	initialize: function(declaringType, name) {
-		this.accessor = new jspa.binding.Accessor();
-		this.declaringType = declaringType;
-		this.name = name;
-	},
-	
-	/**
-	 * @param {Object} entity
-	 * @returns {*}
-	 */
-	getValue: function(entity) {
-        if (this.isId || this.isVersion)
-            return entity._objectInfo[this.name];
-
-        return this.accessor.getValue(entity, this);
-	},
-	
-	/**
-	 * @param {Object} entity
-	 * @param {*} value
-	 */
-	setValue: function(entity, value) {
-        if (this.isId || this.isVersion) {
-            entity._objectInfo[this.name] = value;
-        } else {
-            this.accessor.setValue(entity, this, value);
-        }
-	}
-});/**
- * @class jspa.message.PutTransactionTidCommitted
- * @extends jspa.message.Message
- */
-jspa.message.PutTransactionCommitted = jspa.message.Message.inherit({
-	/**
-	 * @constructor
-	 * @param {String} tid
-     * @param {Object} readSet
-	 */
-	initialize: function(tid, readSet) {
-		this.superCall('put', '/transaction/' + tid + '/committed', readSet);
-	},
-	
-	doReceive: function() {
-		switch (this.response.statusCode) {
-			case 200:
-				this.oids = this.response.entity;
-				break;
-			case 412:
-				throw new jspa.error.RollbackError();
-			default:
-				throw new jspa.error.CommunicationError(this);
-		}
-	}
-});/**
- * @class jspa.metamodel.Type
- */
-jspa.metamodel.Type = Object.inherit({
-	extend: {
-		PersistenceType: {
-			BASIC: 0,
-			EMBEDDABLE: 1,
-			ENTITY: 2,
-			MAPPED_SUPERCLASS: 3
-		}
-	},
-
-    /**
-     * @type {Boolean}
-     */
-	isBasic: {
-		get: function() {
-			return this.persistenceType == jspa.metamodel.Type.PersistenceType.BASIC;
-		}
-	},
-
-    /**
-     * @type {Boolean}
-     */
-	isEmbeddable: {
-		get: function() {
-			return this.persistenceType == jspa.metamodel.Type.PersistenceType.EMBEDDABLE;
-		}
-	},
-
-    /**
-     * @type {Boolean}
-     */
-	isEntity: {
-		get: function() {
-			return this.persistenceType == jspa.metamodel.Type.PersistenceType.ENTITY;
-		}
-	},
-
-    /**
-     * @type {Boolean}
-     */
-	isMappedSuperclass: {
-		get: function() {
-			return this.persistenceType == jspa.metamodel.Type.PersistenceType.MAPPED_SUPERCLASS;
-		}
-	},
-
-    /**
-     * @type Number
-     */
-    persistenceType: -1,
-	
-	/**
-	 * @constructor
-	 * @memberOf jspa.metamodel.Type
-	 * @param {String} identifier
-	 * @param {Function} typeConstructor
-	 */
-	initialize: function(identifier, typeConstructor) {
-		this.identifier = identifier;
-		this.typeConstructor = typeConstructor;
-	},
-
-    /**
-     * @param {jspa.binding.ClassUtil} classUtil
-     */
-	init: function(classUtil) {
-		this.classUtil = classUtil;
-
-		if (!this.classUtil.getIdentifier(this.typeConstructor))
-			this.classUtil.setIdentifier(this.typeConstructor, this.identifier);
-	},
-	
-	/**
-	 * @returns {Object}
-	 */
-	create: function() {
-		return this.classUtil.create(this);
-	},
-	
-	/**
-	 * @param {jspa.util.State} state
-	 * @param {Object} value
-	 * @returns {*}
-	 */
-	toDatabaseValue: function(state, value) {},
-	
-	/**
-	 * @param {jspa.util.State} state
-     * @param {Object} currentValue
-	 * @param {*} value
-	 * @returns {*}
-	 */
-	fromDatabaseValue: function(state, currentValue, value) {}
-});/**
- * @class jspa.metamodel.BasicType
- * @extends jspa.metamodel.Type
- */
-jspa.metamodel.BasicType = jspa.metamodel.Type.inherit({
-	persistenceType: jspa.metamodel.Type.PersistenceType.BASIC,
-	
-	isCollection: false,
-	
-	/**
-	 * @constructor
-	 * @param {String} identifier
-	 * @param {Function} typeConstructor
-	 */
-	initialize: function(identifier, typeConstructor) {
-		if (identifier.indexOf('/') == -1)
-			identifier = '/db/_native.' + identifier;
-
-		this.superCall(identifier, typeConstructor);
-	},
-
-    /**
-     * @param {jspa.util.State} state
-     * @param {Object} currentValue
-     * @returns {Object}
-     */
-    toDatabaseValue: function(state, currentValue) {
-        if (currentValue === null || currentValue === undefined) {
-            return null;
-        }
-
-        return this.typeConstructor.asInstance(currentValue);
-    },
-
-    /**
-     * @param {jspa.util.State} state
-     * @param {*} currentValue
-     * @param {*} value
-     * @returns {*}
-     */
-    fromDatabaseValue: function(state, currentValue, value) {
-        if (value === null || value === undefined) {
-            return null;
-        }
-
-        return this.typeConstructor.asInstance(value);
-    }
-});/**
- * @class jspa.metamodel.PluralAttribute
- * @extends jspa.metamodel.Attribute
- */
-jspa.metamodel.PluralAttribute = jspa.metamodel.Attribute.inherit({
-	extend: {
-        /**
-         * @readonly
-         * @enum {number}
-         */
-        CollectionType: {
-			COLLECTION: 0,
-			LIST: 1,
-			MAP: 2,
-			SET: 3
-		}
-	},
-	
-	persistentAttributeType: jspa.metamodel.Attribute.PersistentAttributeType.ELEMENT_COLLECTION,
-	
-	/**
-	 * @constructor
-	 * @param {jspa.metamodel.EntityType} declaringType
-	 * @param {String} name
-	 * @param {Function} typeConstructor
-	 * @param {jspa.metamodel.Type} elementType
-	 */
-	initialize: function(declaringType, name, typeConstructor, elementType) {
-		this.superCall(declaringType, name);
-
-		this.typeConstructor = typeConstructor;
-		this.elementType = elementType;
-	},
-
-    /**
-     * @param {jspa.util.State} state
-     * @param {*} obj
-     * @return {Object}
-     */
-	getDatabaseValue: function(state, obj) {
-		var value = this.getValue(obj);
-		
-		if (value) {
-            // convert normal collections to tracked collections
-			if (!this.trackedConstructor.isInstance(value)) {
-				value = new this.trackedConstructor(value);
-
-                Object.defineProperty(value, '__jspaEntity__', {
-                    value: state.entity
-                });
-
-				this.setValue(obj, value);
-			}
-			
-			var json = [];
-			for (var iter = value.iterator(); iter.hasNext; ) {
-				var el = iter.next();
-				if (el === null) {
-					json.push(el);
-				} else {					
-					el = this.elementType.toDatabaseValue(state, el);
-					if (el !== null)
-						json.push(el);
-				}
-			}
-
-			return json;
-		} else {
-			return null;
-		}
-	},
-
-    /**
-     * @param {jspa.util.State} state
-     * @param {*} obj
-     * @param {Object} json
-     */
-	setDatabaseValue: function(state, obj, json) {
-		var value = null;
-
-        if (json) {
-			value = this.getValue(obj);
-			
-			if (!this.trackedConstructor.isInstance(value)) {
-				value = new this.trackedConstructor();
-
-                Object.defineProperty(value, '__jspaEntity__', {
-                    value: state.entity
-                });
-			}
-
-            var items = value.seq;
-            if (items.length > json.length)
-                items.splice(json.length, items.length - json.length);
-
-			for (var i = 0, len = json.length; i < len; ++i) {
-                items[i] = this.elementType.fromDatabaseValue(state, items[i], json[i]);
-			}
-
-            value.size = json.length;
-		}
-		
-		this.setValue(obj, value);
-	}
-});/**
- * @class jspa.metamodel.CollectionAttribute
- * @extends jspa.metamodel.PluralAttribute
- */
-jspa.metamodel.CollectionAttribute = jspa.metamodel.PluralAttribute.inherit({
-
-    collectionType: jspa.metamodel.PluralAttribute.CollectionType.COLLECTION,
-
-    /**
-     * @constructor
-     * @param {jspa.metamodel.EntityType} declaringType
-     * @param {String} name
-     * @param {Function} typeConstructor
-     * @param {jspa.metamodel.Type} elementType
-     */
-	initialize: function(declaringType, name, typeConstructor, elementType) {
-		this.superCall(declaringType, name, typeConstructor, elementType);
-
-		this.trackedConstructor = typeConstructor.inherit(jspa.collection.Collection, {});
-	}
-});/**
- * @class jspa.metamodel.ManagedType
- * @extends jspa.metamodel.Type
- */
-jspa.metamodel.ManagedType = jspa.metamodel.Type.inherit({
-	AttributeIterator: Object.inherit(jspa.Iterator, {
-		nextAttr: null,
-
-        initialize: function(type) {
-			this.type = type;
-
-            this.initAttr();
-            this.next();
-		},
-		
-		initAttr: function() {
-            this.index = 0;
-            this.names = Object.getOwnPropertyNames(this.type.declaredAttributes);
-		},
-
-        /**
-         * @return {jspa.metamodel.Attribute}
-         */
-		next: function() {
-			var attr = this.nextAttr;
-
-            while (this.names.length == this.index && (this.type = this.type.supertype)) {
-                this.initAttr();
-            }
-			
-			this.hasNext = this.type != null;
-            if (this.hasNext) {
-                this.nextAttr = this.type.declaredAttributes[this.names[this.index++]];
-            }
-
-			return attr;
-		}
-	}),
-
-    /**
-     * @type {jspa.metamodel.Attribute[]}
-     */
-	declaredAttributes: null,
-	
-	/**
-	 * @param {jspa.binding.ClassUtil} classUtil
-	 */
-	init: function(classUtil) {
-		if (!this.typeConstructor) {
-			this.typeConstructor = classUtil.loadClass(this);
-
-			this.superCall(classUtil);
-			this.classUtil.enhance(this, this.typeConstructor);
-		} else {
-			this.superCall(classUtil);
-		}
-	},
-
-    /**
-     * @return {jspa.metamodel.ManagedType.AttributeIterator}
-     */
-	attributes: function() {
-		return new this.AttributeIterator(this);
-	},
-	
-	/**
-	 * @param {!String} name
-	 * @returns {jspa.metamodel.Attribute}
-	 */
-	getAttribute: function(name) {
-		if (name in this.declaredAttributes) {			
-			return this.declaredAttributes[name];
-		} else if (this.supertype) {
-			return this.supertype.getAttribute(name);
-		} else {
-			return null;
-		}
-	},
-	
-	/**
-	 * @param {String} name
-	 * @returns {jspa.metamodel.Attribute}
-	 */
-	getDeclaredAttribute: function(name) {
-        return this.declaredAttributes[name] || null;
-	},
-
-    /**
-     * @param {jspa.util.State} state
-     * @param {*} obj
-     * @param {Object} value
-     * @return {*}
-     */
-    fromDatabaseValue: function(state, obj, value) {
-        if (value && value._objectInfo['class'] == this.identifier) {
-            for (var iter = this.attributes(); iter.hasNext; ) {
-                var attribute = iter.next();
-
-                attribute.setDatabaseValue(state, obj, value[attribute.name]);
-            }
-        } else {
-            obj = null;
-        }
-
-        return obj;
-    },
-
-    /**
-     * @param {jspa.util.State} state
-     * @param {*} obj
-     * @return {Object}
-     */
-    toDatabaseValue: function(state, obj) {
-        var value = null;
-
-        if (this.typeConstructor.isInstance(obj)) {
-            value = {
-                _objectInfo: {
-                    'class': this.identifier
-                }
-            };
-
-            for (var iter = this.attributes(); iter.hasNext; ) {
-                var attribute = iter.next();
-
-                value[attribute.name] = attribute.getDatabaseValue(state, obj);
-            }
-        }
-
-        return value;
-    }
-});/**
- * @class jspa.metamodel.EmbeddableType
- * @extends jspa.metamodel.ManagedType
- */
-jspa.metamodel.EmbeddableType = jspa.metamodel.ManagedType.inherit({
-	persistenceType: jspa.metamodel.Type.PersistenceType.EMBEDDABLE,
-
-    /**
-     * @param {jspa.util.State} state
-     * @param {*} obj
-     * @param {Object} value
-     * @return {*}
-     */
-    fromDatabaseValue: function(state, obj, value) {
-        if (!obj && value) {
-            obj = this.create();
-
-            Object.defineProperty(obj, '__jspaEntity__', {
-                value: state.entity
-            });
-        }
-
-        return this.superCall(state, obj, value);
-    }
-});/**
- * @class jspa.metamodel.EntityType
- * @extends jspa.metamodel.ManagedType
- */
-jspa.metamodel.EntityType = jspa.metamodel.ManagedType.inherit({
-	persistenceType: jspa.metamodel.Type.PersistenceType.ENTITY,
-	
-	declaredId: null,
-	declaredVersion: null,
-	
-	/**
-	 * @type {String}
-	 */
-	id: {
-		get: function() {
-			return this.declaredId || this.supertype.id;
-		}
-	},
-	
-	/**
-	 * @type {String}
-	 */
-	version: { 
-		get: function() {
-			return this.declaredVersion || this.supertype.version;
-		}
-	},
-
-    /**
-     * @constructor
-     * @param {String} identifier
-     * @param {jspa.metamodel.EntityType} supertype
-     * @param {Function} typeConstructor
-     */
-    initialize: function(identifier, supertype, typeConstructor) {
-        this.superCall(identifier, typeConstructor);
-
-        this.supertype = supertype;
-    },
-
-    /**
-     * @param {jspa.util.State} state
-     * @param {*} obj
-     * @param {Object} value
-     * @return {*}
-     */
-	fromDatabaseValue: function(state, obj, value) {
-        if (state.entity == obj) {
-            this.superCall(state, obj, value);
-            return obj;
-        } else if (value) {
-			return state.entityManager.getReference(value);
-		} else {
-			return null;
-		}
-	},
-
-    /**
-     * @param {jspa.util.State} state
-     * @param {*} obj
-     * @return {Object}
-     */
-	toDatabaseValue: function(state, obj) {
-        if (state.entity == obj) {
-            var value = this.superCall(state, obj);
-            var info = value._objectInfo;
-
-            var oid = state.getReference();
-            if (oid) {
-                info['oid'] = oid;
-            }
-
-            var version = state.getVersion();
-            if (version) {
-                info['version'] = version;
-            }
-
-            var transaction = state.getTransactionIdentifier();
-            if (transaction) {
-                info['transaction'] = transaction;
-            }
-
-            return value;
-        } else if (this.typeConstructor.isInstance(obj)) {
-            var valueState = jspa.util.State.get(obj);
-            if (valueState && !valueState.isDeleted) {
-                var data = valueState.getReference();
-                if (data) {
-                    return data;
-                } else {
-                    state.isDirty = true;
-                }
-            }
-        }
-		
-		return null;
-	}
-});/**
- * @class jspa.metamodel.ListAttribute
- * @extends jspa.metamodel.PluralAttribute
- */
-jspa.metamodel.ListAttribute = jspa.metamodel.PluralAttribute.inherit({
-
-	collectionType: jspa.metamodel.PluralAttribute.CollectionType.LIST,
-
-    /**
-     * @constructor
-     * @param {jspa.metamodel.EntityType} declaringType
-     * @param {String} name
-     * @param {Function} typeConstructor
-     * @param {jspa.metamodel.Type} elementType
-     */
-	initialize: function(declaringType, name, typeConstructor, elementType) {
-		this.superCall(declaringType, name, typeConstructor, elementType);
-		
-		this.trackedConstructor = typeConstructor.inherit(jspa.collection.List, {});
-	}
-});/**
- * @class jspa.metamodel.Metamodel
- */
-jspa.metamodel.Metamodel = Object.inherit({
-	/**
-	 * @constructor
-	 */
-	initialize: function() {
-		this.baseTypes = {};
-		this.entities = {};
-        this.embeddables = {};
-		
-		this.classUtil = new jspa.binding.ClassUtil();
-
-		this.addType(new jspa.metamodel.BasicType('Boolean', Boolean));
-
-		this.addType(new jspa.metamodel.BasicType('Float', Number));
-		this.addType(new jspa.metamodel.BasicType('Integer', Number));
-		this.addType(new jspa.metamodel.BasicType('String', String));
-
-        this.addType(new (jspa.metamodel.BasicType.inherit({
-            toDatabaseValue: function(state, currentValue) {
-                var value = this.superCall(state, currentValue);
-                if (value) {
-                    value = value.toISOString();
-                    value = value.substring(0, value.indexOf('T'));
-                }
-                return value;
-            }
-        }))('Date', Date));
-
-        this.addType(new (jspa.metamodel.BasicType.inherit({
-            toDatabaseValue: function(state, currentValue) {
-                var value = this.superCall(state, currentValue);
-                if (value) {
-                    value = value.toISOString();
-                    value = value.substring(value.indexOf('T') + 1);
-                }
-                return value;
-            },
-            fromDatabaseValue: function(state, currentValue, json) {
-                return this.superCall(state, currentValue, json? 'T' + json: json);
-            }
-        }))('Time', Date));
-
-        this.addType(new jspa.metamodel.BasicType('DateTime', Date));
-		
-		var objectModel = new jspa.metamodel.EntityType('/db/_native.Object', null, Object);
-		objectModel.declaredAttributes = {};
-		objectModel.declaredId = new jspa.metamodel.SingularAttribute(objectModel, 'oid', this.baseType(String));
-        objectModel.declaredId.isId = true;
-
-		objectModel.declaredVersion = new jspa.metamodel.SingularAttribute(objectModel, 'version', this.baseType(String));
-        objectModel.declaredVersion.isVersion = true;
-
-		this.addType(objectModel);
-	},
-
-    /**
-     * @param {(Function|String)} arg
-     * @return {String}
-     */
-    identifierArg: function(arg) {
-        var identifier;
-        if (String.isInstance(arg)) {
-            identifier = arg;
-
-            if (identifier.indexOf('/db/') != 0) {
-                identifier = '/db/' + arg;
-            }
-        } else {
-            identifier = this.classUtil.getIdentifier(arg);
-        }
-
-        return identifier;
-    },
-	
-	/**
-	 * @param {(Function|String)} typeConstructor
-	 * @returns {jspa.metamodel.EntityType}
-	 */
-	entity: function(typeConstructor) {
-		var identifier = this.identifierArg(typeConstructor);
-		return identifier? this.entities[identifier]: null;
-	},
-	
-	/**
-	 * @param {(Function|String)} typeConstructor
-	 * @returns {jspa.metamodel.BasicType}
-	 */
-	baseType: function(typeConstructor) {
-        if (String.isInstance(typeConstructor) && typeConstructor.indexOf('_native.') == -1)
-            typeConstructor = '/db/_native.' + typeConstructor;
-
-        var identifier = this.identifierArg(typeConstructor);
-		return identifier? this.baseTypes[identifier]: null;
-	},
-
-    /**
-     * @param {(Function|String)} typeConstructor
-     * @returns {jspa.metamodel.EmbeddableType}
-     */
-    embeddable: function(typeConstructor) {
-        var identifier = this.identifierArg(typeConstructor);
-        return identifier? this.embeddables[identifier]: null;
-    },
-	
-	addType: function(type) {
-        var types;
-
-        if (type.isBasic) {
-            types = this.baseTypes;
-        } else if (type.isEmbeddable) {
-            types = this.embeddables;
-        } else if (type.isEntity) {
-            types = this.entities;
-        }
-
-        if (!(type.identifier in types)) {
-            type.init(this.classUtil);
-            types[type.identifier] = type;
-        }
-	}
-});/**
- * @class jspa.metamodel.MapAttribute
- * @extends jspa.metamodel.PluralAttribute
- */
-jspa.metamodel.MapAttribute = jspa.metamodel.PluralAttribute.inherit({
-
-	collectionType: jspa.metamodel.PluralAttribute.CollectionType.MAP,
-	
-	/**
-	 * @constructor
-	 * @param {jspa.metamodel.EntityType} declaringType
-	 * @param {String} name
-	 * @param {Function} typeConstructor
-	 * @param {jspa.metamodel.Type} keyType
-	 * @param {jspa.metamodel.Type} elementType
-	 */
-	initialize: function(declaringType, name, typeConstructor, keyType, elementType) {
-		this.superCall(declaringType, name, typeConstructor, elementType);
-		
-		this.keyType = keyType;
-        this.trackedConstructor = typeConstructor.inherit(jspa.collection.Map, {});
-	},
-
-    /**
-     * @param {jspa.util.State} state
-     * @param {*} obj
-     * @return {Object}
-     */
-	getDatabaseValue: function(state, obj) {
-		var value = this.getValue(obj);
-
-		if (value) {
-			if (!this.trackedConstructor.isInstance(value)) {
-				value = new this.trackedConstructor(value);
-
-                Object.defineProperty(value, '__jspaEntity__', {
-                    value: state.entity
-                });
-
-				this.setValue(obj, value);
-			}
-
-			var json = [];
-			for (var iter = value.items(); iter.hasNext; ) {
-				var item = iter.next();
-				var key = this.keyType.toDatabaseValue(state, item[0]);
-				if (item[0] === null || key !== null) {
-					json.push({
-						key: key,
-						value: this.elementType.toDatabaseValue(state, item[1])
-					});
-				}
-			}
-
-			return json;
-		} else {
-			return null;
-		}
-	},
-
-    /**
-     * @param {jspa.util.State} state
-     * @param {*} obj
-     * @param {Object} json
-     */
-	setDatabaseValue: function(state, obj, json) {
-		var value = null;
-		if (json) {			
-			value = this.getValue(obj);
-			
-			if (!this.trackedConstructor.isInstance(value)) {
-				value = new this.trackedConstructor();
-                Object.defineProperty(value, '__jspaEntity__', {
-                    value: state.entity
-                });
-			}
-
-            var keys = value.seq;
-            var vals = value.vals;
-
-            if (keys.length > json.length) {
-                keys.splice(json.length, keys.length - json.length);
-                vals.splice(json.length, vals.length - json.length);
-            }
-
-			for (var i = 0, len = json.length; i < len; ++i) {
-				var item = json[i];
-				keys[i] = this.keyType.fromDatabaseValue(state, keys[i], item.key);
-				vals[i] = this.elementType.fromDatabaseValue(state, vals[i], item.value);
-			}
-
-            value.size = json.length;
-		}
-
-		this.setValue(obj, value);
-	}
-});/**
- * @class jspa.metamodel.ModelBuilder
- */
-jspa.metamodel.ModelBuilder = Object.inherit({
-	/**
-	 * @constructor
-	 * @param {jspa.metamodel.Metamodel} metamodel
-	 */
-	initialize: function(metamodel) {
-		this.metamodel = metamodel;
-		this.objectType = metamodel.entity(Object);
-	},
-	
-	/**
-	 * @param {String} identifier
-	 * @returns {jspa.metamodel.EntityType}
-	 */
-	getModel: function(identifier) {
-		var model = null;
-		if (identifier.indexOf('/db/_native') == 0) {
-			model = this.metamodel.baseType(identifier);
-		} else {
-			model = this.metamodel.entity(identifier);
-            if (!model)  {
-                model = this.metamodel.embeddable(identifier);
-            }
-
-			if (!model && identifier in this.models) {
-				model = this.models[identifier];
-			}
-			
-			if (!model) {
-				model = this.buildModel(identifier);
-			}
-		}
-		
-		if (model) {
-			return model;
-		} else {			
-			throw new TypeError('no model available for ' + identifier);
-		}		
-	},
-	
-	/**
-	 * @param {Object}
-	 * @returns {jspa.metamodel.EntityType[]}
-	 */
-	buildModels: function(modelDescriptors) {
-		this.modelDescriptors = {};
-		for (var i = 0, modelDescriptor; modelDescriptor = modelDescriptors[i]; ++i) {
-			this.modelDescriptors[modelDescriptor['class']] = modelDescriptor;
-		}
-		
-		this.models = {};
-		for (var identifier in this.modelDescriptors) {
-			try {
-				var model = this.getModel(identifier);
-				model.declaredAttributes = this.buildAttributes(model);				
-			} catch (e) {
-				throw new jspa.error.PersistentError('Can\'t create model for entity class ' + identifier, e);
-			}
-		}
-		
-		return this.models;
-	},
-	
-	/**
-	 * @param {String} identifier
-	 * @returns {jspa.metamodel.EntityType}
-	 */
-	buildModel: function(identifier) {
-		var modelDescriptor = this.modelDescriptors[identifier];
-		if (modelDescriptor) {
-			var superTypeIdentifier = modelDescriptor['superClass'];
-			var superType = superTypeIdentifier? this.getModel(superTypeIdentifier): this.objectType;
-
-            var type;
-            if (modelDescriptor.embedded) {
-                type = new jspa.metamodel.EmbeddableType(identifier)
-            } else {
-                type = new jspa.metamodel.EntityType(identifier, superType);
-            }
-			
-			this.models[identifier] = type;
-			return type;			
-		} else {
-			return null;
-		}
-	},
-	
-	/**
-	 * @param {jspa.metamodel.EntityType} model
-	 * @returns {jspa.metamodel.Attribute[]}
-	 */
-	buildAttributes: function(model) {
-		if (model.identifier in this.models) {
-			var fields = this.modelDescriptors[model.identifier]['fields'];
-			
-			var attributes = {};
-			for (var name in fields) {
-				if (fields.hasOwnProperty(name)) {
-					attributes[name] = this.buildAttribute(model, name, fields[name]);
-				}
-			}
-			
-			return attributes;
-		} else {
-			return null;
-		}
-	},
-	
-	/**
-	 * @param {jspa.metamodel.EntityType} model
-	 * @param {String} name
-	 * @param {String} identifier
-	 * @returns {jspa.metamodel.Attribute}
-	 */
-	buildAttribute: function(model, name, identifier) {
-		if (identifier.indexOf('/db/_native.collection') == 0) {
-			var collectionType = identifier.substring(0, identifier.indexOf('['));
-			
-			var elementType = identifier.substring(identifier.indexOf('[') + 1, identifier.indexOf(']')).trim();
-			switch (collectionType) {
-				case '/db/_native.collection.List':
-					return new jspa.metamodel.ListAttribute(model, name, jspa.List, this.getModel(elementType));
-				case '/db/_native.collection.Set':
-					return new jspa.metamodel.SetAttribute(model, name, jspa.Set, this.getModel(elementType));
-				case '/db/_native.collection.Map':
-					var keyType = elementType.substring(0, elementType.indexOf(',')).trim();
-					elementType = elementType.substring(elementType.indexOf(',') + 1).trim();
-					
-					return new jspa.metamodel.MapAttribute(model, name, jspa.Map, this.getModel(keyType), this.getModel(elementType));
-				default:
-					throw new TypeError('no collection available for ' + identifier); 
-			}
-		} else {
-			return new jspa.metamodel.SingularAttribute(model, name, this.getModel(identifier));
-		}
-	}
-});/**
- * @class jspa.metamodel.SingularAttribute
- * @extends jspa.metamodel.Attribute
- */
-jspa.metamodel.SingularAttribute = jspa.metamodel.Attribute.inherit({
-	
-	typeConstructor: {
-		get: function() {
-			return this.type.typeConstructor;
-		}
-	},
-
-    /**
-     * @type Number
-     */
-    persistentAttributeType: -1,
-
-    /**
-     * @constructor
-     * @param {jspa.metamodel.EntityType} declaringType
-     * @param {String} name
-     * @param {jspa.metamodel.Type} type
-     */
-	initialize: function(declaringType, name, type) {
-		this.superCall(declaringType, name);
-		
-		this.type = type;
-
-		switch (type.persistenceType) {
-			case jspa.metamodel.Type.PersistenceType.BASIC:				
-				this.persistentAttributeType = jspa.metamodel.Attribute.PersistentAttributeType.BASIC;
-				break;
-			case jspa.metamodel.Type.PersistenceType.EMBEDDABLE:
-				this.persistentAttributeType = jspa.metamodel.Attribute.PersistentAttributeType.EMBEDDED;
-				break;
-			case jspa.metamodel.Type.PersistenceType.ENTITY:
-				this.persistentAttributeType = jspa.metamodel.Attribute.PersistentAttributeType.ONE_TO_MANY;
-				break;
-		}
-	},
-
-    /**
-     * @param {jspa.util.State} state
-     * @param {*} obj
-     * @return {*}
-     */
-	getDatabaseValue: function(state, obj) {
-		return this.type.toDatabaseValue(state, this.getValue(obj));
-	},
-
-    /**
-     * @param {jspa.util.State} state
-     * @param {*} obj
-     * @param {*} value
-     */
-	setDatabaseValue: function(state, obj, value) {
-		this.setValue(obj, this.type.fromDatabaseValue(state, this.getValue(obj), value));
-	}
-});/**
- * @class jspa.metamodel.SetAttribute
- * @extends jspa.metamodel.PluralAttribute
- */
-jspa.metamodel.SetAttribute = jspa.metamodel.PluralAttribute.inherit({
-
-    collectionType: jspa.metamodel.PluralAttribute.CollectionType.SET,
-
-    /**
-     * @constructor
-     * @param {jspa.metamodel.EntityType} declaringType
-     * @param {String} name
-     * @param {Function} typeConstructor
-     * @param {jspa.metamodel.Type} elementType
-     */
-	initialize: function(declaringType, name, typeConstructor, elementType) {
-		this.superCall(declaringType, name, typeConstructor, elementType);
-
-		this.trackedConstructor = typeConstructor.inherit(jspa.collection.Set, {});
-	}
-});/**
  * @class jspa.util.Queue
  */
 jspa.util.Queue = Object.inherit(Bind, {
@@ -3805,7 +3853,8 @@ jspa.util.Queue = Object.inherit(Bind, {
 	stop: function() {
 		this.prevented = true;
 	}
-});/**
+});
+/**
  * @class jspa.util.State
  */
 jspa.util.State = Object.inherit({

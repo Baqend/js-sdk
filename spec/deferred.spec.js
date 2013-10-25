@@ -1,6 +1,6 @@
-require('../lib/jahcode.js');
-require('../lib/util.js');
-require('../build/jspa.js');
+if (require !== undefined) {
+    var jspa = require('../dist/jspa.js');
+}
 
 describe("Deferred", function() {
     var deferred = null, done = false, fail = false;
