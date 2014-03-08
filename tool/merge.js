@@ -4,12 +4,11 @@ var path = require('path');
 
 var pattern = /([\w\.]*)\s*=\s*([\w\.]*)\s*\.\s*inherit\s*\(([\w\.\s,]*)\{/g;
 
-var depends = {};
-var classDeclaredIn = {};
-var dependencyList = [];
-var fileContent = {};
-
 module.exports = function(root) {
+    var depends = {};
+    var classDeclaredIn = {};
+    var dependencyList = [];
+
     var files = glob.sync(root + '/**/*.js');
 
     files.forEach(function(abspath) {
@@ -47,31 +46,31 @@ module.exports = function(root) {
         }
     });
 
+    function createDependency(file) {
+        if (dependencyList.indexOf(file) == -1) {
+            var dependingClasses = depends[file];
+            if (!dependingClasses) {
+                throw new Error("Cycle dependency detected");
+            } else {
+                depends[file] = null;
+            }
+
+            for (var i = 0, dependingClass; dependingClass = dependingClasses[i]; i++) {
+                var declaredIn = classDeclaredIn[dependingClass];
+                if (declaredIn != null) {
+                    createDependency(declaredIn);
+                }
+            }
+
+            if (dependencyList.indexOf(file) == -1) {
+                dependencyList.push(file);
+            }
+        }
+    }
+
     for (var file in depends) {
         createDependency(file);
     }
 
     return dependencyList;
 };
-
-function createDependency(file) {
-	if (dependencyList.indexOf(file) == -1) {
-		var dependingClasses = depends[file];
-		if (!dependingClasses) {
-			throw new Error("Cycle dependency detected");
-		} else {
-			depends[file] = null;
-		}
-		
-		for (var i = 0, dependingClass; dependingClass = dependingClasses[i]; i++) {
-			var declaredIn = classDeclaredIn[dependingClass];
-			if (declaredIn != null) {
-				createDependency(declaredIn);
-			}
-		}
-		
-		if (dependencyList.indexOf(file) == -1) {				
-			dependencyList.push(file);
-		}
-	}
-}

@@ -56,9 +56,7 @@ var index = [
   "src/jspa/metamodel/SetAttribute.js",
   "src/jspa/metamodel/SingularAttribute.js",
   "src/jspa/util/Queue.js",
-  "src/jspa/util/State.js",
-  "src/package.js",
-  "src/package.js"
+  "src/jspa/util/State.js"
 ];
 
 for (var i = 0; i < index.length; ++i) {
