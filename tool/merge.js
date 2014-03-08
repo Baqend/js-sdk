@@ -1,3 +1,7 @@
+var glob = require("glob");
+var fs = require('fs');
+var path = require('path');
+
 var pattern = /([\w\.]*)\s*=\s*([\w\.]*)\s*\.\s*inherit\s*\(([\w\.\s,]*)\{/g;
 
 var depends = {};
@@ -5,12 +9,16 @@ var classDeclaredIn = {};
 var dependencyList = [];
 var fileContent = {};
 
-module.exports = function(grunt, rootdir) {
-    grunt.file.recurse(rootdir, function(abspath, rootdir, subdir, filename) {
+module.exports = function(root) {
+    var files = glob.sync(root + '/**/*.js');
+
+    files.forEach(function(abspath) {
+        var filename = abspath.substring(abspath.lastIndexOf('/') + 1);
+
         if (filename == "package.js") {
             dependencyList.push(abspath);
         } else {
-            var data = grunt.file.read(abspath);
+            var data = fs.readFileSync(abspath);
 
             var depend = [];
             while (pattern.exec(data)) {

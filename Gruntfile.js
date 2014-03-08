@@ -7,7 +7,7 @@ module.exports = function(grunt) {
     grunt.initConfig({
         concat: {
             dist: {
-                src: jahdep(grunt, 'src'),
+                src: jahdep('src'),
                 dest: 'dist/jspa.js'
             }
         },
@@ -24,9 +24,16 @@ module.exports = function(grunt) {
             }
         },
 
+        karma: {
+            test: {
+                configFile: 'karma.conf.js',
+                singleRun: true
+            }
+        },
+
         jasmine: {
             test: {
-                src: jahdep(grunt, 'src'),
+                src: jahdep('src'),
                 options: {
                     vendor: 'node_modules/jahcode/jahcode.js',
                     specs: 'spec/*.spec.js',
@@ -78,6 +85,7 @@ module.exports = function(grunt) {
     grunt.loadNpmTasks('grunt-contrib-connect');
     grunt.loadNpmTasks('grunt-contrib-watch');
     grunt.loadNpmTasks('grunt-contrib-jasmine');
+    grunt.loadNpmTasks('grunt-karma');
 
     grunt.registerTask('default',
         [
@@ -93,7 +101,6 @@ module.exports = function(grunt) {
 
     grunt.registerTask('test',
         [
-            'connect',
-            'jasmine'
+            'karma'
         ]);
 };
