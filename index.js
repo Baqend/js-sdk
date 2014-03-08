@@ -2,7 +2,7 @@ var tags = document.getElementsByTagName('script');
 var tag = tags[tags.length - 1];
 
 var path = tag.getAttribute('src');
-path = path.substring(path.lastIndexOf('/') + 1);
+path = path.substring(0, path.lastIndexOf('/') + 1);
 
 var index = [
   "src/package.js",
