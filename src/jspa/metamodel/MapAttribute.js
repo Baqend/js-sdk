@@ -10,15 +10,14 @@ jspa.metamodel.MapAttribute = jspa.metamodel.PluralAttribute.inherit({
 	 * @constructor
 	 * @param {jspa.metamodel.EntityType} declaringType
 	 * @param {String} name
-	 * @param {Function} typeConstructor
 	 * @param {jspa.metamodel.Type} keyType
 	 * @param {jspa.metamodel.Type} elementType
 	 */
-	initialize: function(declaringType, name, typeConstructor, keyType, elementType) {
-		this.superCall(declaringType, name, typeConstructor, elementType);
+	initialize: function(declaringType, name, keyType, elementType) {
+		this.superCall(declaringType, name, elementType);
 		
 		this.keyType = keyType;
-        this.trackedConstructor = typeConstructor.inherit(jspa.collection.Map, {});
+        this.trackedConstructor = jspa.Map.inherit(jspa.collection.Map, {});
 	},
 
     /**

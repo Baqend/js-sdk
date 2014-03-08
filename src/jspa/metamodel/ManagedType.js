@@ -35,8 +35,20 @@ jspa.metamodel.ManagedType = jspa.metamodel.Type.inherit({
      * @type {jspa.metamodel.Attribute[]}
      */
 	declaredAttributes: null,
-	
-	/**
+
+    /**
+     * @constructor
+     * @memberOf jspa.metamodel.Type
+     * @param {String} identifier
+     * @param {Function} typeConstructor
+     */
+    initialize: function(identifier, typeConstructor) {
+        this.superCall(identifier, typeConstructor);
+
+        this.declaredAttributes = [];
+    },
+
+    /**
 	 * @param {jspa.binding.ClassUtil} classUtil
 	 */
 	init: function(classUtil) {

@@ -39,7 +39,7 @@ jspa.metamodel.Metamodel = Object.inherit({
                 return value;
             },
             fromDatabaseValue: function(state, currentValue, json) {
-                return this.superCall(state, currentValue, json? 'T' + json: json);
+                return this.superCall(state, currentValue, json? '1970-01-01T' + json: json);
             }
         }))('Time', Date));
 
@@ -76,18 +76,21 @@ jspa.metamodel.Metamodel = Object.inherit({
     },
 	
 	/**
-	 * @param {(Function|String)} typeConstructor
-	 * @returns {jspa.metamodel.EntityType}
-	 */
+     * Return the metamodel entity type representing the entity.
+     *
+	 * @param {(Function|String)} typeConstructor - the type of the represented entity
+     * @returns {jspa.metamodel.EntityType} the metamodel entity type
+     */
 	entity: function(typeConstructor) {
 		var identifier = this.identifierArg(typeConstructor);
 		return identifier? this.entities[identifier]: null;
 	},
 	
 	/**
-	 * @param {(Function|String)} typeConstructor
-	 * @returns {jspa.metamodel.BasicType}
-	 */
+     * Return the metamodel basic type representing the native class.
+     * @param {(Function|String)} typeConstructor - the type of the represented native class
+	 * @returns {jspa.metamodel.BasicType} the metamodel basic type
+     */
 	baseType: function(typeConstructor) {
         if (String.isInstance(typeConstructor) && typeConstructor.indexOf('_native.') == -1)
             typeConstructor = '/db/_native.' + typeConstructor;
@@ -97,12 +100,23 @@ jspa.metamodel.Metamodel = Object.inherit({
 	},
 
     /**
-     * @param {(Function|String)} typeConstructor
-     * @returns {jspa.metamodel.EmbeddableType}
+     * Return the metamodel embeddable type representing the embeddable class.
+     * @param {(Function|String)} typeConstructor - the type of the represented embeddable class
+     * @returns {jspa.metamodel.EmbeddableType} the metamodel embeddable type
      */
     embeddable: function(typeConstructor) {
         var identifier = this.identifierArg(typeConstructor);
         return identifier? this.embeddables[identifier]: null;
+    },
+
+    /**
+     * Return the metamodel managed type representing the entity, mapped superclass, or embeddable class.
+     *
+     * @param {(Function|String)} typeConstructor - the type of the represented managed class
+     * @returns {jspa.metamodel.Type} the metamodel managed type
+     */
+    managedType: function(typeConstructor) {
+        return this.baseType(typeConstructor) || this.entity(typeConstructor) || this.embeddable(typeConstructor);
     },
 	
 	addType: function(type) {

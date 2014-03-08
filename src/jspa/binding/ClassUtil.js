@@ -126,9 +126,8 @@ jspa.binding.ClassUtil = Object.inherit({
             enumerable: false
         });
 
-		for (var name in type.declaredAttributes) {
-            var attribute = type.declaredAttributes[name];
-			this.enhanceProperty(type, attribute, typeConstructor);
+		for (var i = 0, attr; attr = type.declaredAttributes[i]; ++i) {
+			this.enhanceProperty(type, attr, typeConstructor);
 		}
 	},
 	

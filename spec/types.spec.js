@@ -26,7 +26,7 @@ if (typeof require !== 'undefined') {
         "Float": [0.0, 42.42, 'Float'],
         "Integer": [0, 42, 'Integer'],
         "String": [ "", "Test String", 'String'],
-        "Time": [ new Date(0), new Date("T17:33:14"), 'Time'],
+        "Time": [ new Date(0), new Date("1970-01-01T17:33:14"), 'Time'],
         "Date": [ new Date(0), new Date("2013-11-22"), 'Date'],
         "DateTime": [ new Date(0), new Date(), 'DateTime'],
 
@@ -92,24 +92,29 @@ if (typeof require !== 'undefined') {
         ]);
     }
 
-    jspa.Collection.prototype.jasmineMatches = function(other) {
-        if (this.size !== other.size)
-            return false;
+    function collectionComperator(a, b) {
+        if (jspa.Collection.isInstance(a) && jspa.Collection.isInstance(b)) {
+            if (a.size !== b.size)
+                return false;
 
-        var env = jasmine.getEnv();
+            var colIter = b.items();
+            for (var iter = a.items(); iter.hasNext; ) {
+                var aItem = iter.next();
+                var bItem = colIter.next();
 
-        var colIter = other.items();
-        for (var iter = this.items(); iter.hasNext; ) {
-            var a = iter.next();
-            var b = colIter.next();
+                if (!jasmine.matchersUtil.equals(aItem, bItem))
+                    return false;
+            }
 
-            return env.equals_(a, b);
+            return true;
         }
-
-        return true;
-    };
+    }
 
     describe('Test entity type', function() {
+        beforeEach(function() {
+            jasmine.addCustomEqualityTester(collectionComperator);
+        });
+
         var emf = new jspa.EntityManagerFactory('http://localhost:8080');
         var schema = emf.metamodel;
         var em = emf.createEntityManager();
@@ -129,28 +134,20 @@ if (typeof require !== 'undefined') {
             }
         }
 
-        it('should persist sample models', function() {
+        it('should persist sample models', function(done) {
             var promise = em.yield();
 
-            waitsFor(function() {
-                return promise.state == "resolved";
-            });
-
-            runs(function() {
+            promise.always(function() {
                 expect(o1._objectInfo.state.isPersistent).toBeTruthy();
                 expect(o2._objectInfo.state.isPersistent).toBeTruthy();
                 expect(o3._objectInfo.state.isPersistent).toBeTruthy();
-            })
+
+                done();
+            });
         });
 
-        it('should init schemas', function() {
-            var promise = em.yield();
-
-            waitsFor(function() {
-                return promise.state == "resolved";
-            });
-
-            runs(function() {
+        it('should init schemas', function(done) {
+            em.yield(function() {
                 for (var name in data) {
                     var def = data[name];
                     if (Number.isInstance(def[2])) {
@@ -163,6 +160,8 @@ if (typeof require !== 'undefined') {
                         expect(getType(def[2])).not.toBeNull();
                     }
                 }
+
+                done();
             });
         });
 
@@ -238,44 +237,36 @@ if (typeof require !== 'undefined') {
                     }
                 });
 
-                it('should persist as empty object', function() {
+                it('should persist as empty object', function(done) {
                     var obj = new constr();
                     em.persist(obj);
 
-                    var promise = em.flush();
-
-                    waitsFor(function() {
-                        return promise.state == "resolved";
-                    });
-
-                    runs(function() {
+                    var promise = em.flush(function() {
                         expect(obj._objectInfo.oid).toBeDefined();
                         expect(obj._objectInfo.version).toBeDefined();
                         expect(obj._objectInfo.state.isPersistent).toBeTruthy();
                         expect(obj.value).toBeNull();
+
+                        done();
                     });
                 });
 
-                it('should persist', function() {
+                it('should persist', function(done) {
                     var obj = new constr();
                     em.persist(obj);
                     obj.value = value;
 
-                    var promise = em.flush();
-
-                    waitsFor(function() {
-                        return promise.state == "resolved";
-                    });
-
-                    runs(function() {
+                    var promise = em.flush().always(function() {
                         expect(obj._objectInfo.oid).toBeDefined();
                         expect(obj._objectInfo.version).toBeDefined();
                         expect(obj._objectInfo.state.isPersistent).toBeTruthy();
                         expect(obj.value).toEqual(value);
+
+                        done();
                     });
                 });
 
-                it('should persist and load', function() {
+                it('should persist and load', function(done) {
                     var obj = new constr();
                     em.persist(obj);
                     obj.value = value;
@@ -287,23 +278,19 @@ if (typeof require !== 'undefined') {
                         return em.find(obj._objectInfo.oid).done(function(o) {
                             loaded = o;
                         });
-                    });
-
-                    waitsFor(function() {
-                        return promise.state == "resolved";
-                    });
-
-                    runs(function() {
+                    }).always(function() {
                         expect(loaded).not.toBe(obj);
 
                         expect(loaded._objectInfo.oid).toBeDefined();
                         expect(loaded._objectInfo.version).toBeDefined();
                         expect(loaded._objectInfo.state.isPersistent).toBeTruthy();
                         expect(loaded.value).toEqual(value);
+
+                        done();
                     });
                 });
 
-                it('should persist and load null', function() {
+                it('should persist and load null', function(done) {
                     var obj = new constr();
                     em.persist(obj);
                     obj.value = null;
@@ -315,23 +302,19 @@ if (typeof require !== 'undefined') {
                         return em.find(obj._objectInfo.oid).done(function(o) {
                             loaded = o;
                         });
-                    });
-
-                    waitsFor(function() {
-                        return promise.state == "resolved";
-                    });
-
-                    runs(function() {
+                    }).always(function() {
                         expect(loaded).not.toBe(obj);
 
                         expect(loaded._objectInfo.oid).toBeDefined();
                         expect(loaded._objectInfo.version).toBeDefined();
                         expect(loaded._objectInfo.state.isPersistent).toBeTruthy();
                         expect(loaded.value).toBeNull();
+
+                        done();
                     });
                 });
 
-                it('should persist and load default value', function() {
+                it('should persist and load default value', function(done) {
                     var obj = new constr();
                     em.persist(obj);
                     obj.value = defaultValue;
@@ -343,23 +326,19 @@ if (typeof require !== 'undefined') {
                         return em.find(obj._objectInfo.oid).done(function(o) {
                             loaded = o;
                         });
-                    });
-
-                    waitsFor(function() {
-                        return promise.state == "resolved";
-                    });
-
-                    runs(function() {
+                    }).always(function() {
                         expect(loaded).not.toBe(obj);
 
                         expect(loaded._objectInfo.oid).toBeDefined();
                         expect(loaded._objectInfo.version).toBeDefined();
                         expect(loaded._objectInfo.state.isPersistent).toBeTruthy();
                         expect(loaded.value).toEqual(defaultValue);
+
+                        done();
                     });
                 });
 
-                it('should persist and be editable', function() {
+                it('should persist and be editable', function(done) {
                     var obj = new constr();
                     em.persist(obj);
                     obj.value = defaultValue;
@@ -368,22 +347,18 @@ if (typeof require !== 'undefined') {
                         obj.value = value;
 
                         return em.flush();
-                    });
-
-                    waitsFor(function() {
-                        return promise.state == "resolved";
-                    });
-
-                    runs(function() {
+                    }).always(function() {
                         expect(obj._objectInfo.oid).toBeDefined();
                         expect(obj._objectInfo.version).toBeDefined();
                         expect(obj._objectInfo.state.isPersistent).toBeTruthy();
                         expect(obj.value).toEqual(value);
+
+                        done();
                     });
                 });
 
                 if (!isCollection) {
-                    it('should be usable in lists', function() {
+                    it('should be usable in lists', function(done) {
                         var listConstr = schema.entity('test.type.' + name + 'List').typeConstructor;
 
                         var obj = new listConstr();
@@ -397,13 +372,7 @@ if (typeof require !== 'undefined') {
                             return em.find(obj._objectInfo.oid).done(function(o) {
                                 loaded = o;
                             });
-                        });
-
-                        waitsFor(function() {
-                            return promise.state == "resolved";
-                        });
-
-                        runs(function() {
+                        }).always(function() {
                             expect(obj._objectInfo.oid).toBeDefined();
                             expect(obj._objectInfo.version).toBeDefined();
                             expect(obj.value).toEqual(val);
@@ -412,10 +381,12 @@ if (typeof require !== 'undefined') {
                             expect(loaded._objectInfo.version).toBeDefined();
                             expect(loaded._objectInfo.state.isPersistent).toBeTruthy();
                             expect(loaded.value).toEqual(val);
+
+                            done();
                         });
                     });
 
-                    it('should be usable in sets', function() {
+                    it('should be usable in sets', function(done) {
                         var setConstr = schema.entity('test.type.' + name + 'Set').typeConstructor;
 
                         var obj = new setConstr();
@@ -429,13 +400,7 @@ if (typeof require !== 'undefined') {
                             return em.find(obj._objectInfo.oid).done(function(o) {
                                 loaded = o;
                             });
-                        });
-
-                        waitsFor(function() {
-                            return promise.state == "resolved";
-                        });
-
-                        runs(function() {
+                        }).always(function() {
                             expect(obj._objectInfo.oid).toBeDefined();
                             expect(obj._objectInfo.version).toBeDefined();
                             expect(obj.value).toEqual(val);
@@ -444,10 +409,12 @@ if (typeof require !== 'undefined') {
                             expect(loaded._objectInfo.version).toBeDefined();
                             expect(loaded._objectInfo.state.isPersistent).toBeTruthy();
                             expect(loaded.value).toEqual(val);
+
+                            done();
                         });
                     });
 
-                    it('should be usable as map values', function() {
+                    it('should be usable as map values', function(done) {
                         var mapConstr = schema.entity('test.type.' + name + 'AsMapValues').typeConstructor;
 
                         var obj = new mapConstr();
@@ -465,13 +432,7 @@ if (typeof require !== 'undefined') {
                             return em.find(obj._objectInfo.oid).done(function(o) {
                                 loaded = o;
                             });
-                        });
-
-                        waitsFor(function() {
-                            return promise.state == "resolved";
-                        });
-
-                        runs(function() {
+                        }).always(function() {
                             expect(obj._objectInfo.oid).toBeDefined();
                             expect(obj._objectInfo.version).toBeDefined();
                             expect(obj.value).toEqual(val);
@@ -480,10 +441,12 @@ if (typeof require !== 'undefined') {
                             expect(loaded._objectInfo.version).toBeDefined();
                             expect(loaded._objectInfo.state.isPersistent).toBeTruthy();
                             expect(loaded.value).toEqual(val);
+
+                            done();
                         });
                     });
 
-                    it('should be usable as map keys', function() {
+                    it('should be usable as map keys', function(done) {
                         var mapConstr = schema.entity('test.type.' + name + 'AsMapKeys').typeConstructor;
 
                         var obj = new mapConstr();
@@ -501,13 +464,7 @@ if (typeof require !== 'undefined') {
                             return em.find(obj._objectInfo.oid).done(function(o) {
                                 loaded = o;
                             });
-                        });
-
-                        waitsFor(function() {
-                            return promise.state == "resolved";
-                        });
-
-                        runs(function() {
+                        }).always(function() {
                             expect(obj._objectInfo.oid).toBeDefined();
                             expect(obj._objectInfo.version).toBeDefined();
                             expect(obj.value).toEqual(val);
@@ -516,11 +473,13 @@ if (typeof require !== 'undefined') {
                             expect(loaded._objectInfo.version).toBeDefined();
                             expect(loaded._objectInfo.state.isPersistent).toBeTruthy();
                             expect(loaded.value).toEqual(val);
+
+                            done();
                         });
                     });
                 }
 
-                it('should be usable as embedded value', function() {
+                it('should be usable as embedded value', function(done) {
                     var wrapper = schema.entity('test.type.' + name + 'EmbeddedWrapper').typeConstructor;
                     var embedded = schema.embeddable('test.type.' + name + 'Embedded').typeConstructor;
 
@@ -537,13 +496,7 @@ if (typeof require !== 'undefined') {
                         return em.find(obj._objectInfo.oid).done(function(o) {
                             loaded = o;
                         });
-                    });
-
-                    waitsFor(function() {
-                        return promise.state == "resolved";
-                    });
-
-                    runs(function() {
+                    }).always(function() {
                         expect(obj._objectInfo.oid).toBeDefined();
                         expect(obj._objectInfo.version).toBeDefined();
                         expect(obj.embedded).toEqual(val);
@@ -552,6 +505,8 @@ if (typeof require !== 'undefined') {
                         expect(loaded._objectInfo.version).toBeDefined();
                         expect(loaded._objectInfo.state.isPersistent).toBeTruthy();
                         expect(loaded.embedded).toEqual(val);
+
+                        done();
                     });
                 });
 

@@ -55,7 +55,7 @@ jspa.metamodel.ModelBuilder = Object.inherit({
 		for (var identifier in this.modelDescriptors) {
 			try {
 				var model = this.getModel(identifier);
-				model.declaredAttributes = this.buildAttributes(model);				
+				this.buildAttributes(model);
 			} catch (e) {
 				throw new jspa.error.PersistentError('Can\'t create model for entity class ' + identifier, e);
 			}
@@ -96,7 +96,7 @@ jspa.metamodel.ModelBuilder = Object.inherit({
 		if (model.identifier in this.models) {
 			var fields = this.modelDescriptors[model.identifier]['fields'];
 			
-			var attributes = [];
+			var attributes = model.declaredAttributes;
 			for (var i = 0, field; field = fields[i]; ++i) {
 				attributes.push(this.buildAttribute(model, field.name, field.type));
 			}
@@ -120,14 +120,14 @@ jspa.metamodel.ModelBuilder = Object.inherit({
 			var elementType = identifier.substring(identifier.indexOf('[') + 1, identifier.indexOf(']')).trim();
 			switch (collectionType) {
 				case '/db/_native.collection.List':
-					return new jspa.metamodel.ListAttribute(model, name, jspa.List, this.getModel(elementType));
+					return new jspa.metamodel.ListAttribute(model, name, this.getModel(elementType));
 				case '/db/_native.collection.Set':
-					return new jspa.metamodel.SetAttribute(model, name, jspa.Set, this.getModel(elementType));
+					return new jspa.metamodel.SetAttribute(model, name, this.getModel(elementType));
 				case '/db/_native.collection.Map':
 					var keyType = elementType.substring(0, elementType.indexOf(',')).trim();
 					elementType = elementType.substring(elementType.indexOf(',') + 1).trim();
 					
-					return new jspa.metamodel.MapAttribute(model, name, jspa.Map, this.getModel(keyType), this.getModel(elementType));
+					return new jspa.metamodel.MapAttribute(model, name, this.getModel(keyType), this.getModel(elementType));
 				default:
 					throw new TypeError('no collection available for ' + identifier); 
 			}

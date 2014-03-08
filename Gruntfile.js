@@ -26,13 +26,11 @@ module.exports = function(grunt) {
 
         jasmine: {
             test: {
-                src: [
-                    'node_modules/jahcode/jahcode.js',
-                    'dist/jspa.js'
-                ],
+                src: jahdep(grunt, 'src'),
                 options: {
+                    vendor: 'node_modules/jahcode/jahcode.js',
                     specs: 'spec/*.spec.js',
-                    helpers: 'spec/*.helper.js'
+                    host : 'http://127.0.0.1:8000/'
                 }
             }
         },
@@ -56,7 +54,7 @@ module.exports = function(grunt) {
             server: {
                 options: {
                     hostname: '*',
-                    port: 80,
+                    port: 8000,
                     livereload: true
                 }
             }
@@ -91,5 +89,11 @@ module.exports = function(grunt) {
         [
             'concat',
             'uglify'
+        ]);
+
+    grunt.registerTask('test',
+        [
+            'connect',
+            'jasmine'
         ]);
 };

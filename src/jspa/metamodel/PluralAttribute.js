@@ -25,10 +25,9 @@ jspa.metamodel.PluralAttribute = jspa.metamodel.Attribute.inherit({
 	 * @param {Function} typeConstructor
 	 * @param {jspa.metamodel.Type} elementType
 	 */
-	initialize: function(declaringType, name, typeConstructor, elementType) {
+	initialize: function(declaringType, name, elementType) {
 		this.superCall(declaringType, name);
 
-		this.typeConstructor = typeConstructor;
 		this.elementType = elementType;
 	},
 

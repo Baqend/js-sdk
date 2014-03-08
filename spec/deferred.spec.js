@@ -1,4 +1,4 @@
-if (require !== undefined) {
+if (typeof require !== 'undefined') {
     var jspa = require('../dist/jspa.js');
 }
 

@@ -10,12 +10,11 @@ jspa.metamodel.ListAttribute = jspa.metamodel.PluralAttribute.inherit({
      * @constructor
      * @param {jspa.metamodel.EntityType} declaringType
      * @param {String} name
-     * @param {Function} typeConstructor
      * @param {jspa.metamodel.Type} elementType
      */
-	initialize: function(declaringType, name, typeConstructor, elementType) {
-		this.superCall(declaringType, name, typeConstructor, elementType);
+	initialize: function(declaringType, name, elementType) {
+		this.superCall(declaringType, name, elementType);
 		
-		this.trackedConstructor = typeConstructor.inherit(jspa.collection.List, {});
+		this.trackedConstructor = jspa.List.inherit(jspa.collection.List, {});
 	}
 });
