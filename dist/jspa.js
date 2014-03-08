@@ -14,292 +14,6 @@ var jspa = {
 if (typeof module !== 'undefined')
 	module.exports = jspa;
 	
-/**
- * @class jspa.binding.Accessor
- */
-jspa.binding.Accessor = Object.inherit({
-	/**
-	 * @param {Object} object
-	 * @param {jspa.metamodel.Attribute} attribute
-	 * @returns {*}
-	 */
-	getValue: function(object, attribute) {
-		return object[attribute.name];
-	},
-	 
-	/**
-	 * @param {Object} object
-	 * @param {jspa.metamodel.Attribute} attribute
-	 * @param {*} value
-	 */
-	setValue: function(object, attribute, value) {
-		object[attribute.name] = value;
-	}
-});
-/**
- * @class jspa.binding.ClassUtil
- */
-jspa.binding.ClassUtil = Object.inherit({
-	extend: {
-		classLoaders: [],
-		
-		initialize: function() {
-			this.addClassLoader(this.proxyLoader);
-			this.addClassLoader(this.globalLoader);
-			this.addClassLoader(this.moduleLoader);
-		},
-		
-		loadClass: function(model) {
-			var el = /\/db\/(([\w\.]*)\.)?(\w*)/.exec(model.identifier);
-
-			var namespace = el[1];
-			var className = el[3];
-			
-			for (var i = this.classLoaders.length - 1, loader; loader = this.classLoaders[i]; --i) {
-				try {
-					return loader(model, namespace, className);
-				} catch (e) {}
-			}
-			
-			throw new TypeError('The class for ' + model.identifier + ' was not found!');
-		},
-		
-		addClassLoader: function(classLoader) {
-			this.classLoaders.push(classLoader);
-		},
-		
-		removeClassLoader: function(classLoader) {
-			var index = this.classLoaders.indexOf(classLoader);
-			if (index != -1) {
-				this.classLoaders.splice(index, 1);
-			}
-		},
-		
-		globalLoader: function(model, namespace, className) {
-			var context = typeof window != 'undefined'? window: global;
-			
-			var n = context;
-            if (namespace) {
-                var fragments = namespace.split('.');
-                for (var i = 0, fragment; n && (fragment = fragments[i]); ++i) {
-                    n = n[fragment];
-                }
-            }
-			
-			var cls = n && n[className] /* || context[className] */; // name clash with dom classes
-			
-			if (cls) {
-				return cls;
-			} else {
-				throw new TypeError('The class was not found in the global context.');
-			}
-		},
-		
-		moduleLoader: function(model, namespace, name) {
-			var mod = module;
-			while (mod = mod.parent) {
-				if (name in mod) {
-					return name[mod];
-				}
-			}
-			
-			throw new TypeError('The class was not found in the parent modules.');
-		},
-		
-		proxyLoader: function(model) {
-            if (model.isEntity) {
-                console.log('Initialize proxy class for entity ' + model.identifier + '.');
-                return model.supertype.typeConstructor.inherit({});
-            } else if (model.isEmbeddable) {
-                console.log('Initialize proxy class for embeddable ' + model.identifier + '.');
-                return Object.inherit({});
-            } else {
-                throw new TypeError('No proxy class can be initialized.');
-            }
-		}
-	},
-	
-	/**
-	 * @param {Function} typeConstructor
-	 * @returns {String}
-	 */
-	getIdentifier: function(typeConstructor) {
-		return typeConstructor.__jspaId__;
-	},
-	
-	/**
-	 * @param {Function}
-	 * @param {String} identifier
-	 */
-	setIdentifier: function(typeConstructor, identifier) {
-		typeConstructor.__jspaId__ = identifier;
-	},
-	
-	/**
-	 * @param {jspa.metamodel.EntityType} type
-	 * @returns {Object}
-	 */
-	create: function(type) {
-		return Object.create(type.typeConstructor.prototype);
-	},
-	
-	/**
-	 * @param {String} model
-	 * @returns {Function}
-	 */
-	loadClass: function(model) {
-		return jspa.binding.ClassUtil.loadClass(model);
-	},
-	
-	/**
-	 * @param {jspa.metamodel.EntityType} type
-	 * @param {Function} typeConstructor
-	 */
-	enhance: function(type, typeConstructor) {
-        Object.defineProperty(typeConstructor.prototype, '_objectInfo', {
-            value: {
-                'class': type.identifier
-            },
-            writable: true,
-            enumerable: false
-        });
-
-		for (var name in type.declaredAttributes) {
-            var attribute = type.declaredAttributes[name];
-			this.enhanceProperty(type, attribute, typeConstructor);
-		}
-	},
-	
-	/**
-	 * @param {jspa.metamodel.EntityType} type
-	 * @param {jspa.metamodel.Attribute} attribute
-	 * @param {Function} typeConstructor
-	 */
-	enhanceProperty: function(type, attribute, typeConstructor) {
-		var name = '_' + attribute.name;
-		Object.defineProperty(typeConstructor.prototype, attribute.name, {
-			get: function() {
-				jspa.util.State.readAccess(this);
-				return this[name];
-			},
-			set: function(value) {
-				jspa.util.State.writeAccess(this);
-				this[name] = value;
-			},
-            configurable: true,
-            enumerable: true
-		});
-	}
-});
-
-
-jspa.collection.Collection = Trait.inherit({
-
-    size: {
-        get: function() {
-            jspa.util.State.readAccess(this);
-            return this._size;
-        },
-        set: function(value) {
-            this._size = value;
-        }
-    },
-
-    has: function(element) {
-        jspa.util.State.readAccess(this);
-        return this.superCall(element);
-    },
-
-    add: function(element) {
-        jspa.util.State.writeAccess(this);
-        this.superCall(element);
-    },
-
-    remove: function(element) {
-        jspa.util.State.writeAccess(this);
-        this.superCall(element);
-    },
-
-    items: function() {
-        jspa.util.State.readAccess(this);
-        return this.superCall();
-    },
-
-    iterator: function() {
-        jspa.util.State.readAccess(this);
-        return this.superCall();
-    },
-
-    toString: function() {
-        jspa.util.State.readAccess(this);
-        return this.superCall();
-    },
-
-    toJSON: function() {
-        jspa.util.State.readAccess(this);
-        return this.superCall();
-    }
-});
-jspa.collection.List = jspa.collection.Collection.inherit({
-	get: function(index) {
-		jspa.util.State.readAccess(this);
-		return this.superCall(index);
-	},
-	
-	set: function(index, value) {
-		jspa.util.State.writeAccess(this);
-		this.superCall(index, value);
-	},
-	
-	indexOf: function(value) {
-		jspa.util.State.readAccess(this);
-		return this.superCall(value);
-	},
-	
-	lastIndexOf: function(value) {
-		jspa.util.State.readAccess(this);
-		return this.superCall(value);
-	}
-});
-jspa.collection.Map = jspa.collection.Collection.inherit({
-	hasKey: function(key) {
-		jspa.util.State.readAccess(this);
-		return this.superCall(key);
-	},
-	
-	hasValue: function(value) {
-		jspa.util.State.readAccess(this);
-		return this.superCall(value);
-	},
-	
-	get: function(key) {
-		jspa.util.State.readAccess(this);
-		return this.superCall(key);
-	},
-	
-	set: function(key, value) {
-		jspa.util.State.writeAccess(this);
-		this.superCall(key, value);
-	},
-	
-	removeKey: function(key) {
-		jspa.util.State.writeAccess(this);
-		this.superCall(key);
-	},
-	
-	removeValue: function(value) {
-		jspa.util.State.writeAccess(this);
-		this.superCall(value);
-	},
-	
-	keys: function() {
-		jspa.util.State.readAccess(this);
-		return this.superCall();
-	}
-});
-
-jspa.collection.Set = jspa.collection.Collection.inherit({
-});
 
 jspa.StopIteration = Error.inherit({
     initialize: function() {
@@ -714,251 +428,6 @@ jspa.Map = jspa.Collection.inherit({
     }
 });
 
-/**
- * @class jspa.connector.Connector
- */
-jspa.connector.Connector = Object.inherit({
-	extend: {
-        /**
-         * @param {String} host
-         * @param {Number} port
-         * @return {jspa.connector.Connector}
-         */
-		create: function(host, port) {
-			if (!host && typeof window !== 'undefined') {
-				host = window.location.hostname;
-				port = window.location.port;
-			}
-			
-			if (host.indexOf('/') != -1) {
-				var matches = /^http:\/\/([^\/:]*)(:(\d*))?\/?$/.exec(host);
-				if (matches) {
-					host = matches[1];
-					port = matches[3];
-				} else {
-					throw new Error('The connection uri host ' + host + ' seems not to be valid');
-				}
-			}
-			
-			if (!port)
-				port = 80;
-			
-			for (var name in jspa.connector) {
-				var connector = jspa.connector[name];
-				if (connector.isUsable && connector.isUsable(host, port)) {
-					return new connector(host, port);
-				}
-			}
-			
-			throw new Error('No connector is usable for the requested connection');
-		}
-	},
-	
-	/**
-	 * @constructor
-	 * @param {String} host
-	 * @param {Integer} port
-	 */
-	initialize: function(host, port) {
-		this.host = host;
-		this.port = port;
-	},
-
-	/**
-     * @param {*} context
-	 * @param {jspa.message.Message} message
-     * @param {Boolean} sync
-     * @returns {jspa.Promise}
-	 */
-	send: function(context, message, sync) {
-		if (!sync) {			
-			message.deferred = new jspa.Deferred();
-			message.context = context;
-		}
-		
-		try {
-			message.doSend();
-			this.doSend(message);
-		} catch (e) {
-			e = jspa.error.PersistentError(e);
-
-			if (!message.deferred) {
-				throw e;
-			} else {				
-				message.deferred.rejectWith(context, [e]);
-			}
-		}
-		
-		if (message.deferred)
-			return message.deferred.promise();
-	},
-
-    /**
-     * @param {jspa.message.Message} message
-     */
-	receive: function(message) {
-		try {
-			message.doReceive();
-		} catch (e) {
-			e = jspa.error.PersistentError(e);
-
-			if (!message.deferred) {
-				throw e;
-			} else {				
-				message.deferred.rejectWith(message.context, [e]);
-			}
-		}
-		
-		if (message.deferred) {			
-			message.deferred.resolveWith(message.context, [message]);
-		}
-	},
-
-    /**
-     * @param {jspa.message.Message} message
-     */
-	doSend: function(message) {
-		throw new Error('Connector.doSend() not implemented');
-	},
-	
-	/**
-	 * @param {jspa.message.Message} message
-	 */
-	prepareRequestEntity: function(message) {
-		if (message.request.entity) {
-			message.request.headers['Content-Type'] = 'application/json;charset=utf-8';
-			return JSON.stringify(message.request.entity);
-		} else {
-			return null;
-		}
-	},
-
-    /**
-     * @param {jspa.message.Message} message
-     * @param {Object} data
-     */
-	prepareResponseEntity: function(message, data) {
-		var entity = null;
-		if (data && data.length > 0) {
-			entity = JSON.parse(data);
-		}
-		
-		message.response.entity = entity;
-	}
-});
-/**
- * @class jspa.connector.NodeConnector
- * @extends jspa.connector.Connector
- */
-jspa.connector.NodeConnector = jspa.connector.Connector.inherit({
-	extend: {
-		isUsable: function(host, port) {
-			if (!this.prototype.http) {
-				try {
-					var http = require('http');
-					if (http.ClientRequest) {
-						this.prototype.http = http;
-					} 
-				} catch (e) {};
-			}
-			return Boolean(this.prototype.http);
-		}
-	},
-	
-	/**
-	 * @param {jspa.message.Message} message
-	 */
-	doSend: function(message) {
-		if (!message.deferred)
-			throw new Error('Blocking IO is not supported');
-		
-		message.request.host = this.host;
-		message.request.port = this.port;
-		
-		var self = this;
-		var entity = this.prepareRequestEntity(message);
-		
-		if (entity)
-			message.request.headers['Transfer-Encoding'] = 'chunked';
-		
-		var req = this.http.request(message.request, function(res) {
-			var data = '';
-			
-			res.setEncoding('utf-8');
-			res.on('data', function(chunk) {
-				data += chunk;
-			});
-			res.on('end', function() {
-				message.response.statusCode = res.statusCode;
-				message.response.headers = res.headers;
-				self.prepareResponseEntity(message, data);
-				self.receive(message);
-			});
-		});
-
-		req.on('error', function() {
-			self.receive(message);
-		});
-		
-		if (entity)
-			req.write(entity, 'utf8');
-		
-		req.end();
-	}
-});
-/**
- * @class jspa.connector.XMLHttpConnector
- * @extends jspa.connector.Connector
- */
-jspa.connector.XMLHttpConnector = jspa.connector.Connector.inherit({
-	extend: {
-		isUsable: function(host, port) {
-			return typeof XMLHttpRequest != 'undefined';
-		}
-	},
-	
-	/**
-	 * @param {jspa.message.Message} message
-	 */
-	doSend: function(message) {
-		var xhr = new XMLHttpRequest();
-		
-		var url = 'http://' + this.host + ':' + this.port + message.request.path;
-		//console.log(message.request.method + ' ' + url);
-
-		if (message.deferred)			
-			xhr.onreadystatechange = this.readyStateChange.bind(this, xhr, message);
-		
-		xhr.open(message.request.method, url, !!message.deferred);
-
-		var entity = this.prepareRequestEntity(message);
-		var headers = message.request.headers;
-		for (var name in headers)
-			xhr.setRequestHeader(name, headers[name]);
-
-		xhr.send(entity);
-		
-		if (!message.deferred)
-			this.doReceive(xhr, message);
-	},
-	
-	readyStateChange: function(xhr, message) {
-		if (xhr.readyState == 4) {
-			this.doReceive(xhr, message);
-		}
-	},
-	
-	doReceive: function(xhr, message) {
-		message.response.statusCode = xhr.status;
-		
-		var headers = message.response.headers;
-		for (var name in headers)
-			headers[name] = xhr.getResponseHeader(name);
-		
-		this.prepareResponseEntity(message, xhr.responseText);
-		this.receive(message);
-	}
-});
 /**
  * @class jspa.Promise
  */
@@ -1938,6 +1407,705 @@ jspa.EntityTransaction = jspa.util.QueueConnector.inherit({
 	}
 });
 /**
+ * @class jspa.PersistenceUnitUtil
+ */
+jspa.PersistenceUnitUtil = Object.inherit({
+	
+	/**
+	 * @constructor
+	 * @param {jspa.metamodel.Metamodel} metamodel
+	 */
+	initialize: function(metamodel) {
+		this.metamodel = metamodel;
+	},
+	
+	/**
+	 * Return the id of the entity. A generated id is not guaranteed to be available until after the database 
+	 * insert has occurred. Returns null if the entity does not yet have an id.
+	 * 
+	 * @param {Object} entity
+	 * @param {jspa.util.State} entity
+	 */
+	getIdentifier: function(entity) {
+		var type = this.metamodel.entity(classOf(entity));
+		var identifier = type.id.getValue(entity);
+		if (identifier && identifier.indexOf('/temporary/') != 0) {
+			return identifier.substring(identifier.lastIndexOf('/') + 1);
+		}
+		return null;
+	},
+	
+	/**
+	 * Determine the load state of an entity belonging to the persistence unit. This method can be used to 
+	 * determine the load state of an entity passed as a reference.
+	 * 
+	 * @param {Object} entity - entity instance whose load state is to be determined
+	 * @param {String=} attributeName - optional name of attribute whose load state is to be determined
+	 * @returns {Boolean} false if entity's state has not been loaded or if the attribute state has not been loaded, else true
+	 */
+	isLoaded: function(entity, attributeName) {
+		var state = jspa.util.State.get(entity);
+		if (!state) {
+			return true;
+		} else if (!state.isLoaded) {
+			return false;
+		} else {
+			if (!attributeName) {
+				return true;
+			} else {
+				var attribute = state.type.getAttribute(attributeName);
+				if (attribute.isAssociation) {
+					var value = attribute.getValue(entity);
+					return !value || this.isLoaded(value);
+				} else {
+					return true;
+				}
+			}
+		}
+	}
+});
+/**
+ * @class jspa.Query
+ * @extends jspa.util.QueueConnector
+ */
+jspa.Query = jspa.util.QueueConnector.inherit({
+    /**
+     * @type Number
+     */
+	firstResult: 0,
+
+    /**
+     * @type Number
+     */
+	maxResults: Number.MAX_VALUE,
+	
+	/**
+	 * @constructor
+	 * @memberOf jspa.Query
+	 * @param {jspa.EntityManager} entityManager
+	 * @param {String|Object} qlString
+ 	 */
+	initialize: function(entityManager, qlString) {
+		this.superCall(entityManager.queue, entityManager.connector);
+		this.entityManager = entityManager;
+		this.qlString = qlString;
+	},
+	
+	/**
+	 * Execute a SELECT query and return the query results as a List.
+	 */
+	getResultList: function(doneCallback, failCallback) {
+		return this.yield().then(function() {
+			var type = this.resultClass? this.entityManager.metamodel.entity(this.resultClass): null;
+            var msg;
+
+			if (!this.qlString) {
+                msg = new jspa.message.GetAllOids(type, this.firstResult, this.maxResults);
+			} else {
+                if (!type) {
+                    throw new PositionError('Only typed queries can be executed.');
+                }
+
+                var query = this.qlString;
+                if (!String.isInstance(query))
+                    query = JSON.stringify(query);
+
+                msg = new jspa.message.GetBucketQuery(type, query, this.firstResult, this.maxResults);
+            }
+
+            return this.wait(this.send(msg)).then(function() {
+                return this.createResultList(msg.oids);
+            });
+		}).then(doneCallback, failCallback);
+	},
+	
+	/**
+	 * Execute a SELECT query that returns a single result.
+	 */
+	getSingleResult: function(doneCallback, failCallback) {
+		return this.yield().then(function() {
+			var type = this.resultClass? this.entityManager.metamodel.entity(this.resultClass): null;
+			if (!this.qlString) {
+                var msg = new jspa.message.GetAllOids(type, this.firstResult, 1);
+
+                return this.wait(this.send(msg)).then(function(msg) {
+					return this.createResultList(msg.oids);
+				}).then(function(result) {
+					return result.length? result[0]: null;
+				});
+			}
+		}).then(doneCallback, failCallback);
+	},
+	
+	createResultList: function(oids) {
+		var list = new Array(oids.length);
+
+        if (oids.length) {
+            var pending = [];
+            oids.forEach(function(el, index) {
+                var promise = this.entityManager.find(el.oid || el).done(function(o) {
+                    list[index] = o;
+                });
+
+                pending.push(promise);
+            }, this);
+
+            return jspa.Promise.when(pending).then(function() {
+                return [list];
+            });
+        } else {
+            return [list];
+        }
+	}
+});
+
+/**
+ * @class jspa.TypedQuery
+ * @extends jspa.Query
+ */
+jspa.TypedQuery = jspa.Query.inherit({
+	/**
+	 * @constructor
+	 * @param {jspa.EntityManager} entityManager
+	 * @param {String|Object} qlString
+	 * @param {Function} resultClass
+	 */
+	initialize: function(entityManager, qlString, resultClass) {
+		this.superCall(entityManager, qlString);
+		this.resultClass = resultClass;
+	}
+});
+/**
+ * @class jspa.binding.Accessor
+ */
+jspa.binding.Accessor = Object.inherit({
+	/**
+	 * @param {Object} object
+	 * @param {jspa.metamodel.Attribute} attribute
+	 * @returns {*}
+	 */
+	getValue: function(object, attribute) {
+		return object[attribute.name];
+	},
+	 
+	/**
+	 * @param {Object} object
+	 * @param {jspa.metamodel.Attribute} attribute
+	 * @param {*} value
+	 */
+	setValue: function(object, attribute, value) {
+		object[attribute.name] = value;
+	}
+});
+/**
+ * @class jspa.binding.ClassUtil
+ */
+jspa.binding.ClassUtil = Object.inherit({
+	extend: {
+		classLoaders: [],
+		
+		initialize: function() {
+			this.addClassLoader(this.proxyLoader);
+			this.addClassLoader(this.globalLoader);
+			this.addClassLoader(this.moduleLoader);
+		},
+		
+		loadClass: function(model) {
+			var el = /\/db\/(([\w\.]*)\.)?(\w*)/.exec(model.identifier);
+
+			var namespace = el[1];
+			var className = el[3];
+			
+			for (var i = this.classLoaders.length - 1, loader; loader = this.classLoaders[i]; --i) {
+				try {
+					return loader(model, namespace, className);
+				} catch (e) {}
+			}
+			
+			throw new TypeError('The class for ' + model.identifier + ' was not found!');
+		},
+		
+		addClassLoader: function(classLoader) {
+			this.classLoaders.push(classLoader);
+		},
+		
+		removeClassLoader: function(classLoader) {
+			var index = this.classLoaders.indexOf(classLoader);
+			if (index != -1) {
+				this.classLoaders.splice(index, 1);
+			}
+		},
+		
+		globalLoader: function(model, namespace, className) {
+			var context = typeof window != 'undefined'? window: global;
+			
+			var n = context;
+            if (namespace) {
+                var fragments = namespace.split('.');
+                for (var i = 0, fragment; n && (fragment = fragments[i]); ++i) {
+                    n = n[fragment];
+                }
+            }
+			
+			var cls = n && n[className] /* || context[className] */; // name clash with dom classes
+			
+			if (cls) {
+				return cls;
+			} else {
+				throw new TypeError('The class was not found in the global context.');
+			}
+		},
+		
+		moduleLoader: function(model, namespace, name) {
+			var mod = module;
+			while (mod = mod.parent) {
+				if (name in mod) {
+					return name[mod];
+				}
+			}
+			
+			throw new TypeError('The class was not found in the parent modules.');
+		},
+		
+		proxyLoader: function(model) {
+            if (model.isEntity) {
+                console.log('Initialize proxy class for entity ' + model.identifier + '.');
+                return model.supertype.typeConstructor.inherit({});
+            } else if (model.isEmbeddable) {
+                console.log('Initialize proxy class for embeddable ' + model.identifier + '.');
+                return Object.inherit({});
+            } else {
+                throw new TypeError('No proxy class can be initialized.');
+            }
+		}
+	},
+	
+	/**
+	 * @param {Function} typeConstructor
+	 * @returns {String}
+	 */
+	getIdentifier: function(typeConstructor) {
+		return typeConstructor.__jspaId__;
+	},
+	
+	/**
+	 * @param {Function}
+	 * @param {String} identifier
+	 */
+	setIdentifier: function(typeConstructor, identifier) {
+		typeConstructor.__jspaId__ = identifier;
+	},
+	
+	/**
+	 * @param {jspa.metamodel.EntityType} type
+	 * @returns {Object}
+	 */
+	create: function(type) {
+		return Object.create(type.typeConstructor.prototype);
+	},
+	
+	/**
+	 * @param {String} model
+	 * @returns {Function}
+	 */
+	loadClass: function(model) {
+		return jspa.binding.ClassUtil.loadClass(model);
+	},
+	
+	/**
+	 * @param {jspa.metamodel.EntityType} type
+	 * @param {Function} typeConstructor
+	 */
+	enhance: function(type, typeConstructor) {
+        Object.defineProperty(typeConstructor.prototype, '_objectInfo', {
+            value: {
+                'class': type.identifier
+            },
+            writable: true,
+            enumerable: false
+        });
+
+		for (var i = 0, attr; attr = type.declaredAttributes[i]; ++i) {
+			this.enhanceProperty(type, attr, typeConstructor);
+		}
+	},
+	
+	/**
+	 * @param {jspa.metamodel.EntityType} type
+	 * @param {jspa.metamodel.Attribute} attribute
+	 * @param {Function} typeConstructor
+	 */
+	enhanceProperty: function(type, attribute, typeConstructor) {
+		var name = '_' + attribute.name;
+		Object.defineProperty(typeConstructor.prototype, attribute.name, {
+			get: function() {
+				jspa.util.State.readAccess(this);
+				return this[name];
+			},
+			set: function(value) {
+				jspa.util.State.writeAccess(this);
+				this[name] = value;
+			},
+            configurable: true,
+            enumerable: true
+		});
+	}
+});
+
+
+jspa.collection.Collection = Trait.inherit({
+
+    size: {
+        get: function() {
+            jspa.util.State.readAccess(this);
+            return this._size;
+        },
+        set: function(value) {
+            this._size = value;
+        }
+    },
+
+    has: function(element) {
+        jspa.util.State.readAccess(this);
+        return this.superCall(element);
+    },
+
+    add: function(element) {
+        jspa.util.State.writeAccess(this);
+        this.superCall(element);
+    },
+
+    remove: function(element) {
+        jspa.util.State.writeAccess(this);
+        this.superCall(element);
+    },
+
+    items: function() {
+        jspa.util.State.readAccess(this);
+        return this.superCall();
+    },
+
+    iterator: function() {
+        jspa.util.State.readAccess(this);
+        return this.superCall();
+    },
+
+    toString: function() {
+        jspa.util.State.readAccess(this);
+        return this.superCall();
+    },
+
+    toJSON: function() {
+        jspa.util.State.readAccess(this);
+        return this.superCall();
+    }
+});
+jspa.collection.List = jspa.collection.Collection.inherit({
+	get: function(index) {
+		jspa.util.State.readAccess(this);
+		return this.superCall(index);
+	},
+	
+	set: function(index, value) {
+		jspa.util.State.writeAccess(this);
+		this.superCall(index, value);
+	},
+	
+	indexOf: function(value) {
+		jspa.util.State.readAccess(this);
+		return this.superCall(value);
+	},
+	
+	lastIndexOf: function(value) {
+		jspa.util.State.readAccess(this);
+		return this.superCall(value);
+	}
+});
+jspa.collection.Map = jspa.collection.Collection.inherit({
+	hasKey: function(key) {
+		jspa.util.State.readAccess(this);
+		return this.superCall(key);
+	},
+	
+	hasValue: function(value) {
+		jspa.util.State.readAccess(this);
+		return this.superCall(value);
+	},
+	
+	get: function(key) {
+		jspa.util.State.readAccess(this);
+		return this.superCall(key);
+	},
+	
+	set: function(key, value) {
+		jspa.util.State.writeAccess(this);
+		this.superCall(key, value);
+	},
+	
+	removeKey: function(key) {
+		jspa.util.State.writeAccess(this);
+		this.superCall(key);
+	},
+	
+	removeValue: function(value) {
+		jspa.util.State.writeAccess(this);
+		this.superCall(value);
+	},
+	
+	keys: function() {
+		jspa.util.State.readAccess(this);
+		return this.superCall();
+	}
+});
+
+jspa.collection.Set = jspa.collection.Collection.inherit({
+});
+/**
+ * @class jspa.connector.Connector
+ */
+jspa.connector.Connector = Object.inherit({
+	extend: {
+        /**
+         * @param {String} host
+         * @param {Number} port
+         * @return {jspa.connector.Connector}
+         */
+		create: function(host, port) {
+			if (!host && typeof window !== 'undefined') {
+				host = window.location.hostname;
+				port = window.location.port;
+			}
+			
+			if (host.indexOf('/') != -1) {
+				var matches = /^http:\/\/([^\/:]*)(:(\d*))?\/?$/.exec(host);
+				if (matches) {
+					host = matches[1];
+					port = matches[3];
+				} else {
+					throw new Error('The connection uri host ' + host + ' seems not to be valid');
+				}
+			}
+			
+			if (!port)
+				port = 80;
+			
+			for (var name in jspa.connector) {
+				var connector = jspa.connector[name];
+				if (connector.isUsable && connector.isUsable(host, port)) {
+					return new connector(host, port);
+				}
+			}
+			
+			throw new Error('No connector is usable for the requested connection');
+		}
+	},
+	
+	/**
+	 * @constructor
+	 * @param {String} host
+	 * @param {Integer} port
+	 */
+	initialize: function(host, port) {
+		this.host = host;
+		this.port = port;
+	},
+
+	/**
+     * @param {*} context
+	 * @param {jspa.message.Message} message
+     * @param {Boolean} sync
+     * @returns {jspa.Promise}
+	 */
+	send: function(context, message, sync) {
+		if (!sync) {			
+			message.deferred = new jspa.Deferred();
+			message.context = context;
+		}
+		
+		try {
+			message.doSend();
+			this.doSend(message);
+		} catch (e) {
+			e = jspa.error.PersistentError(e);
+
+			if (!message.deferred) {
+				throw e;
+			} else {				
+				message.deferred.rejectWith(context, [e]);
+			}
+		}
+		
+		if (message.deferred)
+			return message.deferred.promise();
+	},
+
+    /**
+     * @param {jspa.message.Message} message
+     */
+	receive: function(message) {
+		try {
+			message.doReceive();
+		} catch (e) {
+			e = jspa.error.PersistentError(e);
+
+			if (!message.deferred) {
+				throw e;
+			} else {				
+				message.deferred.rejectWith(message.context, [e]);
+			}
+		}
+		
+		if (message.deferred) {			
+			message.deferred.resolveWith(message.context, [message]);
+		}
+	},
+
+    /**
+     * @param {jspa.message.Message} message
+     */
+	doSend: function(message) {
+		throw new Error('Connector.doSend() not implemented');
+	},
+	
+	/**
+	 * @param {jspa.message.Message} message
+	 */
+	prepareRequestEntity: function(message) {
+		if (message.request.entity) {
+			message.request.headers['Content-Type'] = 'application/json;charset=utf-8';
+			return JSON.stringify(message.request.entity);
+		} else {
+			return null;
+		}
+	},
+
+    /**
+     * @param {jspa.message.Message} message
+     * @param {Object} data
+     */
+	prepareResponseEntity: function(message, data) {
+		var entity = null;
+		if (data && data.length > 0) {
+			entity = JSON.parse(data);
+		}
+		
+		message.response.entity = entity;
+	}
+});
+/**
+ * @class jspa.connector.NodeConnector
+ * @extends jspa.connector.Connector
+ */
+jspa.connector.NodeConnector = jspa.connector.Connector.inherit({
+	extend: {
+		isUsable: function(host, port) {
+			if (!this.prototype.http) {
+				try {
+					var http = require('http');
+					if (http.ClientRequest) {
+						this.prototype.http = http;
+					} 
+				} catch (e) {};
+			}
+			return Boolean(this.prototype.http);
+		}
+	},
+	
+	/**
+	 * @param {jspa.message.Message} message
+	 */
+	doSend: function(message) {
+		if (!message.deferred)
+			throw new Error('Blocking IO is not supported');
+		
+		message.request.host = this.host;
+		message.request.port = this.port;
+		
+		var self = this;
+		var entity = this.prepareRequestEntity(message);
+		
+		if (entity)
+			message.request.headers['Transfer-Encoding'] = 'chunked';
+		
+		var req = this.http.request(message.request, function(res) {
+			var data = '';
+			
+			res.setEncoding('utf-8');
+			res.on('data', function(chunk) {
+				data += chunk;
+			});
+			res.on('end', function() {
+				message.response.statusCode = res.statusCode;
+				message.response.headers = res.headers;
+				self.prepareResponseEntity(message, data);
+				self.receive(message);
+			});
+		});
+
+		req.on('error', function() {
+			self.receive(message);
+		});
+		
+		if (entity)
+			req.write(entity, 'utf8');
+		
+		req.end();
+	}
+});
+/**
+ * @class jspa.connector.XMLHttpConnector
+ * @extends jspa.connector.Connector
+ */
+jspa.connector.XMLHttpConnector = jspa.connector.Connector.inherit({
+	extend: {
+		isUsable: function(host, port) {
+			return typeof XMLHttpRequest != 'undefined';
+		}
+	},
+	
+	/**
+	 * @param {jspa.message.Message} message
+	 */
+	doSend: function(message) {
+		var xhr = new XMLHttpRequest();
+		
+		var url = 'http://' + this.host + ':' + this.port + message.request.path;
+		//console.log(message.request.method + ' ' + url);
+
+		if (message.deferred)			
+			xhr.onreadystatechange = this.readyStateChange.bind(this, xhr, message);
+		
+		xhr.open(message.request.method, url, !!message.deferred);
+
+		var entity = this.prepareRequestEntity(message);
+		var headers = message.request.headers;
+		for (var name in headers)
+			xhr.setRequestHeader(name, headers[name]);
+
+		xhr.send(entity);
+		
+		if (!message.deferred)
+			this.doReceive(xhr, message);
+	},
+	
+	readyStateChange: function(xhr, message) {
+		if (xhr.readyState == 4) {
+			this.doReceive(xhr, message);
+		}
+	},
+	
+	doReceive: function(xhr, message) {
+		message.response.statusCode = xhr.status;
+		
+		var headers = message.response.headers;
+		for (var name in headers)
+			headers[name] = xhr.getResponseHeader(name);
+		
+		this.prepareResponseEntity(message, xhr.responseText);
+		this.receive(message);
+	}
+});
+/**
  * @class jspa.error.PersistentError
  * @extends Error
  */
@@ -2716,10 +2884,9 @@ jspa.metamodel.PluralAttribute = jspa.metamodel.Attribute.inherit({
 	 * @param {Function} typeConstructor
 	 * @param {jspa.metamodel.Type} elementType
 	 */
-	initialize: function(declaringType, name, typeConstructor, elementType) {
+	initialize: function(declaringType, name, elementType) {
 		this.superCall(declaringType, name);
 
-		this.typeConstructor = typeConstructor;
 		this.elementType = elementType;
 	},
 
@@ -2806,13 +2973,12 @@ jspa.metamodel.CollectionAttribute = jspa.metamodel.PluralAttribute.inherit({
      * @constructor
      * @param {jspa.metamodel.EntityType} declaringType
      * @param {String} name
-     * @param {Function} typeConstructor
      * @param {jspa.metamodel.Type} elementType
      */
-	initialize: function(declaringType, name, typeConstructor, elementType) {
-		this.superCall(declaringType, name, typeConstructor, elementType);
+	initialize: function(declaringType, name, elementType) {
+		this.superCall(declaringType, name, elementType);
 
-		this.trackedConstructor = typeConstructor.inherit(jspa.collection.Collection, {});
+		this.trackedConstructor = jspa.Collection.inherit(jspa.collection.Collection, {});
 	}
 });
 /**
@@ -2852,8 +3018,20 @@ jspa.metamodel.ManagedType = jspa.metamodel.Type.inherit({
      * @type {jspa.metamodel.Attribute[]}
      */
 	declaredAttributes: null,
-	
-	/**
+
+    /**
+     * @constructor
+     * @memberOf jspa.metamodel.Type
+     * @param {String} identifier
+     * @param {Function} typeConstructor
+     */
+    initialize: function(identifier, typeConstructor) {
+        this.superCall(identifier, typeConstructor);
+
+        this.declaredAttributes = [];
+    },
+
+    /**
 	 * @param {jspa.binding.ClassUtil} classUtil
 	 */
 	init: function(classUtil) {
@@ -3082,13 +3260,12 @@ jspa.metamodel.ListAttribute = jspa.metamodel.PluralAttribute.inherit({
      * @constructor
      * @param {jspa.metamodel.EntityType} declaringType
      * @param {String} name
-     * @param {Function} typeConstructor
      * @param {jspa.metamodel.Type} elementType
      */
-	initialize: function(declaringType, name, typeConstructor, elementType) {
-		this.superCall(declaringType, name, typeConstructor, elementType);
+	initialize: function(declaringType, name, elementType) {
+		this.superCall(declaringType, name, elementType);
 		
-		this.trackedConstructor = typeConstructor.inherit(jspa.collection.List, {});
+		this.trackedConstructor = jspa.List.inherit(jspa.collection.List, {});
 	}
 });
 /**
@@ -3103,15 +3280,14 @@ jspa.metamodel.MapAttribute = jspa.metamodel.PluralAttribute.inherit({
 	 * @constructor
 	 * @param {jspa.metamodel.EntityType} declaringType
 	 * @param {String} name
-	 * @param {Function} typeConstructor
 	 * @param {jspa.metamodel.Type} keyType
 	 * @param {jspa.metamodel.Type} elementType
 	 */
-	initialize: function(declaringType, name, typeConstructor, keyType, elementType) {
-		this.superCall(declaringType, name, typeConstructor, elementType);
+	initialize: function(declaringType, name, keyType, elementType) {
+		this.superCall(declaringType, name, elementType);
 		
 		this.keyType = keyType;
-        this.trackedConstructor = typeConstructor.inherit(jspa.collection.Map, {});
+        this.trackedConstructor = jspa.Map.inherit(jspa.collection.Map, {});
 	},
 
     /**
@@ -3229,7 +3405,7 @@ jspa.metamodel.Metamodel = Object.inherit({
                 return value;
             },
             fromDatabaseValue: function(state, currentValue, json) {
-                return this.superCall(state, currentValue, json? 'T' + json: json);
+                return this.superCall(state, currentValue, json? '1970-01-01T' + json: json);
             }
         }))('Time', Date));
 
@@ -3266,18 +3442,21 @@ jspa.metamodel.Metamodel = Object.inherit({
     },
 	
 	/**
-	 * @param {(Function|String)} typeConstructor
-	 * @returns {jspa.metamodel.EntityType}
-	 */
+     * Return the metamodel entity type representing the entity.
+     *
+	 * @param {(Function|String)} typeConstructor - the type of the represented entity
+     * @returns {jspa.metamodel.EntityType} the metamodel entity type
+     */
 	entity: function(typeConstructor) {
 		var identifier = this.identifierArg(typeConstructor);
 		return identifier? this.entities[identifier]: null;
 	},
 	
 	/**
-	 * @param {(Function|String)} typeConstructor
-	 * @returns {jspa.metamodel.BasicType}
-	 */
+     * Return the metamodel basic type representing the native class.
+     * @param {(Function|String)} typeConstructor - the type of the represented native class
+	 * @returns {jspa.metamodel.BasicType} the metamodel basic type
+     */
 	baseType: function(typeConstructor) {
         if (String.isInstance(typeConstructor) && typeConstructor.indexOf('_native.') == -1)
             typeConstructor = '/db/_native.' + typeConstructor;
@@ -3287,12 +3466,23 @@ jspa.metamodel.Metamodel = Object.inherit({
 	},
 
     /**
-     * @param {(Function|String)} typeConstructor
-     * @returns {jspa.metamodel.EmbeddableType}
+     * Return the metamodel embeddable type representing the embeddable class.
+     * @param {(Function|String)} typeConstructor - the type of the represented embeddable class
+     * @returns {jspa.metamodel.EmbeddableType} the metamodel embeddable type
      */
     embeddable: function(typeConstructor) {
         var identifier = this.identifierArg(typeConstructor);
         return identifier? this.embeddables[identifier]: null;
+    },
+
+    /**
+     * Return the metamodel managed type representing the entity, mapped superclass, or embeddable class.
+     *
+     * @param {(Function|String)} typeConstructor - the type of the represented managed class
+     * @returns {jspa.metamodel.Type} the metamodel managed type
+     */
+    managedType: function(typeConstructor) {
+        return this.baseType(typeConstructor) || this.entity(typeConstructor) || this.embeddable(typeConstructor);
     },
 	
 	addType: function(type) {
@@ -3369,7 +3559,7 @@ jspa.metamodel.ModelBuilder = Object.inherit({
 		for (var identifier in this.modelDescriptors) {
 			try {
 				var model = this.getModel(identifier);
-				model.declaredAttributes = this.buildAttributes(model);				
+				this.buildAttributes(model);
 			} catch (e) {
 				throw new jspa.error.PersistentError('Can\'t create model for entity class ' + identifier, e);
 			}
@@ -3410,7 +3600,7 @@ jspa.metamodel.ModelBuilder = Object.inherit({
 		if (model.identifier in this.models) {
 			var fields = this.modelDescriptors[model.identifier]['fields'];
 			
-			var attributes = [];
+			var attributes = model.declaredAttributes;
 			for (var i = 0, field; field = fields[i]; ++i) {
 				attributes.push(this.buildAttribute(model, field.name, field.type));
 			}
@@ -3434,14 +3624,14 @@ jspa.metamodel.ModelBuilder = Object.inherit({
 			var elementType = identifier.substring(identifier.indexOf('[') + 1, identifier.indexOf(']')).trim();
 			switch (collectionType) {
 				case '/db/_native.collection.List':
-					return new jspa.metamodel.ListAttribute(model, name, jspa.List, this.getModel(elementType));
+					return new jspa.metamodel.ListAttribute(model, name, this.getModel(elementType));
 				case '/db/_native.collection.Set':
-					return new jspa.metamodel.SetAttribute(model, name, jspa.Set, this.getModel(elementType));
+					return new jspa.metamodel.SetAttribute(model, name, this.getModel(elementType));
 				case '/db/_native.collection.Map':
 					var keyType = elementType.substring(0, elementType.indexOf(',')).trim();
 					elementType = elementType.substring(elementType.indexOf(',') + 1).trim();
 					
-					return new jspa.metamodel.MapAttribute(model, name, jspa.Map, this.getModel(keyType), this.getModel(elementType));
+					return new jspa.metamodel.MapAttribute(model, name, this.getModel(keyType), this.getModel(elementType));
 				default:
 					throw new TypeError('no collection available for ' + identifier); 
 			}
@@ -3462,13 +3652,12 @@ jspa.metamodel.SetAttribute = jspa.metamodel.PluralAttribute.inherit({
      * @constructor
      * @param {jspa.metamodel.EntityType} declaringType
      * @param {String} name
-     * @param {Function} typeConstructor
      * @param {jspa.metamodel.Type} elementType
      */
-	initialize: function(declaringType, name, typeConstructor, elementType) {
-		this.superCall(declaringType, name, typeConstructor, elementType);
+	initialize: function(declaringType, name, elementType) {
+		this.superCall(declaringType, name, elementType);
 
-		this.trackedConstructor = typeConstructor.inherit(jspa.collection.Set, {});
+		this.trackedConstructor = jspa.Set.inherit(jspa.collection.Set, {});
 	}
 });
 /**
@@ -3528,175 +3717,6 @@ jspa.metamodel.SingularAttribute = jspa.metamodel.Attribute.inherit({
      */
 	setDatabaseValue: function(state, obj, value) {
 		this.setValue(obj, this.type.fromDatabaseValue(state, this.getValue(obj), value));
-	}
-});
-/**
- * @class jspa.PersistenceUnitUtil
- */
-jspa.PersistenceUnitUtil = Object.inherit({
-	
-	/**
-	 * @constructor
-	 * @param {jspa.metamodel.Metamodel} metamodel
-	 */
-	initialize: function(metamodel) {
-		this.metamodel = metamodel;
-	},
-	
-	/**
-	 * Return the id of the entity. A generated id is not guaranteed to be available until after the database 
-	 * insert has occurred. Returns null if the entity does not yet have an id.
-	 * 
-	 * @param {Object} entity
-	 * @param {jspa.util.State} entity
-	 */
-	getIdentifier: function(entity) {
-		var type = this.metamodel.entity(classOf(entity));
-		var identifier = type.id.getValue(entity);
-		if (identifier && identifier.indexOf('/temporary/') != 0) {
-			return identifier.substring(identifier.lastIndexOf('/') + 1);
-		}
-		return null;
-	},
-	
-	/**
-	 * Determine the load state of an entity belonging to the persistence unit. This method can be used to 
-	 * determine the load state of an entity passed as a reference.
-	 * 
-	 * @param {Object} entity - entity instance whose load state is to be determined
-	 * @param {String=} attributeName - optional name of attribute whose load state is to be determined
-	 * @returns {Boolean} false if entity's state has not been loaded or if the attribute state has not been loaded, else true
-	 */
-	isLoaded: function(entity, attributeName) {
-		var state = jspa.util.State.get(entity);
-		if (!state) {
-			return true;
-		} else if (!state.isLoaded) {
-			return false;
-		} else {
-			if (!attributeName) {
-				return true;
-			} else {
-				var attribute = state.type.getAttribute(attributeName);
-				if (attribute.isAssociation) {
-					var value = attribute.getValue(entity);
-					return !value || this.isLoaded(value);
-				} else {
-					return true;
-				}
-			}
-		}
-	}
-});
-/**
- * @class jspa.Query
- * @extends jspa.util.QueueConnector
- */
-jspa.Query = jspa.util.QueueConnector.inherit({
-    /**
-     * @type Number
-     */
-	firstResult: 0,
-
-    /**
-     * @type Number
-     */
-	maxResults: Number.MAX_VALUE,
-	
-	/**
-	 * @constructor
-	 * @memberOf jspa.Query
-	 * @param {jspa.EntityManager} entityManager
-	 * @param {String|Object} qlString
- 	 */
-	initialize: function(entityManager, qlString) {
-		this.superCall(entityManager.queue, entityManager.connector);
-		this.entityManager = entityManager;
-		this.qlString = qlString;
-	},
-	
-	/**
-	 * Execute a SELECT query and return the query results as a List.
-	 */
-	getResultList: function(doneCallback, failCallback) {
-		return this.yield().then(function() {
-			var type = this.resultClass? this.entityManager.metamodel.entity(this.resultClass): null;
-            var msg;
-
-			if (!this.qlString) {
-                msg = new jspa.message.GetAllOids(type, this.firstResult, this.maxResults);
-			} else {
-                if (!type) {
-                    throw new PositionError('Only typed queries can be executed.');
-                }
-
-                var query = this.qlString;
-                if (!String.isInstance(query))
-                    query = JSON.stringify(query);
-
-                msg = new jspa.message.GetBucketQuery(type, query, this.firstResult, this.maxResults);
-            }
-
-            return this.wait(this.send(msg)).then(function() {
-                return this.createResultList(msg.oids);
-            });
-		}).then(doneCallback, failCallback);
-	},
-	
-	/**
-	 * Execute a SELECT query that returns a single result.
-	 */
-	getSingleResult: function(doneCallback, failCallback) {
-		return this.yield().then(function() {
-			var type = this.resultClass? this.entityManager.metamodel.entity(this.resultClass): null;
-			if (!this.qlString) {
-                var msg = new jspa.message.GetAllOids(type, this.firstResult, 1);
-
-                return this.wait(this.send(msg)).then(function(msg) {
-					return this.createResultList(msg.oids);
-				}).then(function(result) {
-					return result.length? result[0]: null;
-				});
-			}
-		}).then(doneCallback, failCallback);
-	},
-	
-	createResultList: function(oids) {
-		var list = new Array(oids.length);
-
-        if (oids.length) {
-            var pending = [];
-            oids.forEach(function(el, index) {
-                var promise = this.entityManager.find(el.oid || el).done(function(o) {
-                    list[index] = o;
-                });
-
-                pending.push(promise);
-            }, this);
-
-            return jspa.Promise.when(pending).then(function() {
-                return [list];
-            });
-        } else {
-            return [list];
-        }
-	}
-});
-
-/**
- * @class jspa.TypedQuery
- * @extends jspa.Query
- */
-jspa.TypedQuery = jspa.Query.inherit({
-	/**
-	 * @constructor
-	 * @param {jspa.EntityManager} entityManager
-	 * @param {String|Object} qlString
-	 * @param {Function} resultClass
-	 */
-	initialize: function(entityManager, qlString, resultClass) {
-		this.superCall(entityManager, qlString);
-		this.resultClass = resultClass;
 	}
 });
 /**
