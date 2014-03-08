@@ -87,20 +87,25 @@ module.exports = function(grunt) {
     grunt.loadNpmTasks('grunt-contrib-jasmine');
     grunt.loadNpmTasks('grunt-karma');
 
-    grunt.registerTask('default',
-        [
-            'connect',
-            'watch'
-        ]);
+    grunt.registerTask('default', [
+        'connect',
+        'watch'
+    ]);
 
-    grunt.registerTask('dist',
-        [
-            'concat',
-            'uglify'
-        ]);
+    grunt.registerTask('dist', [
+        'concat',
+        'uglify'
+    ]);
 
-    grunt.registerTask('test',
-        [
-            'karma'
-        ]);
+    grunt.registerTask('test', [
+        'karma'
+    ]);
+
+    grunt.registerTask('index', 'Build library index.', function() {
+        var tmpl = grunt.file.read('tool/loader.js');
+
+        var index = tmpl.replace('[]', JSON.stringify(jahdep('src'), null, "  "));
+
+        grunt.file.write('index.js', index);
+    });
 };

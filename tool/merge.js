@@ -11,7 +11,7 @@ var fileContent = {};
 
 module.exports = function(root) {
     var files = glob.sync(root + '/**/*.js');
-
+    console.log(files)
     files.forEach(function(abspath) {
         var filename = abspath.substring(abspath.lastIndexOf('/') + 1);
 
