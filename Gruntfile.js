@@ -47,7 +47,7 @@ module.exports = function(grunt) {
                 options: {
                     data: function() {
                         return {
-                            scripts: jahdep(grunt, 'src')
+                            scripts: jahdep('src')
                         };
                     }
                 },
