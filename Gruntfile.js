@@ -2,7 +2,7 @@ module.exports = function (grunt) {
 
   'use strict';
 
-  var jar = null;
+  grunt.option('force', true);
 
   grunt.initConfig({
     /**
@@ -72,6 +72,7 @@ module.exports = function (grunt) {
         reporters: ['junit'],
         singleRun: true,
         browsers: ['PhantomJS'],
+        colors: false,
 
         junitReporter: {
           outputFile: 'build/test-results.xml'
