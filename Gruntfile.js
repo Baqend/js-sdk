@@ -129,6 +129,7 @@ module.exports = function (grunt) {
 
   grunt.registerTask('test', [
     'browserify:debug',
+    'unzip:test',
     'run:server',
     'karma:test',
     'stop:server'
