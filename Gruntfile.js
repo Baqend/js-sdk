@@ -1,10 +1,10 @@
 module.exports = function (grunt) {
 
   'use strict';
-  console.log(process.cwd() + "/build")
+
+  var jar = null;
 
   grunt.initConfig({
-
     /**
      * Building
      * ========
@@ -47,7 +47,7 @@ module.exports = function (grunt) {
      */
     unzip: {
       test: {
-        src: "build/orestes-mongo*.zip",
+        src: "build/orestes-*.zip",
         dest: "build/"
       }
     },
@@ -57,7 +57,7 @@ module.exports = function (grunt) {
         cmd: "java",
         args: [
           '-jar',
-          grunt.file.expand({cwd: 'build'}, 'orestes-mongo*.jar')[0]
+          jar
         ],
         options: {
           cwd: "build",
@@ -106,7 +106,7 @@ module.exports = function (grunt) {
           destination: 'dist/doc'
         }
       }
-    },
+    }
   });
 
   grunt.loadNpmTasks('grunt-contrib-uglify');
@@ -130,10 +130,16 @@ module.exports = function (grunt) {
   grunt.registerTask('test', [
     'browserify:debug',
     'unzip:test',
+    'getJar:test',
     'run:server',
     'karma:test',
     'stop:server'
   ]);
+
+  grunt.registerTask('getJar', 'Finds the executebale server ja in the build folder', function() {
+    jar = grunt.file.expand({cwd: 'build'}, 'orestes-mongo*.jar')[0];
+    grunt.log.write('Executable Jar: ' + jar);
+  });
 
   grunt.registerTask('index', 'Build library index.', function () {
     var tmpl = grunt.file.read('tool/loader.js');
