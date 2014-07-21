@@ -55,10 +55,6 @@ module.exports = function (grunt) {
     run: {
       server: {
         cmd: "java",
-        args: [
-          '-jar',
-          jar
-        ],
         options: {
           cwd: "build",
           wait: false,
@@ -130,15 +126,19 @@ module.exports = function (grunt) {
   grunt.registerTask('test', [
     'browserify:debug',
     'unzip:test',
-    'getJar:test',
+    'prepare:server',
     'run:server',
     'karma:test',
     'stop:server'
   ]);
 
-  grunt.registerTask('getJar', 'Finds the executebale server ja in the build folder', function() {
-    jar = grunt.file.expand({cwd: 'build'}, 'orestes-mongo*.jar')[0];
-    grunt.log.write('Executable Jar: ' + jar);
+  grunt.registerTask('prepare', 'Finds the executable server jar and configuration in build folder', function() {
+    var jar = grunt.file.expand({cwd: 'build'}, 'orestes-mongo*.jar')[0];
+    var config = grunt.file.expand({cwd: 'build'}, '*.json')[0];
+
+    grunt.config('run.server.args', ['-jar', jar, config]);
+
+    grunt.log.write('Executable Jar: ' + jar + ' Used config: ' + config);
   });
 
   grunt.registerTask('index', 'Build library index.', function () {
