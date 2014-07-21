@@ -1,111 +1,144 @@
-var jahdep = require('./tool/merge.js');
+module.exports = function (grunt) {
 
-module.exports = function(grunt) {
+  'use strict';
+  console.log(process.cwd() + "/build")
 
-    'use strict';
+  grunt.initConfig({
 
-    grunt.initConfig({
-        concat: {
-            dist: {
-                src: jahdep('src'),
-                dest: 'dist/jspa.js'
-            }
+    /**
+     * Building
+     * ========
+     */
+    browserify: {
+      debug: {
+        files: {
+          'build/baqend.js': ['lib/index.js']
         },
-
-        uglify: {
-            options: {
-                preserveComments: 'some',
-                banner: ''
-            },
-
-            build: {
-                src: 'dist/jspa.js',
-                dest: 'dist/jspa.min.js'
-            }
-        },
-
-        karma: {
-            test: {
-                configFile: 'karma.conf.js',
-                singleRun: true
-            }
-        },
-
-        jasmine: {
-            test: {
-                src: jahdep('src'),
-                options: {
-                    vendor: 'node_modules/jahcode/jahcode.js',
-                    specs: 'spec/*.spec.js',
-                    host : 'http://127.0.0.1:8000/'
-                }
-            }
-        },
-
-        template: {
-            jahcode: {
-                options: {
-                    data: function() {
-                        return {
-                            scripts: jahdep('src')
-                        };
-                    }
-                },
-                files: {
-                    'dist/sandbox.html': 'tests/sandbox.html'
-                }
-            }
-        },
-
-        connect: {
-            server: {
-                options: {
-                    hostname: '*',
-                    port: 8000,
-                    livereload: true
-                }
-            }
-        },
-
-        watch: {
-            options: {
-                forever: false,
-                livereload: true
-            },
-            src: {
-                files: "src/**/*.js",
-                tasks: ['template', 'concat']
-            }
+        options: {
+          browserifyOptions: {
+            builtins: false
+          },
+          bundleOptions: {
+            debug: true,
+            insertGlobals: false,
+            standalone: "jspa"
+          }
         }
-    });
+      },
+      dist: {
+        files: {
+          'dist/baqend.js': ['lib/index.js']
+        },
+        options: {
+          browserifyOptions: {
+            builtins: false
+          },
+          bundleOptions: {
+            insertGlobals: false,
+            standalone: "jspa"
+          }
+        }
+      }
+    },
 
-    grunt.loadNpmTasks('grunt-contrib-concat');
-    grunt.loadNpmTasks('grunt-contrib-uglify');
-    grunt.loadNpmTasks('grunt-template');
-    grunt.loadNpmTasks('grunt-contrib-connect');
-    grunt.loadNpmTasks('grunt-contrib-watch');
-    grunt.loadNpmTasks('grunt-contrib-jasmine');
-    grunt.loadNpmTasks('grunt-karma');
+    /**
+     * Testing
+     * =======
+     */
+    unzip: {
+      test: {
+        src: "build/orestes-mongo*.zip",
+        dest: "build/"
+      }
+    },
 
-    grunt.registerTask('default', [
-        'connect',
-        'watch'
-    ]);
+    run: {
+      server: {
+        cmd: "java",
+        args: [
+          '-jar',
+          grunt.file.expand({cwd: 'build'}, 'orestes-mongo*.jar')[0]
+        ],
+        options: {
+          cwd: "build",
+          wait: false,
+          ready: 5000
+        }
+      }
+    },
 
-    grunt.registerTask('dist', [
-        'concat',
-        'uglify'
-    ]);
+    karma: {
+      dev: {
+        configFile: 'karma.conf.js'
+      },
+      test: {
+        configFile: 'karma.conf.js',
+        reporters: ['junit'],
+        singleRun: true,
+        browsers: ['PhantomJS'],
 
-    grunt.registerTask('test', [
-        'karma'
-    ]);
+        junitReporter: {
+          outputFile: 'build/test-results.xml'
+        }
+      }
+    },
 
-    grunt.registerTask('index', 'Build library index.', function() {
-        var tmpl = grunt.file.read('tool/loader.js');
+    /**
+     * Distribution
+     * ============
+     */
+    uglify: {
+      options: {
+        preserveComments: 'some',
+        banner: ''
+      },
 
-        var index = tmpl.replace('[]', JSON.stringify(jahdep('src'), null, "  "));
+      dist: {
+        src: 'dist/baqend.js',
+        dest: 'dist/baqend.min.js'
+      }
+    },
 
-        grunt.file.write('index.js', index);
-    });
+    jsdoc: {
+      dist: {
+        src: ['lib/**/*.js'],
+        options: {
+          destination: 'dist/doc'
+        }
+      }
+    },
+  });
+
+  grunt.loadNpmTasks('grunt-contrib-uglify');
+  grunt.loadNpmTasks('grunt-browserify');
+  grunt.loadNpmTasks('grunt-karma');
+  grunt.loadNpmTasks('grunt-run');
+  grunt.loadNpmTasks('grunt-zip');
+  grunt.loadNpmTasks('grunt-jsdoc');
+
+  grunt.registerTask('default', [
+    'connect',
+    'watch'
+  ]);
+
+  grunt.registerTask('dist', [
+    'browserify',
+    'uglify',
+    'jsdoc'
+  ]);
+
+  grunt.registerTask('test', [
+    'browserify:debug',
+    'run:server',
+    'karma:test',
+    'stop:server'
+  ]);
+
+  grunt.registerTask('index', 'Build library index.', function () {
+    var tmpl = grunt.file.read('tool/loader.js');
+
+    var index = tmpl.replace('[]', JSON.stringify(jahdep('src'), null, "  "));
+
+    grunt.file.write('index.js', index);
+  });
 };

@@ -2,3 +2,5 @@
 /.idea
 /.grunt
 /node_modules
+/build
+/doc

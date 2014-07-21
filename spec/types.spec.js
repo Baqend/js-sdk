@@ -1,7 +1,3 @@
-if (typeof require !== 'undefined') {
-    var jspa = require('../dist/jspa.js');
-}
-
 (function(global) {
     var TEST_BUCKET = 'test.bucket.Value';
     var EMBEDDED_BUCKET = 'test.type.Embeddable';
@@ -33,23 +29,23 @@ if (typeof require !== 'undefined') {
         "Reference": [ new test.bucket.Value(), o1, TEST_BUCKET],
         "Embedded": [ new test.type.Embeddable(), embeddableValue(), EMBEDDED_BUCKET],
 
-        "SimpleList": [ new jspa.List(), jspa.List([1.1, 2.2, 3.3]),
+        "SimpleList": [ new jspa.collection.List(), jspa.collection.List([1.1, 2.2, 3.3]),
             jspa.metamodel.PluralAttribute.CollectionType.LIST, 'Float'],
-        "RefList": [ new jspa.List(), jspa.List([o1, o2, o3]),
+        "RefList": [ new jspa.collection.List(), jspa.collection.List([o1, o2, o3]),
             jspa.metamodel.PluralAttribute.CollectionType.LIST, TEST_BUCKET],
 
-        "SimpleSet": [ new jspa.Set(), jspa.Set(['Test', 'String', '123']),
+        "SimpleSet": [ new jspa.collection.Set(), jspa.collection.Set(['Test', 'String', '123']),
             jspa.metamodel.PluralAttribute.CollectionType.SET, 'String'],
-        "RefSet": [ new jspa.Set(), jspa.Set([o1, o2, o3]),
+        "RefSet": [ new jspa.collection.Set(), jspa.collection.Set([o1, o2, o3]),
             jspa.metamodel.PluralAttribute.CollectionType.SET, TEST_BUCKET],
 
-        "SimpleMap": [ new jspa.Map(), simpleMap(),
+        "SimpleMap": [ new jspa.collection.Map(), simpleMap(),
             jspa.metamodel.PluralAttribute.CollectionType.MAP, 'String', 'Boolean'],
-        "SimpleRefMap": [ new jspa.Map(), simpleRefMap(),
+        "SimpleRefMap": [ new jspa.collection.Map(), simpleRefMap(),
             jspa.metamodel.PluralAttribute.CollectionType.MAP, 'String', TEST_BUCKET ],
-        "RefSimpleMap": [ new jspa.Map(), refSimpleMap(),
+        "RefSimpleMap": [ new jspa.collection.Map(), refSimpleMap(),
             jspa.metamodel.PluralAttribute.CollectionType.MAP, TEST_BUCKET, 'Boolean' ],
-        "RefMap": [ new jspa.Map(), refMap(),
+        "RefMap": [ new jspa.collection.Map(), refMap(),
             jspa.metamodel.PluralAttribute.CollectionType.MAP, TEST_BUCKET, TEST_BUCKET ]
     };
 
@@ -61,7 +57,7 @@ if (typeof require !== 'undefined') {
     }
 
     function refMap() {
-        return jspa.Map([
+        return jspa.collection.Map([
             {key: o1, value: o2},
             {key: o2, value: o3},
             {key: o3, value: o1}
@@ -69,7 +65,7 @@ if (typeof require !== 'undefined') {
     }
 
     function refSimpleMap() {
-        return jspa.Map([
+        return jspa.collection.Map([
             {key: o1, value: true},
             {key: o2, value: false},
             {key: o3, value: true}
@@ -77,7 +73,7 @@ if (typeof require !== 'undefined') {
     }
 
     function simpleRefMap() {
-        return jspa.Map([
+        return jspa.collection.Map([
             {key: "Test", value: o2},
             {key: "String", value: o3},
             {key: "123", value: o1}
@@ -85,7 +81,7 @@ if (typeof require !== 'undefined') {
     }
 
     function simpleMap() {
-        return jspa.Map([
+        return jspa.collection.Map([
             {key: "Test", value: true},
             {key: "String", value: false},
             {key: "123", value: true}
