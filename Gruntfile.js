@@ -72,7 +72,6 @@ module.exports = function (grunt) {
         reporters: ['junit'],
         singleRun: true,
         browsers: ['PhantomJS'],
-        colors: false,
 
         junitReporter: {
           outputFile: 'build/test-results.xml'
