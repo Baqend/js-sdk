@@ -7,7 +7,7 @@ module.exports = function (grunt) {
 
   // redirect mocha node tests to the given xml
   // @see https://github.com/peerigon/xunit-file/blob/master/lib/xunit-file.js
-  process.env.XUNIT_FILE = 'build/test-results/node.xml';
+  process.env.JUNIT_REPORT_PATH = 'build/test-results/node.xml';
 
   grunt.initConfig({
     /**
@@ -133,9 +133,9 @@ module.exports = function (grunt) {
   ]);
 
   grunt.registerTask('dist', [
-    'browserify',
-    'uglify',
-    'jsdoc'
+    'browserify:dist',
+    'uglify:dist',
+    'jsdoc:dist'
   ]);
 
   grunt.registerTask('test', [
