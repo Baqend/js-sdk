@@ -112,6 +112,8 @@ function collectionComperator(a, b) {
 }
 
 describe('Test entity type', function () {
+  this.timeout(500);
+
   beforeEach(function () {
     //jasmine.addCustomEqualityTester(collectionComperator);
   });
@@ -168,6 +170,7 @@ describe('Test entity type', function () {
 
   Object.keys(data).forEach(function(name) {
     describe(" " + name, function() {
+
       var type, defaultValue, value, attr, constr, isCollection, collectionType, collectionTypes, valueType;
 
       defaultValue = data[name][0];
