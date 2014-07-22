@@ -113,7 +113,7 @@ function collectionComperator(a, b) {
 
 describe('Test entity type', function () {
   beforeEach(function () {
-    jasmine.addCustomEqualityTester(collectionComperator);
+    //jasmine.addCustomEqualityTester(collectionComperator);
   });
 
   var emf = new jspa.EntityManagerFactory('http://localhost:8080');
@@ -166,8 +166,8 @@ describe('Test entity type', function () {
     });
   });
 
-  for (var name in data) {
-    describe(" " + name, function (name) {
+  Object.keys(data).forEach(function(name) {
+    describe(" " + name, function() {
       var type, defaultValue, value, attr, constr, isCollection, collectionType, collectionTypes, valueType;
 
       defaultValue = data[name][0];
@@ -511,7 +511,7 @@ describe('Test entity type', function () {
         });
       });
 
-    }.bind(null, name));
-  }
+    })
+  });
 });
 

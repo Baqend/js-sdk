@@ -3,7 +3,7 @@ if (typeof jspa == 'undefined') {
   jspa = require('../lib');
 }
 
-(function (global) {
+
   var schema = [
     {
       "class": "/db/test.persistent.PersClass",
@@ -44,13 +44,11 @@ if (typeof jspa == 'undefined') {
   ];
 
 
-  global.test = global.test || {};
-
-  Object.extend(global.test, {
+  var test = {
     persistent: {}
-  });
+  };
 
-  var PersClass = global.test.persistent.PersClass = Object.inherit({
+  var PersClass = test.persistent.PersClass = Object.inherit({
     initialize: function (ref, name, persRef) {
       this.ref = ref;
       this.name = name;
@@ -58,7 +56,7 @@ if (typeof jspa == 'undefined') {
     }
   });
 
-  var ChildPersClass = global.test.persistent.ChildPersClass = test.persistent.PersClass.inherit({
+  var ChildPersClass = test.persistent.ChildPersClass = test.persistent.PersClass.inherit({
     initialize: function (ref, name, persRef, value) {
       this.superCall(ref, name, persRef);
 
@@ -66,7 +64,7 @@ if (typeof jspa == 'undefined') {
     }
   });
 
-  var OtherPersClass = global.test.persistent.OtherPersClass = Object.inherit({
+  var OtherPersClass = test.persistent.OtherPersClass = Object.inherit({
     initialize: function (value) {
       this.value = value;
     }
@@ -206,4 +204,3 @@ if (typeof jspa == 'undefined') {
       });
     });
   });
-})(typeof global !== 'undefined' ? global : window);
