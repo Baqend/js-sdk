@@ -76,7 +76,7 @@ module.exports = function (grunt) {
         configFile: 'karma.conf.js',
         reporters: ['junit'],
         singleRun: true,
-        browsers: ['PhantomJS'],
+        browsers: ['PhantomJS', 'Chrome', 'Firefox'],
 
         junitReporter: {
           outputFile: 'build/test-results/karma.xml'
