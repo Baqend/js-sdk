@@ -2,7 +2,12 @@ module.exports = function (grunt) {
 
   'use strict';
 
+  // prevent grunt failing by test errors
   grunt.option('force', true);
+
+  // redirect mocha node tests to the given xml
+  // @see https://github.com/peerigon/xunit-file/blob/master/lib/xunit-file.js
+  process.env.XUNIT_FILE = 'build/test-results/node.xml';
 
   grunt.initConfig({
     /**
@@ -74,8 +79,17 @@ module.exports = function (grunt) {
         browsers: ['PhantomJS'],
 
         junitReporter: {
-          outputFile: 'build/test-results.xml'
+          outputFile: 'build/test-results/karma.xml'
         }
+      }
+    },
+
+    mochaTest: {
+      test: {
+        options: {
+          reporter: 'xunit-file'
+        },
+        src: ['spec/**/*.spec.js']
       }
     },
 
@@ -108,6 +122,7 @@ module.exports = function (grunt) {
   grunt.loadNpmTasks('grunt-contrib-uglify');
   grunt.loadNpmTasks('grunt-browserify');
   grunt.loadNpmTasks('grunt-karma');
+  grunt.loadNpmTasks('grunt-mocha-test');
   grunt.loadNpmTasks('grunt-run');
   grunt.loadNpmTasks('grunt-zip');
   grunt.loadNpmTasks('grunt-jsdoc');
@@ -128,6 +143,7 @@ module.exports = function (grunt) {
     'unzip:test',
     'prepare:server',
     'run:server',
+    'mochaTest:test',
     'karma:test',
     'stop:server'
   ]);

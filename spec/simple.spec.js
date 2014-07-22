@@ -1,3 +1,8 @@
+if (typeof jspa == 'undefined') {
+  expect = require('chai').expect;
+  jspa = require('../lib');
+}
+
 (function (global) {
   var schema = [
     {

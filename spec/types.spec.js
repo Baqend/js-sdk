@@ -1,3 +1,8 @@
+if (typeof jspa == 'undefined') {
+  expect = require('chai').expect;
+  jspa = require('../lib');
+}
+
 (function(global) {
     var TEST_BUCKET = 'test.bucket.Value';
     var EMBEDDED_BUCKET = 'test.type.Embeddable';
