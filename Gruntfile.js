@@ -143,8 +143,8 @@ module.exports = function (grunt) {
     'unzip:test',
     'prepare:server',
     'run:server',
-    'mochaTest:test',
     'karma:test',
+    'mochaTest:test',
     'stop:server'
   ]);
 
