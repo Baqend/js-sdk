@@ -16,9 +16,7 @@
     "grunt": "~0.4.1",
     "grunt-contrib-watch": "~0.5.3",
     "grunt-contrib-connect": "~0.5.0",
-    "grunt-contrib-concat": "~0.3.0",
     "grunt-contrib-uglify": "~0.2.4",
-    "grunt-contrib-jasmine": "~0.6.1",
     "karma": "*",
     "karma-phantomjs-launcher": "*",
     "karma-chrome-launcher": "*",
@@ -38,10 +36,12 @@
     "karma-mocha": "^0.1.6",
     "mocha": "^1.20.1",
     "chai": "^1.9.1",
-    "karma-chai": "^0.1.0"
+    "karma-chai": "^0.1.0",
+    "grunt-mocha-test": "^0.11.0",
+    "xunit-file": "0.0.5"
   },
   "scripts": {
-    "test": "jasmine-node spec"
+    "test": "grunt mochaTest:test"
   },
   "engines": {
     "node": ">=0.2.0"
