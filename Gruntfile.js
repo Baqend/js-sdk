@@ -87,7 +87,7 @@ module.exports = function (grunt) {
     mochaTest: {
       test: {
         options: {
-          reporter: 'xunit-file'
+          reporter: 'mocha-jenkins-reporter'
         },
         src: ['spec/**/*.spec.js']
       }
