@@ -17,31 +17,38 @@ module.exports = function (grunt) {
      * ========
      */
     browserify: {
+      options: {
+        browserifyOptions: {
+          builtins: false
+        },
+        bundleOptions: {
+          debug: true,
+          insertGlobals: false,
+          standalone: "jspa"
+        }
+      },
+
       debug: {
         files: {
           'build/baqend.js': ['lib/index.js']
         },
         options: {
           watch: true,
-          keepAlive: true,
-          browserifyOptions: {
-            builtins: false
-          },
-          bundleOptions: {
-            debug: true,
-            insertGlobals: false,
-            standalone: "jspa"
-          }
+          keepAlive: true
         }
       },
+
+      test: {
+        files: {
+          'build/baqend.js': ['lib/index.js']
+        }
+      },
+
       dist: {
         files: {
           'dist/baqend.js': ['lib/index.js']
         },
         options: {
-          browserifyOptions: {
-            builtins: false
-          },
           bundleOptions: {
             insertGlobals: false,
             standalone: "jspa"
@@ -175,7 +182,7 @@ module.exports = function (grunt) {
   ]);
 
   grunt.registerTask('test', [
-    'browserify:debug',
+    'browserify:test',
     'unzip:test',
     'prepare:server',
     'run:server',
