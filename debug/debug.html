@@ -16,7 +16,8 @@
 
 <script src="../build/baqend.js"></script>
 
-<script src="deferred.spec.js"></script>
+<% _.forEach(scripts, function(src) { %><script type="text/javascript" src="../<%- src %>"></script><% }); %>
+
 <script>
   mocha.checkLeaks();
   mocha.globals(['jQuery']);

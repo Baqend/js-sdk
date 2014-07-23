@@ -9,6 +9,8 @@ module.exports = function (grunt) {
   // @see https://github.com/peerigon/xunit-file/blob/master/lib/xunit-file.js
   process.env.JUNIT_REPORT_PATH = 'build/test-results/node.xml';
 
+  var TEST = 'spec/**/*.spec.js';
+
   grunt.initConfig({
     /**
      * Building
@@ -20,6 +22,8 @@ module.exports = function (grunt) {
           'build/baqend.js': ['lib/index.js']
         },
         options: {
+          watch: true,
+          keepAlive: true,
           browserifyOptions: {
             builtins: false
           },
@@ -41,6 +45,35 @@ module.exports = function (grunt) {
           bundleOptions: {
             insertGlobals: false,
             standalone: "jspa"
+          }
+        }
+      }
+    },
+
+    /**
+     * Debugging
+     * =========
+     */
+    template: {
+      debug: {
+        options: {
+          data: {
+            scripts: grunt.file.expand(TEST)
+          }
+        },
+        files: {
+          'build/debug.html': 'debug/debug.html'
+        }
+      }
+    },
+
+    connect: {
+      debug: {
+        options: {
+          livereload: true,
+          open: {
+            target: 'http://localhost:8000/build/debug.html',
+            appName: 'Chrome'
           }
         }
       }
@@ -89,7 +122,7 @@ module.exports = function (grunt) {
         options: {
           reporter: 'mocha-jenkins-reporter'
         },
-        src: ['spec/**/*.spec.js']
+        src: [TEST]
       }
     },
 
@@ -120,16 +153,19 @@ module.exports = function (grunt) {
   });
 
   grunt.loadNpmTasks('grunt-contrib-uglify');
+  grunt.loadNpmTasks('grunt-contrib-connect');
   grunt.loadNpmTasks('grunt-browserify');
+  grunt.loadNpmTasks('grunt-template');
   grunt.loadNpmTasks('grunt-karma');
   grunt.loadNpmTasks('grunt-mocha-test');
   grunt.loadNpmTasks('grunt-run');
   grunt.loadNpmTasks('grunt-zip');
   grunt.loadNpmTasks('grunt-jsdoc');
 
-  grunt.registerTask('default', [
-    'connect',
-    'watch'
+  grunt.registerTask('debug', [
+    'template:debug',
+    'connect:debug',
+    'browserify:debug'
   ]);
 
   grunt.registerTask('dist', [
@@ -147,6 +183,8 @@ module.exports = function (grunt) {
     'mochaTest:test',
     'stop:server'
   ]);
+
+  grunt.registerTask('default', 'debug');
 
   grunt.registerTask('prepare', 'Finds the executable server jar and configuration in build folder', function() {
     var jar = grunt.file.expand({cwd: 'build'}, 'orestes-mongo*.jar')[0];
