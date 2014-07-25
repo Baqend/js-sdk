@@ -112,8 +112,6 @@ function collectionComperator(a, b) {
 }
 
 describe('Test entity type', function () {
-  this.timeout(500);
-
   beforeEach(function () {
     //jasmine.addCustomEqualityTester(collectionComperator);
   });
@@ -127,23 +125,13 @@ describe('Test entity type', function () {
   em.persist(o3);
   em.flush();
 
-  function getType(name) {
-    if (name == TEST_BUCKET) {
-      return em.metamodel.entity(name);
-    } else if (name == EMBEDDED_BUCKET) {
-      return em.metamodel.embeddable(name);
-    } else {
-      return em.metamodel.baseType(name);
-    }
-  }
-
   it('should persist sample models', function (done) {
     var promise = em.yield();
 
     promise.always(function () {
-      expect(o1._objectInfo.state.isPersistent).toBeTruthy();
-      expect(o2._objectInfo.state.isPersistent).toBeTruthy();
-      expect(o3._objectInfo.state.isPersistent).toBeTruthy();
+      expect(o1._objectInfo.state.isPersistent).be.true;
+      expect(o2._objectInfo.state.isPersistent).be.true;
+      expect(o3._objectInfo.state.isPersistent).be.true;
 
       done();
     });
@@ -156,11 +144,11 @@ describe('Test entity type', function () {
         if (Number.isInstance(def[2])) {
           //collections
           for (var i = 3; i < def.length; ++i) {
-            expect(getType(def[i])).not.toBeNull();
+            expect(em.metamodel.managedType(def[i])).not.equalNull();
           }
         } else {
           // entities
-          expect(getType(def[2])).not.toBeNull();
+          expect(em.metamodel.managedType(def[2])).not.equalNull();
         }
       }
 
@@ -170,7 +158,6 @@ describe('Test entity type', function () {
 
   Object.keys(data).forEach(function(name) {
     describe(" " + name, function() {
-
       var type, defaultValue, value, attr, constr, isCollection, collectionType, collectionTypes, valueType;
 
       defaultValue = data[name][0];
@@ -180,9 +167,9 @@ describe('Test entity type', function () {
       beforeEach(function () {
         if (isCollection) {
           collectionType = data[name][2];
-          collectionTypes = data[name].slice(3).map(getType);
+          collectionTypes = data[name].slice(3).map(em.metamodel.managedType.bind(em.metamodel));
         } else {
-          valueType = getType(data[name][2]);
+          valueType = em.metamodel.managedType(data[name][2]);
         }
 
         type = schema.entity('test.type.' + name);
@@ -191,53 +178,53 @@ describe('Test entity type', function () {
       });
 
       it('should has a valid schema', function () {
-        expect(type.isEntity).toBeTruthy();
-        expect(type.identifier).toBe('/db/test.type.' + name);
-        expect(type.id.isId).toBeTruthy();
-        expect(type.version.isVersion).toBeTruthy();
-        expect(type.declaredAttributes.length).toBe(1);
+        expect(type.isEntity).be.true;
+        expect(type.identifier).equal('/db/test.type.' + name);
+        expect(type.id.isId).be.true;
+        expect(type.version.isVersion).be.true;
+        expect(type.declaredAttributes.length).equal(1);
 
-        expect(type.typeConstructor).toBeDefined();
-        expect(type.getAttribute('value')).toBe(attr);
+        expect(type.typeConstructor).not.undefined;
+        expect(type.getAttribute('value')).equal(attr);
 
         for (var i = 0, iter = type.attributes(); iter.hasNext; ++i) {
-          expect(iter.next()).toBe(attr);
+          expect(iter.next()).equal(attr);
         }
 
-        expect(i).toBe(1);
+        expect(i).equal(1);
 
-        expect(attr.isId).toBeFalsy();
-        expect(attr.isVersion).toBeFalsy();
-        expect(attr.name).toBe('value');
+        expect(attr.isId).be.false;
+        expect(attr.isVersion).be.false;
+        expect(attr.name).equal('value');
 
         if (isCollection) {
-          expect(attr.persistentAttributeType).toBe(1);
-          expect(jspa.metamodel.PluralAttribute.isInstance(attr)).toBeTruthy();
+          expect(attr.persistentAttributeType).equal(1);
+          expect(jspa.metamodel.PluralAttribute.isInstance(attr)).be.true;
 
           if (collectionType == jspa.metamodel.PluralAttribute.CollectionType.MAP) {
-            expect(attr.collectionType).toBe(2);
-            expect(jspa.metamodel.MapAttribute.isInstance(attr)).toBeTruthy();
-            expect(attr.keyType).toBe(collectionTypes[0]);
+            expect(attr.collectionType).equal(2);
+            expect(jspa.metamodel.MapAttribute.isInstance(attr)).be.true;
+            expect(attr.keyType).equal(collectionTypes[0]);
           } else if (collectionType == jspa.metamodel.PluralAttribute.CollectionType.SET) {
-            expect(attr.collectionType).toBe(3);
-            expect(jspa.metamodel.SetAttribute.isInstance(attr)).toBeTruthy();
+            expect(attr.collectionType).equal(3);
+            expect(jspa.metamodel.SetAttribute.isInstance(attr)).be.true;
           } else {
-            expect(attr.collectionType).toBe(1);
-            expect(jspa.metamodel.ListAttribute.isInstance(attr)).toBeTruthy();
+            expect(attr.collectionType).equal(1);
+            expect(jspa.metamodel.ListAttribute.isInstance(attr)).be.true;
           }
 
-          expect(attr.elementType).toBe(collectionTypes[collectionTypes.length - 1]);
+          expect(attr.elementType).equal(collectionTypes[collectionTypes.length - 1]);
         } else {
           if (valueType.isEntity) {
-            expect(attr.persistentAttributeType).toBe(5);
+            expect(attr.persistentAttributeType).equal(5);
           } else if (valueType.isBasic) {
-            expect(attr.persistentAttributeType).toBe(0);
+            expect(attr.persistentAttributeType).equal(0);
           } else if (valueType.isEmbeddable) {
-            expect(attr.persistentAttributeType).toBe(2);
+            expect(attr.persistentAttributeType).equal(2);
           }
 
-          expect(jspa.metamodel.SingularAttribute.isInstance(attr)).toBeTruthy();
-          expect(attr.type).toBe(valueType);
+          expect(jspa.metamodel.SingularAttribute.isInstance(attr)).be.true;
+          expect(attr.type).equal(valueType);
         }
       });
 
@@ -246,10 +233,10 @@ describe('Test entity type', function () {
         em.persist(obj);
 
         var promise = em.flush(function () {
-          expect(obj._objectInfo.oid).toBeDefined();
-          expect(obj._objectInfo.version).toBeDefined();
-          expect(obj._objectInfo.state.isPersistent).toBeTruthy();
-          expect(obj.value).toBeNull();
+          expect(obj._objectInfo.oid).not.undefined;
+          expect(obj._objectInfo.version).not.undefined;
+          expect(obj._objectInfo.state.isPersistent).be.true;
+          expect(obj.value).equalNull();
 
           done();
         });
@@ -261,10 +248,10 @@ describe('Test entity type', function () {
         obj.value = value;
 
         var promise = em.flush().always(function () {
-          expect(obj._objectInfo.oid).toBeDefined();
-          expect(obj._objectInfo.version).toBeDefined();
-          expect(obj._objectInfo.state.isPersistent).toBeTruthy();
-          expect(obj.value).toEqual(value);
+          expect(obj._objectInfo.oid).not.undefined;
+          expect(obj._objectInfo.version).not.undefined;
+          expect(obj._objectInfo.state.isPersistent).be.true;
+          expect(obj.value).equal(value);
 
           done();
         });
@@ -283,12 +270,12 @@ describe('Test entity type', function () {
             loaded = o;
           });
         }).always(function () {
-          expect(loaded).not.toBe(obj);
+          expect(loaded).not.equal(obj);
 
-          expect(loaded._objectInfo.oid).toBeDefined();
-          expect(loaded._objectInfo.version).toBeDefined();
-          expect(loaded._objectInfo.state.isPersistent).toBeTruthy();
-          expect(loaded.value).toEqual(value);
+          expect(loaded._objectInfo.oid).not.undefined;
+          expect(loaded._objectInfo.version).not.undefined;
+          expect(loaded._objectInfo.state.isPersistent).be.true;
+          expect(loaded.value).equal(value);
 
           done();
         });
@@ -307,12 +294,12 @@ describe('Test entity type', function () {
             loaded = o;
           });
         }).always(function () {
-          expect(loaded).not.toBe(obj);
+          expect(loaded).not.equal(obj);
 
-          expect(loaded._objectInfo.oid).toBeDefined();
-          expect(loaded._objectInfo.version).toBeDefined();
-          expect(loaded._objectInfo.state.isPersistent).toBeTruthy();
-          expect(loaded.value).toBeNull();
+          expect(loaded._objectInfo.oid).not.undefined;
+          expect(loaded._objectInfo.version).not.undefined;
+          expect(loaded._objectInfo.state.isPersistent).be.true;
+          expect(loaded.value).equalNull();
 
           done();
         });
@@ -331,12 +318,12 @@ describe('Test entity type', function () {
             loaded = o;
           });
         }).always(function () {
-          expect(loaded).not.toBe(obj);
+          expect(loaded).not.equal(obj);
 
-          expect(loaded._objectInfo.oid).toBeDefined();
-          expect(loaded._objectInfo.version).toBeDefined();
-          expect(loaded._objectInfo.state.isPersistent).toBeTruthy();
-          expect(loaded.value).toEqual(defaultValue);
+          expect(loaded._objectInfo.oid).not.undefined;
+          expect(loaded._objectInfo.version).not.undefined;
+          expect(loaded._objectInfo.state.isPersistent).be.true;
+          expect(loaded.value).equal(defaultValue);
 
           done();
         });
@@ -352,10 +339,10 @@ describe('Test entity type', function () {
 
           return em.flush();
         }).always(function () {
-          expect(obj._objectInfo.oid).toBeDefined();
-          expect(obj._objectInfo.version).toBeDefined();
-          expect(obj._objectInfo.state.isPersistent).toBeTruthy();
-          expect(obj.value).toEqual(value);
+          expect(obj._objectInfo.oid).not.undefined;
+          expect(obj._objectInfo.version).not.undefined;
+          expect(obj._objectInfo.state.isPersistent).be.true;
+          expect(obj.value).equal(value);
 
           done();
         });
@@ -377,14 +364,14 @@ describe('Test entity type', function () {
               loaded = o;
             });
           }).always(function () {
-            expect(obj._objectInfo.oid).toBeDefined();
-            expect(obj._objectInfo.version).toBeDefined();
-            expect(obj.value).toEqual(val);
+            expect(obj._objectInfo.oid).not.undefined;
+            expect(obj._objectInfo.version).not.undefined;
+            expect(obj.value).equal(val);
 
-            expect(loaded._objectInfo.oid).toBeDefined();
-            expect(loaded._objectInfo.version).toBeDefined();
-            expect(loaded._objectInfo.state.isPersistent).toBeTruthy();
-            expect(loaded.value).toEqual(val);
+            expect(loaded._objectInfo.oid).not.undefined;
+            expect(loaded._objectInfo.version).not.undefined;
+            expect(loaded._objectInfo.state.isPersistent).be.true;
+            expect(loaded.value).equal(val);
 
             done();
           });
@@ -405,14 +392,14 @@ describe('Test entity type', function () {
               loaded = o;
             });
           }).always(function () {
-            expect(obj._objectInfo.oid).toBeDefined();
-            expect(obj._objectInfo.version).toBeDefined();
-            expect(obj.value).toEqual(val);
+            expect(obj._objectInfo.oid).not.undefined;
+            expect(obj._objectInfo.version).not.undefined;
+            expect(obj.value).equal(val);
 
-            expect(loaded._objectInfo.oid).toBeDefined();
-            expect(loaded._objectInfo.version).toBeDefined();
-            expect(loaded._objectInfo.state.isPersistent).toBeTruthy();
-            expect(loaded.value).toEqual(val);
+            expect(loaded._objectInfo.oid).not.undefined;
+            expect(loaded._objectInfo.version).not.undefined;
+            expect(loaded._objectInfo.state.isPersistent).be.true;
+            expect(loaded.value).equal(val);
 
             done();
           });
@@ -437,14 +424,14 @@ describe('Test entity type', function () {
               loaded = o;
             });
           }).always(function () {
-            expect(obj._objectInfo.oid).toBeDefined();
-            expect(obj._objectInfo.version).toBeDefined();
-            expect(obj.value).toEqual(val);
+            expect(obj._objectInfo.oid).not.undefined;
+            expect(obj._objectInfo.version).not.undefined;
+            expect(obj.value).equal(val);
 
-            expect(loaded._objectInfo.oid).toBeDefined();
-            expect(loaded._objectInfo.version).toBeDefined();
-            expect(loaded._objectInfo.state.isPersistent).toBeTruthy();
-            expect(loaded.value).toEqual(val);
+            expect(loaded._objectInfo.oid).not.undefined;
+            expect(loaded._objectInfo.version).not.undefined;
+            expect(loaded._objectInfo.state.isPersistent).be.true;
+            expect(loaded.value).equal(val);
 
             done();
           });
@@ -469,14 +456,14 @@ describe('Test entity type', function () {
               loaded = o;
             });
           }).always(function () {
-            expect(obj._objectInfo.oid).toBeDefined();
-            expect(obj._objectInfo.version).toBeDefined();
-            expect(obj.value).toEqual(val);
+            expect(obj._objectInfo.oid).not.undefined;
+            expect(obj._objectInfo.version).not.undefined;
+            expect(obj.value).equal(val);
 
-            expect(loaded._objectInfo.oid).toBeDefined();
-            expect(loaded._objectInfo.version).toBeDefined();
-            expect(loaded._objectInfo.state.isPersistent).toBeTruthy();
-            expect(loaded.value).toEqual(val);
+            expect(loaded._objectInfo.oid).not.undefined;
+            expect(loaded._objectInfo.version).not.undefined;
+            expect(loaded._objectInfo.state.isPersistent).be.true;
+            expect(loaded.value).equal(val);
 
             done();
           });
@@ -501,14 +488,14 @@ describe('Test entity type', function () {
             loaded = o;
           });
         }).always(function () {
-          expect(obj._objectInfo.oid).toBeDefined();
-          expect(obj._objectInfo.version).toBeDefined();
-          expect(obj.embedded).toEqual(val);
+          expect(obj._objectInfo.oid).not.undefined;
+          expect(obj._objectInfo.version).not.undefined;
+          expect(obj.embedded).equal(val);
 
-          expect(loaded._objectInfo.oid).toBeDefined();
-          expect(loaded._objectInfo.version).toBeDefined();
-          expect(loaded._objectInfo.state.isPersistent).toBeTruthy();
-          expect(loaded.embedded).toEqual(val);
+          expect(loaded._objectInfo.oid).not.undefined;
+          expect(loaded._objectInfo.version).not.undefined;
+          expect(loaded._objectInfo.state.isPersistent).be.true;
+          expect(loaded.embedded).equal(val);
 
           done();
         });

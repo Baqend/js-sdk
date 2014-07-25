@@ -77,7 +77,6 @@ module.exports = function (grunt) {
     connect: {
       debug: {
         options: {
-          livereload: true,
           open: {
             target: 'http://localhost:8000/build/debug.html',
             appName: 'Chrome'
