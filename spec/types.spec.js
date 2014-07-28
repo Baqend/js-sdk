@@ -112,18 +112,20 @@ function collectionComperator(a, b) {
 }
 
 describe('Test entity type', function () {
+  var emf, em, schema;
+
   beforeEach(function () {
     //jasmine.addCustomEqualityTester(collectionComperator);
+
+    emf = new jspa.EntityManagerFactory('http://localhost:8080');
+    schema = emf.metamodel;
+    em = emf.createEntityManager();
+
+    em.persist(o1);
+    em.persist(o2);
+    em.persist(o3);
+    em.flush();
   });
-
-  var emf = new jspa.EntityManagerFactory('http://localhost:8080');
-  var schema = emf.metamodel;
-  var em = emf.createEntityManager();
-
-  em.persist(o1);
-  em.persist(o2);
-  em.persist(o3);
-  em.flush();
 
   it('should persist sample models', function (done) {
     var promise = em.yield();

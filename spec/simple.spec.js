@@ -3,44 +3,22 @@ if (typeof jspa == 'undefined') {
   jspa = require('../lib');
 }
 
+var PersClassEntity = new jspa.metamodel.EntityType("/db/test.persistent.PersClass");
+var ChildPersClassEntity = new jspa.metamodel.EntityType("/db/test.persistent.ChildPersClass", PersClassEntity);
+var OtherPersClassEntity = new jspa.metamodel.EntityType("/db/test.persistent.OtherPersClass");
 
-var schema = [
-  {
-    "class": "/db/test.persistent.PersClass",
-    "fields": [
-      {
-        "name": "ref",
-        "type": "/db/test.persistent.OtherPersClass"
-      },
-      {
-        "name": "name",
-        "type": "/db/_native.Integer"
-      },
-      {
-        "name": "persRef",
-        "type": "/db/test.persistent.PersClass"
-      }
-    ]
-  },
-  {
-    "class": "/db/test.persistent.ChildPersClass",
-    "superClass": "/db/test.persistent.PersClass",
-    "fields": [
-      {
-        "name": "value",
-        "type": "/db/_native.String"
-      }
-    ]
-  },
-  {
-    "class": "/db/test.persistent.OtherPersClass",
-    "fields": [
-      {
-        "name": "value",
-        "type": "/db/_native.Integer"
-      }
-    ]
-  }
+PersClassEntity.declaredAttributes = [
+  new jspa.metamodel.SingularAttribute(PersClassEntity, "ref", OtherPersClassEntity),
+  new jspa.metamodel.SingularAttribute(PersClassEntity, "name", jspa.metamodel.BasicType.Integer),
+  new jspa.metamodel.SingularAttribute(PersClassEntity, "persRef", PersClassEntity)
+];
+
+ChildPersClassEntity.declaredAttributes = [
+  new jspa.metamodel.SingularAttribute(ChildPersClassEntity, "value", jspa.metamodel.BasicType.String)
+];
+
+OtherPersClassEntity.declaredAttributes = [
+  new jspa.metamodel.SingularAttribute(ChildPersClassEntity, "value", jspa.metamodel.BasicType.Integer)
 ];
 
 
@@ -73,11 +51,11 @@ var OtherPersClass = test.persistent.OtherPersClass = Object.inherit({
 describe("Simple test", function () {
   this.timeout(2000);
 
-  var factory = new jspa.EntityManagerFactory('http://localhost:8080');
-  factory.define(schema);
+  var factory;
 
   var pu = null, em = null;
   beforeEach(function () {
+    factory = new jspa.EntityManagerFactory('http://localhost:8080');
     em = factory.createEntityManager();
     pu = factory.persistenceUnitUtil;
   });
