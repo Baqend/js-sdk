@@ -34,11 +34,7 @@ describe("Test metamodel class", function () {
 
   describe("ModelBuilder", function() {
     it("should create basic and object type", function() {
-      var modelBuilder = new jspa.metamodel.ModelBuilder();
-      var models = modelBuilder.buildModels({});
-
-      for (var name in models)
-        metamodel.addType(models[name]);
+      metamodel.fromJSON([]);
 
       expect(metamodel.baseType(jspa.metamodel.BasicType.Date.identifier)).equals(jspa.metamodel.BasicType.Date);
       expect(metamodel.baseType(jspa.metamodel.BasicType.DateTime.identifier)).equals(jspa.metamodel.BasicType.DateTime);
@@ -48,7 +44,7 @@ describe("Test metamodel class", function () {
       expect(metamodel.baseType(jspa.metamodel.BasicType.String.identifier)).equals(jspa.metamodel.BasicType.String);
       expect(metamodel.baseType(jspa.metamodel.BasicType.Time.identifier)).equals(jspa.metamodel.BasicType.Time);
 
-      expect(metamodel.entity(jspa.metamodel.EntityType.Object.identifier)).instanceOf(jspa.metamodel.EntityType.Object);
+      expect(metamodel.entity(jspa.metamodel.EntityType.Object.identifier)).instanceof(jspa.metamodel.EntityType.Object);
     });
 
     it("should build type with attributes", function() {
@@ -62,11 +58,7 @@ describe("Test metamodel class", function () {
         }
       };
 
-      var modelBuilder = new jspa.metamodel.ModelBuilder();
-      var models = modelBuilder.buildModels([model]);
-
-      for (var name in models)
-        metamodel.addType(models[name]);
+      metamodel.fromJSON([model]);
 
       var entity = metamodel.entity("/db/test.OtherPersClass");
       expect(entity).instanceof(jspa.metamodel.EntityType);
@@ -74,7 +66,7 @@ describe("Test metamodel class", function () {
       expect(entity.superType).equals(metamodel.entity(jspa.metamodel.EntityType.Object.identifier));
       expect(entity.typeConstructor).be.undefined;
       expect(entity.declaredAttributes).length(1);
-      expect(entity.declaredAttributes[0]).instanceOf(jspa.metamodel.SingularAttribute);
+      expect(entity.declaredAttributes[0]).instanceof(jspa.metamodel.SingularAttribute);
       expect(entity.declaredAttributes[0].declaringType).equals(entity);
       expect(entity.declaredAttributes[0].name).equals("value");
       expect(entity.declaredAttributes[0].type).equals(jspa.metamodel.BasicType.Integer);
@@ -108,11 +100,7 @@ describe("Test metamodel class", function () {
         }
       ];
 
-      var modelBuilder = new jspa.metamodel.ModelBuilder();
-      var models = modelBuilder.buildModels(model);
-
-      for (var n in models)
-        metamodel.addType(models[n]);
+      metamodel.fromJSON(model);
 
       var entity = metamodel.entity("/db/test.PersClass");
       expect(entity).instanceof(jspa.metamodel.EntityType);
@@ -123,7 +111,7 @@ describe("Test metamodel class", function () {
 
       var name = entity.getDeclaredAttribute("name");
       expect(entity.getAttribute("name")).equals(name);
-      expect(name).instanceOf(jspa.metamodel.SingularAttribute);
+      expect(name).instanceof(jspa.metamodel.SingularAttribute);
       expect(name.declaringType).equals(entity);
       expect(name.name).equals("name");
       expect(name.type).equals(jspa.metamodel.BasicType.String);
@@ -131,7 +119,7 @@ describe("Test metamodel class", function () {
 
       var ref = entity.getDeclaredAttribute("ref");
       expect(entity.getAttribute("ref")).equals(ref);
-      expect(ref).instanceOf(jspa.metamodel.SingularAttribute);
+      expect(ref).instanceof(jspa.metamodel.SingularAttribute);
       expect(ref.declaringType).equals(entity);
       expect(ref.name).equals("ref");
       expect(ref.type).equals(metamodel.entity("/db/test.ChildPersClass"));
@@ -149,7 +137,7 @@ describe("Test metamodel class", function () {
 
       var value = entity.getDeclaredAttribute("value");
       expect(entity.getAttribute("value")).equals(value);
-      expect(value).instanceOf(jspa.metamodel.SingularAttribute);
+      expect(value).instanceof(jspa.metamodel.SingularAttribute);
       expect(value.declaringType).equals(entity);
       expect(value.name).equals("value");
       expect(value.type).equals(jspa.metamodel.BasicType.Integer);
@@ -173,18 +161,14 @@ describe("Test metamodel class", function () {
         }
       };
 
-      var modelBuilder = new jspa.metamodel.ModelBuilder();
-      var models = modelBuilder.buildModels([model]);
-
-      for (var n in models)
-        metamodel.addType(models[n]);
+      metamodel.fromJSON([model]);
 
       var entity = metamodel.embeddable("/db/test.EmbeddedPersClass");
       expect(entity).instanceof(jspa.metamodel.EmbeddableType);
       expect(entity.identifier).equals("/db/test.EmbeddedPersClass");
       expect(entity.typeConstructor).be.undefined;
       expect(entity.declaredAttributes).length(1);
-      expect(entity.declaredAttributes[0]).instanceOf(jspa.metamodel.SingularAttribute);
+      expect(entity.declaredAttributes[0]).instanceof(jspa.metamodel.SingularAttribute);
       expect(entity.declaredAttributes[0].declaringType).equals(entity);
       expect(entity.declaredAttributes[0].name).equals("name");
       expect(entity.declaredAttributes[0].type).equals(jspa.metamodel.BasicType.String);
@@ -202,15 +186,11 @@ describe("Test metamodel class", function () {
         }
       };
 
-      var modelBuilder = new jspa.metamodel.ModelBuilder();
-      var models = modelBuilder.buildModels([model]);
-
-      for (var n in models)
-        metamodel.addType(models[n]);
+      metamodel.fromJSON([model]);
 
       var type = metamodel.entity("/db/test.TestClass");
       var attr = type.declaredAttributes[0];
-      expect(attr).instanceOf(jspa.metamodel.SingularAttribute);
+      expect(attr).instanceof(jspa.metamodel.SingularAttribute);
       expect(attr.declaringType).equals(type);
       expect(attr.name).equals("name");
       expect(attr.type).equals(jspa.metamodel.BasicType.String);
@@ -231,15 +211,11 @@ describe("Test metamodel class", function () {
         }
       };
 
-      var modelBuilder = new jspa.metamodel.ModelBuilder();
-      var models = modelBuilder.buildModels([model]);
-
-      for (var n in models)
-        metamodel.addType(models[n]);
+      metamodel.fromJSON([model]);
 
       var type = metamodel.entity("/db/test.TestClass");
       var attr = type.declaredAttributes[0];
-      expect(attr).instanceOf(jspa.metamodel.SingularAttribute);
+      expect(attr).instanceof(jspa.metamodel.SingularAttribute);
       expect(attr.declaringType).equals(type);
       expect(attr.name).equals("name");
       expect(attr.type).equals(type);
@@ -261,15 +237,11 @@ describe("Test metamodel class", function () {
         }
       };
 
-      var modelBuilder = new jspa.metamodel.ModelBuilder();
-      var models = modelBuilder.buildModels([model]);
-
-      for (var n in models)
-        metamodel.addType(models[n]);
+      metamodel.fromJSON([model]);
 
       var type = metamodel.embeddable("/db/test.TestClass");
       var attr = type.declaredAttributes[0];
-      expect(attr).instanceOf(jspa.metamodel.SingularAttribute);
+      expect(attr).instanceof(jspa.metamodel.SingularAttribute);
       expect(attr.declaringType).equals(type);
       expect(attr.name).equals("name");
       expect(attr.type).equals(type);
@@ -290,19 +262,15 @@ describe("Test metamodel class", function () {
         }
       };
 
-      var modelBuilder = new jspa.metamodel.ModelBuilder();
-      var models = modelBuilder.buildModels([model]);
-
-      for (var n in models)
-        metamodel.addType(models[n]);
+      metamodel.fromJSON([model]);
 
       var type = metamodel.entity("/db/test.TestClass");
       var attr = type.declaredAttributes[0];
-      expect(attr).instanceOf(jspa.metamodel.ListAttribute);
+      expect(attr).instanceof(jspa.metamodel.ListAttribute);
       expect(attr.declaringType).equals(type);
       expect(attr.name).equals("name");
       expect(attr.elementType).equals(jspa.metamodel.BasicType.String);
-      expect(attr.typeConstructor.prototype).instanceOf(jspa.collection.List);
+      expect(attr.typeConstructor.prototype).instanceof(jspa.collection.List);
       expect(attr.persistentAttributeType).equals(jspa.metamodel.Attribute.PersistentAttributeType.ELEMENT_COLLECTION);
       expect(attr.isAssociation).be.false;
       expect(attr.isCollection).be.true;
@@ -320,19 +288,15 @@ describe("Test metamodel class", function () {
         }
       };
 
-      var modelBuilder = new jspa.metamodel.ModelBuilder();
-      var models = modelBuilder.buildModels([model]);
-
-      for (var n in models)
-        metamodel.addType(models[n]);
+      metamodel.fromJSON([model]);
 
       var type = metamodel.entity("/db/test.TestClass");
       var attr = type.declaredAttributes[0];
-      expect(attr).instanceOf(jspa.metamodel.SetAttribute);
+      expect(attr).instanceof(jspa.metamodel.SetAttribute);
       expect(attr.declaringType).equals(type);
       expect(attr.name).equals("name");
       expect(attr.elementType).equals(jspa.metamodel.BasicType.String);
-      expect(attr.typeConstructor.prototype).instanceOf(jspa.collection.Set);
+      expect(attr.typeConstructor.prototype).instanceof(jspa.collection.Set);
       expect(attr.persistentAttributeType).equals(jspa.metamodel.Attribute.PersistentAttributeType.ELEMENT_COLLECTION);
       expect(attr.isAssociation).be.false;
       expect(attr.isCollection).be.true;
@@ -350,45 +314,154 @@ describe("Test metamodel class", function () {
         }
       };
 
-      var modelBuilder = new jspa.metamodel.ModelBuilder();
-      var models = modelBuilder.buildModels([model]);
-
-      for (var n in models)
-        metamodel.addType(models[n]);
+      metamodel.fromJSON([model]);
 
       var type = metamodel.entity("/db/test.TestClass");
       var attr = type.declaredAttributes[0];
-      expect(attr).instanceOf(jspa.metamodel.MapAttribute);
+      expect(attr).instanceof(jspa.metamodel.MapAttribute);
       expect(attr.declaringType).equals(type);
       expect(attr.name).equals("name");
       expect(attr.elementType).equals(jspa.metamodel.BasicType.Integer);
       expect(attr.keyType).equals(jspa.metamodel.BasicType.String);
-      expect(attr.typeConstructor.prototype).instanceOf(jspa.collection.Map);
+      expect(attr.typeConstructor.prototype).instanceof(jspa.collection.Map);
       expect(attr.persistentAttributeType).equals(jspa.metamodel.Attribute.PersistentAttributeType.ELEMENT_COLLECTION);
       expect(attr.isAssociation).be.false;
       expect(attr.isCollection).be.true;
       expect(attr.collectionType).equals(jspa.metamodel.PluralAttribute.CollectionType.MAP);
     });
+
+    it("should save and load the metamodel", function(done) {
+      var type, childType, embeddedType;
+
+      metamodel.fromJSON([]);
+      metamodel.addType(type = new jspa.metamodel.EntityType("jstest.Person", metamodel.entity(Object)));
+      metamodel.addType(childType = new jspa.metamodel.EntityType("jstest.ChildPerson", type));
+      metamodel.addType(embeddedType = new jspa.metamodel.EmbeddableType("jstest.EmbeddedPerson"));
+
+      type.declaredAttributes.push(new jspa.metamodel.SingularAttribute(type, "name", metamodel.baseType(String)));
+      type.declaredAttributes.push(new jspa.metamodel.SingularAttribute(type, "ref", type));
+      type.declaredAttributes.push(new jspa.metamodel.SingularAttribute(type, "date", metamodel.baseType(Date)));
+      type.declaredAttributes.push(new jspa.metamodel.ListAttribute(type, "list", metamodel.baseType('String')));
+      type.declaredAttributes.push(new jspa.metamodel.SetAttribute(type, "set", metamodel.baseType('Integer')));
+      type.declaredAttributes.push(new jspa.metamodel.MapAttribute(type, "map", metamodel.baseType('String'), type));
+
+      childType.declaredAttributes.push(new jspa.metamodel.SingularAttribute(type, "age", metamodel.baseType('Integer')));
+
+      embeddedType.declaredAttributes.push(new jspa.metamodel.SingularAttribute(embeddedType, "age", metamodel.baseType(Number)));
+      embeddedType.declaredAttributes.push(new jspa.metamodel.SingularAttribute(embeddedType, "ref", type));
+
+      metamodel.save(function() {
+        return metamodel.load(function() {
+          var loadType = metamodel.entity("jstest.Person");
+          var loadChildType = metamodel.entity("jstest.ChildPerson");
+          var loadEmbeddedType = metamodel.embeddable("jstest.EmbeddedPerson");
+
+          expect(loadType).be.ok;
+          expect(loadType).instanceof(jspa.metamodel.EntityType);
+          expect(loadType).not.equals(type);
+          expect(loadType.identifier).equals('/db/jstest.Person');
+          expect(loadType.superType).equals(metamodel.entity(Object));
+          expect(loadType.declaredAttributes).length(6);
+
+          expect(loadChildType).be.ok;
+          expect(loadChildType).instanceof(jspa.metamodel.EntityType);
+          expect(loadChildType).not.equals(childType);
+          expect(loadChildType.identifier).equals('/db/jstest.ChildPerson');
+          expect(loadChildType.superType).equals(loadType);
+          expect(loadChildType.declaredAttributes).length(1);
+
+          expect(loadEmbeddedType).be.ok;
+          expect(loadEmbeddedType).instanceof(jspa.metamodel.EmbeddableType);
+          expect(loadEmbeddedType).not.equals(embeddedType);
+          expect(loadEmbeddedType.identifier).equals('/db/jstest.EmbeddedPerson');
+          expect(loadEmbeddedType.declaredAttributes).length(2);
+
+
+          expect(loadType.getDeclaredAttribute('name')).instanceof(jspa.metamodel.SingularAttribute);
+          expect(loadType.getDeclaredAttribute('name').declaringType).equals(loadType);
+          expect(loadType.getDeclaredAttribute('name').name).equals('name');
+          expect(loadType.getDeclaredAttribute('name').type).equals(metamodel.baseType(String));
+          
+          expect(loadType.getDeclaredAttribute('ref')).instanceof(jspa.metamodel.SingularAttribute);
+          expect(loadType.getDeclaredAttribute('ref').declaringType).equals(loadType);
+          expect(loadType.getDeclaredAttribute('ref').name).equals('ref');
+          expect(loadType.getDeclaredAttribute('ref').type).equals(loadType);
+
+          expect(loadType.getDeclaredAttribute('date')).instanceof(jspa.metamodel.SingularAttribute);
+          expect(loadType.getDeclaredAttribute('date').declaringType).equals(loadType);
+          expect(loadType.getDeclaredAttribute('date').name).equals('date');
+          expect(loadType.getDeclaredAttribute('date').type).equals(metamodel.baseType(Date));
+
+          expect(loadType.getDeclaredAttribute('list')).instanceof(jspa.metamodel.ListAttribute);
+          expect(loadType.getDeclaredAttribute('list').declaringType).equals(loadType);
+          expect(loadType.getDeclaredAttribute('list').name).equals('list');
+          expect(loadType.getDeclaredAttribute('list').elementType).equals(metamodel.baseType('String'));
+
+          expect(loadType.getDeclaredAttribute('set')).instanceof(jspa.metamodel.SetAttribute);
+          expect(loadType.getDeclaredAttribute('set').declaringType).equals(loadType);
+          expect(loadType.getDeclaredAttribute('set').name).equals('set');
+          expect(loadType.getDeclaredAttribute('set').elementType).equals(metamodel.baseType('Integer'));
+
+          expect(loadType.getDeclaredAttribute('map')).instanceof(jspa.metamodel.MapAttribute);
+          expect(loadType.getDeclaredAttribute('map').declaringType).equals(loadType);
+          expect(loadType.getDeclaredAttribute('map').name).equals('map');
+          expect(loadType.getDeclaredAttribute('map').keyType).equals(metamodel.baseType('String'));
+          expect(loadType.getDeclaredAttribute('map').elementType).equals(loadType);
+
+
+          expect(loadChildType.getDeclaredAttribute('age')).instanceof(jspa.metamodel.SingularAttribute);
+          expect(loadChildType.getDeclaredAttribute('age').declaringType).equals(loadChildType);
+          expect(loadChildType.getDeclaredAttribute('age').name).equals('age');
+          expect(loadChildType.getDeclaredAttribute('age').type).equals(metamodel.baseType('Integer'));
+
+
+          expect(loadEmbeddedType.getDeclaredAttribute('age')).instanceof(jspa.metamodel.SingularAttribute);
+          expect(loadEmbeddedType.getDeclaredAttribute('age').declaringType).equals(loadEmbeddedType);
+          expect(loadEmbeddedType.getDeclaredAttribute('age').name).equals('age');
+          expect(loadEmbeddedType.getDeclaredAttribute('age').type).equals(metamodel.baseType('Float'));
+
+          expect(loadEmbeddedType.getDeclaredAttribute('ref')).instanceof(jspa.metamodel.SingularAttribute);
+          expect(loadEmbeddedType.getDeclaredAttribute('ref').declaringType).equals(loadEmbeddedType);
+          expect(loadEmbeddedType.getDeclaredAttribute('ref').name).equals('ref');
+          expect(loadEmbeddedType.getDeclaredAttribute('ref').type).equals(loadType);
+
+          done();
+        });
+      }).fail(done);
+    })
   });
 
   describe("BasicType", function () {
-    it("should be defined", function() {
+    it("should be accessible by native constructors", function() {
+      metamodel.fromJSON([]);
 
+      expect(metamodel.baseType(Date)).equals(jspa.metamodel.BasicType.DateTime);
+      expect(metamodel.baseType(Boolean)).equals(jspa.metamodel.BasicType.Boolean);
+      expect(metamodel.baseType(Number)).equals(jspa.metamodel.BasicType.Float);
+      expect(metamodel.baseType(String)).equals(jspa.metamodel.BasicType.String);
+    });
+
+    it("should be accessible by simple name", function() {
+      metamodel.fromJSON([]);
+
+      expect(metamodel.baseType('Date')).equals(jspa.metamodel.BasicType.Date);
+      expect(metamodel.baseType('DateTime')).equals(jspa.metamodel.BasicType.DateTime);
+      expect(metamodel.baseType('Boolean')).equals(jspa.metamodel.BasicType.Boolean);
+      expect(metamodel.baseType('Float')).equals(jspa.metamodel.BasicType.Float);
+      expect(metamodel.baseType('Integer')).equals(jspa.metamodel.BasicType.Integer);
+      expect(metamodel.baseType('String')).equals(jspa.metamodel.BasicType.String);
+      expect(metamodel.baseType('Time')).equals(jspa.metamodel.BasicType.Time);
     });
   });
 
   describe("EntityType", function () {
     it("Object should have an id and version field", function () {
-      var modelBuilder = new jspa.metamodel.ModelBuilder();
-      var models = modelBuilder.buildModels([]);
-
-      for (var n in models)
-        metamodel.addType(models[n]);
+      metamodel.fromJSON([]);
 
       var entity = metamodel.entity(jspa.metamodel.EntityType.Object.identifier);
-      expect(entity.declaredId).instanceOf(jspa.metamodel.SingularAttribute);
+      expect(entity.declaredId).instanceof(jspa.metamodel.SingularAttribute);
       expect(entity.declaredId.name).equals("oid");
-      expect(entity.declaredVersion).instanceOf(jspa.metamodel.SingularAttribute);
+      expect(entity.declaredVersion).instanceof(jspa.metamodel.SingularAttribute);
       expect(entity.declaredVersion.name).equals("version");
 
       expect(entity.id).equals(entity.declaredId);
@@ -422,11 +495,7 @@ describe("Test metamodel class", function () {
         }
       ];
 
-      var modelBuilder = new jspa.metamodel.ModelBuilder();
-      var models = modelBuilder.buildModels(model);
-
-      for (var n in models)
-        metamodel.addType(models[n]);
+      metamodel.fromJSON(model);
 
       var entity = metamodel.entity("/db/test.ChildPersClass");
 
