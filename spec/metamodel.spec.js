@@ -9,6 +9,8 @@ describe("Test metamodel class", function () {
   beforeEach(function() {
     metamodel = new jspa.metamodel.Metamodel(jspa.connector.Connector.create("http://localhost:8080"));
 
+    metamodel.fromJSON([]);
+
     var PersClassEntity = new jspa.metamodel.EntityType("test.persistent.PersClass");
     var ChildPersClassEntity = new jspa.metamodel.EntityType("test.persistent.ChildPersClass", PersClassEntity);
     var OtherPersClassEntity = new jspa.metamodel.EntityType("test.persistent.OtherPersClass");
@@ -61,10 +63,12 @@ describe("Test metamodel class", function () {
       metamodel.fromJSON([model]);
 
       var entity = metamodel.entity("/db/test.OtherPersClass");
+
       expect(entity).instanceof(jspa.metamodel.EntityType);
       expect(entity.identifier).equals("/db/test.OtherPersClass");
       expect(entity.superType).equals(metamodel.entity(jspa.metamodel.EntityType.Object.identifier));
-      expect(entity.typeConstructor).be.undefined;
+
+      expect(entity.typeConstructor).be.ok;
       expect(entity.declaredAttributes).length(1);
       expect(entity.declaredAttributes[0]).instanceof(jspa.metamodel.SingularAttribute);
       expect(entity.declaredAttributes[0].declaringType).equals(entity);
@@ -106,7 +110,7 @@ describe("Test metamodel class", function () {
       expect(entity).instanceof(jspa.metamodel.EntityType);
       expect(entity.identifier).equals("/db/test.PersClass");
       expect(entity.superType).equals(metamodel.entity(jspa.metamodel.EntityType.Object.identifier));
-      expect(entity.typeConstructor).be.undefined;
+      expect(entity.typeConstructor).be.ok;
       expect(entity.declaredAttributes).length(2);
 
       var name = entity.getDeclaredAttribute("name");
@@ -123,7 +127,7 @@ describe("Test metamodel class", function () {
       expect(ref.declaringType).equals(entity);
       expect(ref.name).equals("ref");
       expect(ref.type).equals(metamodel.entity("/db/test.ChildPersClass"));
-      expect(ref.typeConstructor).be.undefined;
+      expect(ref.typeConstructor).be.ok;
 
       expect(entity.getDeclaredAttribute("value")).be.null;
       expect(entity.getAttribute("value")).be.null;
@@ -132,7 +136,7 @@ describe("Test metamodel class", function () {
       expect(entity).instanceof(jspa.metamodel.EntityType);
       expect(entity.identifier).equals("/db/test.ChildPersClass");
       expect(entity.superType).equals(metamodel.entity("/db/test.PersClass"));
-      expect(entity.typeConstructor).be.undefined;
+      expect(entity.typeConstructor).be.ok;
       expect(entity.declaredAttributes).length(1);
 
       var value = entity.getDeclaredAttribute("value");
@@ -166,7 +170,7 @@ describe("Test metamodel class", function () {
       var entity = metamodel.embeddable("/db/test.EmbeddedPersClass");
       expect(entity).instanceof(jspa.metamodel.EmbeddableType);
       expect(entity.identifier).equals("/db/test.EmbeddedPersClass");
-      expect(entity.typeConstructor).be.undefined;
+      expect(entity.typeConstructor).be.ok;
       expect(entity.declaredAttributes).length(1);
       expect(entity.declaredAttributes[0]).instanceof(jspa.metamodel.SingularAttribute);
       expect(entity.declaredAttributes[0].declaringType).equals(entity);
@@ -219,7 +223,7 @@ describe("Test metamodel class", function () {
       expect(attr.declaringType).equals(type);
       expect(attr.name).equals("name");
       expect(attr.type).equals(type);
-      expect(attr.typeConstructor).be.undefined;
+      expect(attr.typeConstructor).be.ok;
       expect(attr.persistentAttributeType).equals(jspa.metamodel.Attribute.PersistentAttributeType.ONE_TO_MANY);
       expect(attr.isAssociation).be.true;
       expect(attr.isCollection).be.false;
@@ -245,7 +249,7 @@ describe("Test metamodel class", function () {
       expect(attr.declaringType).equals(type);
       expect(attr.name).equals("name");
       expect(attr.type).equals(type);
-      expect(attr.typeConstructor).be.undefined;
+      expect(attr.typeConstructor).be.ok;
       expect(attr.persistentAttributeType).equals(jspa.metamodel.Attribute.PersistentAttributeType.EMBEDDED);
       expect(attr.isAssociation).be.false;
       expect(attr.isCollection).be.false;
@@ -435,10 +439,10 @@ describe("Test metamodel class", function () {
     it("should be accessible by native constructors", function() {
       metamodel.fromJSON([]);
 
-      expect(metamodel.baseType(Date)).equals(jspa.metamodel.BasicType.DateTime);
       expect(metamodel.baseType(Boolean)).equals(jspa.metamodel.BasicType.Boolean);
       expect(metamodel.baseType(Number)).equals(jspa.metamodel.BasicType.Float);
       expect(metamodel.baseType(String)).equals(jspa.metamodel.BasicType.String);
+      expect(metamodel.baseType(Date)).equals(jspa.metamodel.BasicType.DateTime);
     });
 
     it("should be accessible by simple name", function() {
