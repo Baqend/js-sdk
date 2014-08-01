@@ -334,7 +334,7 @@ describe("Test metamodel class", function () {
       expect(attr.collectionType).equals(jspa.metamodel.PluralAttribute.CollectionType.MAP);
     });
 
-    it("should save and load the metamodel", function(done) {
+    it("should save and load the metamodel", function() {
       var type, childType, embeddedType;
 
       metamodel.fromJSON([]);
@@ -354,85 +354,81 @@ describe("Test metamodel class", function () {
       embeddedType.declaredAttributes.push(new jspa.metamodel.SingularAttribute(embeddedType, "age", metamodel.baseType(Number)));
       embeddedType.declaredAttributes.push(new jspa.metamodel.SingularAttribute(embeddedType, "ref", type));
 
-      metamodel.save(function() {
-        return metamodel.load(function() {
-          var loadType = metamodel.entity("jstest.Person");
-          var loadChildType = metamodel.entity("jstest.ChildPerson");
-          var loadEmbeddedType = metamodel.embeddable("jstest.EmbeddedPerson");
+      return metamodel.save().then(function() { return metamodel.load() }).then(function() {
+        var loadType = metamodel.entity("jstest.Person");
+        var loadChildType = metamodel.entity("jstest.ChildPerson");
+        var loadEmbeddedType = metamodel.embeddable("jstest.EmbeddedPerson");
 
-          expect(loadType).be.ok;
-          expect(loadType).instanceof(jspa.metamodel.EntityType);
-          expect(loadType).not.equals(type);
-          expect(loadType.identifier).equals('/db/jstest.Person');
-          expect(loadType.superType).equals(metamodel.entity(Object));
-          expect(loadType.declaredAttributes).length(6);
+        expect(loadType).be.ok;
+        expect(loadType).instanceof(jspa.metamodel.EntityType);
+        expect(loadType).not.equals(type);
+        expect(loadType.identifier).equals('/db/jstest.Person');
+        expect(loadType.superType).equals(metamodel.entity(Object));
+        expect(loadType.declaredAttributes).length(6);
 
-          expect(loadChildType).be.ok;
-          expect(loadChildType).instanceof(jspa.metamodel.EntityType);
-          expect(loadChildType).not.equals(childType);
-          expect(loadChildType.identifier).equals('/db/jstest.ChildPerson');
-          expect(loadChildType.superType).equals(loadType);
-          expect(loadChildType.declaredAttributes).length(1);
+        expect(loadChildType).be.ok;
+        expect(loadChildType).instanceof(jspa.metamodel.EntityType);
+        expect(loadChildType).not.equals(childType);
+        expect(loadChildType.identifier).equals('/db/jstest.ChildPerson');
+        expect(loadChildType.superType).equals(loadType);
+        expect(loadChildType.declaredAttributes).length(1);
 
-          expect(loadEmbeddedType).be.ok;
-          expect(loadEmbeddedType).instanceof(jspa.metamodel.EmbeddableType);
-          expect(loadEmbeddedType).not.equals(embeddedType);
-          expect(loadEmbeddedType.identifier).equals('/db/jstest.EmbeddedPerson');
-          expect(loadEmbeddedType.declaredAttributes).length(2);
-
-
-          expect(loadType.getDeclaredAttribute('name')).instanceof(jspa.metamodel.SingularAttribute);
-          expect(loadType.getDeclaredAttribute('name').declaringType).equals(loadType);
-          expect(loadType.getDeclaredAttribute('name').name).equals('name');
-          expect(loadType.getDeclaredAttribute('name').type).equals(metamodel.baseType(String));
-          
-          expect(loadType.getDeclaredAttribute('ref')).instanceof(jspa.metamodel.SingularAttribute);
-          expect(loadType.getDeclaredAttribute('ref').declaringType).equals(loadType);
-          expect(loadType.getDeclaredAttribute('ref').name).equals('ref');
-          expect(loadType.getDeclaredAttribute('ref').type).equals(loadType);
-
-          expect(loadType.getDeclaredAttribute('date')).instanceof(jspa.metamodel.SingularAttribute);
-          expect(loadType.getDeclaredAttribute('date').declaringType).equals(loadType);
-          expect(loadType.getDeclaredAttribute('date').name).equals('date');
-          expect(loadType.getDeclaredAttribute('date').type).equals(metamodel.baseType(Date));
-
-          expect(loadType.getDeclaredAttribute('list')).instanceof(jspa.metamodel.ListAttribute);
-          expect(loadType.getDeclaredAttribute('list').declaringType).equals(loadType);
-          expect(loadType.getDeclaredAttribute('list').name).equals('list');
-          expect(loadType.getDeclaredAttribute('list').elementType).equals(metamodel.baseType('String'));
-
-          expect(loadType.getDeclaredAttribute('set')).instanceof(jspa.metamodel.SetAttribute);
-          expect(loadType.getDeclaredAttribute('set').declaringType).equals(loadType);
-          expect(loadType.getDeclaredAttribute('set').name).equals('set');
-          expect(loadType.getDeclaredAttribute('set').elementType).equals(metamodel.baseType('Integer'));
-
-          expect(loadType.getDeclaredAttribute('map')).instanceof(jspa.metamodel.MapAttribute);
-          expect(loadType.getDeclaredAttribute('map').declaringType).equals(loadType);
-          expect(loadType.getDeclaredAttribute('map').name).equals('map');
-          expect(loadType.getDeclaredAttribute('map').keyType).equals(metamodel.baseType('String'));
-          expect(loadType.getDeclaredAttribute('map').elementType).equals(loadType);
+        expect(loadEmbeddedType).be.ok;
+        expect(loadEmbeddedType).instanceof(jspa.metamodel.EmbeddableType);
+        expect(loadEmbeddedType).not.equals(embeddedType);
+        expect(loadEmbeddedType.identifier).equals('/db/jstest.EmbeddedPerson');
+        expect(loadEmbeddedType.declaredAttributes).length(2);
 
 
-          expect(loadChildType.getDeclaredAttribute('age')).instanceof(jspa.metamodel.SingularAttribute);
-          expect(loadChildType.getDeclaredAttribute('age').declaringType).equals(loadChildType);
-          expect(loadChildType.getDeclaredAttribute('age').name).equals('age');
-          expect(loadChildType.getDeclaredAttribute('age').type).equals(metamodel.baseType('Integer'));
+        expect(loadType.getDeclaredAttribute('name')).instanceof(jspa.metamodel.SingularAttribute);
+        expect(loadType.getDeclaredAttribute('name').declaringType).equals(loadType);
+        expect(loadType.getDeclaredAttribute('name').name).equals('name');
+        expect(loadType.getDeclaredAttribute('name').type).equals(metamodel.baseType(String));
+
+        expect(loadType.getDeclaredAttribute('ref')).instanceof(jspa.metamodel.SingularAttribute);
+        expect(loadType.getDeclaredAttribute('ref').declaringType).equals(loadType);
+        expect(loadType.getDeclaredAttribute('ref').name).equals('ref');
+        expect(loadType.getDeclaredAttribute('ref').type).equals(loadType);
+
+        expect(loadType.getDeclaredAttribute('date')).instanceof(jspa.metamodel.SingularAttribute);
+        expect(loadType.getDeclaredAttribute('date').declaringType).equals(loadType);
+        expect(loadType.getDeclaredAttribute('date').name).equals('date');
+        expect(loadType.getDeclaredAttribute('date').type).equals(metamodel.baseType(Date));
+
+        expect(loadType.getDeclaredAttribute('list')).instanceof(jspa.metamodel.ListAttribute);
+        expect(loadType.getDeclaredAttribute('list').declaringType).equals(loadType);
+        expect(loadType.getDeclaredAttribute('list').name).equals('list');
+        expect(loadType.getDeclaredAttribute('list').elementType).equals(metamodel.baseType('String'));
+
+        expect(loadType.getDeclaredAttribute('set')).instanceof(jspa.metamodel.SetAttribute);
+        expect(loadType.getDeclaredAttribute('set').declaringType).equals(loadType);
+        expect(loadType.getDeclaredAttribute('set').name).equals('set');
+        expect(loadType.getDeclaredAttribute('set').elementType).equals(metamodel.baseType('Integer'));
+
+        expect(loadType.getDeclaredAttribute('map')).instanceof(jspa.metamodel.MapAttribute);
+        expect(loadType.getDeclaredAttribute('map').declaringType).equals(loadType);
+        expect(loadType.getDeclaredAttribute('map').name).equals('map');
+        expect(loadType.getDeclaredAttribute('map').keyType).equals(metamodel.baseType('String'));
+        expect(loadType.getDeclaredAttribute('map').elementType).equals(loadType);
 
 
-          expect(loadEmbeddedType.getDeclaredAttribute('age')).instanceof(jspa.metamodel.SingularAttribute);
-          expect(loadEmbeddedType.getDeclaredAttribute('age').declaringType).equals(loadEmbeddedType);
-          expect(loadEmbeddedType.getDeclaredAttribute('age').name).equals('age');
-          expect(loadEmbeddedType.getDeclaredAttribute('age').type).equals(metamodel.baseType('Float'));
+        expect(loadChildType.getDeclaredAttribute('age')).instanceof(jspa.metamodel.SingularAttribute);
+        expect(loadChildType.getDeclaredAttribute('age').declaringType).equals(loadChildType);
+        expect(loadChildType.getDeclaredAttribute('age').name).equals('age');
+        expect(loadChildType.getDeclaredAttribute('age').type).equals(metamodel.baseType('Integer'));
 
-          expect(loadEmbeddedType.getDeclaredAttribute('ref')).instanceof(jspa.metamodel.SingularAttribute);
-          expect(loadEmbeddedType.getDeclaredAttribute('ref').declaringType).equals(loadEmbeddedType);
-          expect(loadEmbeddedType.getDeclaredAttribute('ref').name).equals('ref');
-          expect(loadEmbeddedType.getDeclaredAttribute('ref').type).equals(loadType);
 
-          done();
-        });
-      }).fail(done);
-    })
+        expect(loadEmbeddedType.getDeclaredAttribute('age')).instanceof(jspa.metamodel.SingularAttribute);
+        expect(loadEmbeddedType.getDeclaredAttribute('age').declaringType).equals(loadEmbeddedType);
+        expect(loadEmbeddedType.getDeclaredAttribute('age').name).equals('age');
+        expect(loadEmbeddedType.getDeclaredAttribute('age').type).equals(metamodel.baseType('Float'));
+
+        expect(loadEmbeddedType.getDeclaredAttribute('ref')).instanceof(jspa.metamodel.SingularAttribute);
+        expect(loadEmbeddedType.getDeclaredAttribute('ref').declaringType).equals(loadEmbeddedType);
+        expect(loadEmbeddedType.getDeclaredAttribute('ref').name).equals('ref');
+        expect(loadEmbeddedType.getDeclaredAttribute('ref').type).equals(loadType);
+      });
+    });
   });
 
   describe("BasicType", function () {
