@@ -9,7 +9,8 @@
   "homepage": "http://baqend.com",
   "main": "lib/index.js",
   "dependencies": {
-    "jahcode": ">=1.1.0"
+    "jahcode": ">=1.1.0",
+    "node-uuid": "git+https://github.com/broofa/node-uuid"
   },
   "devDependencies": {
     "uglify-js": "2.3.x",
