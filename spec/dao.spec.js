@@ -3,6 +3,8 @@ if (typeof jspa == 'undefined') {
   jspa = require('../lib');
 }
 
+var isBrowser = typeof window != "undefined";
+
 describe("Test dao", function() {
 
   var entityManager;
@@ -29,6 +31,11 @@ describe("Test dao", function() {
       }
     ];
     var emf = new jspa.EntityManagerFactory('http://localhost:8080', model);
+
+    if(isBrowser) {
+      window.db = null;
+    }
+
     return emf.createEntityManager().then(function(em) {
       entityManager = em;
     });
@@ -45,10 +52,10 @@ describe("Test dao", function() {
       expect(entityManager.TestClass.addMethod).be.ok;
       expect(entityManager.TestClass.partialUpdate).be.ok;
 
-      var testClass = new entityManager.TestClass();
-
+      var TestClass = entityManager.TestClass;
+      var testClass = new TestClass();
       expect(testClass).be.ok;
-      expect("testValue" in testClass);
+      expect("testValue" in testClass).be.true;
       expect(testClass.save).be.ok;
       expect(testClass.insert).be.ok;
       expect(testClass.update).be.ok;
@@ -90,7 +97,7 @@ describe("Test dao", function() {
       var testClass = new entityManager.TestClass();
       expect(testClass.firstName()).equal("firstName");
       expect(testClass.lastName()).equal("lastName");
-      expect("testValue" in testClass);
+      expect("testValue" in testClass).be.true;
       expect(testClass.save).be.ok;
       expect(testClass.insert).be.ok;
       expect(testClass.update).be.ok;
@@ -108,6 +115,32 @@ describe("Test dao", function() {
       expect(function() {entityManager.TestClass = function() {}}).throw(Error);
     });
 
+    if(isBrowser) {
+      it('should add global DB object', function() {
+        expect(db).be.not.ok;
+        expect(DB).be.ok;
+        return DB.ready("http://localhost:8080").then(function(localDb) {
+          expect(localDb).equal(db);
+          expect(localDb).instanceof(jspa.EntityManager);
+        });
+      });
+
+      it('should allow to add an callback to global DB object', function() {
+        return DB.ready("http://localhost:8080", function(localDb) {
+          expect(localDb).equal(db);
+          expect(localDb).instanceof(jspa.EntityManager);
+        });
+      });
+
+      it('should only create one instance', function() {
+        return DB.ready("http://localhost:8080").then(function(oldDb) {
+          return DB.ready("http://localhost:8080").then(function(newDb) {
+            expect(oldDb).equal(newDb);
+            expect(db).equal(oldDb);
+          });
+        });
+      });
+    }
   });
 
   describe('Test dao methods', function() {

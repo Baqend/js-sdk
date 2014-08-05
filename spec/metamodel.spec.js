@@ -334,6 +334,32 @@ describe("Test metamodel class", function () {
       expect(attr.collectionType).equals(jspa.metamodel.PluralAttribute.CollectionType.MAP);
     });
 
+    it("should only be allowed once to load the metamodel", function() {
+      return metamodel.load().then(function() {
+        expect(function() { metamodel.load() }).throw(Error);
+      });
+    });
+
+    it("should not be allowed to load after save metamodel", function() {
+      return metamodel.save().then(function() {
+        expect(function() { metamodel.load() }).throw(Error);
+      });
+    });
+
+    it("should not be allowed to load when used by an EntityManager", function() {
+      var emf = new jspa.EntityManagerFactory('http://localhost:8080');
+      return emf.createEntityManager().then(function(em) {
+        expect(function() { em.metamodel.load(); }).throw(Error);
+      });
+    });
+
+    it("should not be allowed to save when used by an EntityManager", function() {
+      var emf = new jspa.EntityManagerFactory('http://localhost:8080');
+      return emf.createEntityManager().then(function(em) {
+        expect(function() { em.metamodel.save(); }).throw(Error);
+      });
+    });
+
     it("should save and load the metamodel", function() {
       var type, childType, embeddedType;
 
@@ -349,36 +375,28 @@ describe("Test metamodel class", function () {
       type.declaredAttributes.push(new jspa.metamodel.SetAttribute(type, "set", metamodel.baseType('Integer')));
       type.declaredAttributes.push(new jspa.metamodel.MapAttribute(type, "map", metamodel.baseType('String'), type));
 
-      childType.declaredAttributes.push(new jspa.metamodel.SingularAttribute(type, "age", metamodel.baseType('Integer')));
+      childType.declaredAttributes.push(new jspa.metamodel.SingularAttribute(childType, "age", metamodel.baseType('Integer')));
 
       embeddedType.declaredAttributes.push(new jspa.metamodel.SingularAttribute(embeddedType, "age", metamodel.baseType(Number)));
       embeddedType.declaredAttributes.push(new jspa.metamodel.SingularAttribute(embeddedType, "ref", type));
 
-      return metamodel.save().then(function() { return metamodel.load() }).then(function() {
-        var loadType = metamodel.entity("jstest.Person");
-        var loadChildType = metamodel.entity("jstest.ChildPerson");
-        var loadEmbeddedType = metamodel.embeddable("jstest.EmbeddedPerson");
-
+      var testLoadedTypes = function(loadType, loadChildType, loadEmbeddedType, metamodel) {
         expect(loadType).be.ok;
         expect(loadType).instanceof(jspa.metamodel.EntityType);
-        expect(loadType).not.equals(type);
         expect(loadType.identifier).equals('/db/jstest.Person');
         expect(loadType.superType).equals(metamodel.entity(Object));
         expect(loadType.declaredAttributes).length(6);
 
         expect(loadChildType).be.ok;
         expect(loadChildType).instanceof(jspa.metamodel.EntityType);
-        expect(loadChildType).not.equals(childType);
         expect(loadChildType.identifier).equals('/db/jstest.ChildPerson');
         expect(loadChildType.superType).equals(loadType);
         expect(loadChildType.declaredAttributes).length(1);
 
         expect(loadEmbeddedType).be.ok;
         expect(loadEmbeddedType).instanceof(jspa.metamodel.EmbeddableType);
-        expect(loadEmbeddedType).not.equals(embeddedType);
         expect(loadEmbeddedType.identifier).equals('/db/jstest.EmbeddedPerson');
         expect(loadEmbeddedType.declaredAttributes).length(2);
-
 
         expect(loadType.getDeclaredAttribute('name')).instanceof(jspa.metamodel.SingularAttribute);
         expect(loadType.getDeclaredAttribute('name').declaringType).equals(loadType);
@@ -427,6 +445,45 @@ describe("Test metamodel class", function () {
         expect(loadEmbeddedType.getDeclaredAttribute('ref').declaringType).equals(loadEmbeddedType);
         expect(loadEmbeddedType.getDeclaredAttribute('ref').name).equals('ref');
         expect(loadEmbeddedType.getDeclaredAttribute('ref').type).equals(loadType);
+      };
+
+      return metamodel.save().then(function() {
+        var loadType = metamodel.entity("jstest.Person");
+        var loadChildType = metamodel.entity("jstest.ChildPerson");
+        var loadEmbeddedType = metamodel.embeddable("jstest.EmbeddedPerson");
+
+        expect(loadType).equals(type);
+        expect(loadChildType).equals(childType);
+        expect(loadEmbeddedType).equals(embeddedType);
+
+        testLoadedTypes(loadType, loadChildType, loadEmbeddedType, metamodel);
+
+        var loadMetamodel = new jspa.metamodel.Metamodel(jspa.connector.Connector.create("http://localhost:8080"));
+        return loadMetamodel.load();
+      }).then(function(model) {
+        var loadType = model.entity("jstest.Person");
+        var loadChildType = model.entity("jstest.ChildPerson");
+        var loadEmbeddedType = model.embeddable("jstest.EmbeddedPerson");
+
+        expect(loadType).not.equals(type);
+        expect(loadChildType).not.equals(childType);
+        expect(loadEmbeddedType).not.equals(embeddedType);
+
+        testLoadedTypes(loadType, loadChildType, loadEmbeddedType, model);
+
+        var emf = new jspa.EntityManagerFactory('http://localhost:8080');
+        return emf.createEntityManager();
+      }).then(function(em) {
+
+        var loadType = em.metamodel.entity("jstest.Person");
+        var loadChildType = em.metamodel.entity("jstest.ChildPerson");
+        var loadEmbeddedType = em.metamodel.embeddable("jstest.EmbeddedPerson");
+
+        expect(loadType).not.equals(type);
+        expect(loadChildType).not.equals(childType);
+        expect(loadEmbeddedType).not.equals(embeddedType);
+
+        testLoadedTypes(loadType, loadChildType, loadEmbeddedType, em.metamodel);
       });
     });
   });
