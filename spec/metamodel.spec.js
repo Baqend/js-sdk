@@ -274,7 +274,7 @@ describe("Test metamodel class", function () {
       expect(attr.declaringType).equals(type);
       expect(attr.name).equals("name");
       expect(attr.elementType).equals(jspa.metamodel.BasicType.String);
-      expect(attr.typeConstructor.prototype).instanceof(jspa.collection.List);
+      expect(attr.typeConstructor).equals(jspa.List);
       expect(attr.persistentAttributeType).equals(jspa.metamodel.Attribute.PersistentAttributeType.ELEMENT_COLLECTION);
       expect(attr.isAssociation).be.false;
       expect(attr.isCollection).be.true;
@@ -300,7 +300,7 @@ describe("Test metamodel class", function () {
       expect(attr.declaringType).equals(type);
       expect(attr.name).equals("name");
       expect(attr.elementType).equals(jspa.metamodel.BasicType.String);
-      expect(attr.typeConstructor.prototype).instanceof(jspa.collection.Set);
+      expect(attr.typeConstructor).equals(jspa.Set);
       expect(attr.persistentAttributeType).equals(jspa.metamodel.Attribute.PersistentAttributeType.ELEMENT_COLLECTION);
       expect(attr.isAssociation).be.false;
       expect(attr.isCollection).be.true;
@@ -327,7 +327,7 @@ describe("Test metamodel class", function () {
       expect(attr.name).equals("name");
       expect(attr.elementType).equals(jspa.metamodel.BasicType.Integer);
       expect(attr.keyType).equals(jspa.metamodel.BasicType.String);
-      expect(attr.typeConstructor.prototype).instanceof(jspa.collection.Map);
+      expect(attr.typeConstructor).equals(jspa.Map);
       expect(attr.persistentAttributeType).equals(jspa.metamodel.Attribute.PersistentAttributeType.ELEMENT_COLLECTION);
       expect(attr.isAssociation).be.false;
       expect(attr.isCollection).be.true;
@@ -557,8 +557,8 @@ describe("Test metamodel class", function () {
       var entity = metamodel.entity("/db/test.ChildPersClass");
 
       var names = ["name", "ref", "value"];
-      for (var iter = entity.attributes(); iter.hasNext; ) {
-        var attr = iter.next();
+      for (var iter = entity.attributes(), item = iter.next(); !item.done; item = iter.next()) {
+        var attr = item.value;
         var index = names.indexOf(attr.name);
         expect(index).not.equals(-1);
         expect(attr).equals(entity.getAttribute(attr.name));

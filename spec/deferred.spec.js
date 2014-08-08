@@ -3,8 +3,8 @@ if (typeof jspa == 'undefined') {
   jspa = require('../lib');
 }
 
-var Deferred = jspa.promise.Deferred;
-var Promise = jspa.promise.Promise;
+var Deferred = jspa.Deferred;
+var Promise = jspa.Promise;
 
 describe("Deferred", function () {
   var deferred = null, done = false, fail = false;

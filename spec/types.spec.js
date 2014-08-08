@@ -3,128 +3,269 @@ if (typeof jspa == 'undefined') {
   jspa = require('../lib');
 }
 
+describe('Test GeoPoint', function() {
+  it("should construct with an latitude and longitude argument", function() {
+    var point = new jspa.GeoPoint(56.5, 165.2);
 
-var TEST_BUCKET = 'test.bucket.Value';
-var EMBEDDED_BUCKET = 'test.type.Embeddable';
+    expect(point.latitude).equals(56.5);
+    expect(point.longitude).equals(165.2);
+  });
 
-var test = {
-  bucket: {
-    Value: function () {
-    }
-  },
-  type: {
-    Embeddable: function () {
-    }
-  }
-};
+  it("should construct with an array argument", function() {
+    var point = new jspa.GeoPoint([-36.5, -92.3]);
 
-var o1 = new test.bucket.Value();
-var o2 = new test.bucket.Value();
-var o3 = new test.bucket.Value();
+    expect(point.latitude).equals(-36.5);
+    expect(point.longitude).equals(-92.3);
+  });
 
-var data = {
-  "Boolean": [false, true, 'Boolean'],
-  "Float": [0.0, 42.42, 'Float'],
-  "Integer": [0, 42, 'Integer'],
-  "String": [ "", "Test String", 'String'],
-  "Time": [ new Date(0), new Date("1970-01-01T17:33:14"), 'Time'],
-  "Date": [ new Date(0), new Date("2013-11-22"), 'Date'],
-  "DateTime": [ new Date(0), new Date(), 'DateTime'],
+  it("should construct with an geolike object argument", function() {
+    var point = new jspa.GeoPoint({"latitude": 90, "longitude": -180.0});
 
-  "Reference": [ new test.bucket.Value(), o1, TEST_BUCKET],
-  "Embedded": [ new test.type.Embeddable(), embeddableValue(), EMBEDDED_BUCKET],
+    expect(point.latitude).equals(90);
+    expect(point.longitude).equals(-180.0);
+  });
 
-  "SimpleList": [ new jspa.collection.List(), jspa.collection.List([1.1, 2.2, 3.3]),
-    jspa.metamodel.PluralAttribute.CollectionType.LIST, 'Float'],
-  "RefList": [ new jspa.collection.List(), jspa.collection.List([o1, o2, o3]),
-    jspa.metamodel.PluralAttribute.CollectionType.LIST, TEST_BUCKET],
+  it("should construct from json argument", function() {
+    var point1 = new jspa.GeoPoint({"latitude": -90, "longitude": 180.0});
+    var point2 = new jspa.GeoPoint(point1.toJSON());
 
-  "SimpleSet": [ new jspa.collection.Set(), jspa.collection.Set(['Test', 'String', '123']),
-    jspa.metamodel.PluralAttribute.CollectionType.SET, 'String'],
-  "RefSet": [ new jspa.collection.Set(), jspa.collection.Set([o1, o2, o3]),
-    jspa.metamodel.PluralAttribute.CollectionType.SET, TEST_BUCKET],
+    expect(point1).eql(point2);
+  });
 
-  "SimpleMap": [ new jspa.collection.Map(), simpleMap(),
-    jspa.metamodel.PluralAttribute.CollectionType.MAP, 'String', 'Boolean'],
-  "SimpleRefMap": [ new jspa.collection.Map(), simpleRefMap(),
-    jspa.metamodel.PluralAttribute.CollectionType.MAP, 'String', TEST_BUCKET ],
-  "RefSimpleMap": [ new jspa.collection.Map(), refSimpleMap(),
-    jspa.metamodel.PluralAttribute.CollectionType.MAP, TEST_BUCKET, 'Boolean' ],
-  "RefMap": [ new jspa.collection.Map(), refMap(),
-    jspa.metamodel.PluralAttribute.CollectionType.MAP, TEST_BUCKET, TEST_BUCKET ]
-};
+  it("should compute distance", function() {
+    var point1 = new jspa.GeoPoint(53.5753, 10.0153); // Hamburg
+    var point2 = new jspa.GeoPoint(40.7143, -74.006); // New York
+    var point3 = new jspa.GeoPoint(-33.8679, 151.207); // Sydney
+    var point4 = new jspa.GeoPoint(51.5085, -0.1257); // London
 
-function embeddableValue() {
-  var emb = new test.type.Embeddable();
-  emb._ref = o1;
-  emb._string = "Test String";
-  return emb;
-}
-
-function refMap() {
-  return jspa.collection.Map([
-    {key: o1, value: o2},
-    {key: o2, value: o3},
-    {key: o3, value: o1}
-  ]);
-}
-
-function refSimpleMap() {
-  return jspa.collection.Map([
-    {key: o1, value: true},
-    {key: o2, value: false},
-    {key: o3, value: true}
-  ]);
-}
-
-function simpleRefMap() {
-  return jspa.collection.Map([
-    {key: "Test", value: o2},
-    {key: "String", value: o3},
-    {key: "123", value: o1}
-  ]);
-}
-
-function simpleMap() {
-  return jspa.collection.Map([
-    {key: "Test", value: true},
-    {key: "String", value: false},
-    {key: "123", value: true}
-  ]);
-}
-
-function collectionComperator(a, b) {
-  if (jspa.Collection.isInstance(a) && jspa.Collection.isInstance(b)) {
-    if (a.size !== b.size)
-      return false;
-
-    var colIter = b.items();
-    for (var iter = a.items(); iter.hasNext;) {
-      var aItem = iter.next();
-      var bItem = colIter.next();
-
-      if (!jasmine.matchersUtil.equals(aItem, bItem))
-        return false;
-    }
-
-    return true;
-  }
-}
+    expect(point1.kilometersTo(point2)).within(6147 * 0.97, 6147 * 1.03);
+    expect(point1.milesTo(point2)).within(3819 * 0.97, 3819 * 1.03);
+    expect(point3.kilometersTo(point4)).within(16989 * 0.97, 16989 * 1.03);
+    expect(point3.milesTo(point4)).within(10556 * 0.97, 10556 * 1.03);
+  });
+});
 
 describe('Test entity type', function () {
-  var emf, em, schema;
+  var em, emf, EntityType, EmbeddedType, EntityClass, EmbeddedClass, o1, o2, o3, data;
 
-  beforeEach(function () {
-    //jasmine.addCustomEqualityTester(collectionComperator);
+  emf = new jspa.EntityManagerFactory("http://localhost:8080");
+  var metamodel = emf.metamodel;
+  metamodel.fromJSON([]);
 
-    emf = new jspa.EntityManagerFactory('http://localhost:8080');
-    schema = emf.metamodel;
+  var EntityType = new jspa.metamodel.EntityType('jstest.Type', metamodel.entity(Object));
+  var EmbeddedType = new jspa.metamodel.EmbeddableType('jstest.Embedded');
+
+  for (var i = 0, type; type = [EntityType, EmbeddedType][i]; ++i) {
+    var attrs = type.declaredAttributes;
+    attrs.push(new jspa.metamodel.SingularAttribute(type, "boolean", metamodel.baseType('Boolean')));
+    attrs.push(new jspa.metamodel.SingularAttribute(type, "float", metamodel.baseType('Float')));
+    attrs.push(new jspa.metamodel.SingularAttribute(type, "integer", metamodel.baseType('Integer')));
+    attrs.push(new jspa.metamodel.SingularAttribute(type, "string", metamodel.baseType('String')));
+    attrs.push(new jspa.metamodel.SingularAttribute(type, "time", metamodel.baseType('Time')));
+    attrs.push(new jspa.metamodel.SingularAttribute(type, "date", metamodel.baseType('Date')));
+    attrs.push(new jspa.metamodel.SingularAttribute(type, "dateTime", metamodel.baseType('DateTime')));
+    attrs.push(new jspa.metamodel.SingularAttribute(type, "geoPoint", metamodel.baseType('GeoPoint')));
+    attrs.push(new jspa.metamodel.SingularAttribute(type, "ref", EntityType));
+    attrs.push(new jspa.metamodel.SingularAttribute(type, "embedded", EmbeddedType));
+
+    attrs.push(new jspa.metamodel.ListAttribute(type, "simpleList", metamodel.baseType('Float')));
+    attrs.push(new jspa.metamodel.ListAttribute(type, "refList", EntityType));
+    attrs.push(new jspa.metamodel.ListAttribute(type, "embeddedList", EmbeddedType));
+
+    attrs.push(new jspa.metamodel.SetAttribute(type, "simpleSet", metamodel.baseType('String')));
+    attrs.push(new jspa.metamodel.SetAttribute(type, "refSet", EntityType));
+
+    attrs.push(new jspa.metamodel.MapAttribute(type, "simpleMap", metamodel.baseType('String'), metamodel.baseType('Boolean')));
+    attrs.push(new jspa.metamodel.MapAttribute(type, "simpleRefMap", metamodel.baseType('String'), EntityType));
+    attrs.push(new jspa.metamodel.MapAttribute(type, "refSimpleMap", EntityType, metamodel.baseType('String')));
+    attrs.push(new jspa.metamodel.MapAttribute(type, "refMap", EntityType, EntityType));
+    attrs.push(new jspa.metamodel.MapAttribute(type, "simpleEmbeddedMap", metamodel.baseType('String'), EmbeddedType));
+  }
+
+  metamodel.addType(EntityType);
+  metamodel.addType(EmbeddedType);
+  metamodel.save();
+
+  beforeEach(function() {
+    return emf.createEntityManager().done(function(entityManager) {
+      em = entityManager;
+
+      EntityClass = em['jstest.Type'];
+      EmbeddedClass = em['jstest.Embedded'];
+    });
+  });
+
+  function testObject() {
+    var obj = new EntityType.typeConstructor();
+    setValues(obj);
+    return obj;
+  }
+
+  function embeddableObject() {
+    var obj = new EmbeddedType.typeConstructor();
+    setValues(obj);
+    return obj;
+  }
+
+  function setValues(obj) {
+    obj.boolean = true;
+    obj.float = 1.1;
+    obj.integer = 45;
+    obj.string = "myString";
+  }
+
+  describe("boolean value", function() {
+    test("boolean", false, true, ['test', true], [3, true], [{}, true], [[], true])
+  });
+
+  describe("float value", function() {
+    test("float", 0.0, 42.42);
+  });
+
+  describe("integer value", function() {
+    test("integer", 0, 42);
+  });
+
+  describe("string value", function() {
+    test("string", "", "Test String", 'String', null);
+  });
+
+  describe("time value", function() {
+    test("time", new Date(0), new Date("1970-01-01T17:33:14"));
+  });
+
+  describe("date value", function() {
+    test("date", new Date(0), new Date("2013-11-22"), new Date("2013-11-22"), new Date("0000-01-01"));
+  });
+
+  describe("dateTime value", function() {
+    test("dateTime", new Date(0), new Date(), new Date("0000-00-00T00:00:00"));
+  });
+
+  describe("geoPoint value", function() {
+    test("geoPoint", new jspa.GeoPoint(), new jspa.GeoPoint(34.5658, 110.4576), new jspa.GeoPoint(-45.67, -177.45));
+  });
+
+  describe("ref value", function() {
+    test("ref", new EntityType.typeConstructor(), testObject(), [{}, null]);
+
+    it("should convert references to ids", function() {
+      var obj = EntityClass();
+      var ref = testObject();
+
+      obj.ref = ref;
+
+      var state = jspa.util.State.get(obj);
+      var json = state.getDatabaseObject();
+
+      var refId = jspa.util.State.get(ref).getIdentifier();
+      expect(refId).contain('/db/');
+      expect(json.ref).equals(refId);
+
+      state.setDatabaseObject(json);
+      expect(obj.ref).equals(ref);
+    });
+  });
+
+  describe("embedded value", function() {
+    test("embedded", new EmbeddedType.typeConstructor(), embeddableObject(), [{}, null]);
+  });
+
+  describe("simpleList value", function() {
+    test("simpleList", new jspa.List(), jspa.List([1.1, null, 2.2, 3.3]));
+  });
+
+  describe("refList value", function() {
+    test("refList", new jspa.List(), jspa.List([o1, o2, null, o3]));
+  });
+
+  describe("embeddedList value", function() {
+    test("embeddedList", new jspa.List(), jspa.List([embeddableObject(), embeddableObject(), null, embeddableObject()]));
+  });
+
+  describe("simpleSet value", function() {
+    test("simpleSet", new jspa.Set(), jspa.Set(['Test', 'String', null, '123']));
+  });
+
+  describe("refSet value", function() {
+    test("refSet", new jspa.Set(), jspa.Set([o1, null, o2, o3]));
+  });
+
+  describe("simpleMap value", function() {
+    var map = jspa.Map([
+      {key: "Test", value: true},
+      {key: "String", value: false},
+      {key: "123", value: null}
+    ]);
+
+    test("simpleMap", new jspa.Map(), map);
+  });
+
+  describe("simpleRefMap value", function() {
+    var map = jspa.Map([
+      {key: "Test", value: testObject()},
+      {key: "String", value: testObject()},
+      {key: "123", value: testObject()},
+      {key: "null", value: null}
+    ]);
+
+    test("simpleRefMap", new jspa.Map(), map);
+  });
+
+  describe("refSimpleMap value", function() {
+    var map = jspa.Map([
+      {key: testObject(), value: true},
+      {key: testObject(), value: false},
+      {key: testObject(), value: null}
+    ]);
+
+    test("refSimpleMap", new jspa.Map(), map);
+  });
+
+  describe("refMap value", function() {
+    var map = jspa.Map([
+      {key: testObject(), value: testObject()},
+      {key: testObject(), value: testObject()},
+      {key: testObject(), value: null}
+    ]);
+
+    test("refMap", new jspa.Map(), map);
+  });
+
+  describe("simpleEmbeddedMap value", function() {
+    var map = jspa.Map([
+      {key: "Test", value: embeddableObject()},
+      {key: "String", value: embeddableObject()},
+      {key: "123", value: null}
+    ]);
+
+    test("simpleEmbeddedMap", new jspa.Map(), map);
+  });
+
+  function test(field) {
+    Array.prototype.slice.call(arguments, 1).forEach(function(arg) {
+      var value = Array.isInstance(arg)? arg[0]: arg;
+      var expectedValue = Array.isInstance(arg)? arg[1]: arg;
+
+      it(value + " should be converted to json and back", function() {
+        var obj = EntityClass();
+
+        obj[field] = value;
+
+        var state = jspa.util.State.get(obj);
+        var json = state.getDatabaseObject();
+
+        state.setDatabaseObject(json);
+        expect(obj[field]).eql(expectedValue);
+
+        expect(state.getDatabaseObject()).eql(json);
+      });
+    });
+  }
+});
+
+  /*beforeEach(function () {
     em = emf.createEntityManager();
-
-    em.persist(o1);
-    em.persist(o2);
-    em.persist(o3);
-    em.flush();
   });
 
   it('should persist sample models', function (done) {
@@ -505,5 +646,5 @@ describe('Test entity type', function () {
 
     })
   });
-});
+});         */
 

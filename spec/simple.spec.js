@@ -48,7 +48,7 @@ var OtherPersClass = test.persistent.OtherPersClass = Object.inherit({
   }
 });
 
-describe("Simple test", function () {
+xdescribe("Simple test", function () {
   this.timeout(2000);
 
   var factory;
