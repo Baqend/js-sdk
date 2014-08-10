@@ -46,7 +46,7 @@ describe('Test GeoPoint', function() {
 });
 
 describe('Test entity type', function () {
-  var em, emf, EntityType, EmbeddedType, EntityClass, EmbeddedClass, o1, o2, o3, data;
+  var em, emf, EntityClass, EmbeddedClass, o1, o2, o3, data;
 
   emf = new jspa.EntityManagerFactory("http://localhost:8080");
   var metamodel = emf.metamodel;
@@ -65,6 +65,8 @@ describe('Test entity type', function () {
     attrs.push(new jspa.metamodel.SingularAttribute(type, "date", metamodel.baseType('Date')));
     attrs.push(new jspa.metamodel.SingularAttribute(type, "dateTime", metamodel.baseType('DateTime')));
     attrs.push(new jspa.metamodel.SingularAttribute(type, "geoPoint", metamodel.baseType('GeoPoint')));
+    attrs.push(new jspa.metamodel.SingularAttribute(type, "jsonArray", metamodel.baseType('JsonArray')));
+    attrs.push(new jspa.metamodel.SingularAttribute(type, "jsonObject", metamodel.baseType('JsonObject')));
     attrs.push(new jspa.metamodel.SingularAttribute(type, "ref", EntityType));
     attrs.push(new jspa.metamodel.SingularAttribute(type, "embedded", EmbeddedType));
 
@@ -144,6 +146,14 @@ describe('Test entity type', function () {
 
   describe("geoPoint value", function() {
     test("geoPoint", new jspa.GeoPoint(), new jspa.GeoPoint(34.5658, 110.4576), new jspa.GeoPoint(-45.67, -177.45));
+  });
+
+  describe("jsonObject value", function() {
+    test("jsonObject", {}, {"key": "value", "num": 1, "arr": [1,2,3]}, [[], null]);
+  });
+
+  describe("jsonArray value", function() {
+    test("jsonArray", [[], []], [[1, "test", {"key": "value"}], [1, "test", {"key": "value"}]], [{}, null]);
   });
 
   describe("ref value", function() {
@@ -243,13 +253,34 @@ describe('Test entity type', function () {
   });
 
   function test(field) {
+    it("should handle undefined properly", function() {
+      var obj = EntityClass();
+      obj[field] = undefined;
+
+      var state = jspa.util.State.get(obj);
+      var json = state.getDatabaseObject();
+
+      state.setDatabaseObject(json);
+      expect(obj[field]).null;
+    });
+
+    it("should handle null properly", function() {
+      var obj = EntityClass();
+      obj[field] = null;
+
+      var state = jspa.util.State.get(obj);
+      var json = state.getDatabaseObject();
+
+      state.setDatabaseObject(json);
+      expect(obj[field]).null;
+    });
+
     Array.prototype.slice.call(arguments, 1).forEach(function(arg) {
       var value = Array.isInstance(arg)? arg[0]: arg;
       var expectedValue = Array.isInstance(arg)? arg[1]: arg;
 
       it(value + " should be converted to json and back", function() {
         var obj = EntityClass();
-
         obj[field] = value;
 
         var state = jspa.util.State.get(obj);

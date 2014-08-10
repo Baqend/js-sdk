@@ -12,6 +12,7 @@
     <orderEntry type="library" name="chai-DefinitelyTyped" level="project" />
     <orderEntry type="library" name="mocha-DefinitelyTyped" level="project" />
     <orderEntry type="library" name="jahcode" level="project" />
+    <orderEntry type="library" name="orestes-js node_modules" level="project" />
   </component>
 </module>
 

@@ -45,6 +45,9 @@ describe("Test metamodel class", function () {
       expect(metamodel.baseType(jspa.metamodel.BasicType.Integer.identifier)).equals(jspa.metamodel.BasicType.Integer);
       expect(metamodel.baseType(jspa.metamodel.BasicType.String.identifier)).equals(jspa.metamodel.BasicType.String);
       expect(metamodel.baseType(jspa.metamodel.BasicType.Time.identifier)).equals(jspa.metamodel.BasicType.Time);
+      expect(metamodel.baseType(jspa.metamodel.BasicType.GeoPoint.identifier)).equals(jspa.metamodel.BasicType.GeoPoint);
+      expect(metamodel.baseType(jspa.metamodel.BasicType.JsonArray.identifier)).equals(jspa.metamodel.BasicType.JsonArray);
+      expect(metamodel.baseType(jspa.metamodel.BasicType.JsonObject.identifier)).equals(jspa.metamodel.BasicType.JsonObject);
 
       expect(metamodel.entity(jspa.metamodel.EntityType.Object.identifier)).instanceof(jspa.metamodel.EntityType.Object);
     });
@@ -496,6 +499,11 @@ describe("Test metamodel class", function () {
       expect(metamodel.baseType(Number)).equals(jspa.metamodel.BasicType.Float);
       expect(metamodel.baseType(String)).equals(jspa.metamodel.BasicType.String);
       expect(metamodel.baseType(Date)).equals(jspa.metamodel.BasicType.DateTime);
+      expect(metamodel.baseType(Object)).equals(jspa.metamodel.BasicType.JsonObject);
+      expect(metamodel.baseType(Array)).equals(jspa.metamodel.BasicType.JsonArray);
+      expect(metamodel.baseType(jspa.GeoPoint)).equals(jspa.metamodel.BasicType.GeoPoint);
+
+      expect(metamodel.entity(Object)).instanceof(jspa.metamodel.EntityType.Object);
     });
 
     it("should be accessible by simple name", function() {
@@ -508,6 +516,9 @@ describe("Test metamodel class", function () {
       expect(metamodel.baseType('Integer')).equals(jspa.metamodel.BasicType.Integer);
       expect(metamodel.baseType('String')).equals(jspa.metamodel.BasicType.String);
       expect(metamodel.baseType('Time')).equals(jspa.metamodel.BasicType.Time);
+      expect(metamodel.baseType('GeoPoint')).equals(jspa.metamodel.BasicType.GeoPoint);
+      expect(metamodel.baseType('JsonArray')).equals(jspa.metamodel.BasicType.JsonArray);
+      expect(metamodel.baseType('JsonObject')).equals(jspa.metamodel.BasicType.JsonObject);
     });
   });
 
