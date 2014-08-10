@@ -1,4 +1,5 @@
 if (typeof jspa == 'undefined') {
+  env = require('./env');
   expect = require('chai').expect;
   jspa = require('../lib');
 }

@@ -1,4 +1,5 @@
 if (typeof jspa == 'undefined') {
+  env = require('./env');
   expect = require('chai').expect;
   jspa = require('../lib');
 }
@@ -7,7 +8,7 @@ describe("Test metamodel class", function () {
   var metamodel;
 
   beforeEach(function() {
-    metamodel = new jspa.metamodel.Metamodel(jspa.connector.Connector.create("http://localhost:8080"));
+    metamodel = new jspa.metamodel.Metamodel(jspa.connector.Connector.create(env.TEST_SERVER));
 
     metamodel.fromJSON([]);
 
@@ -350,14 +351,14 @@ describe("Test metamodel class", function () {
     });
 
     it("should not be allowed to load when used by an EntityManager", function() {
-      var emf = new jspa.EntityManagerFactory('http://localhost:8080');
+      var emf = new jspa.EntityManagerFactory(env.TEST_SERVER);
       return emf.createEntityManager().then(function(em) {
         expect(function() { em.metamodel.load(); }).throw(Error);
       });
     });
 
     it("should not be allowed to save when used by an EntityManager", function() {
-      var emf = new jspa.EntityManagerFactory('http://localhost:8080');
+      var emf = new jspa.EntityManagerFactory(env.TEST_SERVER);
       return emf.createEntityManager().then(function(em) {
         expect(function() { em.metamodel.save(); }).throw(Error);
       });
@@ -461,7 +462,7 @@ describe("Test metamodel class", function () {
 
         testLoadedTypes(loadType, loadChildType, loadEmbeddedType, metamodel);
 
-        var loadMetamodel = new jspa.metamodel.Metamodel(jspa.connector.Connector.create("http://localhost:8080"));
+        var loadMetamodel = new jspa.metamodel.Metamodel(jspa.connector.Connector.create(env.TEST_SERVER));
         return loadMetamodel.load();
       }).then(function(model) {
         var loadType = model.entity("jstest.Person");
@@ -474,7 +475,7 @@ describe("Test metamodel class", function () {
 
         testLoadedTypes(loadType, loadChildType, loadEmbeddedType, model);
 
-        var emf = new jspa.EntityManagerFactory('http://localhost:8080');
+        var emf = new jspa.EntityManagerFactory(env.TEST_SERVER);
         return emf.createEntityManager();
       }).then(function(em) {
 

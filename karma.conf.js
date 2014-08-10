@@ -14,6 +14,7 @@ module.exports = function(config) {
     files: [
       'node_modules/jahcode/jahcode.js',
       'build/baqend.js',
+      'spec/env.js',
       'spec/**/*.spec.js'
     ],
 

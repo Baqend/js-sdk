@@ -1,4 +1,5 @@
 if (typeof jspa == 'undefined') {
+  env = require('./env');
   expect = require('chai').expect;
   jspa = require('../lib');
 }
@@ -30,7 +31,7 @@ describe("Test dao", function() {
         }
       }
     ];
-    var emf = new jspa.EntityManagerFactory('http://localhost:8080', model);
+    var emf = new jspa.EntityManagerFactory(env.TEST_SERVER, model);
 
     if(isBrowser) {
       window.db = null;
@@ -125,22 +126,22 @@ describe("Test dao", function() {
       it('should add global DB object', function() {
         expect(db).be.not.ok;
         expect(DB).be.ok;
-        return DB.ready("http://localhost:8080").then(function(localDb) {
+        return DB.ready(env.TEST_SERVER).then(function(localDb) {
           expect(localDb).equal(db);
           expect(localDb).instanceof(jspa.EntityManager);
         });
       });
 
       it('should allow to add an callback to global DB object', function() {
-        return DB.ready("http://localhost:8080", function(localDb) {
+        return DB.ready(env.TEST_SERVER, function(localDb) {
           expect(localDb).equal(db);
           expect(localDb).instanceof(jspa.EntityManager);
         });
       });
 
       it('should only create one instance', function() {
-        return DB.ready("http://localhost:8080").then(function(oldDb) {
-          return DB.ready("http://localhost:8080").then(function(newDb) {
+        return DB.ready(env.TEST_SERVER).then(function(oldDb) {
+          return DB.ready(env.TEST_SERVER).then(function(newDb) {
             expect(oldDb).equal(newDb);
             expect(db).equal(oldDb);
           });

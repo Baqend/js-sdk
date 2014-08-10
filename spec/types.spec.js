@@ -1,4 +1,5 @@
 if (typeof jspa == 'undefined') {
+  env = require('./env');
   expect = require('chai').expect;
   jspa = require('../lib');
 }
@@ -48,7 +49,7 @@ describe('Test GeoPoint', function() {
 describe('Test entity type', function () {
   var em, emf, EntityClass, EmbeddedClass, o1, o2, o3, data;
 
-  emf = new jspa.EntityManagerFactory("http://localhost:8080");
+  emf = new jspa.EntityManagerFactory(env.TEST_SERVER);
   var metamodel = emf.metamodel;
   metamodel.fromJSON([]);
 
