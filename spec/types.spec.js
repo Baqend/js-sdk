@@ -47,7 +47,7 @@ describe('Test GeoPoint', function() {
 });
 
 describe('Test entity type', function () {
-  var em, emf, EntityClass, EmbeddedClass, o1, o2, o3, data;
+  var em, emf, EntityClass, EmbeddedClass, obj, state;
 
   emf = new jspa.EntityManagerFactory(env.TEST_SERVER);
   var metamodel = emf.metamodel;
@@ -89,13 +89,18 @@ describe('Test entity type', function () {
   metamodel.addType(EmbeddedType);
   metamodel.save();
 
-  beforeEach(function() {
+  before(function() {
     return emf.createEntityManager().done(function(entityManager) {
       em = entityManager;
 
       EntityClass = em['jstest.Type'];
       EmbeddedClass = em['jstest.Embedded'];
     });
+  });
+
+  beforeEach(function() {
+    obj = EntityClass();
+    state = jspa.util.State.get(obj);
   });
 
   function testObject() {
@@ -161,12 +166,10 @@ describe('Test entity type', function () {
     test("ref", new EntityType.typeConstructor(), testObject(), [{}, null]);
 
     it("should convert references to ids", function() {
-      var obj = EntityClass();
       var ref = testObject();
 
       obj.ref = ref;
 
-      var state = jspa.util.State.get(obj);
       var json = state.getDatabaseObject();
 
       var refId = jspa.util.State.get(ref).getIdentifier();
@@ -187,7 +190,7 @@ describe('Test entity type', function () {
   });
 
   describe("refList value", function() {
-    test("refList", new jspa.List(), jspa.List([o1, o2, null, o3]));
+    test("refList", new jspa.List(), jspa.List([testObject(), testObject(), null, testObject()]));
   });
 
   describe("embeddedList value", function() {
@@ -199,7 +202,7 @@ describe('Test entity type', function () {
   });
 
   describe("refSet value", function() {
-    test("refSet", new jspa.Set(), jspa.Set([o1, null, o2, o3]));
+    test("refSet", new jspa.Set(), jspa.Set([testObject(), null, testObject(), testObject()]));
   });
 
   describe("simpleMap value", function() {
@@ -209,7 +212,34 @@ describe('Test entity type', function () {
       {key: "123", value: null}
     ]);
 
-    test("simpleMap", new jspa.Map(), map);
+    test("simpleMap", new jspa.Map(), new jspa.Map(map));
+
+    it("should add key", function() {
+      obj.simpleMap = new jspa.Map(map);
+
+      var json = state.getDatabaseObject();
+      json.simpleMap.splice(1, 0, {key: 'add', value: true});
+      state.setDatabaseObject(json);
+
+      expect(obj.simpleMap.size).equals(4);
+      expect(obj.simpleMap.get('123')).be.null;
+      expect(obj.simpleMap.get('add')).be.true;
+      expect(obj.simpleMap.get('Test')).be.true;
+      expect(obj.simpleMap.get('String')).be.false;
+    });
+
+    it("should remove key", function() {
+      obj.simpleMap = new jspa.Map(map);
+
+      var json = state.getDatabaseObject();
+      json.simpleMap.pop();
+      state.setDatabaseObject(json);
+
+      expect(obj.simpleMap.size).equals(2);
+      expect(obj.simpleMap.get('123')).be.undefined;
+      expect(obj.simpleMap.get('Test')).be.true;
+      expect(obj.simpleMap.get('String')).be.false;
+    });
   });
 
   describe("simpleRefMap value", function() {
@@ -281,10 +311,7 @@ describe('Test entity type', function () {
       var expectedValue = Array.isInstance(arg)? arg[1]: arg;
 
       it(value + " should be converted to json and back", function() {
-        var obj = EntityClass();
         obj[field] = value;
-
-        var state = jspa.util.State.get(obj);
         var json = state.getDatabaseObject();
 
         state.setDatabaseObject(json);
