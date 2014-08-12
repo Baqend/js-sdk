@@ -11,6 +11,8 @@ module.exports = function (grunt) {
 
   var TEST = 'spec/{env.js,**/*.spec.js}';
 
+  var orestesMessagePath = '../orestes/orestes-message';
+
   grunt.initConfig({
     /**
      * Building
@@ -104,7 +106,34 @@ module.exports = function (grunt) {
           wait: false,
           ready: 5000
         }
+      },
+      buildMsgProject: {
+        cmd: 'gradle',
+        args: [
+          'installApp'
+        ],
+        options: {
+          cwd: orestesMessagePath,
+          wait: true
+        }
+      },
+      buildMsg: {
+        cmd: 'java',
+        args: [
+            '-jar',
+            'build/install/orestes-message/lib/orestes-message-1.0-SNAPSHOT.jar',
+            'templates/js.ftl',
+            __dirname + '/lib/message'
+        ],
+        options: {
+          wait: true,
+          cwd: orestesMessagePath
+        }
       }
+    },
+
+    clean: {
+      msg: ['lib/message']
     },
 
     karma: {
@@ -160,6 +189,7 @@ module.exports = function (grunt) {
 
   grunt.loadNpmTasks('grunt-contrib-uglify');
   grunt.loadNpmTasks('grunt-contrib-connect');
+  grunt.loadNpmTasks('grunt-contrib-clean');
   grunt.loadNpmTasks('grunt-browserify');
   grunt.loadNpmTasks('grunt-template');
   grunt.loadNpmTasks('grunt-karma');
@@ -190,6 +220,12 @@ module.exports = function (grunt) {
     'stop:server'
   ]);
 
+  grunt.registerTask('build', [
+      'clean:msg',
+      'run:buildMsgProject',
+      'run:buildMsg'
+  ]);
+
   grunt.registerTask('default', 'debug');
 
   grunt.registerTask('prepare', 'Finds the executable server jar and configuration in build folder', function() {
@@ -208,4 +244,5 @@ module.exports = function (grunt) {
 
     grunt.file.write('index.js', index);
   });
+
 };
