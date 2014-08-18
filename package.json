@@ -10,7 +10,8 @@
   "main": "lib/index.js",
   "dependencies": {
     "jahcode": ">=1.1.0",
-    "node-uuid": "git+https://github.com/broofa/node-uuid"
+    "node-uuid": "git+https://github.com/broofa/node-uuid",
+    "q": "^1.0.1"
   },
   "devDependencies": {
     "chai": "^1.9.1",
@@ -41,7 +42,8 @@
     "mocha": "^1.20.1",
     "mocha-jenkins-reporter": "^0.1.0",
     "requirejs": "~2.1.11",
-    "uglify-js": "2.3.x"
+    "uglify-js": "2.3.x",
+    "promises-aplus-tests": "^2.0.5"
   },
   "scripts": {
     "test": "grunt mochaTest:test"
