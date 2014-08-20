@@ -85,10 +85,10 @@ describe("Test dao", function() {
       expect(classFactory.getIdentifier(testClass.constructor)).be.ok;
     });
 
-    it('should add state object', function() {
+    it('should add metadata object', function() {
       var testClass = entityManager.TestClass();
 
-      expect(jspa.util.State.get(testClass)).be.ok;
+      expect(testClass._metadata).be.ok;
     });
 
     it('should enhance custom classes', function() {

@@ -529,9 +529,9 @@ describe("Test metamodel class", function () {
 
       var entity = metamodel.entity(jspa.metamodel.EntityType.Object.identifier);
       expect(entity.declaredId).instanceof(jspa.metamodel.SingularAttribute);
-      expect(entity.declaredId.name).equals("oid");
+      expect(entity.declaredId.name).equals("_id");
       expect(entity.declaredVersion).instanceof(jspa.metamodel.SingularAttribute);
-      expect(entity.declaredVersion.name).equals("version");
+      expect(entity.declaredVersion.name).equals("_version");
 
       expect(entity.id).equals(entity.declaredId);
       expect(entity.version).equals(entity.declaredVersion);

@@ -100,7 +100,7 @@ describe('Test entity type', function () {
 
   beforeEach(function() {
     obj = EntityClass();
-    state = jspa.util.State.get(obj);
+    state = jspa.util.Metadata.get(obj);
   });
 
   function testObject() {
@@ -172,7 +172,7 @@ describe('Test entity type', function () {
 
       var json = state.getDatabaseObject();
 
-      var refId = jspa.util.State.get(ref).getIdentifier();
+      var refId = jspa.util.Metadata.get(ref).getIdentifier();
       expect(refId).contain('/db/');
       expect(json.ref).equals(refId);
 
@@ -288,7 +288,7 @@ describe('Test entity type', function () {
       var obj = EntityClass();
       obj[field] = undefined;
 
-      var state = jspa.util.State.get(obj);
+      var state = jspa.util.Metadata.get(obj);
       var json = state.getDatabaseObject();
 
       state.setDatabaseObject(json);
@@ -299,7 +299,7 @@ describe('Test entity type', function () {
       var obj = EntityClass();
       obj[field] = null;
 
-      var state = jspa.util.State.get(obj);
+      var state = jspa.util.Metadata.get(obj);
       var json = state.getDatabaseObject();
 
       state.setDatabaseObject(json);
