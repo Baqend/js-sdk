@@ -10,7 +10,7 @@ describe("Test metamodel class", function () {
   beforeEach(function() {
     metamodel = new jspa.metamodel.Metamodel(jspa.connector.Connector.create(env.TEST_SERVER));
 
-    metamodel.fromJSON([]);
+    metamodel.init();
 
     var PersClassEntity = new jspa.metamodel.EntityType("test.persistent.PersClass");
     var ChildPersClassEntity = new jspa.metamodel.EntityType("test.persistent.ChildPersClass", PersClassEntity);
@@ -37,7 +37,7 @@ describe("Test metamodel class", function () {
 
   describe("ModelBuilder", function() {
     it("should create basic and object type", function() {
-      metamodel.fromJSON([]);
+      metamodel.init();
 
       expect(metamodel.baseType(jspa.metamodel.BasicType.Date.identifier)).equals(jspa.metamodel.BasicType.Date);
       expect(metamodel.baseType(jspa.metamodel.BasicType.DateTime.identifier)).equals(jspa.metamodel.BasicType.DateTime);
@@ -367,7 +367,7 @@ describe("Test metamodel class", function () {
     it("should save and load the metamodel", function() {
       var type, childType, embeddedType;
 
-      metamodel.fromJSON([]);
+      metamodel.init();
       metamodel.addType(type = new jspa.metamodel.EntityType("jstest.Person", metamodel.entity(Object)));
       metamodel.addType(childType = new jspa.metamodel.EntityType("jstest.ChildPerson", type));
       metamodel.addType(embeddedType = new jspa.metamodel.EmbeddableType("jstest.EmbeddedPerson"));
@@ -494,7 +494,7 @@ describe("Test metamodel class", function () {
 
   describe("BasicType", function () {
     it("should be accessible by native constructors", function() {
-      metamodel.fromJSON([]);
+      metamodel.init();
 
       expect(metamodel.baseType(Boolean)).equals(jspa.metamodel.BasicType.Boolean);
       expect(metamodel.baseType(Number)).equals(jspa.metamodel.BasicType.Float);
@@ -508,7 +508,7 @@ describe("Test metamodel class", function () {
     });
 
     it("should be accessible by simple name", function() {
-      metamodel.fromJSON([]);
+      metamodel.init();
 
       expect(metamodel.baseType('Date')).equals(jspa.metamodel.BasicType.Date);
       expect(metamodel.baseType('DateTime')).equals(jspa.metamodel.BasicType.DateTime);
@@ -525,7 +525,7 @@ describe("Test metamodel class", function () {
 
   describe("EntityType", function () {
     it("Object should have an id and version field", function () {
-      metamodel.fromJSON([]);
+      metamodel.init();
 
       var entity = metamodel.entity(jspa.metamodel.EntityType.Object.identifier);
       expect(entity.declaredId).instanceof(jspa.metamodel.SingularAttribute);

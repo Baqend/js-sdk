@@ -51,7 +51,7 @@ describe('Test entity type', function () {
 
   emf = new jspa.EntityManagerFactory(env.TEST_SERVER);
   var metamodel = emf.metamodel;
-  metamodel.fromJSON([]);
+  metamodel.init();
 
   var EntityType = new jspa.metamodel.EntityType('jstest.Type', metamodel.entity(Object));
   var EmbeddedType = new jspa.metamodel.EmbeddableType('jstest.Embedded');
