@@ -171,9 +171,9 @@ describe('Test entity type', function () {
       obj.ref = ref;
 
       var json = state.getDatabaseObject();
-
       var refId = jspa.util.Metadata.get(ref).getIdentifier();
       expect(refId).contain('/db/');
+      expect(json.ref).be.ok;
       expect(json.ref).equals(refId);
 
       state.setDatabaseObject(json);
