@@ -145,14 +145,25 @@ module.exports = function (grunt) {
       dev: {
         configFile: 'karma.conf.js'
       },
-      test: {
-        configFile: 'karma.conf.js',
-        reporters: ['junit'],
-        singleRun: true,
-        browsers: ['PhantomJS', 'Chrome', 'Firefox'],
-
+      testPhantomjs: {
+        configFile: 'karma.jenkins.conf.js',
+        browsers: ['PhantomJS'],
         junitReporter: {
-          outputFile: 'build/test-results/karma.xml'
+          outputFile: 'build/test-results/karma-phantomjs.xml'
+        }
+      },
+      testChrome: {
+        configFile: 'karma.jenkins.conf.js',
+        browsers: ['Chrome'],
+        junitReporter: {
+          outputFile: 'build/test-results/karma-chrome.xml'
+        }
+      },
+      testFirefox: {
+        configFile: 'karma.jenkins.conf.js',
+        browsers: ['Firefox'],
+        junitReporter: {
+          outputFile: 'build/test-results/karma-firefox.xml'
         }
       }
     },
@@ -220,7 +231,9 @@ module.exports = function (grunt) {
     'unzip:test',
     'prepare:server',
     'run:server',
-    'karma:test',
+    'karma:testPhantomjs',
+    'karma:testChrome',
+    'karma:testFirefox',
     'mochaTest:test',
     'stop:server'
   ]);
