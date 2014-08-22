@@ -133,7 +133,12 @@ module.exports = function (grunt) {
     },
 
     clean: {
-      msg: ['lib/message']
+      msg: {
+        src: [
+          'lib/message/*',
+          '!lib/message/Message.js'
+        ]
+      }
     },
 
     karma: {
