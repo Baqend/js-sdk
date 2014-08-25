@@ -142,7 +142,7 @@ describe('Test db', function() {
       person = db.Person();
       person.name = "Peter Mueller";
       person.age = 42;
-      person.date = new Date("13-11-1976");
+      person.date = new Date("1976-11-13");
 
       return person.save(function(saved) {
         expect(saved).equals(person);
@@ -159,7 +159,7 @@ describe('Test db', function() {
         expect(loaded._metadata.ref).equals(person._metadata.ref);
         expect(loaded.name).equals("Peter Mueller");
         expect(loaded.age).equals(42);
-        expect(loaded.date).equals(new Date("13-11-1976"));
+        expect(loaded.date).eql(new Date("1976-11-13"));
       });
     });
 
