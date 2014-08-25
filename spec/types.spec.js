@@ -171,7 +171,7 @@ describe('Test entity type', function () {
       obj.ref = ref;
 
       var json = state.getDatabaseObject();
-      var refId = jspa.util.Metadata.get(ref).getIdentifier();
+      var refId = jspa.util.Metadata.get(ref).ref;
       expect(refId).contain('/db/');
       expect(json.ref).be.ok;
       expect(json.ref).equals(refId);
@@ -292,7 +292,7 @@ describe('Test entity type', function () {
       var json = state.getDatabaseObject();
 
       state.setDatabaseObject(json);
-      expect(obj[field]).null;
+      expect(obj[field]).be.null;
     });
 
     it("should handle null properly", function() {
@@ -303,7 +303,7 @@ describe('Test entity type', function () {
       var json = state.getDatabaseObject();
 
       state.setDatabaseObject(json);
-      expect(obj[field]).null;
+      expect(obj[field]).be.null;
     });
 
     Array.prototype.slice.call(arguments, 1).forEach(function(arg) {
@@ -313,6 +313,7 @@ describe('Test entity type', function () {
       it(value + " should be converted to json and back", function() {
         obj[field] = value;
         var json = state.getDatabaseObject();
+        expect(json).property(field);
 
         state.setDatabaseObject(json);
         expect(obj[field]).eql(expectedValue);

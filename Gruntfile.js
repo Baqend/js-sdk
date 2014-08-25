@@ -21,10 +21,7 @@ module.exports = function (grunt) {
     browserify: {
       options: {
         browserifyOptions: {
-          builtins: false
-        },
-        bundleOptions: {
-          debug: true,
+          builtins: ['_process'],
           insertGlobals: false,
           standalone: "jspa"
         }
@@ -36,7 +33,13 @@ module.exports = function (grunt) {
         },
         options: {
           watch: true,
-          keepAlive: true
+          keepAlive: true,
+          browserifyOptions: {
+            builtins: ['_process'],
+            insertGlobals: false,
+            standalone: "jspa",
+            debug: true
+          }
         }
       },
 
@@ -49,12 +52,6 @@ module.exports = function (grunt) {
       dist: {
         files: {
           'dist/baqend.js': ['lib/index.js']
-        },
-        options: {
-          bundleOptions: {
-            insertGlobals: false,
-            standalone: "jspa"
-          }
         }
       }
     },
