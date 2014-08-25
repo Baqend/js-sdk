@@ -126,7 +126,8 @@ describe('Test db', function() {
     it('should save new object', function() {
       var person = db.Person();
 
-      return person.save(function() {
+      return person.save(function(result) {
+        console.log(result)
         expect(person._metadata.id).be.ok;
         expect(person._metadata.version).be.ok;
         expect(person._metadata.isPersistent).be.true;
@@ -154,7 +155,7 @@ describe('Test db', function() {
     });
 
     it('should retrieved object', function() {
-      return db.Person.get(person._metadata.id).then(function(loaded) {
+      var promise = db.Person.get(person._metadata.id).then(function(loaded) {
         expect(loaded).be.ok;
         expect(loaded._metadata.ref).equals(person._metadata.ref);
         expect(loaded.name).equals("Peter Mueller");
@@ -168,6 +169,7 @@ describe('Test db', function() {
       var p2 = db.Person.get(person._metadata.id);
 
       return jspa.Q.all([p1, p2]).spread(function(loaded1, loaded2) {
+        expect(loaded1).be.ok;
         expect(loaded1).equals(loaded2);
       });
     });
