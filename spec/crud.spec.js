@@ -131,6 +131,69 @@ describe('Test db', function() {
         expect(person._metadata.version).be.ok;
         expect(person._metadata.isPersistent).be.true;
         expect(person._metadata.isDirty).be.false;
+        expect(person).equals(result);
+      });
+    });
+
+    it('should save a second time', function() {
+      var person = db.Person();
+      var version;
+
+      return person.save(function() {
+        version = person._metadata.version;
+
+        person.name = 'Paul Panther';
+        expect(person._metadata.isDirty).be.true;
+
+        return person.save();
+      }).then(function() {
+        expect(person._metadata.version).not.equals(version);
+        expect(person.name).equals('Paul Panther');
+      });
+    });
+
+    it('should not save a stale object', function() {
+      var person;
+
+      return emf.createEntityManager(function(db2) {
+        person = db2.Person();
+        return person.save();
+      }).then(function() {
+        return db.Person.get(person._metadata.id).then(function(person2) {
+          person2.name = 'Peter Parker';
+          return person2.save();
+        });
+      }).then(function() {
+        person.name = 'Alice Ford';
+        return person.save();
+      }).then(function() {
+        expect(true).be.false;
+      }, function(e) {
+        expect(e).instanceOf(jspa.error.PersistentError);
+        return db.Person.get(person._metadata.id).then(function(person2) {
+          expect(person2.name).equals('Peter Parker');
+        });
+      });
+    });
+
+    it('should forcely save a stale object', function() {
+      var person;
+
+      return emf.createEntityManager(function(db2) {
+        person = db2.Person();
+        return person.save();
+      }).then(function() {
+        return db.Person.get(person._metadata.id).then(function(person2) {
+          person2.name = 'Peter Parker';
+          return person2.save();
+        });
+      }).then(function() {
+        person.name = 'Alice Ford';
+        return person.save(true);
+      }).then(function() {
+        return db.Person.get(person._metadata.id).then(function(person2) {
+          expect(person2.name).equals('Alice Ford');
+        });
       });
     });
   });
@@ -138,7 +201,7 @@ describe('Test db', function() {
   describe('get', function() {
     var person;
 
-    before(function() {
+    beforeEach(function() {
       person = db.Person();
       person.name = "Peter Mueller";
       person.age = 42;
@@ -170,6 +233,15 @@ describe('Test db', function() {
       return jspa.Q.all([p1, p2]).spread(function(loaded1, loaded2) {
         expect(loaded1).be.ok;
         expect(loaded1).equals(loaded2);
+      });
+    });
+
+    it('should refresh a loaded object', function() {
+      return db.Person.get(person._metadata.id).then(function(obj) {
+        obj.name = 'Tom Miller';
+        return db.Person.get(person._metadata.id);
+      }).then(function(obj) {
+        expect(obj.name).equals('Peter Mueller');
       });
     });
 
