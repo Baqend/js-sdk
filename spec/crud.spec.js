@@ -236,12 +236,29 @@ describe('Test db', function() {
       });
     });
 
-    it('should refresh a loaded object', function() {
+    it('should refresh id the object is stale', function() {
+      person.name = 'Tom Miller';
+
+      return emf.createEntityManager(function(db2) {
+        return db2.Person.get(person._metadata.id).then(function(person2) {
+          expect(person2.name).equals('Peter Mueller');
+          person2.name = 'Alice Ford';
+          return person2.save();
+        });
+      }).then(function(person2) {
+        return db.Person.get(person._metadata.id).then(function(person3) {
+          expect(person3).equals(person);
+          expect(person3.name).equals('Alice Ford');
+          expect(person3._metadata.version).equals(person2._metadata.version);
+        });
+      });
+    });
+
+    it('should not refresh if a loaded object is still up to date', function() {
+      person.name = 'Tom Miller';
+
       return db.Person.get(person._metadata.id).then(function(obj) {
-        obj.name = 'Tom Miller';
-        return db.Person.get(person._metadata.id);
-      }).then(function(obj) {
-        expect(obj.name).equals('Peter Mueller');
+        expect(obj.name).equals('Tom Miller');
       });
     });
 

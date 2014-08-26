@@ -252,12 +252,4 @@ module.exports = function (grunt) {
     grunt.log.write('Executable Jar: ' + jar + ' Used config: ' + config);
   });
 
-  grunt.registerTask('index', 'Build library index.', function () {
-    var tmpl = grunt.file.read('tool/loader.js');
-
-    var index = tmpl.replace('[]', JSON.stringify(jahdep('src'), null, "  "));
-
-    grunt.file.write('index.js', index);
-  });
-
 };
