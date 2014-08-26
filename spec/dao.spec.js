@@ -54,7 +54,7 @@ describe("Test dao", function() {
       expect(entityManager.TestClass.partialUpdate).be.ok;
 
       var TestClass = entityManager.TestClass;
-      var testClass = new TestClass();
+      var testClass = TestClass();
       expect(testClass).be.ok;
       expect("testValue" in testClass).be.true;
       expect(testClass.save).be.ok;
@@ -80,7 +80,7 @@ describe("Test dao", function() {
     it('should add identifier', function() {
       var classFactory = new jspa.binding.ClassFactory();
 
-      var testClass = new entityManager.TestClass();
+      var testClass = entityManager.TestClass();
 
       expect(classFactory.getIdentifier(testClass.constructor)).be.ok;
     });
@@ -101,7 +101,7 @@ describe("Test dao", function() {
         };
       };
 
-      var testClass = new entityManager.TestClass();
+      var testClass = entityManager.TestClass();
       expect(testClass.firstName()).equal("firstName");
       expect(testClass.lastName()).equal("lastName");
       expect("testValue" in testClass).be.true;
@@ -173,7 +173,7 @@ describe("Test dao", function() {
         newMethod4: newMethod
       });
 
-      var testClass = new TestClass();
+      var testClass = TestClass();
 
       expect(testClass.newMethod0()).equal(returnVal);
       expect(testClass.newMethod1()).equal(returnVal);

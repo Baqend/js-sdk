@@ -127,7 +127,6 @@ describe('Test db', function() {
       var person = db.Person();
 
       return person.save(function(result) {
-        console.log(result)
         expect(person._metadata.id).be.ok;
         expect(person._metadata.version).be.ok;
         expect(person._metadata.isPersistent).be.true;
@@ -182,6 +181,83 @@ describe('Test db', function() {
         return jspa.Q.all([p1, p2]).spread(function(loaded1, loaded2) {
           expect(loaded1).not.equals(loaded2);
         });
+      });
+    });
+  });
+
+
+  describe('remove', function() {
+    var person;
+
+    beforeEach(function() {
+      person = db.Person();
+      person.name = "Peter Mueller";
+      person.age = 42;
+      person.date = new Date("1976-11-13");
+
+      return person.save(function(saved) {
+        expect(saved).equals(person);
+        expect(saved._metadata.id).be.ok;
+        expect(saved._metadata.version).be.ok;
+        expect(saved._metadata.isPersistent).be.true;
+        expect(saved._metadata.isDirty).be.false;
+      });
+    });
+
+    it('should remove object from database', function() {
+      return person.remove().then(function(removed) {
+        expect(person).eqls(removed);
+        return db.Person.get(person._metadata.id);
+      }).then(function(loaded) {
+        expect(loaded).be.null;
+      });
+    });
+
+    it('should remove object from EntityManager', function() {
+      expect(db.contains(person)).be.true;
+      return person.remove().then(function() {
+        expect(db.contains(person)).be.false;
+      });
+    });
+
+    it('should mark as dirty', function() {
+      return person.remove().then(function(deleted) {
+        expect(deleted._metadata.isDirty).be.true;
+      });
+    });
+
+    it('should remove version', function() {
+      return person.remove().then(function(deleted) {
+        expect(deleted._metadata.version).be.null;
+      });
+    });
+
+    it('should be allowed to save after remove', function() {
+      return person.remove().invoke('save').then(function(saved) {
+        expect(saved._metadata.id).be.ok;
+        expect(saved._metadata.version).be.ok;
+        expect(saved._metadata.isPersistent).be.true;
+        expect(saved._metadata.isDirty).be.false;
+        return db.Person.get(saved._metadata.id);
+      }).then(function(loaded) {
+        expect(loaded).be.ok;
+        expect(loaded._metadata.ref).equals(person._metadata.ref);
+        expect(loaded.name).equals("Peter Mueller");
+        expect(loaded.age).equals(42);
+        expect(loaded.date).eql(new Date("1976-11-13"));
+      });
+    });
+
+    it('should be allowed to remove an removed object', function() {
+      return person.remove().invoke('remove');
+    });
+
+    it('should not be allowed to add removed objects with same id', function() {
+      return person.remove().then(function() {
+        db.addReference(person);
+        var newPerson = db.Person();
+        newPerson._metadata.id = person._metadata.id;
+        expect(function() { db.addReference(newPerson) }).to.throw(jspa.error.EntityExistsError);
       });
     });
   });
