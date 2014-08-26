@@ -87,9 +87,10 @@ describe('Test entity type', function () {
 
   metamodel.addType(EntityType);
   metamodel.addType(EmbeddedType);
-  metamodel.save();
 
   before(function() {
+    metamodel.save();
+
     return emf.createEntityManager().then(function(entityManager) {
       em = entityManager;
 
