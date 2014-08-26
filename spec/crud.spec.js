@@ -155,7 +155,7 @@ describe('Test db', function() {
     });
 
     it('should retrieved object', function() {
-      var promise = db.Person.get(person._metadata.id).then(function(loaded) {
+      return db.Person.get(person._metadata.id).then(function(loaded) {
         expect(loaded).be.ok;
         expect(loaded._metadata.ref).equals(person._metadata.ref);
         expect(loaded.name).equals("Peter Mueller");
