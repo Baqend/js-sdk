@@ -31,6 +31,7 @@
     "jquery": "^2.1.1",
     "karma": "*",
     "karma-chai": "^0.1.0",
+    "karma-chai-plugins": "^0.2.3",
     "karma-chrome-launcher": "*",
     "karma-coffee-preprocessor": "*",
     "karma-firefox-launcher": "*",
