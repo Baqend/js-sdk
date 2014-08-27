@@ -1,6 +1,9 @@
 if (typeof jspa == 'undefined') {
   env = require('./env');
-  expect = require('chai').expect;
+  var chai = require("chai");
+  var chaiAsPromised = require("chai-as-promised");
+  chai.use(chaiAsPromised);
+  expect = chai.expect;
   jspa = require('../lib');
 }
 
@@ -338,16 +341,52 @@ describe('Test db', function() {
     });
 
     it('should be allowed to remove an removed object', function() {
-      return person.remove().invoke('remove');
+      return expect(person.remove().invoke('remove')).be.fulfilled;
     });
 
     it('should not be allowed to add removed objects with same id', function() {
-      return person.remove().then(function() {
+      return expect(person.remove().then(function() {
         db.addReference(person);
         var newPerson = db.Person();
         newPerson._metadata.id = person._metadata.id;
-        expect(function() { db.addReference(newPerson) }).to.throw(jspa.error.EntityExistsError);
-      });
+        return db.addReference(newPerson);
+      })).be.rejectedWith(jspa.error.EntityExistsError);
+    });
+
+    it('should not be allowed to remove outdated object', function() {
+      var person;
+
+      return expect(emf.createEntityManager().then(function(db2) {
+        person = db2.Person();
+        return person.save();
+      }).then(function() {
+        return db.Person.get(person._metadata.id);
+      }).then(function(person2) {
+        person2.name = "Foo Bar";
+        return person2.save();
+      }).then(function() {
+        return person.remove();
+      })).be.rejected;
+    });
+  });
+
+  it('should be allowed to forcly remove outdated object', function() {
+    var person;
+
+    return emf.createEntityManager().then(function(db2) {
+      person = db2.Person();
+      return person.save();
+    }).then(function() {
+      return db.Person.get(person._metadata.id);
+    }).then(function(person2) {
+      person2.name = "Foo Bar";
+      return person2.save();
+    }).then(function() {
+      return person.remove(true);
+    }).then(function() {
+      return db.Person.get(person._metadata.id);
+    }).then(function(pers) {
+      expect(pers).be.null;
     });
   });
 });
