@@ -158,7 +158,7 @@ describe('Test db', function() {
     it('should not save a stale object', function() {
       var person;
 
-      return emf.createEntityManager(function(db2) {
+      return expect(emf.createEntityManager(function(db2) {
         person = db2.Person();
         return person.save();
       }).then(function() {
@@ -169,9 +169,7 @@ describe('Test db', function() {
       }).then(function() {
         person.name = 'Alice Ford';
         return person.save();
-      }).then(function() {
-        expect(true).be.false;
-      }, function(e) {
+      })).be.rejected.then(function(e) {
         expect(e).instanceOf(jspa.error.PersistentError);
         return db.Person.get(person._metadata.id).then(function(person2) {
           expect(person2.name).equals('Peter Parker');
@@ -340,8 +338,12 @@ describe('Test db', function() {
       });
     });
 
-    it('should be allowed to remove an removed object', function() {
-      return expect(person.remove().invoke('remove')).be.fulfilled;
+    it('should be allowed to remove an object without id', function() {
+      return expect(person.remove().invoke('remove')).be.rejectedWith(jspa.error.IllegalEntityError);
+    });
+
+    it('should be allowed to forcly remove an object without id', function() {
+      return expect(person.remove().invoke('remove', true)).be.fulfilled;
     });
 
     it('should not be allowed to add removed objects with same id', function() {
@@ -368,25 +370,26 @@ describe('Test db', function() {
         return person.remove();
       })).be.rejected;
     });
-  });
 
-  it('should be allowed to forcly remove outdated object', function() {
-    var person;
+    it('should be allowed to forcly remove outdated object', function() {
+      var person;
 
-    return emf.createEntityManager().then(function(db2) {
-      person = db2.Person();
-      return person.save();
-    }).then(function() {
-      return db.Person.get(person._metadata.id);
-    }).then(function(person2) {
-      person2.name = "Foo Bar";
-      return person2.save();
-    }).then(function() {
-      return person.remove(true);
-    }).then(function() {
-      return db.Person.get(person._metadata.id);
-    }).then(function(pers) {
-      expect(pers).be.null;
+      return emf.createEntityManager().then(function(db2) {
+        person = db2.Person();
+        return person.save();
+      }).then(function() {
+        return db.Person.get(person._metadata.id);
+      }).then(function(person2) {
+        person2.name = "Foo Bar";
+        return person2.save();
+      }).then(function() {
+        return person.remove(true);
+      }).then(function() {
+        return db.Person.get(person._metadata.id);
+      }).then(function(pers) {
+        expect(pers).be.null;
+      });
     });
   });
+
 });
