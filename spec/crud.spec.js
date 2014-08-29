@@ -138,6 +138,16 @@ describe('Test db', function() {
       });
     });
 
+    it('should save and refresh object', function() {
+      var person = db.Person();
+      person.name = "Old Name";
+      var promise = expect(person.saveAndRefresh()).eventually.have.property('name', 'Old Name');
+      setTimeout(function() {
+        person.name = "New Name";
+      }, 0);
+      return promise;
+    });
+
     it('should save a second time', function() {
       var person = db.Person();
       var version;
@@ -171,9 +181,7 @@ describe('Test db', function() {
         return person.save();
       })).be.rejected.then(function(e) {
         expect(e).instanceOf(jspa.error.PersistentError);
-        return db.Person.get(person._metadata.id).then(function(person2) {
-          expect(person2.name).equals('Peter Parker');
-        });
+        return expect(db.Person.get(person._metadata.id)).eventually.have.property('name', 'Peter Parker');
       });
     });
 
@@ -238,7 +246,7 @@ describe('Test db', function() {
           });
         });
       }).then(function() {
-        return expect(person.save()).rejected;
+        expect(person.save()).rejected;
       });
     });
 
@@ -258,6 +266,12 @@ describe('Test db', function() {
           expect(person2.name).equals('Peter Parker');
         });
       });
+    });
+
+    it('should not be allowed to call save twice', function() {
+      var person = db.Person();
+      person.save();
+      expect(person.save).to.throw(Error);
     });
   });
 
@@ -359,9 +373,7 @@ describe('Test db', function() {
     it('should remove object from database', function() {
       return person.remove().then(function(removed) {
         expect(person).eqls(removed);
-        return db.Person.get(person._metadata.id);
-      }).then(function(loaded) {
-        expect(loaded).be.null;
+        return expect(db.Person.get(person._metadata.id)).become(null);
       });
     });
 
@@ -433,7 +445,7 @@ describe('Test db', function() {
       })).be.rejected;
     });
 
-    it('should be allowed to forcly remove outdated object', function() {
+    it('should be allowed to forcely remove outdated object', function() {
       var person;
 
       return emf.createEntityManager().then(function(db2) {
@@ -447,11 +459,175 @@ describe('Test db', function() {
       }).then(function() {
         return person.remove(true);
       }).then(function() {
-        return db.Person.get(person._metadata.id);
-      }).then(function(pers) {
-        expect(pers).be.null;
+        return expect(db.Person.get(person._metadata.id)).become(null);
       });
     });
+  });
+
+  describe('update', function() {
+    var person;
+
+    beforeEach(function() {
+      person = db.Person();
+      person.name = "Peter Mueller";
+      person.age = 42;
+      person.date = new Date("1976-11-13");
+
+      return person.save(function(saved) {
+        expect(saved).equals(person);
+        expect(saved._metadata.id).be.ok;
+        expect(saved._metadata.version).be.ok;
+        expect(saved._metadata.isPersistent).be.true;
+        expect(saved._metadata.isDirty).be.false;
+      });
+    });
+
+    it('should update object', function() {
+      person.name = 'New Name';
+      expect(person._metadata.version).equals('1');
+      return person.update().then(function() {
+        expect(person.name).equals('New Name');
+        expect(person._metadata.version).equals('2');
+        return expect(db.Person.get(person._metadata.id)).eventually.have.property('name', 'New Name');
+      });
+    });
+
+    it('should update and refresh object', function() {
+      person.name = 'New Name';
+      var promise = expect(person.updateAndRefresh()).eventually.have.property('name', 'New Name');
+      setTimeout(function() {
+        person.name = 'Newer Name';
+      }, 0);
+      return promise;
+    });
+
+    it('should not allowed to update outdated object', function() {
+      var person;
+
+      return expect(emf.createEntityManager().then(function(db2) {
+        person = db2.Person();
+        return person.save();
+      }).then(function() {
+        return db.Person.get(person._metadata.id);
+      }).then(function(person2) {
+        person2.name = "Foo Bar";
+        return person2.save();
+      }).then(function() {
+        person.name = "New Name";
+        return person.update();
+      })).be.rejected;
+    });
+
+    it('should allowed to forcibly update outdated object', function() {
+      var person;
+
+      return emf.createEntityManager().then(function(db2) {
+        person = db2.Person();
+        return person.save();
+      }).then(function() {
+        return db.Person.get(person._metadata.id);
+      }).then(function(person2) {
+        person2.name = "Foo Bar";
+        return person2.save();
+      }).then(function() {
+        person.name = "New Name";
+        return person.update(true);
+      }).then(function() {
+        return db.Person.get(person._metadata.id);
+      }).then(function(loaded) {
+        expect(loaded.name).equals("New Name");
+        expect(loaded._metadata.version).equals("3");
+      });
+    });
+
+    it('should not be allowed to insert document by update', function() {
+      return expect(db.Person().update()).be.rejected;
+    });
+  });
+
+  describe("insert", function() {
+
+    it('should insert object', function() {
+      var person = db.Person();
+      person.name = "Peter Insert";
+      return person.insert().then(function() {
+        return expect(db.Person.get(person._metadata.id)).become(person);
+      });
+    });
+
+    it('should insert and refresh object', function() {
+      var person = db.Person();
+      person.name = "Peter Insert";
+      var promise = expect(person.insertAndRefresh()).eventually.have.property('name', 'Peter Insert');
+      setTimeout(function() {
+        person.name = "New Peter Insert";
+      }, 0);
+      return promise;
+    });
+
+    it('should not be allowed to insert loaded object', function() {
+      var person = db.Person();
+      person.name = "Peter Insert";
+      return person.insert().then(function() {
+        return db.Person.get(person._metadata.id);
+      }).then(function(loaded) {
+        loaded.name = "Peter Inserted";
+        return expect(loaded.insert()).be.rejected;
+      });
+    });
+
+    it('should not be allowed to insert existing object', function() {
+      return emf.createEntityManager().then(function(db2) {
+        var person = db2.Person();
+        return person.save();
+      }).then(function(saved) {
+        var newPerson = db.Person();
+        newPerson.name = "Blub";
+        newPerson._metadata.id = saved._metadata.id;
+        return expect(newPerson.insert()).rejected;
+      });
+    });
+
+  });
+
+  describe('refresh', function() {
+
+    it('should refresh object', function() {
+      var person = db.Person();
+      person.name = "Old Name";
+      return person.save(function() {
+        return emf.createEntityManager();
+      }).then(function(db2) {
+        return db2.Person.get(person._metadata.id);
+      }).then(function(loaded) {
+        loaded.name = "New Name";
+        return loaded.save();
+      }).then(function() {
+        expect(person).have.property('name', 'Old Name');
+        return expect(person.refresh()).eventually.have.property('name', 'New Name');
+      });
+    });
+
+    it('should refresh object with same version', function() {
+      var person = db.Person();
+      person.name = "Old Name";
+      return person.save(function() {
+        return emf.createEntityManager();
+      }).then(function(db2) {
+        return db2.Person.get(person._metadata.id);
+      }).then(function(loaded) {
+        loaded.name = "New Name";
+        return loaded.save();
+      }).then(function() {
+        person._metadata.version = 2;
+        expect(person).have.property('name', 'Old Name');
+        return expect(db.Person.get(person._metadata.id)).eventually.have.property('name', 'Old Name');
+      }).then(function() {
+        return expect(person.refresh()).eventually.have.property('name', 'New Name');
+      });
+    });
+
+
   });
 
 });
