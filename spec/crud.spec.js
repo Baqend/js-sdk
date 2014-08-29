@@ -177,7 +177,7 @@ describe('Test db', function() {
       });
     });
 
-    it('should forcely save a stale object', function() {
+    it('should forcibly save a stale object', function() {
       var person;
 
       return emf.createEntityManager(function(db2) {
@@ -194,6 +194,68 @@ describe('Test db', function() {
       }).then(function() {
         return db.Person.get(person._metadata.id).then(function(person2) {
           expect(person2.name).equals('Alice Ford');
+        });
+      });
+    });
+
+    it('should not override an object that exists', function() {
+      var person;
+
+      return emf.createEntityManager(function(db2) {
+        person = db2.Person();
+        return person.save();
+      }).then(function() {
+        var newPerson = db.Person();
+        newPerson._metadata.id = person._metadata.id;
+        return expect(newPerson.save()).rejected;
+      });
+    });
+
+    it('should forcibly override an object that exists', function() {
+      var person;
+
+      return emf.createEntityManager(function(db2) {
+        person = db2.Person();
+        return person.save();
+      }).then(function() {
+        var newPerson = db.Person();
+        newPerson.name = 'Peter Parker';
+        newPerson._metadata.id = person._metadata.id;
+        return newPerson.save(true);
+      }).then(function() {
+        return db.Person.get(person._metadata.id).then(function(person2) {
+          expect(person2.name).equals('Peter Parker');
+        });
+      });
+    });
+
+    it('should not save an removed object', function() {
+      var person = db.Person();
+      return person.save().then(function() {
+        return emf.createEntityManager(function(db2) {
+          db2.Person.get(person._metadata.id).then(function(person2) {
+            return person2.remove();
+          });
+        });
+      }).then(function() {
+        return expect(person.save()).rejected;
+      });
+    });
+
+    it('should forcibly save an removed object', function() {
+      var person = db.Person();
+      return person.save().then(function() {
+        return emf.createEntityManager(function(db2) {
+          db2.Person.get(person._metadata.id).then(function(person2) {
+            return person2.remove();
+          });
+        });
+      }).then(function() {
+        person.name = 'Peter Parker';
+        return person.save(true);
+      }).then(function() {
+        return db.Person.get(person._metadata.id).then(function(person2) {
+          expect(person2.name).equals('Peter Parker');
         });
       });
     });
