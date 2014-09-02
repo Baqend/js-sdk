@@ -241,7 +241,7 @@ describe('Test db', function() {
       var person = db.Person();
       return person.save().then(function() {
         return emf.createEntityManager(function(db2) {
-          db2.Person.get(person._metadata.id).then(function(person2) {
+          return db2.Person.get(person._metadata.id).then(function(person2) {
             return person2.remove();
           });
         });
@@ -254,7 +254,7 @@ describe('Test db', function() {
       var person = db.Person();
       return person.save().then(function() {
         return emf.createEntityManager(function(db2) {
-          db2.Person.get(person._metadata.id).then(function(person2) {
+          return db2.Person.get(person._metadata.id).then(function(person2) {
             return person2.remove();
           });
         });
