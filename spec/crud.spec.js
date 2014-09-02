@@ -445,7 +445,7 @@ describe('Test db', function() {
       })).be.rejected;
     });
 
-    it('should be allowed to forcely remove outdated object', function() {
+    it('should be allowed to forcibly remove outdated object', function() {
       var person;
 
       return emf.createEntityManager().then(function(db2) {
