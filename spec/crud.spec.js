@@ -1,6 +1,7 @@
 if (typeof jspa == 'undefined') {
   env = require('./env');
   var chai = require("chai");
+  chai.config.includeStack = true;
   var chaiAsPromised = require("chai-as-promised");
   chai.use(chaiAsPromised);
   expect = chai.expect;
@@ -142,9 +143,7 @@ describe('Test db', function() {
       var person = db.Person();
       person.name = "Old Name";
       var promise = expect(person.saveAndRefresh()).eventually.have.property('name', 'Old Name');
-      setTimeout(function() {
-        person.name = "New Name";
-      }, 0);
+      person.name = "New Name";
       return promise;
     });
 
@@ -495,9 +494,8 @@ describe('Test db', function() {
     it('should update and refresh object', function() {
       person.name = 'New Name';
       var promise = expect(person.updateAndRefresh()).eventually.have.property('name', 'New Name');
-      setTimeout(function() {
-        person.name = 'Newer Name';
-      }, 0);
+      person.name = 'Newer Name';
+
       return promise;
     });
 
@@ -559,9 +557,7 @@ describe('Test db', function() {
       var person = db.Person();
       person.name = "Peter Insert";
       var promise = expect(person.insertAndRefresh()).eventually.have.property('name', 'Peter Insert');
-      setTimeout(function() {
-        person.name = "New Peter Insert";
-      }, 0);
+      person.name = "New Peter Insert";
       return promise;
     });
 
