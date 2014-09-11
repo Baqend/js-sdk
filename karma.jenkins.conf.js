@@ -29,7 +29,9 @@ module.exports = function(config) {
     port: 9876,
 
     //A map of path-proxy pairs.
-    proxies:  {},
+    proxies:  {
+      '/': 'https://localhost:8400'
+    },
 
     // Whether or not karma or any browsers should raise an error when an inavlid SSL certificate is found.
     proxyValidateSSL: false,
