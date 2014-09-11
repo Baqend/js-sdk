@@ -28,6 +28,12 @@ module.exports = function(config) {
     // web server port
     port: 9876,
 
+    //A map of path-proxy pairs.
+    proxies:  {},
+
+    // Whether or not karma or any browsers should raise an error when an inavlid SSL certificate is found.
+    proxyValidateSSL: false,
+
     // enable / disable colors in the output (reporters and logs)
     colors: true,
 
