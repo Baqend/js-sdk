@@ -151,9 +151,9 @@ module.exports = function (grunt) {
       },
       testChrome: {
         configFile: 'karma.jenkins.conf.js',
-        browsers: ['Chrome_without_ssl-checking'],
+        browsers: ['Chrome_ignore_certificate_errors'],
         customLaunchers: {
-          Chrome_without_security: {
+          Chrome_ignore_certificate_errors: {
             base: 'Chrome',
             flags: ['--ignore-certificate-errors']
           }
