@@ -1,5 +1,5 @@
 var env = {
-  "TEST_SERVER": "http://localhost:8080/"
+  "TEST_SERVER": "https://localhost:8443/"
 };
 
 if (typeof module != 'undefined') {

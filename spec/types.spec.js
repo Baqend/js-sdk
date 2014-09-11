@@ -166,7 +166,7 @@ describe('Test entity type', function () {
   });
 
   describe("dateTime value", function() {
-    test("dateTime", new Date(0), new Date(), new Date("0000-01-01T00:00:00"));
+    test("dateTime", new Date(0), new Date(), new Date("0000-01-01T00:00:00Z"));
   });
 
   describe("geoPoint value", function() {
