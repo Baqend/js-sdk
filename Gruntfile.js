@@ -151,7 +151,13 @@ module.exports = function (grunt) {
       },
       testChrome: {
         configFile: 'karma.jenkins.conf.js',
-        browsers: ['Chrome'],
+        browsers: ['Chrome_without_ssl-checking'],
+        customLaunchers: {
+          Chrome_without_security: {
+            base: 'Chrome',
+            flags: ['--ignore-certificate-errors']
+          }
+        },
         junitReporter: {
           outputFile: 'build/test-results/karma-chrome.xml'
         }
