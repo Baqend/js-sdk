@@ -4,12 +4,13 @@ if (typeof jspa == 'undefined') {
   chai.config.includeStack = true;
   var chaiAsPromised = require("chai-as-promised");
   chai.use(chaiAsPromised);
+  chai.config.includeStack = true;
   expect = chai.expect;
   jspa = require('../lib');
 }
 
 describe('Test db', function() {
-  var db, personType, addressType, childType, emf, metamodel;
+  var db, personType, addressType, childType, emf, metamodel, streetType;
 
   before(function() {
     emf = new jspa.EntityManagerFactory(env.TEST_SERVER);
@@ -19,18 +20,29 @@ describe('Test db', function() {
     metamodel.addType(personType = new jspa.metamodel.EntityType("Person", metamodel.entity(Object)));
     metamodel.addType(childType = new jspa.metamodel.EntityType("Child", personType));
     metamodel.addType(addressType = new jspa.metamodel.EmbeddableType("Address"));
+    metamodel.addType(streetType = new jspa.metamodel.EntityType("Street", metamodel.entity(Object)));
 
     personType.declaredAttributes.push(new jspa.metamodel.SingularAttribute(personType, "name", metamodel.baseType(String)));
-    personType.declaredAttributes.push(new jspa.metamodel.SingularAttribute(personType, "address", personType));
+    personType.declaredAttributes.push(new jspa.metamodel.SingularAttribute(personType, "address", addressType));
     personType.declaredAttributes.push(new jspa.metamodel.SingularAttribute(personType, "age", metamodel.baseType(Number)));
     personType.declaredAttributes.push(new jspa.metamodel.SingularAttribute(personType, "date", metamodel.baseType(Date)));
+    personType.declaredAttributes.push(new jspa.metamodel.SingularAttribute(personType, "sister", personType));
+    personType.declaredAttributes.push(new jspa.metamodel.SingularAttribute(personType, "child", personType));
 
     childType.declaredAttributes.push(new jspa.metamodel.SingularAttribute(childType, 'mother', personType));
+    childType.declaredAttributes.push(new jspa.metamodel.SingularAttribute(childType, 'aunt', personType));
     childType.declaredAttributes.push(new jspa.metamodel.SingularAttribute(childType, 'father', personType));
+    childType.declaredAttributes.push(new jspa.metamodel.ListAttribute(childType, "listSiblings", personType));
+    childType.declaredAttributes.push(new jspa.metamodel.SetAttribute(childType, "setSiblings", personType));
+    childType.declaredAttributes.push(new jspa.metamodel.MapAttribute(childType, "mapSiblings", personType, personType));
 
-    addressType.declaredAttributes.push(new jspa.metamodel.SingularAttribute(addressType, "street", metamodel.baseType(String)));
-    addressType.declaredAttributes.push(new jspa.metamodel.SingularAttribute(addressType, "number", metamodel.baseType(Number)));
+
+    addressType.declaredAttributes.push(new jspa.metamodel.SingularAttribute(addressType, "street", streetType));
     addressType.declaredAttributes.push(new jspa.metamodel.SingularAttribute(addressType, "zip", metamodel.baseType(Number)));
+
+    streetType.declaredAttributes.push(new jspa.metamodel.SingularAttribute(addressType, "name", metamodel.baseType(String)));
+    streetType.declaredAttributes.push(new jspa.metamodel.SingularAttribute(addressType, "number", metamodel.baseType(Number)));
+    streetType.declaredAttributes.push(new jspa.metamodel.SingularAttribute(addressType, "neighbor", personType));
 
     return metamodel.save();
   });
@@ -359,14 +371,7 @@ describe('Test db', function() {
       person.name = "Peter Mueller";
       person.age = 42;
       person.date = new Date("1976-11-13");
-
-      return person.save(function(saved) {
-        expect(saved).equals(person);
-        expect(saved._metadata.id).be.ok;
-        expect(saved._metadata.version).be.ok;
-        expect(saved._metadata.isPersistent).be.true;
-        expect(saved._metadata.isDirty).be.false;
-      });
+      return person.save();
     });
 
     it('should remove object from database', function() {
@@ -622,8 +627,282 @@ describe('Test db', function() {
         return expect(person.refresh()).eventually.have.property('name', 'New Name');
       });
     });
-
-
   });
 
+  describe('depth', function() {
+
+    var child, father, mother, sister, street, address, sibs;
+
+    before(function() {
+      child = db.Child();
+      father = db.Person();
+      mother = db.Person();
+      sister = db.Person();
+      street = db.Street();
+      address = db.Address();
+      sister.name = "Schwester Meier";
+      sister.age = 44;
+      mother.name = "Hildegard Meier";
+      mother.age = 56;
+      father.name = "Franz Meier";
+      father.age = 60;
+      child.name = "Peter Meier";
+      child.age = 13;
+      street.name = "Vogt-Kölln-Straße";
+      street.number = 30;
+      address.street = street;
+      address.zip = 22527;
+      address.number = 30;
+      father.sister = sister;
+      father.child = child;
+      child.address = address;
+      child.mother = mother;
+      child.aunt = mother;
+      child.father = father;
+      child.listSiblings = new jspa.List();
+      child.setSiblings = new jspa.Set();
+      child.mapSiblings = new jspa.Map();
+      sibs = [];
+      for(var i = 0; i < 6; i++) {
+        var sib = db.Person();
+        sib.name = "sib" + i;
+        sibs.child = child;
+        sibs.sister = mother;
+        sibs.address = address;
+        sibs.push(sib);
+      }
+      child.listSiblings.add(sibs[0]);
+      child.listSiblings.add(sibs[1]);
+      child.setSiblings.add(sibs[2]);
+      child.setSiblings.add(sibs[3]);
+      child.mapSiblings.set(sibs[4], sibs[5]);
+    });
+
+    after(function() {
+      child.remove(true, true);
+    });
+
+    it('should save and remove referenced objects by depth', function() {
+      return child.save(false, 2).then(function() {
+        var promises = [
+          expect(db.Child.get(child._metadata.id)).not.become(null),
+          expect(db.Person.get(mother._metadata.id)).not.become(null),
+          expect(db.Person.get(father._metadata.id)).not.become(null),
+          expect(db.Street.get(street._metadata.id)).not.become(null),
+          expect(db.Person.get(sister._metadata.id)).not.become(null)
+        ];
+        sibs.forEach(function(sib) {
+          promises.push(expect(db.Person.get(sib._metadata.id)).not.become(null))
+        });
+        return jspa.Q.all(promises);
+      }).then(function() {
+        return child.remove(false, 2);
+      }).then(function(removed) {
+        expect(removed).equals(child);
+        var promises = [
+          expect(db.Child.get(child._metadata.id)).become(null),
+          expect(db.Person.get(mother._metadata.id)).become(null),
+          expect(db.Person.get(father._metadata.id)).become(null),
+          expect(db.Street.get(street._metadata.id)).become(null),
+          expect(db.Person.get(sister._metadata.id)).become(null)
+        ];
+        sibs.forEach(function(sib) {
+          promises.push(expect(db.Person.get(sib._metadata.id)).become(null))
+        });
+        return jspa.Q.all(promises);
+      });
+    });
+
+    it('should save and remove referenced objects by reachability', function() {
+      return child.save(false, true).then(function() {
+        var promises = [
+          expect(db.Child.get(child._metadata.id)).not.become(null),
+          expect(db.Person.get(mother._metadata.id)).not.become(null),
+          expect(db.Person.get(father._metadata.id)).not.become(null),
+          expect(db.Street.get(street._metadata.id)).not.become(null),
+          expect(db.Person.get(sister._metadata.id)).not.become(null)
+        ];
+        sibs.forEach(function(sib) {
+          promises.push(expect(db.Person.get(sib._metadata.id)).not.become(null))
+        });
+        return jspa.Q.all(promises);
+      }).then(function() {
+        return child.remove(false, true);
+      }).then(function(removed) {
+        expect(removed).equals(child);
+        var promises = [
+          expect(db.Child.get(child._metadata.id)).become(null),
+          expect(db.Person.get(mother._metadata.id)).become(null),
+          expect(db.Person.get(father._metadata.id)).become(null),
+          expect(db.Street.get(street._metadata.id)).become(null),
+          expect(db.Person.get(sister._metadata.id)).become(null)
+        ];
+        sibs.forEach(function(sib) {
+          promises.push(expect(db.Person.get(sib._metadata.id)).become(null))
+        });
+        return jspa.Q.all(promises);
+      });
+    });
+
+    it('should get referenced objects by depth', function() {
+      var db2;
+      return child.save(false, true).then(function(saved) {
+        child = saved;
+        return emf.createEntityManager();
+      }).then(function(em) {
+        db2 = em;
+        sibs.forEach(function(sib) {
+          expect(db2.containsById(sib)).be.false;
+        });
+        expect(db2.containsById(father)).be.false;
+        expect(db2.containsById(sister)).be.false;
+        expect(db2.containsById(mother)).be.false;
+        expect(db2.containsById(street)).be.false;
+        return em.Child.get(child._metadata.id, 2);
+      }).then(function(loaded) {
+        expect(loaded.father.sister._metadata.isAvailable).be.true;
+        expect(loaded.father._metadata.isAvailable).be.true;
+        expect(loaded.mother._metadata.isAvailable).be.true;
+        expect(loaded.address.street._metadata.isAvailable).be.true;
+        expect(loaded.father.name).eqls(father.name);
+        expect(loaded.father.sister.name).eqls(sister.name);
+        expect(loaded.mother.name).eqls(mother.name);
+        expect(loaded.address.street.name).eqls(street.name);
+      });
+    });
+
+    it('should get referenced objects by reachability', function() {
+      var db2;
+      return child.save(false, true).then(function(saved) {
+        child = saved;
+        return emf.createEntityManager();
+      }).then(function(em) {
+        db2 = em;
+        expect(db2.containsById(father)).be.false;
+        expect(db2.containsById(sister)).be.false;
+        expect(db2.containsById(mother)).be.false;
+        expect(db2.containsById(street)).be.false;
+        return em.Child.get(child._metadata.id, true);
+      }).then(function(loaded) {
+        expect(loaded.father.sister._metadata.isAvailable).be.true;
+        expect(loaded.father._metadata.isAvailable).be.true;
+        expect(loaded.mother._metadata.isAvailable).be.true;
+        expect(loaded.address.street._metadata.isAvailable).be.true;
+        expect(loaded.father.name).eqls(father.name);
+        expect(loaded.father.sister.name).eqls(sister.name);
+        expect(loaded.mother.name).eqls(mother.name);
+        expect(loaded.address.street.name).eqls(street.name);
+      });
+    });
+
+    it('should not get all referenced objects', function() {
+      return child.save(false, true).then(function(saved) {
+        child = saved;
+        return emf.createEntityManager();
+      }).then(function(em) {
+        return em.Child.get(child._metadata.id, 1);
+      }).then(function(loaded) {
+        expect(loaded.father.sister._metadata.isAvailable).be.false;
+        expect(loaded.father._metadata.isAvailable).be.true;
+        expect(loaded.mother._metadata.isAvailable).be.true;
+        expect(loaded.address.street._metadata.isAvailable).be.true;
+      });
+    });
+
+    it('should refresh all referenced objects by reachability', function() {
+      return child.save(false, true).then(function(saved) {
+        var promise = saved.refresh(true);
+        saved.father.sister.name = "New Name";
+        saved.father.name = "New Name";
+        return promise;
+      }).then(function(loaded) {
+        expect(loaded.father.sister.name).equals("Schwester Meier");
+        expect(loaded.father.name).equals("Franz Meier");
+      });
+    });
+
+    it('should refresh all referenced objects by depth', function() {
+      return child.save(false, 2).then(function(saved) {
+        var promise = saved.refresh(true);
+        saved.father.sister.name = "New Name";
+        saved.father.name = "New Name";
+        return promise;
+      }).then(function(loaded) {
+        expect(loaded.father.sister.name).equals("Schwester Meier");
+        expect(loaded.father.name).equals("Franz Meier");
+      });
+    });
+
+    it('should not refresh all referenced objects', function() {
+      return child.save(false, true).then(function(saved) {
+        var promise = saved.refresh(1);
+        saved.father.sister.name = "New Name";
+        saved.father.name = "New Name";
+        return promise;
+      }).then(function(loaded) {
+        expect(loaded.father.sister.name).equals("New Name");
+        expect(loaded.father.name).equals("Franz Meier");
+      });
+    });
+
+    it('should insert referenced objects by depth', function() {
+      return child.insert(false, 2).then(function() {
+        return jspa.Q.all([
+          expect(db.Child.get(child._metadata.id)).not.become(null),
+          expect(db.Person.get(mother._metadata.id)).not.become(null),
+          expect(db.Person.get(father._metadata.id)).not.become(null),
+          expect(db.Street.get(street._metadata.id)).not.become(null),
+          expect(db.Person.get(sister._metadata.id)).not.become(null)
+        ]);
+      });
+    });
+
+    it('should insert referenced objects by reachability', function() {
+      return child.insert(false, true).then(function() {
+        return jspa.Q.all([
+          expect(db.Child.get(child._metadata.id)).not.become(null),
+          expect(db.Person.get(mother._metadata.id)).not.become(null),
+          expect(db.Person.get(father._metadata.id)).not.become(null),
+          expect(db.Street.get(street._metadata.id)).not.become(null),
+          expect(db.Person.get(sister._metadata.id)).not.become(null)
+        ]);
+      });
+    });
+
+    it('should update all referenced objects by depth', function() {
+      return child.save(false, true).then(function(saved) {
+        saved.father.sister.name = "New Name";
+        saved.father.name = "New Name";
+        return saved.update(true, 2);
+      }).then(function(loaded) {
+        expect(loaded.father.sister.name).equals("New Name");
+        expect(loaded.father.name).equals("New Name");
+      });
+    });
+
+    it('should update all referenced objects by reachability', function() {
+      return child.save(false, true).then(function(saved) {
+        saved.father.sister.name = "New Name";
+        saved.father.name = "New Name";
+        return saved.update(true, true);
+      }).then(function(loaded) {
+        expect(loaded.father.sister.name).equals("New Name");
+        expect(loaded.father.name).equals("New Name");
+      });
+    });
+
+    it('should update and refresh all referenced objects by reachability', function() {
+      return child.save(false, true).then(function(saved) {
+        saved.father.sister.name = "New Name";
+        saved.father.name = "New Name";
+        var promise = saved.updateAndRefresh(true, true);
+        saved.father.sister.name = "Newer Name";
+        saved.father.name = "Newer Name";
+        return promise;
+      }).then(function(loaded) {
+        expect(loaded.father.sister.name).equals("New Name");
+        expect(loaded.father.name).equals("New Name");
+      });
+    });
+  });
 });
