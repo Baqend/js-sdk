@@ -81,7 +81,7 @@ describe("Test dao", function() {
     });
 
     it('should add identifier', function() {
-      var classFactory = new jspa.binding.ClassFactory();
+      var classFactory = new jspa.binding.Enhancer();
 
       var testClass = entityManager.TestClass();
 
