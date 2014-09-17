@@ -1,7 +1,6 @@
 if (typeof jspa == 'undefined') {
   env = require('./env');
   var chai = require("chai");
-  chai.config.includeStack = true;
   var chaiAsPromised = require("chai-as-promised");
   chai.use(chaiAsPromised);
   chai.config.includeStack = true;
@@ -9,7 +8,7 @@ if (typeof jspa == 'undefined') {
   jspa = require('../lib');
 }
 
-describe('Test db', function() {
+describe('Test dao', function() {
   var db, personType, addressType, childType, emf, metamodel, streetType;
 
   before(function() {
@@ -544,7 +543,9 @@ describe('Test db', function() {
     });
 
     it('should not be allowed to insert document by update', function() {
-      return expect(db.Person().update()).be.rejected;
+      expect(function() {
+        db.Person().update()
+      }).throw(Error);
     });
   });
 
@@ -573,7 +574,9 @@ describe('Test db', function() {
         return db.Person.get(person._metadata.id);
       }).then(function(loaded) {
         loaded.name = "Peter Inserted";
-        return expect(loaded.insert()).be.rejected;
+        expect(function() {
+          loaded.insert()
+        }).throw(Error);
       });
     });
 

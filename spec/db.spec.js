@@ -9,7 +9,7 @@ if (typeof jspa == 'undefined') {
 
 var isBrowser = typeof window != "undefined";
 
-describe("Test dao", function() {
+describe("Test db", function() {
 
   var entityManager;
 
@@ -26,6 +26,16 @@ describe("Test dao", function() {
       },
       {
         "class": "/db/test.NsClass",
+        "fields": {
+          "value": {
+            "name": "value",
+            "type": "/db/_native.Integer"
+          }
+        }
+      },
+      {
+        "class": "/db/TestEmbeddedClass",
+        "embedded": true,
         "fields": {
           "value": {
             "name": "value",
@@ -59,6 +69,8 @@ describe("Test dao", function() {
       var TestClass = entityManager.TestClass;
       var testClass = TestClass();
       expect(testClass).be.ok;
+      expect(jspa.binding.Managed.isInstance(testClass)).be.true;
+      expect(jspa.binding.Entity.isInstance(testClass)).be.true;
       expect("testValue" in testClass).be.true;
       expect(testClass.save).be.ok;
       expect(testClass.insert).be.ok;
@@ -69,6 +81,32 @@ describe("Test dao", function() {
       expect(testClass.refresh).be.ok;
       expect(testClass.remove).be.ok;
       expect(testClass.attr).be.ok;
+    });
+
+    it('should not enhance dao methods to embedded objects', function() {
+      expect(entityManager.TestEmbeddedClass).be.ok;
+      expect(entityManager.TestEmbeddedClass.find).be.undefined;
+      expect(entityManager.TestEmbeddedClass.get).be.undefined;
+      expect(entityManager.TestEmbeddedClass.methods).be.ok;
+      expect(entityManager.TestEmbeddedClass.addMethods).be.ok;
+      expect(entityManager.TestEmbeddedClass.addMethod).be.ok;
+      expect(entityManager.TestEmbeddedClass.partialUpdate).be.undefined;
+
+      var TestEmbeddedClass = entityManager.TestEmbeddedClass;
+      var testClass = TestEmbeddedClass();
+      expect(testClass).be.ok;
+      expect(jspa.binding.Managed.isInstance(testClass)).be.true;
+      expect(jspa.binding.Entity.isInstance(testClass)).be.false;
+      expect("value" in testClass).be.true;
+      expect(testClass.save).be.undefined;
+      expect(testClass.insert).be.undefined;
+      expect(testClass.update).be.undefined;
+      expect(testClass.saveAndRefresh).be.undefined;
+      expect(testClass.insertAndRefresh).be.undefined;
+      expect(testClass.updateAndRefresh).be.undefined;
+      expect(testClass.refresh).be.undefined;
+      expect(testClass.remove).be.undefined;
+      expect(testClass.attr).be.undefined;
     });
 
     it('should class in namespaces to be enhanced', function() {
@@ -117,6 +155,51 @@ describe("Test dao", function() {
       expect(testClass.refresh).be.ok;
       expect(testClass.remove).be.ok;
       expect(testClass.attr).be.ok;
+
+      expect(jspa.binding.Entity.isInstance(testClass)).be.true;
+    });
+
+    it('should call custom classes constructor', function() {
+      entityManager.TestClass = function(a,b,c) {
+        this.a = a;
+        this.b = b;
+        this.c = c;
+      };
+
+      var testClass = entityManager.TestClass(1,2,3);
+      expect(testClass.a).equals(1);
+      expect(testClass.b).equals(2);
+      expect(testClass.c).equals(3);
+    });
+
+    it('should not enhance complete implemented classes', function() {
+      entityManager.TestClass = Object.inherit(jspa.binding.Entity, {
+        firstName: function() {
+          return "firstName";
+        },
+        lastName: function() {
+          return "lastName";
+        },
+        save: function() {
+          return 'overwritten';
+        }
+      });
+
+      var testClass = entityManager.TestClass();
+      expect(testClass.firstName()).equal("firstName");
+      expect(testClass.lastName()).equal("lastName");
+      expect("testValue" in testClass).be.true;
+      expect(testClass.save).be.ok;
+      expect(testClass.insert).be.ok;
+      expect(testClass.update).be.ok;
+      expect(testClass.saveAndRefresh).be.ok;
+      expect(testClass.insertAndRefresh).be.ok;
+      expect(testClass.updateAndRefresh).be.ok;
+      expect(testClass.refresh).be.ok;
+      expect(testClass.remove).be.ok;
+      expect(testClass.attr).be.ok;
+
+      expect(testClass.save()).equals('overwritten');
     });
 
     it('should be allowed once to set a class', function() {
