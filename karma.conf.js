@@ -48,6 +48,9 @@ module.exports = function(config) {
     // - IE (only Windows; has to be installed with `npm install karma-ie-launcher`)
     browsers: ['Chrome', 'Firefox', 'PhantomJS'],
 
+    // How long does Karma wait for a browser to reconnect (in ms).
+    browserDisconnectTimeout: 30000,
+
     // If browser does not capture in given timeout [ms], kill it
     captureTimeout: 60000,
 
