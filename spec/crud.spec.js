@@ -467,7 +467,7 @@ describe('Test dao', function() {
     });
   });
 
-  describe('update', function() {
+  xdescribe('update', function() {
     var person;
 
     beforeEach(function() {
