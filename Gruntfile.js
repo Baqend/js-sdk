@@ -143,7 +143,7 @@ module.exports = function (grunt) {
         configFile: 'karma.conf.js'
       },
       test: {
-        configFile: 'karna.conf.js',
+        configFile: 'karma.conf.js',
         browsers: ['PhantomJS', 'Chrome', 'Firefox'],
         singleRun: true,
         junitReporter: {
