@@ -143,11 +143,11 @@ module.exports = function (grunt) {
         configFile: 'karma.conf.js'
       },
       test: {
+        hostname: 'jenkins.baqend.com',
         configFile: 'karma.conf.js',
-        browsers: ['PhantomJS', 'Chrome', 'Firefox'],
+        browsers: ['PhantomJS', 'Chrome', 'Firefox', 'IE9'],
         reporters: ['junit'],
         singleRun: true,
-        logLevel: 'ERROR',
         junitReporter: {
           outputFile: 'build/test-results/karma-phantomjs.xml'
         }

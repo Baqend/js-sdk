@@ -33,7 +33,7 @@ module.exports = function(config) {
 
     // level of logging
     // possible values: config.LOG_DISABLE || config.LOG_ERROR || config.LOG_WARN || config.LOG_INFO || config.LOG_DEBUG
-    logLevel: config.LOG_INFO,
+    logLevel: config.LOG_DEBUG,
 
     // enable / disable watching file and executing tests whenever any file changes
     autoWatch: false,
@@ -46,13 +46,27 @@ module.exports = function(config) {
     // - Safari (only Mac; has to be installed with `npm install karma-safari-launcher`)
     // - PhantomJS
     // - IE (only Windows; has to be installed with `npm install karma-ie-launcher`)
-    browsers: ['Chrome', 'Firefox', 'PhantomJS'],
+    browsers: ['Chrome', 'Firefox', 'PhantomJS', 'IE9'],
+
+    customLaunchers: {
+      'IE9': {
+        base: 'WebDriver',
+        config:  {
+          hostname: '134.100.11.233',
+          port: 4444
+        },
+        browserName: 'internet explorer',
+        platform: 'WINDOWS',
+        version: '9',
+        name: 'Karma'
+      }
+    },
 
     // How long does Karma wait for a browser to reconnect (in ms).
-    browserDisconnectTimeout: 30000,
+    browserNoActivityTimeout: 10000,
 
     // If browser does not capture in given timeout [ms], kill it
-    captureTimeout: 60000,
+    captureTimeout: 10000,
 
     // Continuous Integration mode
     // if true, it capture browsers, run tests and exit
