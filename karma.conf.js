@@ -59,9 +59,9 @@ module.exports = function(config) {
           //hostname: '192.168.178.25',
           port: 4444
         },
-        browserName: 'internet explorer',
+        browserName: 'chrome-win',
         platform: 'WINDOWS',
-        version: '9',
+        version: '32',
         name: 'Karma'
       },
       'IE9': {
@@ -71,7 +71,7 @@ module.exports = function(config) {
           //hostname: '192.168.178.25',
           port: 4444
         },
-        browserName: 'internet explorer',
+        browserName: 'ie9-win',
         platform: 'WINDOWS',
         version: '9',
         name: 'Karma'
