@@ -26,7 +26,7 @@ module.exports = function(config) {
     reporters: ['progress'],
 
     // web server hostname
-    hostname: '192.168.178.25',
+    hostname: 'local.baqend.com',
 
     // web server port
     port: 9876,
@@ -36,7 +36,7 @@ module.exports = function(config) {
 
     // level of logging
     // possible values: config.LOG_DISABLE || config.LOG_ERROR || config.LOG_WARN || config.LOG_INFO || config.LOG_DEBUG
-    logLevel: config.LOG_DEBUG,
+    logLevel: config.LOG_INFO,
 
     // enable / disable watching file and executing tests whenever any file changes
     autoWatch: false,
@@ -49,13 +49,26 @@ module.exports = function(config) {
     // - Safari (only Mac; has to be installed with `npm install karma-safari-launcher`)
     // - PhantomJS
     // - IE (only Windows; has to be installed with `npm install karma-ie-launcher`)
-    browsers: ['Chrome', 'Firefox', 'PhantomJS', 'IE9'],
+    browsers: ['Chrome', 'Firefox', 'PhantomJS'],
 
     customLaunchers: {
+      'Chrome-win': {
+        base: 'WebDriver',
+        config:  {
+          hostname: 'chrome-win.baqend.com',
+          //hostname: '192.168.178.25',
+          port: 4444
+        },
+        browserName: 'internet explorer',
+        platform: 'WINDOWS',
+        version: '9',
+        name: 'Karma'
+      },
       'IE9': {
         base: 'WebDriver',
         config:  {
-          hostname: '134.100.11.233',
+          hostname: 'ie9-win.baqend.com',
+          //hostname: '192.168.178.25',
           port: 4444
         },
         browserName: 'internet explorer',
