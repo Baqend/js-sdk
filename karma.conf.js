@@ -52,7 +52,7 @@ module.exports = function(config) {
     browsers: ['Chrome', 'Firefox', 'PhantomJS'],
 
     customLaunchers: {
-      'Chrome-win': {
+      /*'Chrome-win': {
         base: 'WebDriver',
         config:  {
           hostname: 'chrome-win.baqend.com',
@@ -63,7 +63,7 @@ module.exports = function(config) {
         platform: 'WINDOWS',
         version: '32',
         name: 'Karma'
-      },
+      }, */
       'IE9': {
         base: 'WebDriver',
         config:  {
