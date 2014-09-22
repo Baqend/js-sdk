@@ -90,10 +90,10 @@ module.exports = function(config) {
     },
 
     // How long does Karma wait for a browser to reconnect (in ms).
-    browserNoActivityTimeout: 10000,
+    browserNoActivityTimeout: 30000,
 
     // If browser does not capture in given timeout [ms], kill it
-    captureTimeout: 10000,
+    captureTimeout: 30000,
 
     // Continuous Integration mode
     // if true, it capture browsers, run tests and exit
