@@ -59,6 +59,13 @@ module.exports = function(config) {
         version: '',
         name: 'Karma'
       },
+      'Firefox-Win': {
+        base: 'WebDriver',
+        browserName: 'firefox',
+        platform: 'WINDOWS',
+        version: '',
+        name: 'Karma'
+      },
       'IE9-Win': {
         base: 'WebDriver',
         browserName: 'internet explorer',
@@ -68,10 +75,6 @@ module.exports = function(config) {
       },
       'IE10-Win': {
         base: 'WebDriver',
-        config:  {
-          hostname: 'ie10-win.baqend.com',
-          port: 4444
-        },
         browserName: 'internet explorer',
         platform: 'WINDOWS',
         version: '10',
