@@ -9,6 +9,8 @@ if (typeof jspa == 'undefined') {
 }
 
 describe('Test user and roles', function() {
+  this.timeout(10000);
+
   var emf, db;
 
   before(function() {

@@ -10,6 +10,7 @@ if (typeof jspa == 'undefined') {
 var isBrowser = typeof window != "undefined";
 
 describe("Test db", function() {
+  this.timeout(10000);
 
   var entityManager;
 

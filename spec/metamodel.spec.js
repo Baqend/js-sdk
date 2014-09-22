@@ -8,6 +8,7 @@ if (typeof jspa == 'undefined') {
 }
 
 describe("Test metamodel classes", function () {
+  this.timeout(10000);
   var metamodel;
 
   beforeEach(function() {
@@ -410,6 +411,7 @@ describe("Test metamodel classes", function () {
 });
 
 describe('Metamodel', function() {
+  this.timeout(10000);
   var metamodel;
 
   beforeEach(function() {
