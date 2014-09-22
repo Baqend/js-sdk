@@ -52,28 +52,29 @@ module.exports = function(config) {
     browsers: ['Chrome', 'Firefox', 'PhantomJS'],
 
     customLaunchers: {
-      /*'Chrome-win': {
+      'Chrome-Win': {
         base: 'WebDriver',
-        config:  {
-          hostname: 'chrome-win.baqend.com',
-          //hostname: '192.168.178.25',
-          port: 4444
-        },
-        browserName: 'chrome-win',
+        browserName: 'chrome',
         platform: 'WINDOWS',
-        version: '32',
+        version: '',
         name: 'Karma'
-      }, */
-      'IE9': {
+      },
+      'IE9-Win': {
         base: 'WebDriver',
-        config:  {
-          hostname: 'ie9-win.baqend.com',
-          //hostname: '192.168.178.25',
-          port: 4444
-        },
-        browserName: 'ie9-win',
+        browserName: 'internet explorer',
         platform: 'WINDOWS',
         version: '9',
+        name: 'Karma'
+      },
+      'IE10-Win': {
+        base: 'WebDriver',
+        config:  {
+          hostname: 'ie10-win.baqend.com',
+          port: 4444
+        },
+        browserName: 'internet explorer',
+        platform: 'WINDOWS',
+        version: '10',
         name: 'Karma'
       }
     },
