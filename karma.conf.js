@@ -79,6 +79,13 @@ module.exports = function(config) {
         platform: 'WINDOWS',
         version: '10',
         name: 'Karma'
+      },
+      'IE11-Win': {
+        base: 'WebDriver',
+        browserName: 'internet explorer',
+        platform: 'WINDOWS',
+        version: '11',
+        name: 'Karma'
       }
     },
 
