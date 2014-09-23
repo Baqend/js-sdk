@@ -9,8 +9,6 @@ if (typeof jspa == 'undefined') {
 }
 
 describe('Test dao', function() {
-  this.timeout(10000);
-
   var db, personType, addressType, childType, emf, metamodel, streetType;
 
   before(function() {

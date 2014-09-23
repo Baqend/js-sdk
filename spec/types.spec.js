@@ -8,8 +8,6 @@ if (typeof jspa == 'undefined') {
 }
 
 describe('Test GeoPoint', function() {
-  this.timeout(10000);
-
   it("should construct with an latitude and longitude argument", function() {
     var point = new jspa.GeoPoint(56.5, 165.2);
 
@@ -52,8 +50,6 @@ describe('Test GeoPoint', function() {
 });
 
 describe('Test entity type', function () {
-  this.timeout(10000);
-
   var em, emf, EntityClass, EmbeddedClass, obj, state;
 
   emf = new jspa.EntityManagerFactory(env.TEST_SERVER);
