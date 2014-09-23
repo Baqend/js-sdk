@@ -2,9 +2,6 @@ module.exports = function (grunt) {
 
   'use strict';
 
-  // prevent grunt failing by test errors
-  grunt.option('force', true);
-
   // redirect mocha node tests to the given xml
   // @see https://github.com/peerigon/xunit-file/blob/master/lib/xunit-file.js
   process.env.JUNIT_REPORT_PATH = 'build/test-results/node.xml';
@@ -217,7 +214,12 @@ module.exports = function (grunt) {
     'unzip:test',
     'prepare:server',
     'run:server',
+
+    // karma task fails when a test failed
+    'force:true',
     'karma:test',
+    'force:restore',
+
     'mochaTest:test',
     'stop:server'
   ]);
@@ -237,6 +239,18 @@ module.exports = function (grunt) {
     grunt.config('run.server.args', ['-jar', jar, config]);
 
     grunt.log.write('Executable Jar: ' + jar + ' Used config: ' + config);
+  });
+
+  var previous_force_state = grunt.option("force");
+
+  grunt.registerTask("force", 'A helper task for temporary en/disabling the force flag', function(set){
+    if (set === "on") {
+      grunt.option("force", true);
+    } else if (set === "off") {
+      grunt.option("force", false);
+    } else if (set === "restore") {
+      grunt.option("force", previous_force_state);
+    }
   });
 
 };
