@@ -215,12 +215,12 @@ module.exports = function (grunt) {
     'prepare:server',
     'run:server',
 
-    // karma task fails when a test failed
-    'force:true',
+    // don't fail task when a test failed
+    'force:on',
     'karma:test',
+    'mochaTest:test',
     'force:restore',
 
-    'mochaTest:test',
     'stop:server'
   ]);
 
