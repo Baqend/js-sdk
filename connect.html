@@ -10,13 +10,13 @@
     source.postMessage(document.getElementById('sdk').text, '*');
 
     window.addEventListener('message', send, false);
-
     function send(event) {
-      if (!event.data.cid)
+      var msg = JSON.parse(event.data);
+      if (!msg.cid) {
         return;
+      }
 
       var xhr = new XMLHttpRequest();
-      var msg = event.data;
       msg.origin = event.origin;
 
       xhr.onreadystatechange = function() {
@@ -46,7 +46,7 @@
         entity: xhr.responseText
       };
 
-      source.postMessage(msg, message.origin);
+      source.postMessage(JSON.stringify(msg), message.origin);
     }
   </script>
 </head>
