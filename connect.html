@@ -12,9 +12,9 @@
     window.addEventListener('message', send, false);
     function send(event) {
       var msg = JSON.parse(event.data);
-      if (!msg.cid) {
+
+      if (!msg.cid)
         return;
-      }
 
       var xhr = new XMLHttpRequest();
       msg.origin = event.origin;
@@ -46,9 +46,7 @@
         entity: xhr.responseText
       };
 
-      source.postMessage(JSON.stringify(msg), message.origin);
+      source.postMessage(message.cid + JSON.stringify(msg), message.origin);
     }
   </script>
-</head>
-<body></body>
-</html>
+</head><body></body></html>
