@@ -1,6 +1,6 @@
 if (typeof window != "undefined") {
 
-  describe('Global DB', function() {
+  describe('Test Global DB', function() {
     before(function() {
       expect(DB).be.ok;
 
