@@ -104,9 +104,11 @@ describe('Test dao', function() {
       expect(db.contains(obj)).be.true;
     });
 
+    var glob = (typeof window != 'undefined'? window: global);
     it('should attach implicit attached objects to same db', function() {
       return emf.createEntityManager().then(function(globalDb) {
-        (typeof window != 'undefined'? window: global).db = globalDb;
+        var prevDB = glob.DB;
+        glob.DB = globalDb;
 
         var obj = new personType.typeConstructor();
         expect(obj._metadata.db).equals(globalDb);
@@ -117,13 +119,14 @@ describe('Test dao', function() {
         expect(obj._metadata.db).equals(globalDb);
         expect(globalDb.contains(obj)).be.true;
 
-        (typeof window != 'undefined'? window: global).db = undefined;
+        glob.DB = prevDB;
       });
     });
 
     it('should not reattach implicit attached objects to another db', function() {
       return emf.createEntityManager().then(function(globalDb) {
-        (typeof window != 'undefined'? window: global).db = globalDb;
+        var prevDB = glob.DB;
+        glob.DB = globalDb;
 
         var obj = new personType.typeConstructor();
         expect(obj._metadata.db).equals(globalDb);
@@ -132,7 +135,7 @@ describe('Test dao', function() {
         expect(obj._metadata.db).equals(globalDb);
         expect(db.contains(obj)).be.false;
 
-        (typeof window != 'undefined'? window: global).db = undefined;
+        glob.DB = prevDB;
       });
     });
   });

@@ -7,10 +7,8 @@ if (typeof jspa == 'undefined') {
   jspa = require('../lib');
 }
 
-var isBrowser = typeof window != "undefined";
-
 describe("Test db", function() {
-  var entityManager;
+  var db;
 
   beforeEach(function() {
     var model = [
@@ -45,27 +43,28 @@ describe("Test db", function() {
     ];
     var emf = new jspa.EntityManagerFactory(env.TEST_SERVER, model);
 
-    if(isBrowser) {
-      window.db = null;
-    }
-
     return emf.createEntityManager().then(function(em) {
-      entityManager = em;
+      db = em;
+    });
+  });
+
+  it('should call ready method', function() {
+    return db.ready(function(localDb) {
+      expect(localDb).equals(db);
     });
   });
 
   describe('Test enhancement', function() {
-
     it('should add DAO methods', function() {
-      expect(entityManager.TestClass).be.ok;
-      expect(entityManager.TestClass.find).be.ok;
-      expect(entityManager.TestClass.get).be.ok;
-      expect(entityManager.TestClass.methods).be.ok;
-      expect(entityManager.TestClass.addMethods).be.ok;
-      expect(entityManager.TestClass.addMethod).be.ok;
-      expect(entityManager.TestClass.partialUpdate).be.ok;
+      expect(db.TestClass).be.ok;
+      expect(db.TestClass.find).be.ok;
+      expect(db.TestClass.get).be.ok;
+      expect(db.TestClass.methods).be.ok;
+      expect(db.TestClass.addMethods).be.ok;
+      expect(db.TestClass.addMethod).be.ok;
+      expect(db.TestClass.partialUpdate).be.ok;
 
-      var TestClass = entityManager.TestClass;
+      var TestClass = db.TestClass;
       var testClass = TestClass();
       expect(testClass).be.ok;
       expect(jspa.binding.Managed.isInstance(testClass)).be.true;
@@ -83,15 +82,15 @@ describe("Test db", function() {
     });
 
     it('should not enhance dao methods to embedded objects', function() {
-      expect(entityManager.TestEmbeddedClass).be.ok;
-      expect(entityManager.TestEmbeddedClass.find).be.undefined;
-      expect(entityManager.TestEmbeddedClass.get).be.undefined;
-      expect(entityManager.TestEmbeddedClass.methods).be.ok;
-      expect(entityManager.TestEmbeddedClass.addMethods).be.ok;
-      expect(entityManager.TestEmbeddedClass.addMethod).be.ok;
-      expect(entityManager.TestEmbeddedClass.partialUpdate).be.undefined;
+      expect(db.TestEmbeddedClass).be.ok;
+      expect(db.TestEmbeddedClass.find).be.undefined;
+      expect(db.TestEmbeddedClass.get).be.undefined;
+      expect(db.TestEmbeddedClass.methods).be.ok;
+      expect(db.TestEmbeddedClass.addMethods).be.ok;
+      expect(db.TestEmbeddedClass.addMethod).be.ok;
+      expect(db.TestEmbeddedClass.partialUpdate).be.undefined;
 
-      var TestEmbeddedClass = entityManager.TestEmbeddedClass;
+      var TestEmbeddedClass = db.TestEmbeddedClass;
       var testClass = TestEmbeddedClass();
       expect(testClass).be.ok;
       expect(jspa.binding.Managed.isInstance(testClass)).be.true;
@@ -109,30 +108,30 @@ describe("Test db", function() {
     });
 
     it('should class in namespaces to be enhanced', function() {
-      var testClass = new entityManager['test.NsClass']();
+      var testClass = new db['test.NsClass']();
 
-      expect(entityManager['test.NsClass']).be.ok;
-      expect(entityManager['test.NsClass'].find).be.ok;
-      expect(entityManager.test).be.undefined;
+      expect(db['test.NsClass']).be.ok;
+      expect(db['test.NsClass'].find).be.ok;
+      expect(db.test).be.undefined;
       expect(testClass).be.ok;
     });
 
     it('should add identifier', function() {
       var classFactory = new jspa.binding.Enhancer();
 
-      var testClass = entityManager.TestClass();
+      var testClass = db.TestClass();
 
       expect(classFactory.getIdentifier(testClass.constructor)).be.ok;
     });
 
     it('should add metadata object', function() {
-      var testClass = entityManager.TestClass();
+      var testClass = db.TestClass();
 
       expect(testClass._metadata).be.ok;
     });
 
     it('should enhance custom classes', function() {
-      entityManager.TestClass = function() {
+      db.TestClass = function() {
         this.firstName = function() {
           return "firstName";
         };
@@ -141,7 +140,7 @@ describe("Test db", function() {
         };
       };
 
-      var testClass = entityManager.TestClass();
+      var testClass = db.TestClass();
       expect(testClass.firstName()).equal("firstName");
       expect(testClass.lastName()).equal("lastName");
       expect("testValue" in testClass).be.true;
@@ -159,20 +158,20 @@ describe("Test db", function() {
     });
 
     it('should call custom classes constructor', function() {
-      entityManager.TestClass = function(a,b,c) {
+      db.TestClass = function(a,b,c) {
         this.a = a;
         this.b = b;
         this.c = c;
       };
 
-      var testClass = entityManager.TestClass(1,2,3);
+      var testClass = db.TestClass(1,2,3);
       expect(testClass.a).equals(1);
       expect(testClass.b).equals(2);
       expect(testClass.c).equals(3);
     });
 
     it('should not enhance complete implemented classes', function() {
-      entityManager.TestClass = Object.inherit(jspa.binding.Entity, {
+      db.TestClass = Object.inherit(jspa.binding.Entity, {
         firstName: function() {
           return "firstName";
         },
@@ -184,7 +183,7 @@ describe("Test db", function() {
         }
       });
 
-      var testClass = entityManager.TestClass();
+      var testClass = db.TestClass();
       expect(testClass.firstName()).equal("firstName");
       expect(testClass.lastName()).equal("lastName");
       expect("testValue" in testClass).be.true;
@@ -202,43 +201,15 @@ describe("Test db", function() {
     });
 
     it('should be allowed once to set a class', function() {
-      entityManager.TestClass = function() {};
+      db.TestClass = function() {};
 
-      expect(function() {entityManager.TestClass = function() {}}).throw(Error);
+      expect(function() {db.TestClass = function() {}}).throw(Error);
     });
-
-    if(isBrowser) {
-      it('should add global DB object', function() {
-        expect(db).be.not.ok;
-        expect(DB).be.ok;
-        return DB.ready(env.TEST_SERVER).then(function(localDb) {
-          expect(localDb).equal(db);
-          expect(localDb).instanceof(jspa.EntityManager);
-        });
-      });
-
-      it('should allow to add an callback to global DB object', function() {
-        return DB.ready(env.TEST_SERVER, function(localDb) {
-          expect(localDb).equal(db);
-          expect(localDb).instanceof(jspa.EntityManager);
-        });
-      });
-
-      it('should only create one instance', function() {
-        return DB.ready(env.TEST_SERVER).then(function(oldDb) {
-          return DB.ready(env.TEST_SERVER).then(function(newDb) {
-            expect(oldDb).equal(newDb);
-            expect(db).equal(oldDb);
-          });
-        });
-      });
-    }
   });
 
   describe('Test dao methods', function() {
-
     it('should add new methods', function() {
-      var TestClass = entityManager.TestClass;
+      var TestClass = db.TestClass;
 
       var returnVal = "testMethod";
       var newMethod = function() {

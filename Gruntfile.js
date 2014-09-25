@@ -171,8 +171,10 @@ module.exports = function (grunt) {
       },
 
       dist: {
-        src: 'dist/baqend.js',
-        dest: 'dist/baqend.min.js'
+        files: {
+          'dist/baqend.min.js': 'dist/baqend.js',
+          'dist/loader.js': 'loader.js'
+        }
       }
     },
 
