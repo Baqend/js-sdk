@@ -158,7 +158,7 @@ describe('Test entity type', function () {
   });
 
   describe("time value", function() {
-    test("time", new Date(0), new Date("1970-01-01T17:33:14"));
+    test("time", new Date(0), new Date("1970-01-01T17:33:14+05:00"), [new Date("1970-01-01T17:33:14-08:00"), new Date("1970-01-01T01:33:14Z")], new Date("1970-01-01T17:33:14Z"));
   });
 
   describe("date value", function() {
@@ -372,7 +372,7 @@ describe('Test entity type', function () {
         obj[name] = value;
 
         return obj.saveAndRefresh().then(function() {
-          expect(obj[name]).eql(expectedValue);
+            expect(obj[name]).eql(expectedValue);
         });
       });
     });
