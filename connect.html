@@ -46,7 +46,7 @@
         entity: xhr.responseText
       };
 
-      source.postMessage(message.cid + JSON.stringify(msg), message.origin);
+      source.postMessage(message.cid + ':' + JSON.stringify(msg), message.origin);
     }
   </script>
 </head><body></body></html>
