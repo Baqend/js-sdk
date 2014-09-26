@@ -1,27 +1,43 @@
 if (typeof window != "undefined") {
   xdescribe('Test sdk loader', function() {
+
     var testLoader, db, pageJspa, personClass;
-    before(function(done) {
-      testLoader = document.createElement('iframe');
-      testLoader.src = '/build/test-loader.html';
+    before(function() {
 
-      var deferred = jspa.Q.defer();
-      testLoader.load = function() {
-        db = testLoader.contentWindow.DB;
-        pageJspa = testLoader.contentWindow.jspa;
-        db.ready(function() {
-          deferred.resolve();
-        });
-      };
+      var emf = new jspa.EntityManagerFactory(env.TEST_SERVER);
+      var metamodel = emf.metamodel;
+      metamodel.init();
 
-      document.body.appendChild(testLoader);
+      var TestAppPerson = new jspa.metamodel.EntityType("TestAppPerson", metamodel.entity(Object));
+      TestAppPerson.declaredAttributes.push(new jspa.metamodel.SingularAttribute(TestAppPerson, "name", metamodel.baseType(String)));
+      TestAppPerson.declaredAttributes.push(new jspa.metamodel.SingularAttribute(TestAppPerson, "age", metamodel.baseType(Number)));
+      metamodel.addType(TestAppPerson);
 
-      return deferred.promise.then(function() {
+      return metamodel.save().then(function() {
+        testLoader = document.createElement('iframe');
+        testLoader.src = '/build/test-loader.html';
 
-        db.TestAppPerson = personClass = function(name, age) {
-          this.name = name;
-          this.age = age;
+        var deferred = jspa.Q.defer();
+        testLoader.onload = function() {
+          expect(testLoader.contentWindow.jspa).be.undefined;
+          db = testLoader.contentWindow.DB;
+          db.connect(env.TEST_SERVER);
+          db.ready(function() {
+            pageJspa = testLoader.contentWindow.jspa;
+            db = testLoader.contentWindow.DB;
+            deferred.resolve();
+          });
         };
+
+        document.body.appendChild(testLoader);
+
+        return deferred.promise.then(function() {
+
+          db.TestAppPerson = personClass = function(name, age) {
+            this.name = name;
+            this.age = age;
+          };
+        });
       });
     });
 
@@ -31,7 +47,7 @@ if (typeof window != "undefined") {
 
     it('should init the sdk', function() {
       expect(pageJspa).be.ok;
-      expect(db instanceof pageJspa.EntityManager);
+      expect(db instanceof pageJspa.EntityManager).be.true;
       expect(db.TestAppPerson).be.ok;
     });
 

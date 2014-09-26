@@ -16,8 +16,9 @@
       window.addEventListener('message', DB._receive, false);
 
       var iframe = document.createElement('iframe');
-      iframe.style = 'width:1px;height:1px;position:absolute;top:-10px;left:-10px';
+      iframe.setAttribute('style', 'width:1px;height:1px;position:absolute;top:-10px;left:-10px;');
       iframe.src = this._location + '/connect';
+      iframe.addEventListener('load', function() { iframe.setAttribute('data-loaded', true) }, false);
       document.body.appendChild(iframe);
 
       DB.ready(cb);
