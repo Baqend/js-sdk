@@ -1,5 +1,4 @@
 if (typeof window != "undefined") {
-
   describe('Test Global DB', function() {
     before(function() {
       expect(DB).be.ok;
@@ -22,5 +21,5 @@ if (typeof window != "undefined") {
         DB.connect(env.TEST_SERVER);
       }).throw(Error);
     });
-  })
+  });
 }

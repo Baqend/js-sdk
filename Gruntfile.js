@@ -65,7 +65,17 @@ module.exports = function (grunt) {
           }
         },
         files: {
-          'build/debug.html': 'debug/debug.html'
+          'build/debug.html': 'tpl/debug.tpl'
+        }
+      },
+      loader: {
+        options: {
+          data: {
+            loader: grunt.file.read('loader.js')
+          }
+        },
+        files: {
+          'build/test-loader.html': 'tpl/test-loader.tpl'
         }
       }
     },
@@ -201,6 +211,7 @@ module.exports = function (grunt) {
 
   grunt.registerTask('debug', [
     'template:debug',
+    'template:loader',
     'connect:debug',
     'browserify:debug'
   ]);
@@ -213,6 +224,7 @@ module.exports = function (grunt) {
 
   grunt.registerTask('test', [
     'browserify:test',
+    'template:loader',
     'unzip:test',
     'prepare:server',
     'run:server',
