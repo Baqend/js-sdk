@@ -1,5 +1,5 @@
 if (typeof window != "undefined") {
-  xdescribe('Test sdk loader', function() {
+  describe('Test sdk loader', function() {
 
     var testLoader, db, pageJspa, personClass;
     before(function() {
@@ -33,11 +33,11 @@ if (typeof window != "undefined") {
 
         return deferred.promise.then(function() {
 
-          db.TestAppPerson = personClass = function(name, age) {
-            this.name = name;
-            this.age = age;
-          };
-        });
+            db.TestAppPerson = personClass = function(name, age) {
+              this.name = name;
+              this.age = age;
+            };
+          });
       });
     });
 

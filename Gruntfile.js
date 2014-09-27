@@ -18,8 +18,9 @@ module.exports = function (grunt) {
     browserify: {
       options: {
         browserifyOptions: {
-          builtins: ['_process'],
+          builtins: [],
           insertGlobals: false,
+          detectGlobals: false,
           standalone: "jspa"
         }
       },
@@ -32,8 +33,9 @@ module.exports = function (grunt) {
           watch: true,
           keepAlive: true,
           browserifyOptions: {
-            builtins: ['_process'],
+            builtins: [],
             insertGlobals: false,
+            detectGlobals: false,
             standalone: "jspa",
             debug: true
           }
