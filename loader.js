@@ -25,10 +25,10 @@
     },
     _receive: function(e) {
       if (e.origin == DB._location) {
+        window.removeEventListener('message', DB._receive, false);
         var script = document.createElement('script');
         script.text = e.data;
         document.body.appendChild(script);
-        window.removeEventListener('message', DB._receive, false);
       }
     }
   };

@@ -3,10 +3,10 @@
 <head>
   <meta charset="utf-8">
   <title>Test App</title>
-  <script type="text/javascript">
-    <%= loader %>
-  </script>
 </head>
 <body>
+<script type="text/javascript">
+  <%= loader %>
+</script>
 </body>
 </html>

@@ -1,8 +1,9 @@
 if (typeof window != "undefined") {
   describe('Test sdk loader', function() {
-
     var testLoader, db, pageJspa, personClass;
     before(function() {
+      var basePath = document.querySelector('script[src*="/baqend."]').src;
+      basePath = basePath.substring(0, basePath.lastIndexOf('/') + 1);
 
       var emf = new jspa.EntityManagerFactory(env.TEST_SERVER);
       var metamodel = emf.metamodel;
@@ -15,7 +16,7 @@ if (typeof window != "undefined") {
 
       return metamodel.save().then(function() {
         testLoader = document.createElement('iframe');
-        testLoader.src = '/build/test-loader.html';
+        testLoader.src = basePath + 'test-loader.html';
 
         var deferred = jspa.Q.defer();
         testLoader.onload = function() {
