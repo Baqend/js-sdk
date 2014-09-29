@@ -238,6 +238,24 @@ describe("Test db", function() {
       expect(testClass.newMethod4()).equal(returnVal);
     });
 
+    it('should convert to JSON', function() {
+      var testClass = db.TestClass();
+      testClass.testValue = 5;
+      var json = testClass.toJson();
+      expect(json).be.ok;
+      expect(json.testValue).eqls(testClass.testValue);
+      expect(json._metadata).be.undefined;
+      expect(json._objectInfo).be.undefined;
+    });
+
+    it('should convert from JSON', function() {
+      var testClass = db.TestClass();
+      testClass.testValue = 5;
+      var newTestClass = db.TestClass.fromJson(testClass.toJson());
+      expect(newTestClass).be.ok;
+      expect(newTestClass.testValue).eqls(testClass.testValue);
+    });
+
   });
 
 });

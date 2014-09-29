@@ -153,6 +153,19 @@ describe('Test dao', function() {
       });
     });
 
+    it('should save new object from JSON', function() {
+      var person = {
+        "name": "TestName",
+        "address": {
+          "zip": 22527
+        }
+      };
+      return db.Person.fromJson(person).save(function(saved) {
+        expect(saved.name).eqls(person.name);
+        expect(saved.address.zip).eqls(person.address.zip);
+      });
+    });
+
     it('should save and refresh object', function() {
       var person = db.Person();
       person.name = "Old Name";
@@ -686,6 +699,14 @@ describe('Test dao', function() {
 
     after(function() {
       child.remove(true, true);
+    });
+
+    it('should save and convert result to JSON', function() {
+      return child.save(false, true).then(function(saved) {
+        var json = saved.toJson();
+        expect(json.aunt).eqls(mother._metadata.ref);
+        expect(json.name).eqls(child.name);
+      });
     });
 
     it('should save and remove referenced objects by depth', function() {
