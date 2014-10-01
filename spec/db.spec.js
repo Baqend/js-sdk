@@ -116,7 +116,7 @@ describe("Test db", function() {
       expect(testClass).be.ok;
     });
 
-    it('should add identifier', function() {
+    it('should add ref', function() {
       var classFactory = new jspa.binding.Enhancer();
 
       var testClass = db.TestClass();

@@ -147,7 +147,7 @@ describe('Test user and roles', function() {
       user3 = db.User();
       user3.username = makeLogin();
 
-      return jspa.Q.all([user1.save(true), user2.save(true), user3.save(true)]);
+      return jspa.Q.all([user1.insert(), user2.insert(), user3.insert()]);
     });
 
     it('should save and load', function() {
@@ -159,7 +159,7 @@ describe('Test user and roles', function() {
       expect(role.hasUser(user2)).be.false;
       expect(role.hasUser(user3)).be.true;
 
-      return role.save().then(function() {
+      return role.insert().then(function() {
         expect(role.hasUser(user1)).be.true;
         expect(role.hasUser(user2)).be.false;
         expect(role.hasUser(user3)).be.true;

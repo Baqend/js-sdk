@@ -33,12 +33,11 @@ if (typeof window != "undefined") {
         document.body.appendChild(testLoader);
 
         return deferred.promise.then(function() {
-
-            db.TestAppPerson = personClass = function(name, age) {
-              this.name = name;
-              this.age = age;
-            };
-          });
+          db.TestAppPerson = personClass = function(name, age) {
+            this.name = name;
+            this.age = age;
+          };
+        });
       });
     });
 
