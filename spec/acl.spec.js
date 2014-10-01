@@ -161,7 +161,7 @@ describe('Test Acl', function() {
     });
   });
 
-  describe('protected Object operations', function() {
+  xdescribe('protected Object operations', function() {
     var db2, db3, role23, role13;
     before(function() {
       return jspa.Q.all([createUserDb('AclUser2'), createUserDb('AclUser3')]).then(function(arr) {
