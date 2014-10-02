@@ -160,7 +160,7 @@ describe('Test dao', function() {
           "zip": 22527
         }
       };
-      return db.Person.fromJson(person).save(function(saved) {
+      return db.Person.fromJSON(person).save(function(saved) {
         expect(saved.name).eqls(person.name);
         expect(saved.address.zip).eqls(person.address.zip);
       });
@@ -297,7 +297,29 @@ describe('Test dao', function() {
     it('should not be allowed to call save twice', function() {
       var person = db.Person();
       person.save();
-      expect(person.save).to.throw(Error);
+      expect(person.save.bind(person)).to.throw(Error);
+    });
+
+    it('should not save and overwrite afterward changed values', function() {
+      var person = db.Person();
+      person.name = 'Old Name';
+      var promise = person.save();
+      person.name = 'New Name';
+      return promise.then(function() {
+        expect(person._metadata.isDirty).be.true;
+        expect(person.name).equals('New Name');
+      })
+    });
+
+    it('should not save afterward changed values but refrehs it', function() {
+      var person = db.Person();
+      person.name = 'Old Name';
+      var promise = person.saveAndRefresh();
+      person.name = 'New Name';
+      return promise.then(function() {
+        expect(person._metadata.isDirty).be.false;
+        expect(person.name).equals('Old Name');
+      })
     });
   });
 
@@ -703,7 +725,7 @@ describe('Test dao', function() {
 
     it('should save and convert result to JSON', function() {
       return child.save(false, true).then(function(saved) {
-        var json = saved.toJson();
+        var json = saved.toJSON();
         expect(json.aunt).eqls(mother._metadata.ref);
         expect(json.name).eqls(child.name);
       });

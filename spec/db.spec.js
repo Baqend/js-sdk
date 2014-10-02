@@ -241,7 +241,7 @@ describe("Test db", function() {
     it('should convert to JSON', function() {
       var testClass = db.TestClass();
       testClass.testValue = 5;
-      var json = testClass.toJson();
+      var json = testClass.toJSON();
       expect(json).be.ok;
       expect(json.testValue).eqls(testClass.testValue);
       expect(json._metadata).be.undefined;
@@ -251,7 +251,7 @@ describe("Test db", function() {
     it('should convert from JSON', function() {
       var testClass = db.TestClass();
       testClass.testValue = 5;
-      var newTestClass = db.TestClass.fromJson(testClass.toJson());
+      var newTestClass = db.TestClass.fromJSON(testClass.toJSON());
       expect(newTestClass).be.ok;
       expect(newTestClass.testValue).eqls(testClass.testValue);
     });
