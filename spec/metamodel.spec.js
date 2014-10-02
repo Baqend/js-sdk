@@ -409,7 +409,7 @@ describe("Test metamodel classes", function () {
   });
 });
 
-describe('Metamodel', function() {
+describe('Test Metamodel', function() {
   var metamodel;
 
   beforeEach(function() {
@@ -583,4 +583,279 @@ describe('Metamodel', function() {
     expect(loadEmbeddedType.getDeclaredAttribute('ref').name).equals('ref');
     expect(loadEmbeddedType.getDeclaredAttribute('ref').type).equals(loadType);
   }
+
+  xdescribe('Acl', function() {
+    var db, emf, obj, user1, user2, user3;
+
+    function createUser(emf, username) {
+      return emf.createEntityManager().then(function(db) {
+        return db.User.register(username, 'secret').catch(function() {
+          return db.User.login(username, 'secret');
+        }).then(function(user) {
+          return db.User.logout().then(function() {
+            return user;
+          });
+        });
+      });
+    }
+
+    before(function() {
+      var localEmf = new jspa.EntityManagerFactory(env.TEST_SERVER);
+
+      return jspa.Q.all([
+        createUser(localEmf, 'SchemaAclUser1'),
+        createUser(localEmf, 'SchemaAclUser2'),
+        createUser(localEmf, 'SchemaAclUser3')
+      ]).then(function(users) {
+        user1 = users[0];
+        user2 = users[1];
+        user3 = users[2];
+
+        var metamodel = localEmf.createMetamodel();
+        metamodel.init()
+
+        var type, embeddedType;
+        metamodel.addType(type = new jspa.metamodel.EntityType("SchemaAclPerson", metamodel.entity(Object)));
+        metamodel.addType(embeddedType = new jspa.metamodel.EmbeddableType("SchemaAclEmbeddedPerson"));
+
+        type.declaredAttributes.push(new jspa.metamodel.SingularAttribute(type, "name", metamodel.baseType(String)));
+        embeddedType.declaredAttributes.push(new jspa.metamodel.SingularAttribute(embeddedType, "name", metamodel.baseType(String)));
+
+        type.createPermission.denyAccess(user2);
+        type.updatePermission.denyAccess(user2).denyAccess(user3);
+        type.deletePermission.denyAccess(user2).denyAccess(user3);
+        type.queryPermission.denyAccess(user2);
+        type.schemaAddPermission.denyAccess(user2);
+        type.schemaReplacePermission.denyAccess(user2).denyAccess(user3);
+        type.schemaSubclassPermission.denyAccess(user2);
+
+        embeddedType.loadPermission.denyAccess(user2);
+        embeddedType.schemaAddPermission.denyAccess(user2).denyAccess(user3);
+        embeddedType.schemaReplacePermission.denyAccess(user2).denyAccess(user3);
+
+        return metamodel.save();
+      }).then(function() {
+        emf = new jspa.EntityManagerFactory(env.TEST_SERVER);
+
+        return emf.createEntityManager(db).then(function(em) {
+          db = em;
+          obj = db.SchemaAclPerson();
+          return obj.insert();
+        });
+      });
+    });
+
+    it('should convert acls', function() {
+      var metamodel = emf.createMetamodel();
+      return metamodel.load().then(function() {
+        var AclPerson = metamodel.entity("SchemaAclPerson");
+        for (var name in AclPerson) {
+          if (name.indexOf('Permission') != -1 && name != 'loadPermission') {
+            expect(AclPerson[name].isDenied(user2)).be.true;
+          }
+        }
+
+        var EmbeddableType = metamodel.embeddable("SchemaAclEmbeddedPerson");
+        for (name in EmbeddableType) {
+          if (name.indexOf('Permission') != -1) {
+            expect(EmbeddableType[name].isDenied(user2)).be.true;
+          }
+        }
+      });
+    });
+
+    describe('for user1', function() {
+      var metamodel;
+      before(function() {
+        return db.login(user1.username, 'secret', true);
+      });
+
+      after(function() {
+        return db.logout(true);
+      });
+
+      beforeEach(function() {
+        metamodel = emf.createMetamodel();
+      });
+
+      it('should allow schema load', function() {
+        return metamodel.load().then(function() {
+          expect(metamodel.entity('SchemaAclPerson')).be.ok;
+          expect(metamodel.embeddable('SchemaAclEmbeddedPerson')).be.ok;
+        });
+      });
+
+      it('should allow schema add', function() {
+        return metamodel.load().then(function() {
+          return expect(metamodel.save()).be.fulfilled;
+        });
+      });
+
+      it('should allow schema replace', function() {
+        return metamodel.load().then(function() {
+          return expect(metamodel.save(true)).be.fulfilled;
+        });
+      });
+
+      it('should allow schema subclassing', function() {
+        return metamodel.load().then(function() {
+          var AclPerson = metamodel.entity('SchemaAclPerson');
+          var child = new jspa.metamodel.EntityType("SchemaAclChildPerson", AclPerson);
+          metamodel.addType(child);
+
+          return expect(metamodel.save(child)).be.fulfilled;
+        });
+      });
+
+      it('should allow object load', function() {
+        expect(db.SchemaAclPerson.get(obj.id)).be.fulfilled;
+      });
+
+      it('should allow object creation', function() {
+        return expect(db.SchemaAclPerson().insert()).be.fulfilled;
+      });
+
+      it('should allow object update', function() {
+        return db.SchemaAclPerson().insert().then(function(obj) {
+          return expect(obj.save()).be.fulfilled;
+        });
+      });
+
+      it('should allow object removal', function() {
+        return db.SchemaAclPerson().insert().then(function(obj) {
+          return expect(obj.remove()).be.fulfilled;
+        });
+      });
+    });
+
+    describe('for user2', function() {
+      var metamodel;
+      before(function() {
+        return db.login(user2.username, 'secret', true);
+      });
+
+      after(function() {
+        return db.logout(true);
+      });
+
+      beforeEach(function() {
+        metamodel = emf.createMetamodel();
+      });
+
+      it('should allow/deny schema load', function() {
+        return metamodel.load().then(function() {
+          expect(metamodel.entity('SchemaAclPerson')).be.ok;
+          expect(metamodel.embeddable('SchemaAclEmbeddedPerson')).be.undefined;
+        });
+      });
+
+      it('should deny schema add', function() {
+        return metamodel.load().then(function() {
+          return expect(metamodel.save()).be.rejected;
+        });
+      });
+
+      it('should deny schema replace', function() {
+        return metamodel.load().then(function() {
+          return expect(metamodel.save(true)).be.rejected;
+        });
+      });
+
+      it('should deny schema subclassing', function() {
+        return metamodel.load().then(function() {
+          var AclPerson = metamodel.entity('SchemaAclPerson');
+          var child = new jspa.metamodel.EntityType("SchemaAclChildPerson", AclPerson);
+          metamodel.addType(child);
+
+          return expect(metamodel.save(child)).be.rejected;
+        });
+      });
+
+      it('should allow object load', function() {
+        expect(db.SchemaAclPerson.get(obj.id)).be.fulfilled;
+      });
+
+      it('should deny object creation', function() {
+        return expect(db.SchemaAclPerson().insert()).be.rejected;
+      });
+
+      it('should deny object update', function() {
+        return db.SchemaAclPerson().get(obj.id).then(function(obj) {
+          return expect(obj.save()).be.rejected;
+        });
+      });
+
+      it('should deny object removal', function() {
+        return db.SchemaAclPerson().get(obj.id).then(function(obj) {
+          return expect(obj.remove()).be.rejected;
+        });
+      });
+    });
+
+    describe('for user3', function() {
+      var metamodel;
+      before(function() {
+        return db.login(user3.username, 'secret', true);
+      });
+
+      after(function() {
+        return db.logout(true);
+      });
+
+      beforeEach(function() {
+        metamodel = emf.createMetamodel();
+      });
+
+      it('should allow schema load', function() {
+        return metamodel.load().then(function() {
+          expect(metamodel.entity('SchemaAclPerson')).be.ok;
+          expect(metamodel.embeddable('SchemaAclEmbeddedPerson')).be.ok;
+        });
+      });
+
+      it('should allow schema add', function() {
+        return metamodel.load().then(function() {
+          var AclPerson = metamodel.entity('SchemaAclPerson');
+          return expect(metamodel.save(AclPerson)).be.fulfilled;
+        });
+      });
+
+      it('should deny schema replace', function() {
+        return metamodel.load().then(function() {
+          var AclPerson = metamodel.entity('SchemaAclPerson');
+          return expect(metamodel.save(AclPerson, true)).be.rejected;
+        });
+      });
+
+      it('should allow schema subclassing', function() {
+        return metamodel.load().then(function() {
+          var AclPerson = metamodel.entity('SchemaAclPerson');
+          var child = new jspa.metamodel.EntityType("SchemaAclChildPerson", AclPerson);
+          metamodel.addType(child);
+
+          return expect(metamodel.save(child)).be.fulfilled;
+        });
+      });
+
+      it('should allow object load', function() {
+        expect(db.SchemaAclPerson.get(obj.id)).be.fulfilled;
+      });
+
+      it('should allow object creation', function() {
+        return expect(db.SchemaAclPerson().insert()).be.fulfilled;
+      });
+
+      it('should deny object update', function() {
+        return db.SchemaAclPerson().get(obj.id).then(function(obj) {
+          return expect(obj.save()).be.rejected;
+        });
+      });
+
+      it('should deny object removal', function() {
+        return db.SchemaAclPerson().get(obj.id).then(function(obj) {
+          return expect(obj.remove()).be.rejected;
+        });
+      });
+    });
+  });
 });
