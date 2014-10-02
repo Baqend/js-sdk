@@ -29,8 +29,8 @@ describe('Test Acl', function() {
 
   function createUserDb(username) {
     return emf.createEntityManager().then(function(em) {
-      return em.User.register('AclUser1', 'secret').catch(function() {
-        return em.User.login('AclUser1', 'secret');
+      return em.User.register(username, 'secret').catch(function() {
+        return em.User.login(username, 'secret');
       }).then(function() {
         return em;
       })
@@ -161,28 +161,32 @@ describe('Test Acl', function() {
     });
   });
 
-  xdescribe('protected Object operations', function() {
+  describe('protected Object operations', function() {
     var db2, db3, role23, role13;
     before(function() {
       return jspa.Q.all([createUserDb('AclUser2'), createUserDb('AclUser3')]).then(function(arr) {
         db2 = arr[0];
         db3 = arr[1];
 
-        return jspa.Q.all([db.User.get(db2.User.me.id), db.User.get(db3.User.me.id)])
-      }).spread(function(user2, user3) {
         role23 = db.Role();
         role23.name = "Role2_3";
-        role23.users.add(user2);
-        role23.users.add(user3);
+        role23.users.add(db.getReference(db2.me._metadata.ref));
+        role23.users.add(db.getReference(db3.me._metadata.ref));
         var promise1 = role23.save();
 
         role13 = db.Role();
         role13.name = "Role1_3";
         role13.users.add(db.User.me);
-        role13.users.add(user3);
+        role13.users.add(db.getReference(db3.me._metadata.ref));
         var promise2 = role13.save();
 
         return jspa.Q.all([promise1, promise2]);
+      }).then(function() {
+        return jspa.Q.all([
+            db.renew(),
+            db2.renew(),
+            db3.renew()
+        ]);
       });
     });
 
@@ -190,14 +194,13 @@ describe('Test Acl', function() {
       var obj = db.AclPerson();
       obj.acl.allowReadAccess(db.User.me);
       obj.acl.allowReadAccess(db2.User.me);
-
       var id = obj._metadata.id;
       return obj.save().then(function() {
         return jspa.Q.all([
           expect(db.AclPerson.get(id)).eventually.property('id', id),
           expect(db2.AclPerson.get(id)).eventually.property('id', id),
-          expect(db3.AclPerson.get(id)).rejectedWith(Error)
-        ])
+          expect(db3.AclPerson.get(id)).eventually.be.null
+        ]);
       });
     });
 
@@ -209,7 +212,7 @@ describe('Test Acl', function() {
       return obj.save().then(function() {
         return jspa.Q.all([
           expect(db.AclPerson.get(id)).eventually.property('id', id),
-          expect(db2.AclPerson.get(id)).rejectedWith(Error),
+          expect(db2.AclPerson.get(id)).eventually.be.null,
           expect(db3.AclPerson.get(id)).eventually.property('id', id)
         ]);
       });
@@ -223,7 +226,7 @@ describe('Test Acl', function() {
       return obj.save().then(function() {
         return jspa.Q.all([
           expect(db.AclPerson.get(id)).eventually.property('id', id),
-          expect(db2.AclPerson.get(id)).rejectedWith(Error),
+          expect(db2.AclPerson.get(id)).eventually.be.null,
           expect(db3.AclPerson.get(id)).eventually.property('id', id)
         ]);
       });
@@ -237,8 +240,8 @@ describe('Test Acl', function() {
       return obj.save().then(function() {
         return jspa.Q.all([
           expect(db.AclPerson.get(id)).eventually.property('id', id),
-          expect(db2.AclPerson.get(id)).rejectedWith(Error),
-          expect(db3.AclPerson.get(id)).rejectedWith(Error)
+          expect(db2.AclPerson.get(id)).eventually.be.null,
+          expect(db3.AclPerson.get(id)).eventually.be.null
         ]);
       });
     });

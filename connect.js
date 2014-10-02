@@ -27,9 +27,10 @@ function send(event) {
 
 function receive(xhr, message) {
   var headers = {};
-  for (var name in message.responseHeaders) {
+
+  message.responseHeaders.forEach(function(name) {
     headers[name] = xhr.getResponseHeader(name);
-  }
+  });
 
   var msg = {
     cid: message.cid,

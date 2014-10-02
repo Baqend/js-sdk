@@ -132,6 +132,33 @@ describe('Test user and roles', function() {
         }).throw(Error);
       });
     });
+
+    if(typeof window != 'undefined') {
+      it('should use cookie if global', function() {
+        DB.connect && DB.connect(env.TEST_SERVER);
+        return DB.ready().then(function() {
+          var login = makeLogin();
+          return DB.User.register(login, 'secret');
+        }).then(function() {
+          expect(DB.isGlobal).be.true;
+          expect(DB._token).be.not.ok;
+          return DB.renew();
+        });
+      });
+    }
+
+    it('should renew user token', function() {
+      expect(db.isGlobal).be.false;
+      var login = makeLogin();
+      var oldToken;
+      return db.register(login, 'secret').delay(1000).then(function() {
+        expect(db._token).be.ok;
+        oldToken = db._token;
+        return db.renew();
+      }).then(function() {
+        expect(db._token).not.eqls(oldToken);
+      });
+    });
   });
 
   describe('roles', function() {
