@@ -1,4 +1,6 @@
 var source = window.parent;
+if (source == window)
+  throw new Error('Connection not established via iframe.');
 
 source.postMessage(document.getElementById('sdk').text, '*');
 
@@ -6,7 +8,7 @@ window.addEventListener('message', send, false);
 function send(event) {
   var msg = JSON.parse(event.data);
 
-  if (!msg.cid)
+  if (!msg.mid)
     return;
 
   var xhr = new XMLHttpRequest();
@@ -33,12 +35,11 @@ function receive(xhr, message) {
   });
 
   var msg = {
-    cid: message.cid,
     mid: message.mid,
     statusCode: xhr.status,
     headers: headers,
     entity: xhr.responseText
   };
 
-  source.postMessage(message.cid  + ':' +  JSON.stringify(msg), message.origin);
+  source.postMessage(JSON.stringify(msg), message.origin);
 }
