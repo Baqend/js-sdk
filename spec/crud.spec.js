@@ -352,8 +352,8 @@ describe('Test dao', function() {
     });
 
     it('should retrieved same version in same db context', function() {
-      var p1 = db.Person.get(person._metadata.id);
-      var p2 = db.Person.get(person._metadata.id);
+      var p1 = db.Person.get(person.id);
+      var p2 = db.Person.get(person.id);
 
       return jspa.Q.all([p1, p2]).spread(function(loaded1, loaded2) {
         expect(loaded1).be.ok;
@@ -361,17 +361,17 @@ describe('Test dao', function() {
       });
     });
 
-    it('should refresh id the object is stale', function() {
+    it('should refresh if the object is stale', function() {
       person.name = 'Tom Miller';
 
       return emf.createEntityManager(function(db2) {
-        return db2.Person.get(person._metadata.id).then(function(person2) {
+        return db2.Person.get(person.id).then(function(person2) {
           expect(person2.name).equals('Peter Mueller');
           person2.name = 'Alice Ford';
           return person2.save();
         });
       }).then(function(person2) {
-        return db.Person.get(person._metadata.id).then(function(person3) {
+        return db.Person.get(person.id).then(function(person3) {
           expect(person3).equals(person);
           expect(person3.name).equals('Alice Ford');
           expect(person3._metadata.version).equals(person2._metadata.version);
@@ -382,15 +382,15 @@ describe('Test dao', function() {
     it('should not refresh if a loaded object is still up to date', function() {
       person.name = 'Tom Miller';
 
-      return db.Person.get(person._metadata.id).then(function(obj) {
+      return db.Person.get(person.id).then(function(obj) {
         expect(obj.name).equals('Tom Miller');
       });
     });
 
     it('should retrieved different version in different db context', function() {
       return emf.createEntityManager().then(function(otherDb) {
-        var p1 = db.Person.get(person._metadata.id);
-        var p2 = otherDb.Person.get(person._metadata.id);
+        var p1 = db.Person.get(person.id);
+        var p2 = otherDb.Person.get(person.id);
 
         return jspa.Q.all([p1, p2]).spread(function(loaded1, loaded2) {
           expect(loaded1).not.equals(loaded2);
@@ -414,7 +414,7 @@ describe('Test dao', function() {
     it('should remove object from database', function() {
       return person.remove().then(function(removed) {
         expect(person).eqls(removed);
-        return expect(db.Person.get(person._metadata.id)).become(null);
+        return expect(db.Person.get(person.id)).become(null);
       });
     });
 

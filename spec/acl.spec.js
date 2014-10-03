@@ -27,17 +27,20 @@ describe('Test Acl', function() {
     });
   });
 
+  after(function() {
+    var user = db.User.me;
+    return user.remove();
+  });
+
   function createUserDb(username) {
     return emf.createEntityManager().then(function(em) {
-      return em.User.register(username, 'secret').catch(function() {
-        return em.User.login(username, 'secret');
-      }).then(function() {
+      return em.User.register(username, 'secret').then(function() {
         return em;
-      })
+      });
     });
   }
 
-  describe('Object', function() {
+  xdescribe('Object', function() {
 
     it('should be created with an empty rule set', function() {
       var acl = db.AclPerson().acl;
@@ -183,11 +186,18 @@ describe('Test Acl', function() {
         return jspa.Q.all([promise1, promise2]);
       }).then(function() {
         return jspa.Q.all([
-            db.renew(),
-            db2.renew(),
-            db3.renew()
+          db.renew(),
+          db2.renew(),
+          db3.renew()
         ]);
       });
+    });
+
+    after(function() {
+      jspa.Q.all([
+        db2.User.me.remove(),
+        db3.User.me.remove()
+      ]);
     });
 
     it('should allow read access by user', function() {
