@@ -22,7 +22,7 @@ describe('Test Acl', function() {
       metamodel.save();
     });
 
-    return createUserDb('AclUser1').then(function(em) {
+    return createUserDb().then(function(em) {
       db = em;
     });
   });
@@ -32,15 +32,15 @@ describe('Test Acl', function() {
     return user.remove();
   });
 
-  function createUserDb(username) {
+  function createUserDb() {
     return emf.createEntityManager().then(function(em) {
-      return em.User.register(username, 'secret').then(function() {
+      return em.User.register(makeLogin(), 'secret').then(function() {
         return em;
       });
     });
   }
 
-  xdescribe('Object', function() {
+  describe('Object', function() {
 
     it('should be created with an empty rule set', function() {
       var acl = db.AclPerson().acl;
@@ -167,7 +167,7 @@ describe('Test Acl', function() {
   describe('protected Object operations', function() {
     var db2, db3, role23, role13;
     before(function() {
-      return jspa.Q.all([createUserDb('AclUser2'), createUserDb('AclUser3')]).then(function(arr) {
+      return jspa.Q.all([createUserDb(), createUserDb()]).then(function(arr) {
         db2 = arr[0];
         db3 = arr[1];
 
