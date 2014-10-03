@@ -584,35 +584,31 @@ describe('Test Metamodel', function() {
     expect(loadEmbeddedType.getDeclaredAttribute('ref').type).equals(loadType);
   }
 
-  xdescribe('Acl', function() {
+  describe('Acl', function() {
     var db, emf, obj, user1, user2, user3;
 
     function createUser(emf, username) {
       return emf.createEntityManager().then(function(db) {
-        return db.User.register(username, 'secret').catch(function() {
-          return db.User.login(username, 'secret');
-        }).then(function(user) {
-          return db.User.logout().then(function() {
-            return user;
-          });
+        return db.User.register(username, 'secret').then(function(user) {
+          return db.User.logout().thenResolve(user);
         });
       });
     }
 
     before(function() {
-      var localEmf = new jspa.EntityManagerFactory(env.TEST_SERVER);
+      var staticEmf = new jspa.EntityManagerFactory(env.TEST_SERVER);
 
       return jspa.Q.all([
-        createUser(localEmf, 'SchemaAclUser1'),
-        createUser(localEmf, 'SchemaAclUser2'),
-        createUser(localEmf, 'SchemaAclUser3')
+        createUser(staticEmf, makeLogin()),
+        createUser(staticEmf, makeLogin()),
+        createUser(staticEmf, makeLogin())
       ]).then(function(users) {
         user1 = users[0];
         user2 = users[1];
         user3 = users[2];
 
-        var metamodel = localEmf.createMetamodel();
-        metamodel.init()
+        var metamodel = staticEmf.createMetamodel();
+        metamodel.init();
 
         var type, embeddedType;
         metamodel.addType(type = new jspa.metamodel.EntityType("SchemaAclPerson", metamodel.entity(Object)));
@@ -700,7 +696,9 @@ describe('Test Metamodel', function() {
       it('should allow schema subclassing', function() {
         return metamodel.load().then(function() {
           var AclPerson = metamodel.entity('SchemaAclPerson');
-          var child = new jspa.metamodel.EntityType("SchemaAclChildPerson", AclPerson);
+
+          var rnd = Math.floor(Math.random() * 1000000);
+          var child = new jspa.metamodel.EntityType("SchemaAclChildPerson" + rnd, AclPerson);
           metamodel.addType(child);
 
           return expect(metamodel.save(child)).be.fulfilled;
@@ -764,7 +762,9 @@ describe('Test Metamodel', function() {
       it('should deny schema subclassing', function() {
         return metamodel.load().then(function() {
           var AclPerson = metamodel.entity('SchemaAclPerson');
-          var child = new jspa.metamodel.EntityType("SchemaAclChildPerson", AclPerson);
+
+          var rnd = Math.floor(Math.random() * 1000000);
+          var child = new jspa.metamodel.EntityType("SchemaAclChildPerson" + rnd, AclPerson);
           metamodel.addType(child);
 
           return expect(metamodel.save(child)).be.rejected;
@@ -780,13 +780,14 @@ describe('Test Metamodel', function() {
       });
 
       it('should deny object update', function() {
-        return db.SchemaAclPerson().get(obj.id).then(function(obj) {
+        return db.SchemaAclPerson.get(obj.id).then(function(obj) {
+          obj.name = 'New Name';
           return expect(obj.save()).be.rejected;
         });
       });
 
       it('should deny object removal', function() {
-        return db.SchemaAclPerson().get(obj.id).then(function(obj) {
+        return db.SchemaAclPerson.get(obj.id).then(function(obj) {
           return expect(obj.remove()).be.rejected;
         });
       });
@@ -830,7 +831,9 @@ describe('Test Metamodel', function() {
       it('should allow schema subclassing', function() {
         return metamodel.load().then(function() {
           var AclPerson = metamodel.entity('SchemaAclPerson');
-          var child = new jspa.metamodel.EntityType("SchemaAclChildPerson", AclPerson);
+
+          var rnd = Math.floor(Math.random() * 1000000);
+          var child = new jspa.metamodel.EntityType("SchemaAclChildPerson" + rnd, AclPerson);
           metamodel.addType(child);
 
           return expect(metamodel.save(child)).be.fulfilled;
@@ -846,13 +849,14 @@ describe('Test Metamodel', function() {
       });
 
       it('should deny object update', function() {
-        return db.SchemaAclPerson().get(obj.id).then(function(obj) {
+        return db.SchemaAclPerson.get(obj.id).then(function(obj) {
+          obj.name = 'New Name';
           return expect(obj.save()).be.rejected;
         });
       });
 
       it('should deny object removal', function() {
-        return db.SchemaAclPerson().get(obj.id).then(function(obj) {
+        return db.SchemaAclPerson.get(obj.id).then(function(obj) {
           return expect(obj.remove()).be.rejected;
         });
       });
