@@ -202,10 +202,13 @@ describe('Test Acl', function() {
 
     it('should allow read access by user', function() {
       var obj = db.AclPerson();
-      obj.acl.allowReadAccess(db.User.me);
-      obj.acl.allowReadAccess(db2.User.me);
-      var id = obj._metadata.id;
-      return obj.save().then(function() {
+      obj.acl.allowReadAccess(db.User.me)
+        .allowReadAccess(db2.User.me);
+
+      var id = obj.id;
+      return obj.save().then(function(o) {
+        return db.AclPerson.get(id);
+      }).then(function(obj) {
         return jspa.Q.all([
           expect(db.AclPerson.get(id)).eventually.property('id', id),
           expect(db2.AclPerson.get(id)).eventually.property('id', id),
