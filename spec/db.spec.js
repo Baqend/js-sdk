@@ -41,7 +41,9 @@ describe("Test db", function() {
         }
       }
     ];
+
     var emf = new jspa.EntityManagerFactory(env.TEST_SERVER, model);
+    emf.metamodel.save();
 
     return emf.createEntityManager().then(function(em) {
       db = em;
