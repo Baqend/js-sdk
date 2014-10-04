@@ -663,11 +663,11 @@ describe('Test Metamodel', function() {
     describe('for user1', function() {
       var metamodel;
       before(function() {
-        return db.login(user1.username, 'secret', true);
+        return db.login(user1.username, 'secret');
       });
 
       after(function() {
-        return db.logout(true);
+        return db.logout();
       });
 
       beforeEach(function() {
@@ -675,38 +675,38 @@ describe('Test Metamodel', function() {
       });
 
       it('should allow schema load', function() {
-        return metamodel.load().then(function() {
+        return metamodel.load(db.token).then(function() {
           expect(metamodel.entity('SchemaAclPerson')).be.ok;
           expect(metamodel.embeddable('SchemaAclEmbeddedPerson')).be.ok;
         });
       });
 
       it('should allow schema add', function() {
-        return metamodel.load().then(function() {
-          return expect(metamodel.save()).be.fulfilled;
+        return metamodel.load(db.token).then(function() {
+          return expect(metamodel.save(false, db.token)).be.fulfilled;
         });
       });
 
       it('should allow schema replace', function() {
-        return metamodel.load().then(function() {
-          return expect(metamodel.save(true)).be.fulfilled;
+        return metamodel.load(db.token).then(function() {
+          return expect(metamodel.save(true, db.token)).be.fulfilled;
         });
       });
 
       it('should allow schema subclassing', function() {
-        return metamodel.load().then(function() {
+        return metamodel.load(db.token).then(function() {
           var AclPerson = metamodel.entity('SchemaAclPerson');
 
           var rnd = Math.floor(Math.random() * 1000000);
           var child = new jspa.metamodel.EntityType("SchemaAclChildPerson" + rnd, AclPerson);
           metamodel.addType(child);
 
-          return expect(metamodel.save(child)).be.fulfilled;
+          return expect(metamodel.save(child, false, db.token)).be.fulfilled;
         });
       });
 
       it('should allow object load', function() {
-        expect(db.SchemaAclPerson.get(obj.id)).be.fulfilled;
+        return expect(db.SchemaAclPerson.get(obj.id)).be.fulfilled;
       });
 
       it('should allow object creation', function() {
@@ -729,11 +729,11 @@ describe('Test Metamodel', function() {
     describe('for user2', function() {
       var metamodel;
       before(function() {
-        return db.login(user2.username, 'secret', true);
+        return db.login(user2.username, 'secret');
       });
 
       after(function() {
-        return db.logout(true);
+        return db.logout();
       });
 
       beforeEach(function() {
@@ -741,38 +741,38 @@ describe('Test Metamodel', function() {
       });
 
       it('should allow/deny schema load', function() {
-        return metamodel.load().then(function() {
+        return metamodel.load(db.token).then(function() {
           expect(metamodel.entity('SchemaAclPerson')).be.ok;
           expect(metamodel.embeddable('SchemaAclEmbeddedPerson')).be.undefined;
         });
       });
 
       it('should deny schema add', function() {
-        return metamodel.load().then(function() {
-          return expect(metamodel.save()).be.rejected;
+        return metamodel.load(db.token).then(function() {
+          return expect(metamodel.save(false, db.token)).be.rejected;
         });
       });
 
       it('should deny schema replace', function() {
-        return metamodel.load().then(function() {
-          return expect(metamodel.save(true)).be.rejected;
+        return metamodel.load(db.token).then(function() {
+          return expect(metamodel.save(true, db.token)).be.rejected;
         });
       });
 
       it('should deny schema subclassing', function() {
-        return metamodel.load().then(function() {
+        return metamodel.load(db.token).then(function() {
           var AclPerson = metamodel.entity('SchemaAclPerson');
 
           var rnd = Math.floor(Math.random() * 1000000);
           var child = new jspa.metamodel.EntityType("SchemaAclChildPerson" + rnd, AclPerson);
           metamodel.addType(child);
 
-          return expect(metamodel.save(child)).be.rejected;
+          return expect(metamodel.save(child, false, db.token)).be.rejected;
         });
       });
 
       it('should allow object load', function() {
-        expect(db.SchemaAclPerson.get(obj.id)).be.fulfilled;
+        return expect(db.SchemaAclPerson.get(obj.id)).be.fulfilled;
       });
 
       it('should deny object creation', function() {
@@ -796,11 +796,11 @@ describe('Test Metamodel', function() {
     describe('for user3', function() {
       var metamodel;
       before(function() {
-        return db.login(user3.username, 'secret', true);
+        return db.login(user3.username, 'secret');
       });
 
       after(function() {
-        return db.logout(true);
+        return db.logout();
       });
 
       beforeEach(function() {
@@ -808,40 +808,40 @@ describe('Test Metamodel', function() {
       });
 
       it('should allow schema load', function() {
-        return metamodel.load().then(function() {
+        return metamodel.load(db.token).then(function() {
           expect(metamodel.entity('SchemaAclPerson')).be.ok;
           expect(metamodel.embeddable('SchemaAclEmbeddedPerson')).be.ok;
         });
       });
 
       it('should allow schema add', function() {
-        return metamodel.load().then(function() {
+        return metamodel.load(db.token).then(function() {
           var AclPerson = metamodel.entity('SchemaAclPerson');
-          return expect(metamodel.save(AclPerson)).be.fulfilled;
+          return expect(metamodel.save(AclPerson, false, db.token)).be.fulfilled;
         });
       });
 
       it('should deny schema replace', function() {
-        return metamodel.load().then(function() {
+        return metamodel.load(db.token).then(function() {
           var AclPerson = metamodel.entity('SchemaAclPerson');
-          return expect(metamodel.save(AclPerson, true)).be.rejected;
+          return expect(metamodel.save(AclPerson, true, db.token)).be.rejected;
         });
       });
 
       it('should allow schema subclassing', function() {
-        return metamodel.load().then(function() {
+        return metamodel.load(db.token).then(function() {
           var AclPerson = metamodel.entity('SchemaAclPerson');
 
           var rnd = Math.floor(Math.random() * 1000000);
           var child = new jspa.metamodel.EntityType("SchemaAclChildPerson" + rnd, AclPerson);
           metamodel.addType(child);
 
-          return expect(metamodel.save(child)).be.fulfilled;
+          return expect(metamodel.save(child, false, db.token)).be.fulfilled;
         });
       });
 
       it('should allow object load', function() {
-        expect(db.SchemaAclPerson.get(obj.id)).be.fulfilled;
+        return expect(db.SchemaAclPerson.get(obj.id)).be.fulfilled;
       });
 
       it('should allow object creation', function() {

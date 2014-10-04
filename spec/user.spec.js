@@ -41,7 +41,7 @@ describe('Test user and roles', function() {
         expect(user.username).equals(login);
         expect(user.password).be.undefined;
         expect(user).equals(db.User.me);
-        expect(db._token).be.ok;
+        expect(db.token).be.ok;
       });
     });
 
@@ -51,7 +51,7 @@ describe('Test user and roles', function() {
         return db.User.logout();
       }).then(function() {
         expect(db.User.me).be.null;
-        expect(db._token).be.null;
+        expect(db.token).be.null;
       });
     });
 
@@ -73,7 +73,7 @@ describe('Test user and roles', function() {
       }).then(function() {
         return expect(db.User.register(login, 'secret')).be.rejected;
       }).then(function() {
-        expect(db._token).be.null;
+        expect(db.token).be.null;
         expect(db.User.me).be.null;
       });
     });
@@ -93,7 +93,7 @@ describe('Test user and roles', function() {
         expect(user.username).equals(login);
         expect(user.password).be.undefined;
         expect(user).equals(db.User.me);
-        expect(db._token).be.ok;
+        expect(db.token).be.ok;
 
         return db.User.logout();
       }).then(function() {
@@ -141,7 +141,7 @@ describe('Test user and roles', function() {
           return DB.User.register(login, 'secret');
         }).then(function() {
           expect(DB.isGlobal).be.true;
-          expect(DB._token).be.not.ok;
+          expect(DB.token).be.not.ok;
           return DB.renew();
         });
       });
@@ -152,11 +152,11 @@ describe('Test user and roles', function() {
       var login = makeLogin();
       var oldToken;
       return db.register(login, 'secret').delay(1000).then(function() {
-        expect(db._token).be.ok;
-        oldToken = db._token;
+        expect(db.token).be.ok;
+        oldToken = db.token;
         return db.renew();
       }).then(function() {
-        expect(db._token).not.eqls(oldToken);
+        expect(db.token).not.eqls(oldToken);
       });
     });
   });
