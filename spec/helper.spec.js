@@ -10,3 +10,8 @@ glob.makeLogin = function() {
 
   return 'user-' + text;
 };
+
+glob.randomize = function(name) {
+  var rnd = Math.floor(Math.random() * 1000000);
+  return name + rnd;
+};
