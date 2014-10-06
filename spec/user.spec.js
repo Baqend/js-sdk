@@ -226,6 +226,19 @@ describe('Test user and roles', function() {
         expect(role.hasUser(user2)).be.true;
         expect(role.hasUser(user3)).be.true;
       });
-    })
+    });
+
+    it('should renew token', function() {
+      var login = makeLogin();
+      var oldToken;
+      return db.register(login, 'secret').delay(1000).then(function() {
+        oldToken = db.token;
+        var role = db.Role();
+        role.addUser(user1);
+        return role.insert();
+      }).then(function() {
+        expect(oldToken).not.eqls(db.token);
+      });
+    });
   });
 });
