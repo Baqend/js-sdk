@@ -143,9 +143,38 @@ describe('Test user and roles', function() {
           expect(DB.isGlobal).be.true;
           expect(DB.token).be.not.ok;
           return DB.renew();
+        }).then(function() {
+          return DB.logout();
+        });
+      });
+
+      it('should remove cookie if global', function() {
+        DB.connect && DB.connect(env.TEST_SERVER);
+        return DB.ready().then(function() {
+          var login = makeLogin();
+          return DB.User.register(login, 'secret');
+        }).then(function() {
+          expect(DB.isGlobal).be.true;
+          expect(DB.token).be.not.ok;
+          return DB.logout();
+        }).then(function() {
+          return expect(DB.renew()).be.rejected;
         });
       });
     }
+
+    it('should logout user', function() {
+      expect(db.isGlobal).be.false;
+      var login = makeLogin();
+      return db.register(login, 'secret').then(function() {
+        expect(db.token).be.ok;
+        expect(db._me).be.ok;
+        return db.logout();
+      }).then(function() {
+        expect(db.token).be.not.ok;
+        expect(db._me).be.not.ok;
+      });
+    });
 
     it('should renew user token', function() {
       expect(db.isGlobal).be.false;
