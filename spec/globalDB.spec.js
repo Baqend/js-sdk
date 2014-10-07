@@ -5,14 +5,14 @@ if (typeof window != "undefined") {
 
       return DB.connect(env.TEST_SERVER, function(localDb) {
         expect(localDb).equal(DB);
-        expect(localDb).instanceof(jspa.EntityManager);
+        expect(localDb).instanceof(baqend.EntityManager);
       });
     });
 
     it('should allow to add an callback to global DB object', function() {
       return DB.ready(function(localDb) {
         expect(localDb).equal(DB);
-        expect(localDb).instanceof(jspa.EntityManager);
+        expect(localDb).instanceof(baqend.EntityManager);
       });
     });
 

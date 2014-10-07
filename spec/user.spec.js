@@ -1,18 +1,18 @@
-if (typeof jspa == 'undefined') {
+if (typeof baqend == 'undefined') {
   env = require('./env');
   var chai = require("chai");
   var chaiAsPromised = require("chai-as-promised");
   chai.use(chaiAsPromised);
   chai.config.includeStack = true;
   expect = chai.expect;
-  jspa = require('../lib');
+  baqend = require('../lib');
 }
 
 describe('Test user and roles', function() {
   var emf, db;
 
   before(function() {
-    emf = new jspa.EntityManagerFactory(env.TEST_SERVER);
+    emf = new baqend.EntityManagerFactory(env.TEST_SERVER);
   });
 
   beforeEach(function() {
@@ -33,7 +33,7 @@ describe('Test user and roles', function() {
       var login = makeLogin();
       return db.User.register(login, 'secret').then(function(user) {
         expect(user).be.ok;
-        expect(jspa.binding.User.isInstance(user)).be.true;
+        expect(baqend.binding.User.isInstance(user)).be.true;
         expect(user._metadata.id).be.ok;
         expect(user._metadata.version).be.ok;
         expect(user._metadata.isPersistent).be.true;
@@ -57,13 +57,15 @@ describe('Test user and roles', function() {
 
     it('should not register a user twice', function() {
       var login = makeLogin();
-      db.User.register(login, 'secret').then(function(user) {
+      var promise = db.User.register(login, 'secret').then(function(user) {
         expect(user.username).be.equals(login);
       });
 
       expect(function() {
         db.User.register(login, 'secret')
       }).throw(Error);
+
+      return promise;
     });
 
     it('should not register an existing user', function() {
@@ -85,7 +87,7 @@ describe('Test user and roles', function() {
         user = u;
 
         expect(user).be.ok;
-        expect(jspa.binding.User.isInstance(user)).be.true;
+        expect(baqend.binding.User.isInstance(user)).be.true;
         expect(user._metadata.id).be.ok;
         expect(user._metadata.version).be.ok;
         expect(user._metadata.isPersistent).be.true;
@@ -201,7 +203,7 @@ describe('Test user and roles', function() {
       user3 = db.User();
       user3.username = makeLogin();
 
-      return jspa.Q.all([user1.insert(), user2.insert(), user3.insert()]);
+      return baqend.Q.all([user1.insert(), user2.insert(), user3.insert()]);
     });
 
     it('should save and load', function() {

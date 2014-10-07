@@ -1,28 +1,28 @@
-if (typeof jspa == 'undefined') {
+if (typeof baqend == 'undefined') {
   env = require('./env');
   var chai = require("chai");
   var chaiAsPromised = require("chai-as-promised");
   chai.use(chaiAsPromised);
   expect = chai.expect;
-  jspa = require('../lib');
+  baqend = require('../lib');
 }
 
-var PersClassEntity = new jspa.metamodel.EntityType("/db/test.persistent.PersClass");
-var ChildPersClassEntity = new jspa.metamodel.EntityType("/db/test.persistent.ChildPersClass", PersClassEntity);
-var OtherPersClassEntity = new jspa.metamodel.EntityType("/db/test.persistent.OtherPersClass");
+var PersClassEntity = new baqend.metamodel.EntityType("/db/test.persistent.PersClass");
+var ChildPersClassEntity = new baqend.metamodel.EntityType("/db/test.persistent.ChildPersClass", PersClassEntity);
+var OtherPersClassEntity = new baqend.metamodel.EntityType("/db/test.persistent.OtherPersClass");
 
 PersClassEntity.declaredAttributes = [
-  new jspa.metamodel.SingularAttribute(PersClassEntity, "ref", OtherPersClassEntity),
-  new jspa.metamodel.SingularAttribute(PersClassEntity, "name", jspa.metamodel.BasicType.Integer),
-  new jspa.metamodel.SingularAttribute(PersClassEntity, "persRef", PersClassEntity)
+  new baqend.metamodel.SingularAttribute(PersClassEntity, "ref", OtherPersClassEntity),
+  new baqend.metamodel.SingularAttribute(PersClassEntity, "name", baqend.metamodel.BasicType.Integer),
+  new baqend.metamodel.SingularAttribute(PersClassEntity, "persRef", PersClassEntity)
 ];
 
 ChildPersClassEntity.declaredAttributes = [
-  new jspa.metamodel.SingularAttribute(ChildPersClassEntity, "value", jspa.metamodel.BasicType.String)
+  new baqend.metamodel.SingularAttribute(ChildPersClassEntity, "value", baqend.metamodel.BasicType.String)
 ];
 
 OtherPersClassEntity.declaredAttributes = [
-  new jspa.metamodel.SingularAttribute(ChildPersClassEntity, "value", jspa.metamodel.BasicType.Integer)
+  new baqend.metamodel.SingularAttribute(ChildPersClassEntity, "value", baqend.metamodel.BasicType.Integer)
 ];
 
 
@@ -59,7 +59,7 @@ var OtherPersClass = test.persistent.OtherPersClass = Object.inherit({
 
   var pu = null, em = null;
   beforeEach(function () {
-    factory = new jspa.EntityManagerFactory('http://localhost:8080');
+    factory = new baqend.EntityManagerFactory('http://localhost:8080');
     em = factory.createEntityManager();
     pu = factory.persistenceUnitUtil;
   });

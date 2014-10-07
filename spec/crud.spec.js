@@ -1,47 +1,47 @@
-if (typeof jspa == 'undefined') {
+if (typeof baqend == 'undefined') {
   env = require('./env');
   var chai = require("chai");
   var chaiAsPromised = require("chai-as-promised");
   chai.use(chaiAsPromised);
   chai.config.includeStack = true;
   expect = chai.expect;
-  jspa = require('../lib');
+  baqend = require('../lib');
 }
 
 describe('Test dao', function() {
   var db, personType, addressType, childType, emf, metamodel, streetType;
 
   before(function() {
-    emf = new jspa.EntityManagerFactory(env.TEST_SERVER);
+    emf = new baqend.EntityManagerFactory(env.TEST_SERVER);
     metamodel = emf.metamodel;
 
     metamodel.init();
-    metamodel.addType(personType = new jspa.metamodel.EntityType("Person", metamodel.entity(Object)));
-    metamodel.addType(childType = new jspa.metamodel.EntityType("Child", personType));
-    metamodel.addType(addressType = new jspa.metamodel.EmbeddableType("Address"));
-    metamodel.addType(streetType = new jspa.metamodel.EntityType("Street", metamodel.entity(Object)));
+    metamodel.addType(personType = new baqend.metamodel.EntityType("Person", metamodel.entity(Object)));
+    metamodel.addType(childType = new baqend.metamodel.EntityType("Child", personType));
+    metamodel.addType(addressType = new baqend.metamodel.EmbeddableType("Address"));
+    metamodel.addType(streetType = new baqend.metamodel.EntityType("Street", metamodel.entity(Object)));
 
-    personType.declaredAttributes.push(new jspa.metamodel.SingularAttribute(personType, "name", metamodel.baseType(String)));
-    personType.declaredAttributes.push(new jspa.metamodel.SingularAttribute(personType, "address", addressType));
-    personType.declaredAttributes.push(new jspa.metamodel.SingularAttribute(personType, "age", metamodel.baseType(Number)));
-    personType.declaredAttributes.push(new jspa.metamodel.SingularAttribute(personType, "date", metamodel.baseType(Date)));
-    personType.declaredAttributes.push(new jspa.metamodel.SingularAttribute(personType, "sister", personType));
-    personType.declaredAttributes.push(new jspa.metamodel.SingularAttribute(personType, "child", personType));
+    personType.declaredAttributes.push(new baqend.metamodel.SingularAttribute(personType, "name", metamodel.baseType(String)));
+    personType.declaredAttributes.push(new baqend.metamodel.SingularAttribute(personType, "address", addressType));
+    personType.declaredAttributes.push(new baqend.metamodel.SingularAttribute(personType, "age", metamodel.baseType(Number)));
+    personType.declaredAttributes.push(new baqend.metamodel.SingularAttribute(personType, "date", metamodel.baseType(Date)));
+    personType.declaredAttributes.push(new baqend.metamodel.SingularAttribute(personType, "sister", personType));
+    personType.declaredAttributes.push(new baqend.metamodel.SingularAttribute(personType, "child", personType));
 
-    childType.declaredAttributes.push(new jspa.metamodel.SingularAttribute(childType, 'mother', personType));
-    childType.declaredAttributes.push(new jspa.metamodel.SingularAttribute(childType, 'aunt', personType));
-    childType.declaredAttributes.push(new jspa.metamodel.SingularAttribute(childType, 'father', personType));
-    childType.declaredAttributes.push(new jspa.metamodel.ListAttribute(childType, "listSiblings", personType));
-    childType.declaredAttributes.push(new jspa.metamodel.SetAttribute(childType, "setSiblings", personType));
-    childType.declaredAttributes.push(new jspa.metamodel.MapAttribute(childType, "mapSiblings", personType, personType));
+    childType.declaredAttributes.push(new baqend.metamodel.SingularAttribute(childType, 'mother', personType));
+    childType.declaredAttributes.push(new baqend.metamodel.SingularAttribute(childType, 'aunt', personType));
+    childType.declaredAttributes.push(new baqend.metamodel.SingularAttribute(childType, 'father', personType));
+    childType.declaredAttributes.push(new baqend.metamodel.ListAttribute(childType, "listSiblings", personType));
+    childType.declaredAttributes.push(new baqend.metamodel.SetAttribute(childType, "setSiblings", personType));
+    childType.declaredAttributes.push(new baqend.metamodel.MapAttribute(childType, "mapSiblings", personType, personType));
 
 
-    addressType.declaredAttributes.push(new jspa.metamodel.SingularAttribute(addressType, "street", streetType));
-    addressType.declaredAttributes.push(new jspa.metamodel.SingularAttribute(addressType, "zip", metamodel.baseType(Number)));
+    addressType.declaredAttributes.push(new baqend.metamodel.SingularAttribute(addressType, "street", streetType));
+    addressType.declaredAttributes.push(new baqend.metamodel.SingularAttribute(addressType, "zip", metamodel.baseType(Number)));
 
-    streetType.declaredAttributes.push(new jspa.metamodel.SingularAttribute(addressType, "name", metamodel.baseType(String)));
-    streetType.declaredAttributes.push(new jspa.metamodel.SingularAttribute(addressType, "number", metamodel.baseType(Number)));
-    streetType.declaredAttributes.push(new jspa.metamodel.SingularAttribute(addressType, "neighbor", personType));
+    streetType.declaredAttributes.push(new baqend.metamodel.SingularAttribute(addressType, "name", metamodel.baseType(String)));
+    streetType.declaredAttributes.push(new baqend.metamodel.SingularAttribute(addressType, "number", metamodel.baseType(Number)));
+    streetType.declaredAttributes.push(new baqend.metamodel.SingularAttribute(addressType, "neighbor", personType));
 
     return metamodel.save();
   });
@@ -89,7 +89,7 @@ describe('Test dao', function() {
       obj.attach(db);
 
       return emf.createEntityManager().then(function(db2) {
-        expect(function() { obj.attach(db2); }).throw(jspa.error.EntityExistsError);
+        expect(function() { obj.attach(db2); }).throw(baqend.error.EntityExistsError);
         expect(obj._metadata.db).equals(db);
         expect(db2.contains(obj)).be.false;
       });
@@ -131,7 +131,7 @@ describe('Test dao', function() {
         var obj = new personType.typeConstructor();
         expect(obj._metadata.db).equals(globalDb);
 
-        expect(function() { obj.attach(db); }).throw(jspa.error.EntityExistsError);
+        expect(function() { obj.attach(db); }).throw(baqend.error.EntityExistsError);
         expect(obj._metadata.db).equals(globalDb);
         expect(db.contains(obj)).be.false;
 
@@ -206,7 +206,7 @@ describe('Test dao', function() {
         person.name = 'Alice Ford';
         return person.save();
       })).be.rejected.then(function(e) {
-        expect(e).instanceOf(jspa.error.PersistentError);
+        expect(e).instanceOf(baqend.error.PersistentError);
         return expect(db.Person.get(person._metadata.id)).eventually.have.property('name', 'Peter Parker');
       });
     });
@@ -355,7 +355,7 @@ describe('Test dao', function() {
       var p1 = db.Person.get(person.id);
       var p2 = db.Person.get(person.id);
 
-      return jspa.Q.all([p1, p2]).spread(function(loaded1, loaded2) {
+      return baqend.Q.all([p1, p2]).spread(function(loaded1, loaded2) {
         expect(loaded1).be.ok;
         expect(loaded1).equals(loaded2);
       });
@@ -392,7 +392,7 @@ describe('Test dao', function() {
         var p1 = db.Person.get(person.id);
         var p2 = otherDb.Person.get(person.id);
 
-        return jspa.Q.all([p1, p2]).spread(function(loaded1, loaded2) {
+        return baqend.Q.all([p1, p2]).spread(function(loaded1, loaded2) {
           expect(loaded1).not.equals(loaded2);
         });
       });
@@ -454,7 +454,7 @@ describe('Test dao', function() {
     });
 
     it('should be allowed to remove an object without id', function() {
-      return expect(person.remove().invoke('remove')).be.rejectedWith(jspa.error.IllegalEntityError);
+      return expect(person.remove().invoke('remove')).be.rejectedWith(baqend.error.IllegalEntityError);
     });
 
     it('should be allowed to forcly remove an object without id', function() {
@@ -467,7 +467,7 @@ describe('Test dao', function() {
         var newPerson = db.Person();
         newPerson._metadata.id = person._metadata.id;
         return db.addReference(newPerson);
-      })).be.rejectedWith(jspa.error.EntityExistsError);
+      })).be.rejectedWith(baqend.error.EntityExistsError);
     });
 
     it('should not be allowed to remove outdated object', function() {
@@ -700,9 +700,9 @@ describe('Test dao', function() {
       child.mother = mother;
       child.aunt = mother;
       child.father = father;
-      child.listSiblings = new jspa.List();
-      child.setSiblings = new jspa.Set();
-      child.mapSiblings = new jspa.Map();
+      child.listSiblings = new baqend.List();
+      child.setSiblings = new baqend.Set();
+      child.mapSiblings = new baqend.Map();
       sibs = [];
       for(var i = 0; i < 6; i++) {
         var sib = db.Person();
@@ -743,7 +743,7 @@ describe('Test dao', function() {
         sibs.forEach(function(sib) {
           promises.push(expect(db.Person.get(sib._metadata.id)).not.become(null))
         });
-        return jspa.Q.all(promises);
+        return baqend.Q.all(promises);
       }).then(function() {
         return child.remove(false, 2);
       }).then(function(removed) {
@@ -758,7 +758,7 @@ describe('Test dao', function() {
         sibs.forEach(function(sib) {
           promises.push(expect(db.Person.get(sib._metadata.id)).become(null))
         });
-        return jspa.Q.all(promises);
+        return baqend.Q.all(promises);
       });
     });
 
@@ -774,7 +774,7 @@ describe('Test dao', function() {
         sibs.forEach(function(sib) {
           promises.push(expect(db.Person.get(sib._metadata.id)).not.become(null))
         });
-        return jspa.Q.all(promises);
+        return baqend.Q.all(promises);
       }).then(function() {
         return child.remove(false, true);
       }).then(function(removed) {
@@ -789,7 +789,7 @@ describe('Test dao', function() {
         sibs.forEach(function(sib) {
           promises.push(expect(db.Person.get(sib._metadata.id)).become(null))
         });
-        return jspa.Q.all(promises);
+        return baqend.Q.all(promises);
       });
     });
 
@@ -896,7 +896,7 @@ describe('Test dao', function() {
 
     it('should insert referenced objects by depth', function() {
       return child.insert(false, 2).then(function() {
-        return jspa.Q.all([
+        return baqend.Q.all([
           expect(db.Child.get(child._metadata.id)).not.become(null),
           expect(db.Person.get(mother._metadata.id)).not.become(null),
           expect(db.Person.get(father._metadata.id)).not.become(null),
@@ -908,7 +908,7 @@ describe('Test dao', function() {
 
     it('should insert referenced objects by reachability', function() {
       return child.insert(false, true).then(function() {
-        return jspa.Q.all([
+        return baqend.Q.all([
           expect(db.Child.get(child._metadata.id)).not.become(null),
           expect(db.Person.get(mother._metadata.id)).not.become(null),
           expect(db.Person.get(father._metadata.id)).not.become(null),

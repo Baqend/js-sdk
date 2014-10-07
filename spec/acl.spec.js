@@ -1,23 +1,23 @@
-if (typeof jspa == 'undefined') {
+if (typeof baqend == 'undefined') {
   env = require('./env');
   var chai = require("chai");
   var chaiAsPromised = require("chai-as-promised");
   chai.use(chaiAsPromised);
   chai.config.includeStack = true;
   expect = chai.expect;
-  jspa = require('../lib');
+  baqend = require('../lib');
 }
 
 describe('Test Acl', function() {
 
   var db, emf;
   before(function() {
-    emf = new jspa.EntityManagerFactory(env.TEST_SERVER);
+    emf = new baqend.EntityManagerFactory(env.TEST_SERVER);
     var metamodel = emf.metamodel;
     metamodel.load().then(function() {
-      var AclPerson = new jspa.metamodel.EntityType("AclPerson", metamodel.entity(Object));
-      AclPerson.declaredAttributes.push(new jspa.metamodel.SingularAttribute(AclPerson, "name", metamodel.baseType(String)));
-      AclPerson.declaredAttributes.push(new jspa.metamodel.SingularAttribute(AclPerson, "age", metamodel.baseType(Number)));
+      var AclPerson = new baqend.metamodel.EntityType("AclPerson", metamodel.entity(Object));
+      AclPerson.declaredAttributes.push(new baqend.metamodel.SingularAttribute(AclPerson, "name", metamodel.baseType(String)));
+      AclPerson.declaredAttributes.push(new baqend.metamodel.SingularAttribute(AclPerson, "age", metamodel.baseType(Number)));
       metamodel.addType(AclPerson);
       metamodel.save();
     });
@@ -167,7 +167,7 @@ describe('Test Acl', function() {
   describe('protected Object operations', function() {
     var db2, db3, role23, role13;
     before(function() {
-      return jspa.Q.all([createUserDb(), createUserDb()]).then(function(arr) {
+      return baqend.Q.all([createUserDb(), createUserDb()]).then(function(arr) {
         db2 = arr[0];
         db3 = arr[1];
 
@@ -183,9 +183,9 @@ describe('Test Acl', function() {
         role13.users.add(db.getReference(db3.me._metadata.ref));
         var promise2 = role13.save();
 
-        return jspa.Q.all([promise1, promise2]);
+        return baqend.Q.all([promise1, promise2]);
       }).then(function() {
-        return jspa.Q.all([
+        return baqend.Q.all([
           db.renew(),
           db2.renew(),
           db3.renew()
@@ -194,7 +194,7 @@ describe('Test Acl', function() {
     });
 
     after(function() {
-      jspa.Q.all([
+      baqend.Q.all([
         db2.User.me.remove(),
         db3.User.me.remove()
       ]);
@@ -209,7 +209,7 @@ describe('Test Acl', function() {
       return obj.save().then(function(o) {
         return db.AclPerson.get(id);
       }).then(function(obj) {
-        return jspa.Q.all([
+        return baqend.Q.all([
           expect(db.AclPerson.get(id)).eventually.property('id', id),
           expect(db2.AclPerson.get(id)).eventually.property('id', id),
           expect(db3.AclPerson.get(id)).eventually.be.null
@@ -223,7 +223,7 @@ describe('Test Acl', function() {
 
       var id = obj._metadata.id;
       return obj.save().then(function() {
-        return jspa.Q.all([
+        return baqend.Q.all([
           expect(db.AclPerson.get(id)).eventually.property('id', id),
           expect(db2.AclPerson.get(id)).eventually.be.null,
           expect(db3.AclPerson.get(id)).eventually.property('id', id)
@@ -237,7 +237,7 @@ describe('Test Acl', function() {
 
       var id = obj._metadata.id;
       return obj.save().then(function() {
-        return jspa.Q.all([
+        return baqend.Q.all([
           expect(db.AclPerson.get(id)).eventually.property('id', id),
           expect(db2.AclPerson.get(id)).eventually.be.null,
           expect(db3.AclPerson.get(id)).eventually.property('id', id)
@@ -251,7 +251,7 @@ describe('Test Acl', function() {
 
       var id = obj._metadata.id;
       return obj.save().then(function() {
-        return jspa.Q.all([
+        return baqend.Q.all([
           expect(db.AclPerson.get(id)).eventually.property('id', id),
           expect(db2.AclPerson.get(id)).eventually.be.null,
           expect(db3.AclPerson.get(id)).eventually.be.null

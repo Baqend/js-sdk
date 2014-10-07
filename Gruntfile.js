@@ -21,7 +21,7 @@ module.exports = function (grunt) {
           builtins: [],
           insertGlobals: false,
           detectGlobals: false,
-          standalone: "jspa"
+          standalone: "baqend"
         }
       },
 
@@ -36,7 +36,7 @@ module.exports = function (grunt) {
             builtins: [],
             insertGlobals: false,
             detectGlobals: false,
-            standalone: "jspa",
+            standalone: "baqend",
             debug: true
           }
         }

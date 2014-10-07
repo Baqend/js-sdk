@@ -5,26 +5,26 @@ if (typeof window != "undefined") {
       var basePath = document.querySelector('script[src*="/baqend."]').src;
       basePath = basePath.substring(0, basePath.lastIndexOf('/') + 1);
 
-      var emf = new jspa.EntityManagerFactory(env.TEST_SERVER);
+      var emf = new baqend.EntityManagerFactory(env.TEST_SERVER);
       var metamodel = emf.metamodel;
       metamodel.init();
 
-      var TestAppPerson = new jspa.metamodel.EntityType("TestAppPerson", metamodel.entity(Object));
-      TestAppPerson.declaredAttributes.push(new jspa.metamodel.SingularAttribute(TestAppPerson, "name", metamodel.baseType(String)));
-      TestAppPerson.declaredAttributes.push(new jspa.metamodel.SingularAttribute(TestAppPerson, "age", metamodel.baseType(Number)));
+      var TestAppPerson = new baqend.metamodel.EntityType("TestAppPerson", metamodel.entity(Object));
+      TestAppPerson.declaredAttributes.push(new baqend.metamodel.SingularAttribute(TestAppPerson, "name", metamodel.baseType(String)));
+      TestAppPerson.declaredAttributes.push(new baqend.metamodel.SingularAttribute(TestAppPerson, "age", metamodel.baseType(Number)));
       metamodel.addType(TestAppPerson);
 
       return metamodel.save().then(function() {
         testLoader = document.createElement('iframe');
         testLoader.src = basePath + 'test-loader.html';
 
-        var deferred = jspa.Q.defer();
+        var deferred = baqend.Q.defer();
         testLoader.onload = function() {
-          expect(testLoader.contentWindow.jspa).be.undefined;
+          expect(testLoader.contentWindow.baqend).be.undefined;
           db = testLoader.contentWindow.DB;
           db.connect(env.TEST_SERVER);
           db.ready(function() {
-            pageJspa = testLoader.contentWindow.jspa;
+            pageJspa = testLoader.contentWindow.baqend;
             db = testLoader.contentWindow.DB;
             deferred.resolve();
           });
@@ -66,7 +66,7 @@ if (typeof window != "undefined") {
 
         return person.save();
       }).then(function() {
-        var emf = new jspa.EntityManagerFactory(env.TEST_SERVER);
+        var emf = new baqend.EntityManagerFactory(env.TEST_SERVER);
         return emf.createEntityManager().then(function(db) {
           return db.find(person._metadata.ref).then(function(obj) {
             expect(person.name).equals('Bob');
