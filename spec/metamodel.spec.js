@@ -742,10 +742,10 @@ describe('Test Metamodel', function() {
         metamodel = emf.createMetamodel();
       });
 
-      it('should allow/deny schema load', function() {
+      it('should allow schema load', function() {
         return metamodel.load(db.token).then(function() {
           expect(metamodel.entity(SchemaAclPersonName)).be.ok;
-          expect(metamodel.embeddable(SchemaAclEmbeddedPersonName)).be.undefined;
+          expect(metamodel.embeddable(SchemaAclEmbeddedPersonName)).be.ok;
         });
       });
 
