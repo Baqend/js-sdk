@@ -250,12 +250,29 @@ describe("Test db", function() {
       expect(json._objectInfo).be.undefined;
     });
 
+    it('should convert to JSON including objectInfo', function() {
+      var testClass = db.TestClass();
+      testClass.testValue = 5;
+      var json = testClass.toJSON(true);
+      expect(json).be.ok;
+      expect(json.testValue).eqls(testClass.testValue);
+      expect(json._metadata).be.undefined;
+      expect(json._objectInfo).be.ok;
+    });
+
     it('should convert from JSON', function() {
       var testClass = db.TestClass();
       testClass.testValue = 5;
       var newTestClass = db.TestClass.fromJSON(testClass.toJSON());
       expect(newTestClass).be.ok;
       expect(newTestClass.testValue).eqls(testClass.testValue);
+    });
+
+    it('should convert from JSON including objectInfo', function() {
+      var testClass = db.TestClass();
+      testClass.testValue = 5;
+      var newTestClass = db.TestClass.fromJSON(testClass.toJSON(true));
+      expect(newTestClass).eqls(testClass);
     });
 
   });
