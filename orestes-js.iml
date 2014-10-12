@@ -15,6 +15,7 @@
     <orderEntry type="library" name="mocha-DefinitelyTyped" level="project" />
     <orderEntry type="library" name="jahcode" level="project" />
     <orderEntry type="library" name="q-DefinitelyTyped" level="application" />
+    <orderEntry type="library" name="Node.js v0.10.31 Core Modules" level="application" />
   </component>
 </module>
 

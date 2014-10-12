@@ -463,10 +463,10 @@ describe('Test dao', function() {
 
     it('should not be allowed to add removed objects with same id', function() {
       return expect(person.remove().then(function() {
-        db.addReference(person);
+        db.attach(person);
         var newPerson = db.Person();
         newPerson._metadata.id = person._metadata.id;
-        return db.addReference(newPerson);
+        return db.attach(newPerson);
       })).be.rejectedWith(baqend.error.EntityExistsError);
     });
 

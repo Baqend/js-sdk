@@ -428,6 +428,7 @@ describe('Test Metamodel', function() {
   });
 
   it("should not be allowed to load after save metamodel", function() {
+    metamodel.init();
     return metamodel.save().then(function() {
       expect(function() { metamodel.load() }).throw(Error);
     });
@@ -438,6 +439,12 @@ describe('Test Metamodel', function() {
     return emf.createEntityManager().then(function(em) {
       expect(function() { em.metamodel.load(); }).throw(Error);
     });
+  });
+
+  it("should not be allowed to save without initializsation", function() {
+    expect(function() {
+      metamodel.save();
+    }).throw(Error);
   });
 
   it("should not be allowed to save when used by an EntityManager", function() {
@@ -500,7 +507,7 @@ describe('Test Metamodel', function() {
       });
     });
 
-    it('should be accessable vie db', function() {
+    it('should be accessable via db', function() {
       var emf = new baqend.EntityManagerFactory(env.TEST_SERVER);
 
       return emf.createEntityManager().then(function(db) {
