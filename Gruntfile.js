@@ -240,7 +240,7 @@ module.exports = function (grunt) {
 
     grunt.config('run.server.args', ['-jar', jar, "config.json"]);
 
-    grunt.log.write('Executable Jar: ' + jar + ' Used config: ' + config);
+    grunt.log.write('Executable Jar: ' + jar);
   });
 
   var previous_force_state = grunt.option("force");
