@@ -235,11 +235,10 @@ module.exports = function (grunt) {
 
   grunt.registerTask('default', 'debug');
 
-  grunt.registerTask('prepare', 'Finds the executable server jar and configuration in build folder', function() {
-    var jar = grunt.file.expand({cwd: 'build'}, 'orestes-mongo*.jar')[0];
-    var config = grunt.file.expand({cwd: 'build'}, '*.json')[0];
+  grunt.registerTask('prepare', 'Finds the executable server jar and configuration in node_modules/orestes folder', function() {
+    var jar = grunt.file.expand({cwd: 'node_modules/orestes'}, 'orestes-mongo*.jar')[0];
 
-    grunt.config('run.server.args', ['-jar', jar, config]);
+    grunt.config('run.server.args', ['-jar', jar, "config.json"]);
 
     grunt.log.write('Executable Jar: ' + jar + ' Used config: ' + config);
   });
