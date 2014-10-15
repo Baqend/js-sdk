@@ -97,7 +97,7 @@ module.exports = function (grunt) {
       server: {
         cmd: "java",
         options: {
-          cwd: "build",
+          cwd: "node_modules/orestes",
           wait: false,
           ready: 5000
         }
