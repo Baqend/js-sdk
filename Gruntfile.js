@@ -93,17 +93,6 @@ module.exports = function (grunt) {
       }
     },
 
-    /**
-     * Testing
-     * =======
-     */
-    unzip: {
-      test: {
-        src: "build/orestes-*.zip",
-        dest: "build/"
-      }
-    },
-
     run: {
       server: {
         cmd: "java",
@@ -208,7 +197,6 @@ module.exports = function (grunt) {
   grunt.loadNpmTasks('grunt-karma');
   grunt.loadNpmTasks('grunt-mocha-test');
   grunt.loadNpmTasks('grunt-run');
-  grunt.loadNpmTasks('grunt-zip');
   grunt.loadNpmTasks('grunt-jsdoc');
 
   grunt.registerTask('debug', [
@@ -227,7 +215,6 @@ module.exports = function (grunt) {
   grunt.registerTask('test', [
     'browserify:test',
     'template:loader',
-    'unzip:test',
     'prepare:server',
     'run:server',
 
