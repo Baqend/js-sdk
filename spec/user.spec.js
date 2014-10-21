@@ -168,11 +168,11 @@ describe('Test user and roles', function() {
       var login = makeLogin();
       return db.register(login, 'secret').then(function() {
         expect(db.token).be.ok;
-        expect(db._me).be.ok;
+        expect(db.me).be.ok;
         return db.logout();
       }).then(function() {
         expect(db.token).be.not.ok;
-        expect(db._me).be.not.ok;
+        expect(db.me).be.not.ok;
       });
     });
 
