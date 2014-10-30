@@ -11,7 +11,8 @@
   "dependencies": {
     "jahcode": ">=1.1.0",
     "node-uuid": "git+https://github.com/broofa/node-uuid",
-    "q": "^1.0.1"
+    "q": "^1.0.1",
+    "validator": "^3.22.0"
   },
   "devDependencies": {
     "chai": "^1.9.1",
@@ -40,12 +41,10 @@
     "karma-junit-reporter": "^0.2.2",
     "karma-mocha": "^0.1.6",
     "karma-phantomjs-launcher": "*",
-    "karma-requirejs": "*",
-    "karma-script-launcher": "*",
+    "karma-safari-launcher": "^0.1.1",
     "karma-webdriver-launcher": "^0.2.0",
     "mocha": "^1.20.1",
     "mocha-jenkins-reporter": "^0.1.0",
-    "requirejs": "~2.1.11",
     "uglify-js": "^2.3.6"
   },
   "scripts": {
