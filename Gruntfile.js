@@ -116,7 +116,7 @@ module.exports = function (grunt) {
         cmd: 'java',
         args: [
             '-jar',
-            'build/install/orestes-message/lib/orestes-message-1.0-SNAPSHOT.jar',
+            'build/install/orestes-message/lib/orestes-message-1.0.0-SNAPSHOT.jar',
             'templates/js.ftl',
             __dirname + '/lib/message'
         ],
