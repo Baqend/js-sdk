@@ -2,6 +2,11 @@
 // Generated on Thu Mar 06 2014 17:16:01 GMT+0100 (Mitteleuropäische Zeit)
 
 module.exports = function(config) {
+  var webdriverConfig = {
+    hostname: 'jenkins.baqend.com',
+    port: 4444
+  };
+
   config.set({
 
     // base path, that will be used to resolve files and exclude
@@ -53,8 +58,25 @@ module.exports = function(config) {
     browsers: ['Chrome', 'Firefox', 'PhantomJS'],
 
     customLaunchers: {
+      'Chrome-Linux': {
+        base: 'WebDriver',
+        config: webdriverConfig,
+        browserName: 'chrome',
+        platform: 'LINUX',
+        version: '',
+        name: 'Karma'
+      },
+      'Firefox-Linux': {
+        base: 'WebDriver',
+        config: webdriverConfig,
+        browserName: 'firefox',
+        platform: 'LINUX',
+        version: '',
+        name: 'Karma'
+      },
       'Chrome-Win': {
         base: 'WebDriver',
+        config: webdriverConfig,
         browserName: 'chrome',
         platform: 'WINDOWS',
         version: '',
@@ -62,6 +84,7 @@ module.exports = function(config) {
       },
       'Firefox-Win': {
         base: 'WebDriver',
+        config: webdriverConfig,
         browserName: 'firefox',
         platform: 'WINDOWS',
         version: '',
@@ -69,6 +92,7 @@ module.exports = function(config) {
       },
       'IE9-Win': {
         base: 'WebDriver',
+        config: webdriverConfig,
         browserName: 'internet explorer',
         platform: 'WINDOWS',
         version: '9',
@@ -76,6 +100,7 @@ module.exports = function(config) {
       },
       'IE10-Win': {
         base: 'WebDriver',
+        config: webdriverConfig,
         browserName: 'internet explorer',
         platform: 'WINDOWS',
         version: '10',
@@ -83,6 +108,7 @@ module.exports = function(config) {
       },
       'IE11-Win': {
         base: 'WebDriver',
+        config: webdriverConfig,
         browserName: 'internet explorer',
         platform: 'WINDOWS',
         version: '11',
