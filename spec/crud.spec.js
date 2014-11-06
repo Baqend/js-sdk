@@ -967,7 +967,11 @@ describe('Test dao', function() {
   });
 
   describe('custom ids', function() {
-    var myId = randomize('a/db/bucket/?param=3\\ed&g=1');
+    var myId;
+
+    before(function() {
+      myId = randomize('a/db/bucket/?param=3\\ed&g=1');
+    });
 
     afterEach(function() {
       return db.Person.get(myId).then(function(obj) {
