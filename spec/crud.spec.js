@@ -69,23 +69,28 @@ describe('Test dao', function() {
       expect(db.contains(obj)).be.false;
     });
 
-    it('return true for attached objects', function() {
+    it('return false for implicit attached objects', function() {
       var obj = db.Person();
-      expect(db.contains(obj)).be.true;
+      expect(db.contains(obj)).be.false;
     });
   });
 
   describe('attach', function() {
     it('should unattached object to db', function() {
-      var obj = new personType.typeConstructor();
+      var obj = db.Person();
+
+      expect(obj.id).be.null;
+      expect(db.contains(obj)).be.false;
+
       obj.attach(db);
 
-      expect(obj._metadata.db).equals(db);
+      expect(obj.id).be.ok;
       expect(db.contains(obj)).be.true;
+      expect(obj._metadata.db).equals(db);
     });
 
     it('should not reattach objects to another db', function() {
-      var obj = new personType.typeConstructor();
+      var obj = db.Person();
       obj.attach(db);
 
       return emf.createEntityManager().then(function(db2) {
@@ -97,8 +102,14 @@ describe('Test dao', function() {
 
     it('should ignore attach object to same db', function() {
       var obj = new personType.typeConstructor();
+      expect(obj.id).be.null;
+
       obj.attach(db);
+      expect(obj.id).be.ok;
+
+      var id = obj.id;
       obj.attach(db);
+      expect(obj.id).equals(id);
 
       expect(obj._metadata.db).equals(db);
       expect(db.contains(obj)).be.true;
@@ -953,5 +964,74 @@ describe('Test dao', function() {
         expect(loaded.father.name).equals("New Name");
       });
     });
+  });
+
+  describe('custom ids', function() {
+    var myId = 'a/db/bucket/?param=3\\ed&g=1';
+
+    afterEach(function() {
+      return db.Person.get(myId).then(function(obj) {
+        return obj.remove();
+      });
+    });
+
+    it('should create and load new object', function() {
+      var person = db.Person();
+      person.id = myId;
+      person.name = "Custom Person";
+
+      return person.save(function(result) {
+        expect(person.id).equals(myId);
+        expect(person.name).equals("Custom Person");
+        expect(person).equals(result);
+        return db.Person.get(myId);
+      }).then(function(person) {
+        expect(person.id).equals(myId);
+        expect(person.name).equals("Custom Person");
+        return emf.createEntityManager();
+      }).then(function(db2) {
+        return db2.Person.get(myId);
+      }).then(function(person) {
+        expect(person.id).equals(myId);
+        expect(person.name).equals("Custom Person");
+      });
+    });
+
+    it('should useable as references', function() {
+      var person = db.Person();
+      person.id = myId;
+      person.name = "Custom Person";
+
+      var childId = 'my/craßy*%unescap\\ed&id?=';
+      person.child = db.Person();
+      person.child.name = "Custom Child Person";
+      person.child.id = childId;
+
+      return person.saveAndRefresh(false, true, function(result) {
+        expect(person.id).equals(myId);
+        expect(person.name).equals("Custom Person");
+        expect(person.child.id).equals(childId);
+        expect(person.child.name).equals("Custom Child Person");
+        return emf.createEntityManager();
+      }).then(function(db2) {
+        return db2.Person.get(childId).then(function(child) {
+          expect(child.id).equals(childId);
+          expect(child.name).equals("Custom Child Person");
+          return db2.Person.get(myId);
+        }).then(function(person) {
+          expect(person.id).equals(myId);
+          expect(person.name).equals("Custom Person");
+          expect(person.child.id).equals(childId);
+          expect(person.child.name).equals("Custom Child Person");
+          return db2.Person.get(childId);
+        }).then(function(child) {
+          return child.remove();
+        });
+      }).then(function() {
+        return person.child.refresh();
+      }).then(function(obj) {
+        expect(obj).be.null;
+      });
+    })
   });
 });

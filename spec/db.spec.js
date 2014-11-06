@@ -252,6 +252,8 @@ describe("Test db", function() {
 
     it('should convert to JSON including objectInfo', function() {
       var testClass = db.TestClass();
+      testClass.attach(db);
+
       testClass.testValue = 5;
       var json = testClass.toJSON(true);
       expect(json).be.ok;
@@ -262,6 +264,8 @@ describe("Test db", function() {
 
     it('should convert from JSON', function() {
       var testClass = db.TestClass();
+      testClass.attach(db);
+
       testClass.testValue = 5;
       var newTestClass = db.TestClass.fromJSON(testClass.toJSON());
       expect(newTestClass).be.ok;
@@ -270,6 +274,8 @@ describe("Test db", function() {
 
     it('should convert from JSON including objectInfo', function() {
       var testClass = db.TestClass();
+      testClass.attach(db);
+
       testClass.testValue = 5;
       var newTestClass = db.TestClass.fromJSON(testClass.toJSON(true));
       expect(newTestClass).eqls(testClass);

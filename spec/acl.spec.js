@@ -205,8 +205,9 @@ describe('Test Acl', function() {
       obj.acl.allowReadAccess(db.User.me)
         .allowReadAccess(db2.User.me);
 
-      var id = obj.id;
+      var id;
       return obj.save().then(function(o) {
+        id = obj.id;
         return db.AclPerson.get(id);
       }).then(function(obj) {
         return baqend.Q.all([
@@ -221,8 +222,9 @@ describe('Test Acl', function() {
       var obj = db.AclPerson();
       obj.acl.denyReadAccess(db2.User.me);
 
-      var id = obj._metadata.id;
+      var id;
       return obj.save().then(function() {
+        id = obj.id;
         return baqend.Q.all([
           expect(db.AclPerson.get(id)).eventually.property('id', id),
           expect(db2.AclPerson.get(id)).eventually.be.null,
@@ -235,8 +237,9 @@ describe('Test Acl', function() {
       var obj = db.AclPerson();
       obj.acl.allowReadAccess(role13);
 
-      var id = obj._metadata.id;
+      var id;
       return obj.save().then(function() {
+        id = obj.id;
         return baqend.Q.all([
           expect(db.AclPerson.get(id)).eventually.property('id', id),
           expect(db2.AclPerson.get(id)).eventually.be.null,
@@ -249,8 +252,9 @@ describe('Test Acl', function() {
       var obj = db.AclPerson();
       obj.acl.denyReadAccess(role23);
 
-      var id = obj._metadata.id;
+      var id;
       return obj.save().then(function() {
+        id = obj.id;
         return baqend.Q.all([
           expect(db.AclPerson.get(id)).eventually.property('id', id),
           expect(db2.AclPerson.get(id)).eventually.be.null,
@@ -258,7 +262,6 @@ describe('Test Acl', function() {
         ]);
       });
     });
-
 
   });
 
