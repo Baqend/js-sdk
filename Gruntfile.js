@@ -8,8 +8,6 @@ module.exports = function (grunt) {
 
   var TEST = 'spec/{env.js,spec.helper.js,**/*.spec.js}';
 
-  var orestesMessagePath = '../orestes/orestes-message';
-
   grunt.initConfig({
     /**
      * Building
@@ -101,44 +99,20 @@ module.exports = function (grunt) {
           wait: false,
           ready: 5000
         }
-      },
-      buildMsgProject: {
-        cmd: 'gradle',
-        args: [
-          'installApp'
-        ],
-        options: {
-          cwd: orestesMessagePath,
-          wait: true
-        }
-      },
-      buildMsg: {
-        cmd: 'java',
-        args: [
-            '-jar',
-            'build/install/orestes-message/lib/orestes-message-1.0.0-SNAPSHOT.jar',
-            'templates/js.ftl',
-            __dirname + '/lib/message'
-        ],
-        options: {
-          wait: true,
-          cwd: orestesMessagePath
-        }
       }
     },
 
     clean: {
-      msg: {
+      dist: {
         src: [
-          'lib/message/*',
-          '!lib/message/Message.js'
+          'dist'
         ]
       }
     },
 
     karma: {
       dev: {
-        configFile: 'karma.conf.js',
+        configFile: 'karma.conf.js'
       },
       internal: {
         hostname: 'fb.baqend.com',
@@ -213,6 +187,7 @@ module.exports = function (grunt) {
   ]);
 
   grunt.registerTask('dist', [
+    'clean:dist',
     'browserify:dist',
     'uglify:dist',
     'jsdoc:dist'
@@ -231,12 +206,6 @@ module.exports = function (grunt) {
     'force:restore',
 
     'stop:server'
-  ]);
-
-  grunt.registerTask('build', [
-      'clean:msg',
-      'run:buildMsgProject',
-      'run:buildMsg'
   ]);
 
   grunt.registerTask('default', 'debug');
