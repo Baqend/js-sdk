@@ -967,7 +967,7 @@ describe('Test dao', function() {
   });
 
   describe('custom ids', function() {
-    var myId = 'a/db/bucket/?param=3\\ed&g=1';
+    var myId = randomize('a/db/bucket/?param=3\\ed&g=1');
 
     afterEach(function() {
       return db.Person.get(myId).then(function(obj) {
@@ -1002,7 +1002,7 @@ describe('Test dao', function() {
       person.id = myId;
       person.name = "Custom Person";
 
-      var childId = 'my/craßy*%unescap\\ed&id?=';
+      var childId = randomize('my/craßy*%unescap\\ed&id?=');
       person.child = db.Person();
       person.child.name = "Custom Child Person";
       person.child.id = childId;
