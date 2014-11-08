@@ -679,6 +679,23 @@ describe('Test dao', function() {
         return expect(person.refresh()).eventually.have.property('name', 'New Name');
       });
     });
+
+    it('should refresh object when removed', function() {
+      var person = db.Person();
+      person.name = "Old Name";
+
+      return person.save().then(function(obj) {
+        return emf.createEntityManager();
+      }).then(function(db2) {
+        return db2.Person.get(person.id);
+      }).then(function(loaded) {
+        return loaded.remove();
+      }).then(function() {
+        return person.refresh();
+      }).then(function(obj) {
+        return expect(obj).be.null;
+      });
+    });
   });
 
   describe('depth', function() {
@@ -969,7 +986,7 @@ describe('Test dao', function() {
   describe('custom ids', function() {
     var myId;
 
-    before(function() {
+    beforeEach(function() {
       myId = randomize('a/db/bucket/?param=3\\ed&g=1');
     });
 
