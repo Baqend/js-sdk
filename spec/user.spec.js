@@ -180,7 +180,9 @@ describe('Test user and roles', function() {
       expect(db.isGlobal).be.false;
       var login = makeLogin();
       var oldToken;
-      return db.register(login, 'secret').delay(1000).then(function() {
+      return db.register(login, 'secret').then(function() {
+        return baqend.Q.delay(1100);
+      }).then(function() {
         expect(db.token).be.ok;
         oldToken = db.token;
         return db.renew();
@@ -233,7 +235,9 @@ describe('Test user and roles', function() {
     it('should renew token', function() {
       var login = makeLogin();
       var oldToken;
-      return db.register(login, 'secret').delay(1000).then(function() {
+      return db.register(login, 'secret').then(function() {
+        return baqend.Q.delay(1100);
+      }).then(function() {
         oldToken = db.token;
         var role = db.Role();
         role.addUser(user1);
