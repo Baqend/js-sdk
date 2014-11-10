@@ -14,16 +14,16 @@ describe('Test Acl', function() {
   before(function() {
     emf = new baqend.EntityManagerFactory(env.TEST_SERVER);
     var metamodel = emf.metamodel;
-    metamodel.load().then(function() {
+    return metamodel.load().then(function() {
       var AclPerson = new baqend.metamodel.EntityType("AclPerson", metamodel.entity(Object));
       AclPerson.declaredAttributes.push(new baqend.metamodel.SingularAttribute(AclPerson, "name", metamodel.baseType(String)));
       AclPerson.declaredAttributes.push(new baqend.metamodel.SingularAttribute(AclPerson, "age", metamodel.baseType(Number)));
       metamodel.addType(AclPerson);
-      metamodel.save();
-    });
-
-    return createUserDb().then(function(em) {
-      db = em;
+      return metamodel.save();
+    }).then(function() {
+      return createUserDb().then(function(em) {
+        db = em;
+      });
     });
   });
 
