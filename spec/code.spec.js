@@ -28,68 +28,116 @@ describe('Test code', function() {
     return metamodel.save();
   });
 
-  ['insert', 'update', 'delete', 'validate'].forEach(function(type) {
-    var attr = 'on' + type[0].toUpperCase() + type.slice(1);
+  describe('handler', function() {
+    ['insert', 'update', 'delete', 'validate'].forEach(function(type) {
+      var attr = 'on' + type[0].toUpperCase() + type.slice(1);
 
 
-    describe(attr, function() {
-      beforeEach(function() {
-        var emf = new baqend.EntityManagerFactory(env.TEST_SERVER);
-        return emf.createEntityManager(function(em) {
-          db = em;
-          code = em.code;
-          entityType = db.metamodel.entity(personType.typeConstructor);
-          return db.User.login('root', 'root');
+      describe(attr, function() {
+        beforeEach(function() {
+          var emf = new baqend.EntityManagerFactory(env.TEST_SERVER);
+          return emf.createEntityManager(function(em) {
+            db = em;
+            code = em.code;
+            entityType = db.metamodel.entity(personType.typeConstructor);
+            return db.User.login('root', 'root');
+          });
         });
-      });
 
-      it('should return null if no code has been loaded', function() {
-        expect(db[personType.name][attr]).be.null;
-      });
-
-      it('should set and get code', function() {
-        var fn = new Function("return '"+type+Math.random().toString()+"';");
-        return code["save" + attr.substring(2)](entityType, fn, db.token).then(function() {
-          expect(db[personType.name][attr]()).equals(fn());
-        }).then(function() {
-          return code["load" + attr.substring(2)](entityType, db.token);
-        }).then(function() {
-          expect(db[personType.name][attr]()).equals(fn());
-        });
-      });
-
-      it('should delete code', function() {
-        var fn = new Function("return '"+type+Math.random().toString()+"';");
-        return code["save" + attr.substring(2)](entityType, fn, db.token).then(function() {
-          expect(db[personType.name][attr]()).equals(fn());
-          return code["delete" + attr.substring(2)](entityType, db.token);
-        }).then(function() {
+        it('should return null if no code has been loaded', function() {
           expect(db[personType.name][attr]).be.null;
-          return expect(code["load" + attr.substring(2)](entityType, db.token)).be.rejected;
         });
+
+        it('should set and get code', function() {
+          var fn = new Function("return '"+type+Math.random().toString()+"';");
+          return code["save" + attr.substring(2)](entityType, fn, db.token).then(function() {
+            expect(db[personType.name][attr]()).equals(fn());
+          }).then(function() {
+            return code["load" + attr.substring(2)](entityType, db.token);
+          }).then(function() {
+            expect(db[personType.name][attr]()).equals(fn());
+          });
+        });
+
+        it('should delete code', function() {
+          var fn = new Function("return '"+type+Math.random().toString()+"';");
+          return code["save" + attr.substring(2)](entityType, fn, db.token).then(function() {
+            expect(db[personType.name][attr]()).equals(fn());
+            return code["delete" + attr.substring(2)](entityType, db.token);
+          }).then(function() {
+            expect(db[personType.name][attr]).be.null;
+            return expect(code["load" + attr.substring(2)](entityType, db.token)).be.rejected;
+          });
+        });
+
+        if(type != 'validate') {
+          it('should apply EntityManager', function() {
+            var fn = new Function("return db;");
+            db.code.setHandler(personType.name, type, fn);
+            expect(db[personType.name][attr]()).be.ok;
+          });
+
+          it('should use parameter as this', function() {
+            var obj = {
+              test: "test"
+            };
+            var fn = new Function("return this;");
+            db.code.setHandler(personType.name, type, fn);
+            expect(db[personType.name][attr](obj)).equals(obj);
+          });
+        } else {
+          it('should not apply EntityManager', function() {
+            entityType.validationCode = new Function("return db");
+            expect(db[personType.name][attr]).to.throw(ReferenceError);
+          });
+        }
       });
 
-      if(type != 'validate') {
-        it('should apply EntityManager', function() {
-          var fn = new Function("return db;");
-          db.code.setCode(personType.name, type, fn);
-          expect(db[personType.name][attr]()).be.ok;
-        });
+    });
+  });
 
-        it('should use parameter as this', function() {
-          var obj = {
-            test: "test"
-          };
-          var fn = new Function("return this;");
-          db.code.setCode(personType.name, type, fn);
-          expect(db[personType.name][attr](obj)).equals(obj);
+  describe('bqcode', function() {
+
+    var fn = function() {
+      return {
+        "test": "test",
+        "this": this
+      };
+    };
+    var bucket = "code.Test";
+
+    beforeEach(function() {
+      var emf = new baqend.EntityManagerFactory(env.TEST_SERVER);
+      return emf.createEntityManager(function(em) {
+        db = em;
+        code = em.code;
+        entityType = db.metamodel.entity(personType.typeConstructor);
+        return db.User.login('root', 'root');
+      }).then(function() {
+        return code.saveCode(bucket, fn, db.token).then(function(saved) {
+          expect(saved().test).eqls(fn().test);
         });
-      } else {
-        it('should not apply EntityManager', function() {
-          entityType.validationCode = new Function("return db");
-          expect(db[personType.name][attr]).to.throw(ReferenceError);
-        });
-      }
+      });
+    });
+
+    it('should load code', function() {
+      return code.loadCode(bucket, db.token).then(function(loaded) {
+        expect(loaded().test).eqls(fn().test);
+        expect(code.getCode(bucket)).be.ok;
+      });
+    });
+
+    it('should run code', function() {
+      var obj = { "foo": "bar" };
+      return db.run(bucket, obj).then(function(result) {
+        expect(result.this.foo).eqls(obj.foo);
+      });
+    });
+
+    it('should delete code', function() {
+      return code.deleteCode(bucket, db.token).then(function() {
+        return expect(code.loadCode(bucket, db.token)).be.rejected;
+      });
     });
 
   });
