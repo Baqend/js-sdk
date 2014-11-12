@@ -96,15 +96,19 @@ describe('Test code', function() {
     });
   });
 
-  describe('bqcode', function() {
+  describe('code', function() {
 
-    var fn = function() {
-      return {
-        "test": "test",
-        "this": this
+    var fn, bucket;
+
+    before(function() {
+      fn = function() {
+        return {
+          "test": "test",
+          "this": this
+        };
       };
-    };
-    var bucket = "code.Test";
+      bucket = randomize("code.Test");
+    });
 
     beforeEach(function() {
       var emf = new baqend.EntityManagerFactory(env.TEST_SERVER);
