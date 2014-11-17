@@ -10,8 +10,8 @@
   "main": "lib/index.js",
   "dependencies": {
     "jahcode": ">=1.1.0",
+    "lie": "^2.8.0",
     "node-uuid": "git+https://github.com/broofa/node-uuid",
-    "q": "^1.1.1",
     "validator": "^3.22.0"
   },
   "devDependencies": {

@@ -2,8 +2,6 @@ var source = window.parent;
 if (source == window)
   throw new Error('Connection not established via iframe.');
 
-source.postMessage(document.getElementById('sdk').text, '*');
-
 window.addEventListener('message', send, false);
 function send(event) {
   var msg = JSON.parse(event.data);
