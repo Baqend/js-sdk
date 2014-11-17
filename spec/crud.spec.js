@@ -366,9 +366,9 @@ describe('Test dao', function() {
       var p1 = db.Person.get(person.id);
       var p2 = db.Person.get(person.id);
 
-      return baqend.Q.all([p1, p2]).spread(function(loaded1, loaded2) {
-        expect(loaded1).be.ok;
-        expect(loaded1).equals(loaded2);
+      return Promise.all([p1, p2]).then(function(loaded) {
+        expect(loaded[0]).be.ok;
+        expect(loaded[0]).equals(loaded[1]);
       });
     });
 
@@ -403,8 +403,8 @@ describe('Test dao', function() {
         var p1 = db.Person.get(person.id);
         var p2 = otherDb.Person.get(person.id);
 
-        return baqend.Q.all([p1, p2]).spread(function(loaded1, loaded2) {
-          expect(loaded1).not.equals(loaded2);
+        return Promise.all([p1, p2]).then(function(loaded) {
+          expect(loaded[0]).not.equals(loaded[1]);
         });
       });
     });
@@ -449,7 +449,7 @@ describe('Test dao', function() {
     });
 
     it('should be allowed to save after remove', function() {
-      return person.remove().invoke('save').then(function(saved) {
+      return person.remove().then(function(per) { return per.save(); }).then(function(saved) {
         expect(saved._metadata.id).be.ok;
         expect(saved._metadata.version).be.ok;
         expect(saved._metadata.isPersistent).be.true;
@@ -465,11 +465,11 @@ describe('Test dao', function() {
     });
 
     it('should be allowed to remove an object without id', function() {
-      return expect(person.remove().invoke('remove')).be.rejectedWith(baqend.error.IllegalEntityError);
+      return expect(person.remove().then(function(per) { return per.remove() })).be.rejectedWith(baqend.error.IllegalEntityError);
     });
 
     it('should be allowed to forcly remove an object without id', function() {
-      return expect(person.remove().invoke('remove', true)).be.fulfilled;
+      return expect(person.remove().then(function(per) { return per.remove(true) } )).be.fulfilled;
     });
 
     it('should not be allowed to add removed objects with same id', function() {
@@ -771,7 +771,7 @@ describe('Test dao', function() {
         sibs.forEach(function(sib) {
           promises.push(expect(db.Person.get(sib._metadata.id)).not.become(null))
         });
-        return baqend.Q.all(promises);
+        return Promise.all(promises);
       }).then(function() {
         return child.remove(false, 2);
       }).then(function(removed) {
@@ -786,7 +786,7 @@ describe('Test dao', function() {
         sibs.forEach(function(sib) {
           promises.push(expect(db.Person.get(sib._metadata.id)).become(null))
         });
-        return baqend.Q.all(promises);
+        return Promise.all(promises);
       });
     });
 
@@ -802,7 +802,7 @@ describe('Test dao', function() {
         sibs.forEach(function(sib) {
           promises.push(expect(db.Person.get(sib._metadata.id)).not.become(null))
         });
-        return baqend.Q.all(promises);
+        return Promise.all(promises);
       }).then(function() {
         return child.remove(false, true);
       }).then(function(removed) {
@@ -817,7 +817,7 @@ describe('Test dao', function() {
         sibs.forEach(function(sib) {
           promises.push(expect(db.Person.get(sib._metadata.id)).become(null))
         });
-        return baqend.Q.all(promises);
+        return Promise.all(promises);
       });
     });
 
@@ -924,7 +924,7 @@ describe('Test dao', function() {
 
     it('should insert referenced objects by depth', function() {
       return child.insert(false, 2).then(function() {
-        return baqend.Q.all([
+        return Promise.all([
           expect(db.Child.get(child._metadata.id)).not.become(null),
           expect(db.Person.get(mother._metadata.id)).not.become(null),
           expect(db.Person.get(father._metadata.id)).not.become(null),
@@ -936,7 +936,7 @@ describe('Test dao', function() {
 
     it('should insert referenced objects by reachability', function() {
       return child.insert(false, true).then(function() {
-        return baqend.Q.all([
+        return Promise.all([
           expect(db.Child.get(child._metadata.id)).not.become(null),
           expect(db.Person.get(mother._metadata.id)).not.become(null),
           expect(db.Person.get(father._metadata.id)).not.become(null),

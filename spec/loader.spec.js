@@ -1,5 +1,5 @@
 if (typeof window != "undefined") {
-  describe('Test sdk loader', function() {
+  xdescribe('Test sdk loader', function() {
     var testLoader, db, pageJspa, personClass;
     before(function() {
       var basePath = document.querySelector('script[src*="/baqend."]').src;
@@ -18,21 +18,22 @@ if (typeof window != "undefined") {
         testLoader = document.createElement('iframe');
         testLoader.src = basePath + 'test-loader.html';
 
-        var deferred = baqend.Q.defer();
-        testLoader.onload = function() {
-          expect(testLoader.contentWindow.baqend).be.undefined;
-          db = testLoader.contentWindow.DB;
-          db.connect(env.TEST_SERVER);
-          db.ready(function() {
-            pageJspa = testLoader.contentWindow.baqend;
+        var promise = new Promise(function(resolve) {
+          testLoader.onload = function() {
+            expect(testLoader.contentWindow.baqend).be.undefined;
             db = testLoader.contentWindow.DB;
-            deferred.resolve();
-          });
-        };
+            db.connect(env.TEST_SERVER);
+            db.ready(function() {
+              pageJspa = testLoader.contentWindow.baqend;
+              db = testLoader.contentWindow.DB;
+              resolve();
+            });
+          };
+        });
 
         document.body.appendChild(testLoader);
 
-        return deferred.promise.then(function() {
+        return promise.then(function() {
           db.TestAppPerson = personClass = function(name, age) {
             this.name = name;
             this.age = age;

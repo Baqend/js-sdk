@@ -181,7 +181,9 @@ describe('Test user and roles', function() {
       var login = makeLogin();
       var oldToken;
       return db.register(login, 'secret').then(function() {
-        return baqend.Q.delay(1100);
+        return new Promise(function(resolve) {
+          setTimeout(resolve, 1100);
+        });
       }).then(function() {
         expect(db.token).be.ok;
         oldToken = db.token;
@@ -205,7 +207,7 @@ describe('Test user and roles', function() {
       user3 = db.User();
       user3.username = makeLogin();
 
-      return baqend.Q.all([user1.insert(), user2.insert(), user3.insert()]);
+      return Promise.all([user1.insert(), user2.insert(), user3.insert()]);
     });
 
     it('should save and load', function() {
@@ -236,7 +238,9 @@ describe('Test user and roles', function() {
       var login = makeLogin();
       var oldToken;
       return db.register(login, 'secret').then(function() {
-        return baqend.Q.delay(1100);
+        return new Promise(function(resolve) {
+          setTimeout(resolve, 1100);
+        });
       }).then(function() {
         oldToken = db.token;
         var role = db.Role();

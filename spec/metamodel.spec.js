@@ -600,7 +600,7 @@ describe('Test Metamodel', function() {
     function createUser(emf, username) {
       return emf.createEntityManager().then(function(db) {
         return db.User.register(username, 'secret').then(function(user) {
-          return db.User.logout().thenResolve(user);
+          return db.User.logout().then(function() { return user });
         });
       });
     }
@@ -608,7 +608,7 @@ describe('Test Metamodel', function() {
     before(function() {
       var staticEmf = new baqend.EntityManagerFactory(env.TEST_SERVER);
 
-      return baqend.Q.all([
+      return Promise.all([
         createUser(staticEmf, makeLogin()),
         createUser(staticEmf, makeLogin()),
         createUser(staticEmf, makeLogin())
