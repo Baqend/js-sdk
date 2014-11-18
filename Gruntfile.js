@@ -17,8 +17,7 @@ module.exports = function (grunt) {
       options: {
         browserifyOptions: {
           builtins: [],
-          insertGlobals: false,
-          detectGlobals: false,
+          insertGlobalVars: ['global'],
           standalone: "baqend"
         }
       },
@@ -32,8 +31,7 @@ module.exports = function (grunt) {
           keepAlive: true,
           browserifyOptions: {
             builtins: [],
-            insertGlobals: false,
-            detectGlobals: false,
+            insertGlobalVars: ['global'],
             standalone: "baqend",
             debug: true
           }
