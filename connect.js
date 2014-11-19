@@ -1,7 +1,3 @@
-var source = window.parent;
-if (source == window)
-  throw new Error('Connection not established via iframe.');
-
 window.addEventListener('message', send, false);
 function send(event) {
   var msg = JSON.parse(event.data);
@@ -10,6 +6,7 @@ function send(event) {
     return;
 
   msg.origin = event.origin;
+  msg.source = event.source;
 
   var node = msg.method == 'GET' && document.getElementById(msg.path);
   if(!node) {
@@ -44,7 +41,7 @@ function receive(xhr, message, headers) {
     entity: xhr.responseText
   };
 
-  source.postMessage(JSON.stringify(msg), message.origin);
+  message.source.postMessage(JSON.stringify(msg), message.origin);
 }
 
 function applyCacheRule(node) {
