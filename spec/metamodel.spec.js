@@ -429,7 +429,7 @@ describe('Test Metamodel', function() {
 
   it("should not be allowed to load after save metamodel", function() {
     metamodel.init();
-    return metamodel.save().then(function() {
+    return saveMetamodel(metamodel).then(function() {
       expect(function() { metamodel.load() }).throw(Error);
     });
   });
@@ -476,7 +476,7 @@ describe('Test Metamodel', function() {
       embeddedType.declaredAttributes.push(new baqend.metamodel.SingularAttribute(embeddedType, "age", metamodel.baseType(Number)));
       embeddedType.declaredAttributes.push(new baqend.metamodel.SingularAttribute(embeddedType, "ref", type));
 
-      return metamodel.save();
+      return saveMetamodel(metamodel);
     });
 
     it('should be available', function() {
@@ -507,7 +507,7 @@ describe('Test Metamodel', function() {
       });
     });
 
-    it('should be accessable via db', function() {
+    it('should be accessible via db', function() {
       var emf = new baqend.EntityManagerFactory(env.TEST_SERVER);
 
       return emf.createEntityManager().then(function(db) {
@@ -629,20 +629,19 @@ describe('Test Metamodel', function() {
 
         type.createPermission.denyAccess(user2);
         type.updatePermission.denyAccess(user2).denyAccess(user3);
-        type.deletePermission.denyAccess(user2).denyAccess(user3);
-        type.queryPermission.denyAccess(user2);
-        type.schemaAddPermission.denyAccess(user2);
-        type.schemaReplacePermission.denyAccess(user2).denyAccess(user3);
-        type.schemaSubclassPermission.denyAccess(user2);
+        type.deletePermission.denyAccess(user2).denyAccess(user3).allowAccess(user1);
+        type.queryPermission.allowAccess(user2);
+        type.schemaSubclassPermission.allowAccess(user1).allowAccess(user3);
+        type.schemaAddPermission.allowAccess(user1);
+        type.schemaReplacePermission.allowAccess(user1);
 
-        embeddedType.loadPermission.denyAccess(user2);
-        embeddedType.schemaAddPermission.denyAccess(user2).denyAccess(user3);
-        embeddedType.schemaReplacePermission.denyAccess(user2).denyAccess(user3);
+        embeddedType.loadPermission.allowAccess(user1);
+        embeddedType.schemaAddPermission.allowAccess(user1);
+        embeddedType.schemaReplacePermission.allowAccess(user1);
 
-        return metamodel.save();
+        return saveMetamodel(metamodel);
       }).then(function() {
         emf = new baqend.EntityManagerFactory(env.TEST_SERVER);
-
         return emf.createEntityManager(db).then(function(em) {
           db = em;
           obj = db[SchemaAclPersonName]();
@@ -655,16 +654,19 @@ describe('Test Metamodel', function() {
       var metamodel = emf.createMetamodel();
       return metamodel.load().then(function() {
         var AclPerson = metamodel.entity(SchemaAclPersonName);
-        for (var name in AclPerson) {
-          if (name.indexOf('Permission') != -1 && name != 'loadPermission') {
-            expect(AclPerson[name].isDenied(user2)).be.true;
-          }
-        }
+
+        expect(AclPerson.createPermission.isDenied(user2)).be.true;
+        expect(AclPerson.updatePermission.isDenied(user2)).be.true;
+        expect(AclPerson.deletePermission.isDenied(user2)).be.true;
+        expect(AclPerson.queryPermission.isAllowed(user2)).be.true;
+        expect(AclPerson.schemaSubclassPermission.isAllowed(user1)).be.true;
+        expect(AclPerson.schemaAddPermission.isAllowed(user1)).be.true;
+        expect(AclPerson.schemaReplacePermission.isAllowed(user1)).be.true;
 
         var EmbeddableType = metamodel.embeddable(SchemaAclEmbeddedPersonName);
         for (name in EmbeddableType) {
           if (name.indexOf('Permission') != -1) {
-            expect(EmbeddableType[name].isDenied(user2)).be.true;
+            expect(EmbeddableType[name].isAllowed(user1)).be.true;
           }
         }
       });
@@ -691,15 +693,15 @@ describe('Test Metamodel', function() {
         });
       });
 
-      it('should allow schema add', function() {
+      it('should deny schema add', function() {
         return metamodel.load(db.token).then(function() {
-          return expect(metamodel.save(false, db.token)).be.fulfilled;
+          return expect(metamodel.save(false, db.token)).be.rejected;
         });
       });
 
-      it('should allow schema replace', function() {
+      it('should deny schema replace', function() {
         return metamodel.load(db.token).then(function() {
-          return expect(metamodel.save(true, db.token)).be.fulfilled;
+          return expect(metamodel.save(true, db.token)).be.rejected;
         });
       });
 
@@ -823,10 +825,10 @@ describe('Test Metamodel', function() {
         });
       });
 
-      it('should allow schema add', function() {
+      it('should deny schema add', function() {
         return metamodel.load(db.token).then(function() {
           var AclPerson = metamodel.entity(SchemaAclPersonName);
-          return expect(metamodel.save(AclPerson, false, db.token)).be.fulfilled;
+          return expect(metamodel.save(AclPerson, false, db.token)).be.rejected;
         });
       });
 

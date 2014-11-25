@@ -15,3 +15,13 @@ glob.randomize = function(name) {
   var rnd = Math.floor(Math.random() * 1000000);
   return name + rnd;
 };
+
+
+glob.saveMetamodel = function(metamodel, force) {
+  var emf = new baqend.EntityManagerFactory(env.TEST_SERVER);
+  return emf.createEntityManager().then(function(em) {
+    return em.User.login('root', 'root').then(function() { return em; });
+  }).then(function(em) {
+    return metamodel.save(force, em.token);
+  });
+};

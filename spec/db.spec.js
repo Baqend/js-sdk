@@ -43,7 +43,7 @@ describe("Test db", function() {
     ];
 
     var emf = new baqend.EntityManagerFactory(env.TEST_SERVER, model);
-    emf.metamodel.save();
+    saveMetamodel(emf.metamodel);
 
     return emf.createEntityManager().then(function(em) {
       db = em;

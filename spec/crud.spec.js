@@ -43,7 +43,7 @@ describe('Test dao', function() {
     streetType.declaredAttributes.push(new baqend.metamodel.SingularAttribute(addressType, "number", metamodel.baseType(Number)));
     streetType.declaredAttributes.push(new baqend.metamodel.SingularAttribute(addressType, "neighbor", personType));
 
-    return metamodel.save();
+    return saveMetamodel(metamodel);
   });
 
   beforeEach(function() {

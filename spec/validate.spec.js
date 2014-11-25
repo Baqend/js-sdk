@@ -26,7 +26,7 @@ describe('Test validate', function() {
 
     personType.validationCode = "email.isEmail();";
 
-    return metamodel.save().then(function() {
+    return saveMetamodel(metamodel).then(function() {
       return emf.createEntityManager();
     }).then(function(em) {
       db = em;

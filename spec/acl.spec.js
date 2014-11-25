@@ -20,7 +20,7 @@ describe('Test Acl', function() {
         AclPerson.declaredAttributes.push(new baqend.metamodel.SingularAttribute(AclPerson, "name", metamodel.baseType(String)));
         AclPerson.declaredAttributes.push(new baqend.metamodel.SingularAttribute(AclPerson, "age", metamodel.baseType(Number)));
         metamodel.addType(AclPerson);
-        return metamodel.save();
+        return saveMetamodel(metamodel, false);
       }
     }).then(function() {
       return createUserDb().then(function(em) {

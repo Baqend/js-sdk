@@ -25,7 +25,7 @@ describe('Test code', function() {
     personType.declaredAttributes.push(new baqend.metamodel.SingularAttribute(personType, "age", metamodel.baseType(Number)));
     personType.declaredAttributes.push(new baqend.metamodel.SingularAttribute(personType, "date", metamodel.baseType(Date)));
     personType.declaredAttributes.push(new baqend.metamodel.SingularAttribute(personType, "email", metamodel.baseType(String)));
-    return metamodel.save();
+    return saveMetamodel(metamodel);
   });
 
   describe('handler', function() {
@@ -72,7 +72,7 @@ describe('Test code', function() {
 
         if(type != 'validate') {
           it('should apply EntityManager', function() {
-            var fn = new Function("return db;");
+            var fn = new Function("db", "return db;");
             db.code.setHandler(personType.name, type, fn);
             expect(db[personType.name][attr]()).be.ok;
           });
@@ -127,14 +127,29 @@ describe('Test code', function() {
     it('should load code', function() {
       return code.loadCode(bucket, db.token).then(function(loaded) {
         expect(loaded().test).eqls(fn().test);
-        expect(code.getCode(bucket)).be.ok;
+        expect(code.getCode(bucket)).be.null;
       });
     });
 
     it('should run code', function() {
       var obj = { "foo": "bar" };
+      code.removeCode(bucket);
       return db.run(bucket, obj).then(function(result) {
         expect(result.this.foo).eqls(obj.foo);
+      });
+    });
+
+    it('should run code locally', function() {
+      var obj = { "foo": "bar" };
+      var fn = function() {
+        return {
+          that: this
+        }
+      };
+      var bucket = "localBucket";
+      code.setCode(bucket, fn);
+      return db.run(bucket, obj).then(function(result) {
+        expect(result.that.foo).eqls(obj.foo);
       });
     });
 
