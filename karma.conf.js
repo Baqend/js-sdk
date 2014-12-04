@@ -74,6 +74,14 @@ module.exports = function(config) {
         version: '',
         name: 'Karma'
       },
+      'Safari-Mac': {
+        base: 'WebDriver',
+        config: webdriverConfig,
+        browserName: 'safari',
+        platform: 'MAC',
+        version: '',
+        name: 'Karma'
+      },
       'Chrome-Win': {
         base: 'WebDriver',
         config: webdriverConfig,
