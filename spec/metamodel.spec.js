@@ -664,7 +664,7 @@ describe('Test Metamodel', function() {
         expect(AclPerson.schemaReplacePermission.isAllowed(user1)).be.true;
 
         var EmbeddableType = metamodel.embeddable(SchemaAclEmbeddedPersonName);
-        for (name in EmbeddableType) {
+        for (var name in EmbeddableType) {
           if (name.indexOf('Permission') != -1) {
             expect(EmbeddableType[name].isAllowed(user1)).be.true;
           }

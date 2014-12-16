@@ -1,6 +1,5 @@
 var glob = typeof window != 'undefined'? window: global;
 
-
 glob.makeLogin = function() {
   var text = "";
   var possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
@@ -15,7 +14,6 @@ glob.randomize = function(name) {
   var rnd = Math.floor(Math.random() * 1000000);
   return name + rnd;
 };
-
 
 glob.saveMetamodel = function(metamodel, force) {
   var emf = new baqend.EntityManagerFactory(env.TEST_SERVER);

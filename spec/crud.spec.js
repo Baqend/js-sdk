@@ -35,13 +35,13 @@ describe('Test dao', function() {
     childType.declaredAttributes.push(new baqend.metamodel.SetAttribute(childType, "setSiblings", personType));
     childType.declaredAttributes.push(new baqend.metamodel.MapAttribute(childType, "mapSiblings", personType, personType));
 
-
-    addressType.declaredAttributes.push(new baqend.metamodel.SingularAttribute(addressType, "street", streetType));
     addressType.declaredAttributes.push(new baqend.metamodel.SingularAttribute(addressType, "zip", metamodel.baseType(Number)));
+    addressType.declaredAttributes.push(new baqend.metamodel.SingularAttribute(addressType, "city", metamodel.baseType(String)));
+    addressType.declaredAttributes.push(new baqend.metamodel.SingularAttribute(addressType, "street", streetType));
 
-    streetType.declaredAttributes.push(new baqend.metamodel.SingularAttribute(addressType, "name", metamodel.baseType(String)));
-    streetType.declaredAttributes.push(new baqend.metamodel.SingularAttribute(addressType, "number", metamodel.baseType(Number)));
-    streetType.declaredAttributes.push(new baqend.metamodel.SingularAttribute(addressType, "neighbor", personType));
+    streetType.declaredAttributes.push(new baqend.metamodel.SingularAttribute(streetType, "name", metamodel.baseType(String)));
+    streetType.declaredAttributes.push(new baqend.metamodel.SingularAttribute(streetType, "number", metamodel.baseType(Number)));
+    streetType.declaredAttributes.push(new baqend.metamodel.SingularAttribute(streetType, "neighbor", personType));
 
     return saveMetamodel(metamodel);
   });

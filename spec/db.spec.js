@@ -109,6 +109,24 @@ describe("Test db", function() {
       expect(testClass.attr).be.undefined;
     });
 
+    it('should add property constructor on proxy classes', function() {
+      var testClass = db.TestClass({
+        testValue: 3,
+        notEnhanced: 'testString'
+      });
+
+      expect(testClass.testValue).equals(3);
+      expect(testClass.notEnhanced).equals('testString');
+
+      testClass = db.TestEmbeddedClass({
+        value: 3,
+        notEnhanced: 'testString'
+      });
+
+      expect(testClass.value).equals(3);
+      expect(testClass.notEnhanced).equals('testString');
+    });
+
     it('should class in namespaces to be enhanced', function() {
       var testClass = new db['test.NsClass']();
 
