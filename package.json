@@ -28,7 +28,7 @@
     "grunt-mocha-test": "^0.11.0",
     "grunt-run": "^0.2.2",
     "grunt-template": "^0.2.3",
-    "jahcode": "^1.1.3",
+    "jahcode": "^1.1.5",
     "jquery": "^2.1.1",
     "karma": "*",
     "karma-chai": "^0.1.0",
