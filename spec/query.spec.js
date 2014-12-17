@@ -715,7 +715,7 @@ describe("Test Query", function() {
 
     it("should return and/or condition based matches", function() {
       var qb = db.QueryPerson.find();
-      var q = qb.and(
+      return qb.and(
           qb.or(qb.between('age', 20, 35), qb.between('age', 40, 55)),
           qb.or(qb.equal('name', 'QueryPerson 1'), qb.equal('name', 'QueryPerson 3'))
       ).resultList()
@@ -734,7 +734,7 @@ describe("Test Query", function() {
           });
     });
 
-    it("should return matches in right order, with more than sort criteria", function() {
+    it("should return matches in right order, with two sort criteria", function() {
       return db.QueryPerson.find()
           .containsAny('colors', 'green', 'blue')
           .descending('address.city')
@@ -745,7 +745,7 @@ describe("Test Query", function() {
           });
     });
 
-    it("should return matches in right order, with more than sort criteria", function() {
+    it("should return matches in right order, with sort criteria", function() {
       return db.QueryPerson.find()
           .containsAny('colors', 'green', 'blue')
           .sort({'address.city': 1, 'age': 1})
