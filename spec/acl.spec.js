@@ -196,7 +196,7 @@ describe('Test Acl', function() {
     });
 
     after(function() {
-      Promise.all([
+      return Promise.all([
         db2.User.me.remove(),
         db3.User.me.remove()
       ]);

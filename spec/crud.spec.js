@@ -283,7 +283,8 @@ describe('Test dao', function() {
           });
         });
       }).then(function() {
-        expect(person.save()).rejected;
+        person.name = "New Name";
+        return expect(person.save()).rejected;
       });
     });
 
@@ -748,7 +749,7 @@ describe('Test dao', function() {
     });
 
     after(function() {
-      child.remove(true, true);
+      return child.remove(true, true);
     });
 
     it('should save and convert result to JSON', function() {
