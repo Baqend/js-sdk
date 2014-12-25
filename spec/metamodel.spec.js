@@ -464,17 +464,17 @@ describe('Test Metamodel', function() {
       metamodel.addType(childType = new baqend.metamodel.EntityType("jstest.ChildPerson", type));
       metamodel.addType(embeddedType = new baqend.metamodel.EmbeddableType("jstest.EmbeddedPerson"));
 
-      type.declaredAttributes.push(new baqend.metamodel.SingularAttribute(type, "name", metamodel.baseType(String)));
-      type.declaredAttributes.push(new baqend.metamodel.SingularAttribute(type, "ref", type));
-      type.declaredAttributes.push(new baqend.metamodel.SingularAttribute(type, "date", metamodel.baseType(Date)));
-      type.declaredAttributes.push(new baqend.metamodel.ListAttribute(type, "list", metamodel.baseType('String')));
-      type.declaredAttributes.push(new baqend.metamodel.SetAttribute(type, "set", metamodel.baseType('Integer')));
-      type.declaredAttributes.push(new baqend.metamodel.MapAttribute(type, "map", metamodel.baseType('String'), type));
+      type.addAttribute(new baqend.metamodel.SingularAttribute("name", metamodel.baseType(String)));
+      type.addAttribute(new baqend.metamodel.SingularAttribute("ref", type));
+      type.addAttribute(new baqend.metamodel.SingularAttribute("date", metamodel.baseType(Date)));
+      type.addAttribute(new baqend.metamodel.ListAttribute("list", metamodel.baseType('String')));
+      type.addAttribute(new baqend.metamodel.SetAttribute("set", metamodel.baseType('Integer')));
+      type.addAttribute(new baqend.metamodel.MapAttribute("map", metamodel.baseType('String'), type));
 
-      childType.declaredAttributes.push(new baqend.metamodel.SingularAttribute(childType, "age", metamodel.baseType('Integer')));
+      childType.addAttribute(new baqend.metamodel.SingularAttribute("age", metamodel.baseType('Integer')));
 
-      embeddedType.declaredAttributes.push(new baqend.metamodel.SingularAttribute(embeddedType, "age", metamodel.baseType(Number)));
-      embeddedType.declaredAttributes.push(new baqend.metamodel.SingularAttribute(embeddedType, "ref", type));
+      embeddedType.addAttribute(new baqend.metamodel.SingularAttribute("age", metamodel.baseType(Number)));
+      embeddedType.addAttribute(new baqend.metamodel.SingularAttribute("ref", type));
 
       return saveMetamodel(metamodel);
     });
@@ -624,8 +624,8 @@ describe('Test Metamodel', function() {
         metamodel.addType(type = new baqend.metamodel.EntityType(SchemaAclPersonName, metamodel.entity(Object)));
         metamodel.addType(embeddedType = new baqend.metamodel.EmbeddableType(SchemaAclEmbeddedPersonName));
 
-        type.declaredAttributes.push(new baqend.metamodel.SingularAttribute(type, "name", metamodel.baseType(String)));
-        embeddedType.declaredAttributes.push(new baqend.metamodel.SingularAttribute(embeddedType, "name", metamodel.baseType(String)));
+        type.addAttribute(new baqend.metamodel.SingularAttribute("name", metamodel.baseType(String)));
+        embeddedType.addAttribute(new baqend.metamodel.SingularAttribute("name", metamodel.baseType(String)));
 
         type.createPermission.denyAccess(user2);
         type.updatePermission.denyAccess(user2).denyAccess(user3);

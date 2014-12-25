@@ -11,20 +11,13 @@ var PersClassEntity = new baqend.metamodel.EntityType("/db/test.persistent.PersC
 var ChildPersClassEntity = new baqend.metamodel.EntityType("/db/test.persistent.ChildPersClass", PersClassEntity);
 var OtherPersClassEntity = new baqend.metamodel.EntityType("/db/test.persistent.OtherPersClass");
 
-PersClassEntity.declaredAttributes = [
-  new baqend.metamodel.SingularAttribute(PersClassEntity, "ref", OtherPersClassEntity),
-  new baqend.metamodel.SingularAttribute(PersClassEntity, "name", baqend.metamodel.BasicType.Integer),
-  new baqend.metamodel.SingularAttribute(PersClassEntity, "persRef", PersClassEntity)
-];
+PersClassEntity.addAttribute(new baqend.metamodel.SingularAttribute("ref", OtherPersClassEntity));
+PersClassEntity.addAttribute(new baqend.metamodel.SingularAttribute("name", baqend.metamodel.BasicType.Integer));
+PersClassEntity.addAttribute(new baqend.metamodel.SingularAttribute("persRef", PersClassEntity));
 
-ChildPersClassEntity.declaredAttributes = [
-  new baqend.metamodel.SingularAttribute(ChildPersClassEntity, "value", baqend.metamodel.BasicType.String)
-];
+ChildPersClassEntity.addAttribute(new baqend.metamodel.SingularAttribute("value", baqend.metamodel.BasicType.String));
 
-OtherPersClassEntity.declaredAttributes = [
-  new baqend.metamodel.SingularAttribute(ChildPersClassEntity, "value", baqend.metamodel.BasicType.Integer)
-];
-
+OtherPersClassEntity.addAttribute(new baqend.metamodel.SingularAttribute("value", baqend.metamodel.BasicType.Integer));
 
 var test = {
   persistent: {}

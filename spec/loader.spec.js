@@ -10,8 +10,8 @@ if (typeof window != "undefined") {
       metamodel.init();
 
       var TestAppPerson = new baqend.metamodel.EntityType("TestAppPerson", metamodel.entity(Object));
-      TestAppPerson.declaredAttributes.push(new baqend.metamodel.SingularAttribute(TestAppPerson, "name", metamodel.baseType(String)));
-      TestAppPerson.declaredAttributes.push(new baqend.metamodel.SingularAttribute(TestAppPerson, "age", metamodel.baseType(Number)));
+      TestAppPerson.addAttribute(new baqend.metamodel.SingularAttribute("name", metamodel.baseType(String)));
+      TestAppPerson.addAttribute(new baqend.metamodel.SingularAttribute("age", metamodel.baseType(Number)));
       metamodel.addType(TestAppPerson);
 
       return metamodel.save().then(function() {

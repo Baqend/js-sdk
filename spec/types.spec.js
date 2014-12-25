@@ -71,36 +71,34 @@ describe('Test entity type', function () {
   };
 
   for (var i = 0, type; type = [EntityType, EmbeddedType][i]; ++i) {
-    var attrs = type.declaredAttributes;
-
     for (var name in simpleTypes) {
-      attrs.push(new baqend.metamodel.SingularAttribute(type, name, simpleTypes[name].type));
+      type.addAttribute(new baqend.metamodel.SingularAttribute(name, simpleTypes[name].type));
     }
 
-    attrs.push(new baqend.metamodel.SingularAttribute(type, "jsonArray", metamodel.baseType('JsonArray')));
-    attrs.push(new baqend.metamodel.SingularAttribute(type, "jsonObject", metamodel.baseType('JsonObject')));
-    attrs.push(new baqend.metamodel.SingularAttribute(type, "ref", EntityType));
-    attrs.push(new baqend.metamodel.SingularAttribute(type, "embedded", EmbeddedType));
+    type.addAttribute(new baqend.metamodel.SingularAttribute("jsonArray", metamodel.baseType('JsonArray')));
+    type.addAttribute(new baqend.metamodel.SingularAttribute("jsonObject", metamodel.baseType('JsonObject')));
+    type.addAttribute(new baqend.metamodel.SingularAttribute("ref", EntityType));
+    type.addAttribute(new baqend.metamodel.SingularAttribute("embedded", EmbeddedType));
 
     for (var name in simpleTypes) {
-      attrs.push(new baqend.metamodel.ListAttribute(type, name + "List", simpleTypes[name].type));
+      type.addAttribute(new baqend.metamodel.ListAttribute(name + "List", simpleTypes[name].type));
     }
-    attrs.push(new baqend.metamodel.ListAttribute(type, "refList", EntityType));
-    attrs.push(new baqend.metamodel.ListAttribute(type, "embeddedList", EmbeddedType));
+    type.addAttribute(new baqend.metamodel.ListAttribute("refList", EntityType));
+    type.addAttribute(new baqend.metamodel.ListAttribute("embeddedList", EmbeddedType));
 
     for (var name in simpleTypes) {
-      attrs.push(new baqend.metamodel.SetAttribute(type, name + "Set", simpleTypes[name].type));
+      type.addAttribute(new baqend.metamodel.SetAttribute(name + "Set", simpleTypes[name].type));
     }
-    attrs.push(new baqend.metamodel.SetAttribute(type, "refSet", EntityType));
+    type.addAttribute(new baqend.metamodel.SetAttribute("refSet", EntityType));
 
     for (var name in simpleTypes) {
-      attrs.push(new baqend.metamodel.MapAttribute(type, name + "simpleMap", simpleTypes[name].type, metamodel.baseType('String')));
-      attrs.push(new baqend.metamodel.MapAttribute(type, "simple" + name + "Map", metamodel.baseType('String'), simpleTypes[name].type));
+      type.addAttribute(new baqend.metamodel.MapAttribute(name + "simpleMap", simpleTypes[name].type, metamodel.baseType('String')));
+      type.addAttribute(new baqend.metamodel.MapAttribute("simple" + name + "Map", metamodel.baseType('String'), simpleTypes[name].type));
     }
-    attrs.push(new baqend.metamodel.MapAttribute(type, "simpleRefMap", metamodel.baseType('String'), EntityType));
-    attrs.push(new baqend.metamodel.MapAttribute(type, "refSimpleMap", EntityType, metamodel.baseType('String')));
-    attrs.push(new baqend.metamodel.MapAttribute(type, "refMap", EntityType, EntityType));
-    attrs.push(new baqend.metamodel.MapAttribute(type, "simpleEmbeddedMap", metamodel.baseType('String'), EmbeddedType));
+    type.addAttribute(new baqend.metamodel.MapAttribute("simpleRefMap", metamodel.baseType('String'), EntityType));
+    type.addAttribute(new baqend.metamodel.MapAttribute("refSimpleMap", EntityType, metamodel.baseType('String')));
+    type.addAttribute(new baqend.metamodel.MapAttribute("refMap", EntityType, EntityType));
+    type.addAttribute(new baqend.metamodel.MapAttribute("simpleEmbeddedMap", metamodel.baseType('String'), EmbeddedType));
   }
 
   metamodel.addType(EntityType);

@@ -20,19 +20,17 @@ describe("Test Query", function() {
     metamodel.addType(personType = new baqend.metamodel.EntityType("QueryPerson", metamodel.entity(Object)));
     metamodel.addType(addressType = new baqend.metamodel.EmbeddableType("QueryAddress"));
 
-    personType.declaredAttributes.push(new baqend.metamodel.SingularAttribute(personType, "name", metamodel.baseType(String)));
-    personType.declaredAttributes.push(new baqend.metamodel.SingularAttribute(personType, "address", addressType));
-    personType.declaredAttributes.push(new baqend.metamodel.SingularAttribute(personType, "age", metamodel.baseType(Number)));
-    personType.declaredAttributes.push(new baqend.metamodel.SingularAttribute(personType, "date", metamodel.baseType(Date)));
-    personType.declaredAttributes.push(new baqend.metamodel.ListAttribute(personType, "colors", metamodel.baseType(String)));
-    personType.declaredAttributes.push(new baqend.metamodel.SingularAttribute(personType, "birthplace", metamodel.baseType(baqend.GeoPoint)));
+    personType.addAttribute(new baqend.metamodel.SingularAttribute("name", metamodel.baseType(String)));
+    personType.addAttribute(new baqend.metamodel.SingularAttribute("address", addressType));
+    personType.addAttribute(new baqend.metamodel.SingularAttribute("age", metamodel.baseType(Number)));
+    personType.addAttribute(new baqend.metamodel.SingularAttribute("date", metamodel.baseType(Date)));
+    personType.addAttribute(new baqend.metamodel.ListAttribute("colors", metamodel.baseType(String)));
+    personType.addAttribute(new baqend.metamodel.SingularAttribute("birthplace", metamodel.baseType(baqend.GeoPoint)));
 
-    addressType.declaredAttributes.push(new baqend.metamodel.SingularAttribute(addressType, "zip", metamodel.baseType(Number)));
-    addressType.declaredAttributes.push(new baqend.metamodel.SingularAttribute(addressType, "city", metamodel.baseType(String)));
+    addressType.addAttribute(new baqend.metamodel.SingularAttribute("zip", metamodel.baseType(Number)));
+    addressType.addAttribute(new baqend.metamodel.SingularAttribute("city", metamodel.baseType(String)));
 
-    return saveMetamodel(metamodel).then(function() {
-
-    });
+    return saveMetamodel(metamodel);
   });
 
   describe("Builder", function() {

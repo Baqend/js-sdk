@@ -19,10 +19,10 @@ describe('Test validate', function() {
     var personType = new baqend.metamodel.EntityType("ValidatePerson", metamodel.entity(Object));
     metamodel.addType(personType);
 
-    personType.declaredAttributes.push(new baqend.metamodel.SingularAttribute(personType, "name", metamodel.baseType(String)));
-    personType.declaredAttributes.push(new baqend.metamodel.SingularAttribute(personType, "age", metamodel.baseType(Number)));
-    personType.declaredAttributes.push(new baqend.metamodel.SingularAttribute(personType, "date", metamodel.baseType(Date)));
-    personType.declaredAttributes.push(new baqend.metamodel.SingularAttribute(personType, "email", metamodel.baseType(String)));
+    personType.addAttribute(new baqend.metamodel.SingularAttribute("name", metamodel.baseType(String)));
+    personType.addAttribute(new baqend.metamodel.SingularAttribute("age", metamodel.baseType(Number)));
+    personType.addAttribute(new baqend.metamodel.SingularAttribute("date", metamodel.baseType(Date)));
+    personType.addAttribute(new baqend.metamodel.SingularAttribute("email", metamodel.baseType(String)));
 
     personType.validationCode = "email.isEmail();";
 

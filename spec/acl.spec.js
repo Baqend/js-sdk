@@ -17,8 +17,8 @@ describe('Test Acl', function() {
     return metamodel.load().then(function() {
       if(!metamodel.managedType("AclPerson")) {
         var AclPerson = new baqend.metamodel.EntityType("AclPerson", metamodel.entity(Object));
-        AclPerson.declaredAttributes.push(new baqend.metamodel.SingularAttribute(AclPerson, "name", metamodel.baseType(String)));
-        AclPerson.declaredAttributes.push(new baqend.metamodel.SingularAttribute(AclPerson, "age", metamodel.baseType(Number)));
+        AclPerson.addAttribute(new baqend.metamodel.SingularAttribute("name", metamodel.baseType(String)));
+        AclPerson.addAttribute(new baqend.metamodel.SingularAttribute("age", metamodel.baseType(Number)));
         metamodel.addType(AclPerson);
         return saveMetamodel(metamodel, false);
       }

@@ -21,27 +21,26 @@ describe('Test dao', function() {
     metamodel.addType(addressType = new baqend.metamodel.EmbeddableType("Address"));
     metamodel.addType(streetType = new baqend.metamodel.EntityType("Street", metamodel.entity(Object)));
 
-    personType.declaredAttributes.push(new baqend.metamodel.SingularAttribute(personType, "name", metamodel.baseType(String)));
-    personType.declaredAttributes.push(new baqend.metamodel.SingularAttribute(personType, "address", addressType));
-    personType.declaredAttributes.push(new baqend.metamodel.SingularAttribute(personType, "age", metamodel.baseType(Number)));
-    personType.declaredAttributes.push(new baqend.metamodel.SingularAttribute(personType, "date", metamodel.baseType(Date)));
-    personType.declaredAttributes.push(new baqend.metamodel.SingularAttribute(personType, "sister", personType));
-    personType.declaredAttributes.push(new baqend.metamodel.SingularAttribute(personType, "child", personType));
+    personType.addAttribute(new baqend.metamodel.SingularAttribute("name", metamodel.baseType(String)));
+    personType.addAttribute(new baqend.metamodel.SingularAttribute("address", addressType));
+    personType.addAttribute(new baqend.metamodel.SingularAttribute("age", metamodel.baseType(Number)));
+    personType.addAttribute(new baqend.metamodel.SingularAttribute("date", metamodel.baseType(Date)));
+    personType.addAttribute(new baqend.metamodel.SingularAttribute("sister", personType));
+    personType.addAttribute(new baqend.metamodel.SingularAttribute("child", personType));
 
-    childType.declaredAttributes.push(new baqend.metamodel.SingularAttribute(childType, 'mother', personType));
-    childType.declaredAttributes.push(new baqend.metamodel.SingularAttribute(childType, 'aunt', personType));
-    childType.declaredAttributes.push(new baqend.metamodel.SingularAttribute(childType, 'father', personType));
-    childType.declaredAttributes.push(new baqend.metamodel.ListAttribute(childType, "listSiblings", personType));
-    childType.declaredAttributes.push(new baqend.metamodel.SetAttribute(childType, "setSiblings", personType));
-    childType.declaredAttributes.push(new baqend.metamodel.MapAttribute(childType, "mapSiblings", personType, personType));
+    childType.addAttribute(new baqend.metamodel.SingularAttribute('mother', personType));
+    childType.addAttribute(new baqend.metamodel.SingularAttribute('aunt', personType));
+    childType.addAttribute(new baqend.metamodel.SingularAttribute('father', personType));
+    childType.addAttribute(new baqend.metamodel.ListAttribute("listSiblings", personType));
+    childType.addAttribute(new baqend.metamodel.SetAttribute("setSiblings", personType));
+    childType.addAttribute(new baqend.metamodel.MapAttribute("mapSiblings", personType, personType));
 
-    addressType.declaredAttributes.push(new baqend.metamodel.SingularAttribute(addressType, "zip", metamodel.baseType(Number)));
-    addressType.declaredAttributes.push(new baqend.metamodel.SingularAttribute(addressType, "city", metamodel.baseType(String)));
-    addressType.declaredAttributes.push(new baqend.metamodel.SingularAttribute(addressType, "street", streetType));
+    addressType.addAttribute(new baqend.metamodel.SingularAttribute("street", streetType));
+    addressType.addAttribute(new baqend.metamodel.SingularAttribute("zip", metamodel.baseType(Number)));
 
-    streetType.declaredAttributes.push(new baqend.metamodel.SingularAttribute(streetType, "name", metamodel.baseType(String)));
-    streetType.declaredAttributes.push(new baqend.metamodel.SingularAttribute(streetType, "number", metamodel.baseType(Number)));
-    streetType.declaredAttributes.push(new baqend.metamodel.SingularAttribute(streetType, "neighbor", personType));
+    streetType.addAttribute(new baqend.metamodel.SingularAttribute("name", metamodel.baseType(String)));
+    streetType.addAttribute(new baqend.metamodel.SingularAttribute("number", metamodel.baseType(Number)));
+    streetType.addAttribute(new baqend.metamodel.SingularAttribute("neighbor", personType));
 
     return saveMetamodel(metamodel);
   });
