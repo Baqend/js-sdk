@@ -38,7 +38,7 @@ describe("Test metamodel classes", function () {
         "fields": {
           "value": {
             "name": "value",
-            "type": "/db/_native.Integer"
+            "type": "/db/Integer"
           }
         }
       };
@@ -67,7 +67,7 @@ describe("Test metamodel classes", function () {
           "fields": {
             "name": {
               "name": "name",
-              "type": "/db/_native.String"
+              "type": "/db/String"
             },
             "ref": {
               "name": "ref",
@@ -81,7 +81,7 @@ describe("Test metamodel classes", function () {
           "fields": {
             "value": {
               "name": "value",
-              "type": "/db/_native.Integer"
+              "type": "/db/Integer"
             }
           }
         }
@@ -143,7 +143,7 @@ describe("Test metamodel classes", function () {
         "fields": {
           "name": {
             "name": "name",
-            "type": "/db/_native.String"
+            "type": "/db/String"
           }
         }
       };
@@ -168,7 +168,7 @@ describe("Test metamodel classes", function () {
         "fields": {
           "name": {
             "name": "name",
-            "type": "/db/_native.String"
+            "type": "/db/String"
           }
         }
       };
@@ -244,7 +244,7 @@ describe("Test metamodel classes", function () {
         "fields": {
           "name": {
             "name": "name",
-            "type": "/db/_native.collection.List[/db/_native.String]"
+            "type": "/db/collection.List[/db/String]"
           }
         }
       };
@@ -270,7 +270,7 @@ describe("Test metamodel classes", function () {
         "fields": {
           "name": {
             "name": "name",
-            "type": "/db/_native.collection.Set[/db/_native.String]"
+            "type": "/db/collection.Set[/db/String]"
           }
         }
       };
@@ -296,7 +296,7 @@ describe("Test metamodel classes", function () {
         "fields": {
           "name": {
             "name": "name",
-            "type": "/db/_native.collection.Map[/db/_native.String,/db/_native.Integer]"
+            "type": "/db/collection.Map[/db/String,/db/Integer]"
           }
         }
       };
@@ -370,7 +370,7 @@ describe("Test metamodel classes", function () {
           "fields": {
             "name": {
               "name": "name",
-              "type": "/db/_native.String"
+              "type": "/db/String"
             },
             "ref": {
               "name": "ref",
@@ -384,7 +384,7 @@ describe("Test metamodel classes", function () {
           "fields": {
             "value": {
               "name": "value",
-              "type": "/db/_native.Integer"
+              "type": "/db/Integer"
             }
           }
         }

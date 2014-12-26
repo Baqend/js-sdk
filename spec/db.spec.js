@@ -17,7 +17,7 @@ describe("Test db", function() {
         "fields": {
           "testValue": {
             "name": "testValue",
-            "type": "/db/_native.Integer"
+            "type": "/db/Integer"
           }
         }
       },
@@ -26,7 +26,7 @@ describe("Test db", function() {
         "fields": {
           "value": {
             "name": "value",
-            "type": "/db/_native.Integer"
+            "type": "/db/Integer"
           }
         }
       },
@@ -36,7 +36,7 @@ describe("Test db", function() {
         "fields": {
           "value": {
             "name": "value",
-            "type": "/db/_native.Integer"
+            "type": "/db/Integer"
           }
         }
       }
