@@ -21,7 +21,7 @@ describe("Test metamodel classes", function () {
       expect(metamodel.baseType(baqend.metamodel.BasicType.Date.ref)).equals(baqend.metamodel.BasicType.Date);
       expect(metamodel.baseType(baqend.metamodel.BasicType.DateTime.ref)).equals(baqend.metamodel.BasicType.DateTime);
       expect(metamodel.baseType(baqend.metamodel.BasicType.Boolean.ref)).equals(baqend.metamodel.BasicType.Boolean);
-      expect(metamodel.baseType(baqend.metamodel.BasicType.Float.ref)).equals(baqend.metamodel.BasicType.Float);
+      expect(metamodel.baseType(baqend.metamodel.BasicType.Double.ref)).equals(baqend.metamodel.BasicType.Double);
       expect(metamodel.baseType(baqend.metamodel.BasicType.Integer.ref)).equals(baqend.metamodel.BasicType.Integer);
       expect(metamodel.baseType(baqend.metamodel.BasicType.String.ref)).equals(baqend.metamodel.BasicType.String);
       expect(metamodel.baseType(baqend.metamodel.BasicType.Time.ref)).equals(baqend.metamodel.BasicType.Time);
@@ -323,7 +323,7 @@ describe("Test metamodel classes", function () {
       metamodel.init();
 
       expect(metamodel.baseType(Boolean)).equals(baqend.metamodel.BasicType.Boolean);
-      expect(metamodel.baseType(Number)).equals(baqend.metamodel.BasicType.Float);
+      expect(metamodel.baseType(Number)).equals(baqend.metamodel.BasicType.Double);
       expect(metamodel.baseType(String)).equals(baqend.metamodel.BasicType.String);
       expect(metamodel.baseType(Date)).equals(baqend.metamodel.BasicType.DateTime);
       expect(metamodel.baseType(Object)).equals(baqend.metamodel.BasicType.JsonObject);
@@ -339,7 +339,7 @@ describe("Test metamodel classes", function () {
       expect(metamodel.baseType('Date')).equals(baqend.metamodel.BasicType.Date);
       expect(metamodel.baseType('DateTime')).equals(baqend.metamodel.BasicType.DateTime);
       expect(metamodel.baseType('Boolean')).equals(baqend.metamodel.BasicType.Boolean);
-      expect(metamodel.baseType('Float')).equals(baqend.metamodel.BasicType.Float);
+      expect(metamodel.baseType('Double')).equals(baqend.metamodel.BasicType.Double);
       expect(metamodel.baseType('Integer')).equals(baqend.metamodel.BasicType.Integer);
       expect(metamodel.baseType('String')).equals(baqend.metamodel.BasicType.String);
       expect(metamodel.baseType('Time')).equals(baqend.metamodel.BasicType.Time);
@@ -583,7 +583,7 @@ describe('Test Metamodel', function() {
     expect(loadEmbeddedType.getDeclaredAttribute('age')).instanceof(baqend.metamodel.SingularAttribute);
     expect(loadEmbeddedType.getDeclaredAttribute('age').declaringType).equals(loadEmbeddedType);
     expect(loadEmbeddedType.getDeclaredAttribute('age').name).equals('age');
-    expect(loadEmbeddedType.getDeclaredAttribute('age').type).equals(metamodel.baseType('Float'));
+    expect(loadEmbeddedType.getDeclaredAttribute('age').type).equals(metamodel.baseType('Double'));
 
     expect(loadEmbeddedType.getDeclaredAttribute('ref')).instanceof(baqend.metamodel.SingularAttribute);
     expect(loadEmbeddedType.getDeclaredAttribute('ref').declaringType).equals(loadEmbeddedType);

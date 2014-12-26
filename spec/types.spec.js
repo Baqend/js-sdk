@@ -61,7 +61,7 @@ describe('Test entity type', function () {
   var simpleTypes = {
     // values used for collection tests
     "boolean": {type: metamodel.baseType('Boolean'), values: [true, false] },
-    "float": {type: metamodel.baseType('Float'), values: [-2.3, 4] },
+    "float": {type: metamodel.baseType('Double'), values: [-2.3, 4] },
     "integer": {type: metamodel.baseType('Integer'), values: [0, -4, 56] },
     "string": { type: metamodel.baseType('String'), values: ["", "Test String"] },
     "time": { type: metamodel.baseType('Time'), values: [new Date("1970-01-01T17:33:14")] },
