@@ -414,7 +414,7 @@ describe("Test Query", function() {
 
     it("should create withinPolygon varargs condition", function() {
       var q = db.QueryPerson.find()
-          .withinPolygon('birthplace', [new baqend.GeoPoint(85, 100), new baqend.GeoPoint(81, 89), new baqend.GeoPoint(90, 105)])
+          .withinPolygon('birthplace', new baqend.GeoPoint(85, 100), new baqend.GeoPoint(81, 89), new baqend.GeoPoint(90, 105))
           .equal('name', 'Test QueryPerson');
 
       expect(q.toJSON()).eql({

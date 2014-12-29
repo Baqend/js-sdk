@@ -115,7 +115,7 @@ describe('Test user and roles', function() {
       return db.User.register(login, 'secret').then(function(u) {
         return db.User.logout();
       }).then(function() {
-        expect(db.User.login(login, 'hackit')).be.rejected;
+        return expect(db.User.login(login, 'hackit')).be.rejected;
       });
     });
 
@@ -128,7 +128,8 @@ describe('Test user and roles', function() {
       }).then(function() {
         return db.User.logout();
       }).then(function() {
-        db.User.login(login, 'secret');
+        return db.User.login(login, 'secret');
+      }).then(function() {
         expect(function() {
           db.User.login(login, 'secret');
         }).throw(Error);
