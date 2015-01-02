@@ -155,8 +155,8 @@ describe('Test dao', function() {
       var person = db.Person();
 
       return person.save(function(result) {
-        expect(person._metadata.id).be.ok;
-        expect(person._metadata.version).be.ok;
+        expect(person.id).be.ok;
+        expect(person.version).be.ok;
         expect(person._metadata.isPersistent).be.true;
         expect(person._metadata.isDirty).be.false;
         expect(person).equals(result);
@@ -345,8 +345,8 @@ describe('Test dao', function() {
 
       return person.save(function(saved) {
         expect(saved).equals(person);
-        expect(saved._metadata.id).be.ok;
-        expect(saved._metadata.version).be.ok;
+        expect(saved.id).be.ok;
+        expect(saved.version).be.ok;
         expect(saved._metadata.isPersistent).be.true;
         expect(saved._metadata.isDirty).be.false;
       });

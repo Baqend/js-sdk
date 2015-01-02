@@ -6,7 +6,7 @@ if (typeof baqend == 'undefined') {
   expect = chai.expect;
   baqend = require('../lib');
 }
-
+/*
 var PersClassEntity = new baqend.metamodel.EntityType("/db/test.persistent.PersClass");
 var ChildPersClassEntity = new baqend.metamodel.EntityType("/db/test.persistent.ChildPersClass", PersClassEntity);
 var OtherPersClassEntity = new baqend.metamodel.EntityType("/db/test.persistent.OtherPersClass");
