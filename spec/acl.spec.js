@@ -55,6 +55,15 @@ describe('Test Acl', function() {
       expect(acl.isWriteDenied(db.User.me)).be.false;
     });
 
+    it('should return all refs', function() {
+      var acl = db.AclPerson().acl
+          .allowReadAccess(db.User.me)
+          .denyWriteAccess(db.User.me);
+
+      expect(acl.read.allRules()).eql([db.User.me._metadata.ref]);
+      expect(acl.write.allRules()).eql([db.User.me._metadata.ref]);
+    });
+
     it('deny rule should remove allow rule', function() {
       var acl = db.AclPerson().acl;
 
