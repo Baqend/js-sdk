@@ -64,6 +64,21 @@ describe('Test Acl', function() {
       expect(acl.write.allRules()).eql([db.User.me._metadata.ref]);
     });
 
+    it('should return the actual rule', function() {
+      var acl = db.AclPerson().acl
+          .allowReadAccess(db.User.me)
+          .denyWriteAccess(db.User.me);
+
+      expect(acl.read.getRule(db.User.me)).eql('allow');
+      expect(acl.write.getRule(db.User.me)).eql('deny');
+
+      acl.denyReadAccess(db.User.me);
+      acl.deleteWriteAccess(db.User.me);
+
+      expect(acl.read.getRule(db.User.me)).eql('deny');
+      expect(acl.write.getRule(db.User.me)).be.undefined;
+    });
+
     it('deny rule should remove allow rule', function() {
       var acl = db.AclPerson().acl;
 
