@@ -447,10 +447,17 @@ describe('Test Metamodel', function() {
     }).throw(Error);
   });
 
-  it("should not be allowed to save when used by an EntityManager", function() {
+  it("should allowe additive save when used by an EntityManager", function() {
     var emf = new baqend.EntityManagerFactory(env.TEST_SERVER);
     return emf.createEntityManager().then(function(em) {
-      expect(function() { em.metamodel.save(); }).throw(Error);
+      em.metamodel.save();
+    });
+  });
+
+  it("should not be allowed to forcely save when used by an EntityManager", function() {
+    var emf = new baqend.EntityManagerFactory(env.TEST_SERVER);
+    return emf.createEntityManager().then(function(em) {
+      expect(function() { em.metamodel.save(true); }).throw(Error);
     });
   });
 
