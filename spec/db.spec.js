@@ -59,6 +59,8 @@ describe("Test db", function() {
   describe('Test enhancement', function() {
     it('should add DAO methods', function() {
       expect(db.TestClass).be.ok;
+      expect(db.TestClass.isInstance).be.ok;
+      expect(db.TestClass.asInstance).be.ok;
       expect(db.TestClass.find).be.ok;
       expect(db.TestClass.get).be.ok;
       expect(db.TestClass.methods).be.ok;
@@ -70,7 +72,15 @@ describe("Test db", function() {
       var testClass = TestClass();
       expect(testClass).be.ok;
       expect(baqend.binding.Managed.isInstance(testClass)).be.true;
-      expect(baqend.binding.Entity.isInstance(testClass)).be.true;
+
+      expect(db.TestClass.isInstance(testClass)).be.true;
+      expect(db.TestEmbeddedClass.isInstance(testClass)).be.false;
+      expect(db.TestClass.isInstance(null)).be.false;
+
+      expect(db.TestClass.asInstance(testClass)).equals(testClass);
+      expect(db.TestEmbeddedClass.asInstance(testClass)).be.null;
+      expect(db.TestClass.asInstance(null)).be.null;
+
       expect("testValue" in testClass).be.true;
       expect(testClass.save).be.ok;
       expect(testClass.insert).be.ok;
@@ -97,6 +107,15 @@ describe("Test db", function() {
       expect(testClass).be.ok;
       expect(baqend.binding.Managed.isInstance(testClass)).be.true;
       expect(baqend.binding.Entity.isInstance(testClass)).be.false;
+
+      expect(db.TestClass.isInstance(testClass)).be.false;
+      expect(db.TestEmbeddedClass.isInstance(testClass)).be.true;
+      expect(db.TestEmbeddedClass.isInstance(null)).be.false;
+
+      expect(db.TestClass.asInstance(testClass)).be.null;
+      expect(db.TestEmbeddedClass.asInstance(testClass)).equals(testClass);
+      expect(db.TestEmbeddedClass.asInstance(null)).be.null;
+
       expect("value" in testClass).be.true;
       expect(testClass.save).be.undefined;
       expect(testClass.insert).be.undefined;
