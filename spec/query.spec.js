@@ -627,6 +627,15 @@ describe("Test Query", function() {
           });
     });
 
+    it("should return name matches /^QueryPerson [23]/ matches", function() {
+      return db.QueryPerson.find()
+          .matches('name', /^QueryPerson [23]/)
+          .resultList()
+          .then(function(list) {
+            expectResult([p2, p3], list);
+          });
+    });
+
     it("should return name in [QueryPerson 1, QueryPerson 2]", function() {
       return db.QueryPerson.find()
           .in('name', 'QueryPerson 1', 'QueryPerson 2')
@@ -636,7 +645,7 @@ describe("Test Query", function() {
           });
     });
 
-    it("should return name matches ^QueryPerson [23] matches", function() {
+    it("should return name not in [QueryPerson 1, QueryPerson 2]", function() {
       return db.QueryPerson.find()
           .notIn('name', 'QueryPerson 1', 'QueryPerson 2')
           .resultList()
