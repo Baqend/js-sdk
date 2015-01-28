@@ -66,7 +66,7 @@ describe('Test code', function() {
             return code["delete" + attr.substring(2)](entityType, db.token);
           }).then(function() {
             expect(db[personType.name][attr]).be.null;
-            return expect(code["load" + attr.substring(2)](entityType, db.token)).be.rejected;
+            return expect(code["load" + attr.substring(2)](entityType, db.token)).become(null);
           });
         });
 
