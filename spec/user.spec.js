@@ -160,7 +160,7 @@ describe('Test user and roles', function() {
         expect(DB.token).be.not.ok;
         return DB.logout();
       }).then(function() {
-        return expect(DB.renew()).be.rejected;
+        return expect(DB.renew()).become(null);
       });
     });
 
