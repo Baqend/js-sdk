@@ -13,6 +13,14 @@ if (typeof baqend == 'undefined') {
 
 describe("Test Index", function() {
 
+  var delay = function(delay, result) {
+    return new Promise(function(resolve) {
+      setTimeout(function() {
+        resolve(result);
+      }, delay)
+    });
+  };
+
   var db, personType, meta;
 
   before(function() {
@@ -21,6 +29,7 @@ describe("Test Index", function() {
 
     meta.init();
     meta.addType(personType = new baqend.metamodel.EntityType(randomize("IndexPerson"), meta.entity(Object)));
+    personType.addAttribute(new baqend.metamodel.SingularAttribute("name", meta.baseType(String)));
 
     return saveMetamodel(meta).then(function() {
       return new baqend.EntityManagerFactory(env.TEST_SERVER).createEntityManager();
@@ -36,13 +45,15 @@ describe("Test Index", function() {
 
   it('should retrieve indexes', function() {
     var index = new baqend.metamodel.DbIndex("name");
-    expect(index.isCompound()).be.false;
+    expect(index.isCompound).be.false;
 
     return meta.createIndex(personType.name, index, db.token).then(function() {
+      return delay(50);
+    }).then(function() {
       return meta.getIndexes(personType.name, db.token);
     }).then(function(indexes) {
       expect(indexes).have.length(1);
-      expect(indexes[0].isCompound()).be.false;
+      expect(indexes[0].isCompound).be.false;
       expect(indexes[0].keys[0].name).eqls(baqend.metamodel.DbIndex.ASC);
     });
   });
@@ -52,6 +63,8 @@ describe("Test Index", function() {
     var index2 = new baqend.metamodel.DbIndex("address");
 
     return Promise.all([meta.createIndex(personType.name, index1, db.token), meta.createIndex(personType.name, index2, db.token)]).then(function() {
+      return delay(50);
+    }).then(function() {
       return meta.getIndexes(personType.name, db.token);
     }).then(function(indexes) {
       expect(indexes).have.length(2);
@@ -63,10 +76,14 @@ describe("Test Index", function() {
     var index2 = new baqend.metamodel.DbIndex("address");
 
     return Promise.all([meta.createIndex(personType.name, index1, db.token), meta.createIndex(personType.name, index2, db.token)]).then(function() {
+      return delay(50);
+    }).then(function() {
       return meta.getIndexes(personType.name, db.token);
     }).then(function(indexes) {
       expect(indexes).have.length(2);
       return meta.dropAllIndexes(personType.name, db.token);
+    }).then(function() {
+      return delay(50);
     }).then(function() {
       return meta.getIndexes(personType.name, db.token);
     }).then(function(indexes) {
@@ -78,7 +95,11 @@ describe("Test Index", function() {
     var index = new baqend.metamodel.DbIndex("name");
 
     return meta.createIndex(personType.name, index, db.token).then(function() {
+      return delay(50);
+    }).then(function() {
       return meta.dropIndex(personType.name, index, db.token);
+    }).then(function() {
+      return delay(50);
     }).then(function() {
       return meta.getIndexes(personType.name, db.token);
     }).then(function(indexes) {
@@ -93,6 +114,8 @@ describe("Test Index", function() {
       expect(indexes).be.empty;
       return meta.createIndex(personType.name, index, db.token);
     }).then(function() {
+      return delay(50);
+    }).then(function() {
       return meta.getIndexes(personType.name, db.token);
     }).then(function(indexes) {
       expect(indexes).have.length(1);
@@ -105,13 +128,17 @@ describe("Test Index", function() {
       {age: baqend.metamodel.DbIndex.DESC}
     ]);
 
-    expect(index.isCompound()).be.true;
+    expect(index.isCompound).be.true;
+    expect(index.hasKey("name")).be.true;
+    expect(index.hasKey("age")).be.true;
 
     return meta.createIndex(personType.name, index, db.token).then(function() {
+      return delay(50);
+    }).then(function() {
       return meta.getIndexes(personType.name, db.token);
     }).then(function(indexes) {
       expect(indexes).have.length(1);
-      expect(indexes[0].isCompound()).be.true;
+      expect(indexes[0].isCompound).be.true;
       expect(indexes[0].keys[0].name).eqls(baqend.metamodel.DbIndex.ASC);
       expect(indexes[0].keys[1].age).eqls(baqend.metamodel.DbIndex.DESC);
     });
@@ -135,6 +162,7 @@ describe("Test Index", function() {
 
     return expect(meta.createIndex(personType.name, index, db.token)).be.rejected.then(function() {
       index = new baqend.metamodel.DbIndex([]);
+      expect(index.hasKey("test")).be.false;
       return expect(meta.createIndex(personType.name, index, db.token)).be.rejected;
     });
   });
@@ -142,6 +170,8 @@ describe("Test Index", function() {
   it('should create unique index', function() {
     var index = new baqend.metamodel.DbIndex("name", true);
     return meta.createIndex(personType.name, index, db.token).then(function() {
+      return delay(50);
+    }).then(function() {
       var person1 = db[personType.name]();
       var person2 = db[personType.name]();
       person1.name = "foobar";
