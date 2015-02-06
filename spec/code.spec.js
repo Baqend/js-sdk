@@ -18,7 +18,7 @@ describe('Test code', function() {
     var metamodel = emf.metamodel;
 
     metamodel.init();
-    personType = new baqend.metamodel.EntityType("CodePerson" + Math.random().toString().replace("0.", ""), metamodel.entity(Object));
+    personType = new baqend.metamodel.EntityType(randomize("CodePerson"), metamodel.entity(Object));
     metamodel.addType(personType);
 
     personType.addAttribute(new baqend.metamodel.SingularAttribute("name", metamodel.baseType(String)));
@@ -42,6 +42,10 @@ describe('Test code', function() {
             entityType = db.metamodel.entity(personType.typeConstructor);
             return db.User.login('root', 'root');
           });
+        });
+
+        after(function() {
+          return code["delete" + attr.substring(2)](entityType, db.token);
         });
 
         it('should return null if no code has been loaded', function() {
@@ -110,6 +114,16 @@ describe('Test code', function() {
       bucket = randomize("code.Test");
     });
 
+    after(function() {
+      return code.loadResources(db.token).then(function(list) {
+        var promises = [];
+        list.forEach(function(val) {
+          promises.push(code.deleteCode(val.substring(val.lastIndexOf('/')+1), db.token));
+        });
+        return Promise.all(promises);
+      });
+    });
+
     beforeEach(function() {
       var emf = new baqend.EntityManagerFactory(env.TEST_SERVER);
       return emf.createEntityManager(function(em) {
@@ -159,6 +173,16 @@ describe('Test code', function() {
       });
     });
 
+    it('should load list of code resources', function() {
+      var bucket = randomize("resources");
+      return code.saveCode(bucket, function() {
+        return "yeah";
+      }, db.token).then(function() {
+        return expect(code.loadResources(db.token)).to.eventually.include('/code/' + bucket);
+      }).then(function() {
+        return code.deleteCode(bucket, db.token);
+      });
+    });
   });
 
 });
