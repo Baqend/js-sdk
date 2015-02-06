@@ -238,78 +238,78 @@ describe("Test Query", function() {
 
     it("should create in varargs condition", function() {
       var q = db.QueryPerson.find()
-          .in('age', 1,2,3)
+          .in('age', 1, 2, 3)
           .equal('name', 'Test QueryPerson');
 
       expect(q.toJSON()).eql({
         name: "Test QueryPerson",
-        age: {'$in': [1,2,3]}
+        age: {'$in': [1, 2, 3]}
       });
     });
 
     it("should create in condition", function() {
       var q = db.QueryPerson.find()
-          .in('age', [1,2,3])
+          .in('age', [1, 2, 3])
           .equal('name', 'Test QueryPerson');
 
       expect(q.toJSON()).eql({
         name: "Test QueryPerson",
-        age: {'$in': [1,2,3]}
+        age: {'$in': [1, 2, 3]}
       });
     });
 
     it("should create in condition", function() {
       var q = db.QueryPerson.find()
-          .in('age', [1,2,3])
+          .in('age', [1, 2, 3])
           .equal('name', 'Test QueryPerson');
 
       expect(q.toJSON()).eql({
         name: "Test QueryPerson",
-        age: {'$in': [1,2,3]}
+        age: {'$in': [1, 2, 3]}
       });
     });
 
     it("should create contains condition", function() {
       var q = db.QueryPerson.find()
-          .containsAny('colors', ['green','red','blue'])
+          .containsAny('colors', ['green', 'red', 'blue'])
           .equal('name', 'Test QueryPerson');
 
       expect(q.toJSON()).eql({
         name: "Test QueryPerson",
-        colors: {'$in': ['green','red','blue']}
+        colors: {'$in': ['green', 'red', 'blue']}
       });
     });
 
     it("should create containsAny varargs condition", function() {
       var q = db.QueryPerson.find()
-          .containsAny('colors', 'green','red','blue')
+          .containsAny('colors', 'green', 'red', 'blue')
           .equal('name', 'Test QueryPerson');
 
       expect(q.toJSON()).eql({
         name: "Test QueryPerson",
-        colors: {'$in': ['green','red','blue']}
+        colors: {'$in': ['green', 'red', 'blue']}
       });
     });
 
     it("should create containsAll varargs condition", function() {
       var q = db.QueryPerson.find()
-          .containsAll('colors', ['green','red','blue'])
+          .containsAll('colors', ['green', 'red', 'blue'])
           .equal('name', 'Test QueryPerson');
 
       expect(q.toJSON()).eql({
         name: "Test QueryPerson",
-        colors: {'$all': ['green','red','blue']}
+        colors: {'$all': ['green', 'red', 'blue']}
       });
     });
 
     it("should create containsAll varargs condition", function() {
       var q = db.QueryPerson.find()
-          .containsAll('colors', 'green','red','blue')
+          .containsAll('colors', 'green', 'red', 'blue')
           .equal('name', 'Test QueryPerson');
 
       expect(q.toJSON()).eql({
         name: "Test QueryPerson",
-        colors: {'$all': ['green','red','blue']}
+        colors: {'$all': ['green', 'red', 'blue']}
       });
     });
 
@@ -371,7 +371,7 @@ describe("Test Query", function() {
 
       expect(q.toJSON()).eql({
         name: 'Test QueryPerson',
-        age: {$mod: [10,3]}
+        age: {$mod: [10, 3]}
       });
     });
 
@@ -384,8 +384,8 @@ describe("Test Query", function() {
         birthplace: {
           $nearSphere: {
             $geometry: {
-              type : "Point",
-              coordinates : [ 100, 85 ]
+              type: "Point",
+              coordinates: [100, 85]
             },
             $maxDistance: 3000
           }
@@ -403,7 +403,7 @@ describe("Test Query", function() {
         birthplace: {
           $geoWithin: {
             $geometry: {
-              type : "Polygon",
+              type: "Polygon",
               coordinates: [[[100, 85], [89, 81], [105, 90]]]
             }
           }
@@ -421,7 +421,7 @@ describe("Test Query", function() {
         birthplace: {
           $geoWithin: {
             $geometry: {
-              type : "Polygon",
+              type: "Polygon",
               coordinates: [[[100, 85], [89, 81], [105, 90]]]
             }
           }
@@ -478,8 +478,8 @@ describe("Test Query", function() {
     it("should create complex query conditions", function() {
       var qb = db.QueryPerson.find();
       var q = qb.and(
-        qb.or(qb.between('age', 40, 65), qb.between('age', 3, 20)),
-        qb.or(qb.equal('name', 'Test QueryPerson1'), qb.equal('name', 'Test QueryPerson2'))
+          qb.or(qb.between('age', 40, 65), qb.between('age', 3, 20)),
+          qb.or(qb.equal('name', 'Test QueryPerson1'), qb.equal('name', 'Test QueryPerson2'))
       );
 
       expect(JSON.parse(JSON.stringify(q))).eql({
@@ -711,9 +711,9 @@ describe("Test Query", function() {
     it("should return birthplace withinPolygon matches", function() {
       return db.QueryPerson.find()
           .withinPolygon('birthplace',
-              new baqend.GeoPoint(30, 110), new baqend.GeoPoint(30, 115),
-              new baqend.GeoPoint(40, 115), new baqend.GeoPoint(40, 110),
-              new baqend.GeoPoint(30, 110))
+          new baqend.GeoPoint(30, 110), new baqend.GeoPoint(30, 115),
+          new baqend.GeoPoint(40, 115), new baqend.GeoPoint(40, 110),
+          new baqend.GeoPoint(30, 110))
           .resultList()
           .then(function(list) {
             expectResult([p1, p2], list);
@@ -772,6 +772,26 @@ describe("Test Query", function() {
             expectSortedResult([p3, p2], list);
           });
     });
+
+    it("should count the number of matching objects", function() {
+      return db.QueryPerson.find()
+          .containsAny('colors', 'green', 'blue')
+          .count()
+          .then(function(count) {
+            expect(count).equal(3);
+          });
+    });
+
+    it("should count the total number of objects", function() {
+      return db.QueryPerson.find()
+          .count()
+          .then(function(count) {
+            db.QueryPerson.find().resultList(function(list) {
+              assert(list.length).equal(count)
+            })
+          });
+    });
+
 
     function expectResult(expectedResult, actualResult) {
       expect(actualResult.length).equals(expectedResult.length);
