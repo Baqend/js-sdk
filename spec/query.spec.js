@@ -782,8 +782,8 @@ describe("Test Query", function() {
       return db.QueryPerson.find()
           .count()
           .then(function(count) {
-            db.QueryPerson.find().resultList(function(list) {
-              assert(list.length).equal(count)
+            return db.QueryPerson.find().resultList(function(list) {
+              expect(list.length).equal(count)
             })
           });
     });
