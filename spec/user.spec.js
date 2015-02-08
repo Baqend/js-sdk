@@ -141,28 +141,6 @@ describe('Test user and roles', function() {
       });
     });
 
-    it('should use cookie if global', function() {
-      var login = makeLogin();
-      return DB.User.register(login, 'secret').then(function() {
-        expect(DB.isGlobal).be.true;
-        expect(DB.token).be.not.ok;
-        return DB.renew();
-      }).then(function() {
-        return DB.logout();
-      });
-    });
-
-    it('should remove cookie if global', function() {
-      var login = makeLogin();
-      return DB.User.register(login, 'secret').then(function() {
-        expect(DB.isGlobal).be.true;
-        expect(DB.token).be.not.ok;
-        return DB.logout();
-      }).then(function() {
-        return expect(DB.renew()).become(null);
-      });
-    });
-
     it('should logout user', function() {
       expect(db.isGlobal).be.false;
       var login = makeLogin();
@@ -190,6 +168,55 @@ describe('Test user and roles', function() {
         return db.renew();
       }).then(function() {
         expect(db.token).not.eqls(oldToken);
+      });
+    });
+  });
+
+  describe('on global DB', function() {
+    before(function() {
+      return DB.logout();
+    });
+
+    afterEach(function() {
+      return DB.logout();
+    });
+
+    it('should use cookie if global', function() {
+      var login = makeLogin();
+      return DB.User.register(login, 'secret').then(function() {
+        expect(DB.isGlobal).be.true;
+        expect(DB.token).be.not.ok;
+        return DB.renew();
+      });
+    });
+
+    it('should remove cookie if global', function() {
+      var login = makeLogin();
+      return DB.User.register(login, 'secret').then(function() {
+        expect(DB.isGlobal).be.true;
+        expect(DB.token).be.not.ok;
+        return DB.logout();
+      }).then(function() {
+        return expect(DB.renew()).become(null);
+      });
+    });
+
+    it('should autologin on global instances', function() {
+      var login = makeLogin();
+      return DB.register(login, 'secret').then(function() {
+        var db = DB.entityManagerFactory.createEntityManager(true);
+        return db.ready().then(function() {
+          expect(db.me).be.ok;
+        });
+      });
+    });
+
+    it('should not autologin on global instances', function() {
+      var login = makeLogin();
+      var db = DB.entityManagerFactory.createEntityManager(true);
+
+      return DB.ready().then(function() {
+        expect(db.me).be.not.ok;
       });
     });
   });
