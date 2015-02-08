@@ -137,6 +137,12 @@ module.exports = function (grunt) {
       options: {
         preserveComments: false,
         banner: ''
+      },
+
+      dist: {
+        files: {
+          'dist/baqend.min.js': 'dist/baqend.js'
+        }
       }
     },
 
