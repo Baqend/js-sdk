@@ -1,24 +1,29 @@
-if (typeof baqend == 'undefined') {
+if (typeof DB == 'undefined') {
   env = require('./env');
   var chai = require("chai");
   var chaiAsPromised = require("chai-as-promised");
   chai.use(chaiAsPromised);
   chai.config.includeStack = true;
   expect = chai.expect;
-  baqend = require('../lib');
+  DB = require('../lib');
 }
 
 describe('Test user and roles', function() {
   var emf, db;
 
   before(function() {
-    emf = new baqend.EntityManagerFactory(env.TEST_SERVER);
+    if (!DB.isReady) {
+      DB.connect(env.TEST_SERVER);
+    }
+
+    return DB.ready().then(function() {
+      emf = new DB.EntityManagerFactory(env.TEST_SERVER);
+      return emf.metamodel.init();
+    });
   });
 
   beforeEach(function() {
-    return emf.createEntityManager(function(em) {
-      db = em;
-    });
+    db = emf.createEntityManager();
   });
 
   describe('user factory', function() {
@@ -33,7 +38,7 @@ describe('Test user and roles', function() {
       var login = makeLogin();
       return db.User.register(login, 'secret').then(function(user) {
         expect(user).be.ok;
-        expect(baqend.binding.User.isInstance(user)).be.true;
+        expect(DB.binding.User.isInstance(user)).be.true;
         expect(user._metadata.id).be.ok;
         expect(user._metadata.version).be.ok;
         expect(user._metadata.isPersistent).be.true;
@@ -87,7 +92,7 @@ describe('Test user and roles', function() {
         user = u;
 
         expect(user).be.ok;
-        expect(baqend.binding.User.isInstance(user)).be.true;
+        expect(DB.binding.User.isInstance(user)).be.true;
         expect(user._metadata.id).be.ok;
         expect(user._metadata.version).be.ok;
         expect(user._metadata.isPersistent).be.true;
@@ -137,11 +142,8 @@ describe('Test user and roles', function() {
     });
 
     it('should use cookie if global', function() {
-      DB.connect && DB.connect(env.TEST_SERVER);
-      return DB.ready().then(function() {
-        var login = makeLogin();
-        return DB.User.register(login, 'secret');
-      }).then(function() {
+      var login = makeLogin();
+      return DB.User.register(login, 'secret').then(function() {
         expect(DB.isGlobal).be.true;
         expect(DB.token).be.not.ok;
         return DB.renew();
@@ -151,11 +153,8 @@ describe('Test user and roles', function() {
     });
 
     it('should remove cookie if global', function() {
-      DB.connect && DB.connect(env.TEST_SERVER);
-      return DB.ready().then(function() {
-        var login = makeLogin();
-        return DB.User.register(login, 'secret');
-      }).then(function() {
+      var login = makeLogin();
+      return DB.User.register(login, 'secret').then(function() {
         expect(DB.isGlobal).be.true;
         expect(DB.token).be.not.ok;
         return DB.logout();

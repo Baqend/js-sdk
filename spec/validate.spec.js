@@ -1,48 +1,46 @@
-if (typeof baqend == 'undefined') {
+if (typeof DB == 'undefined') {
   env = require('./env');
   var chai = require("chai");
   var chaiAsPromised = require("chai-as-promised");
   chai.use(chaiAsPromised);
   chai.config.includeStack = true;
   expect = chai.expect;
-  baqend = require('../lib');
+  DB = require('../lib');
 }
 
 describe('Test validate', function() {
   var db, type, person;
 
   before(function() {
-    var emf = new baqend.EntityManagerFactory(env.TEST_SERVER);
+    var emf = new DB.EntityManagerFactory(env.TEST_SERVER);
     var metamodel = emf.metamodel;
 
-    metamodel.init();
-    var personType = new baqend.metamodel.EntityType("ValidatePerson", metamodel.entity(Object));
+    metamodel.init({});
+    var personType = new DB.metamodel.EntityType("ValidatePerson", metamodel.entity(Object));
     metamodel.addType(personType);
 
-    personType.addAttribute(new baqend.metamodel.SingularAttribute("name", metamodel.baseType(String)));
-    personType.addAttribute(new baqend.metamodel.SingularAttribute("age", metamodel.baseType(Number)));
-    personType.addAttribute(new baqend.metamodel.SingularAttribute("date", metamodel.baseType(Date)));
-    personType.addAttribute(new baqend.metamodel.SingularAttribute("email", metamodel.baseType(String)));
+    personType.addAttribute(new DB.metamodel.SingularAttribute("name", metamodel.baseType(String)));
+    personType.addAttribute(new DB.metamodel.SingularAttribute("age", metamodel.baseType(Number)));
+    personType.addAttribute(new DB.metamodel.SingularAttribute("date", metamodel.baseType(Date)));
+    personType.addAttribute(new DB.metamodel.SingularAttribute("email", metamodel.baseType(String)));
 
     personType.validationCode = "email.isEmail();";
 
     return saveMetamodel(metamodel).then(function() {
-      return emf.createEntityManager();
-    }).then(function(em) {
-      db = em;
+      db = emf.createEntityManager();
     });
   });
 
   beforeEach(function() {
     person = db.ValidatePerson();
-    type = baqend.util.Metadata.get(person).type;
+    type = DB.util.Metadata.get(person).type;
   });
 
   it('should validate email', function() {
     type.validationCode = "email.isEmail();";
     person.email = "testtest.de";
     var result = person.validate().fields;
-    expect(result.email).be.instanceOf(baqend.util.Validator);
+    expect(result.email).be.instanceOf(DB.util.Validator);
     expect(result.email.isValid).be.false;
     expect(result.email.errors).have.length(1);
 
@@ -57,7 +55,7 @@ describe('Test validate', function() {
     type.validationCode = "email.isEmail('"+message+"');";
     person.email = "testtest.de";
     var result = person.validate().fields;
-    expect(result.email).be.instanceOf(baqend.util.Validator);
+    expect(result.email).be.instanceOf(DB.util.Validator);
     expect(result.email.isValid).be.false;
     expect(result.email.errors).have.length(1);
     expect(result.email.errors[0]).eqls(message);
@@ -67,7 +65,7 @@ describe('Test validate', function() {
     type.validationCode = "email.isEmail().isLowercase();";
     person.email = "tesTtest.de";
     var result = person.validate().fields;
-    expect(result.email).be.instanceOf(baqend.util.Validator);
+    expect(result.email).be.instanceOf(DB.util.Validator);
     expect(result.email.isValid).be.false;
     expect(result.email.errors).have.length(2);
     expect(result.email.errors[0]).eqls('isEmail');
@@ -84,7 +82,7 @@ describe('Test validate', function() {
     var message = 'TestError';
     type.validationCode = "email.is('"+message+"', function(value) { return value <= 18 && value >= 13 });";
     var result = person.validate().fields;
-    expect(result.email).be.instanceOf(baqend.util.Validator);
+    expect(result.email).be.instanceOf(DB.util.Validator);
     expect(result.email.isValid).be.false;
     expect(result.email.errors).have.length(1);
     expect(result.email.errors[0]).eqls(message);
@@ -101,7 +99,7 @@ describe('Test validate', function() {
     var message = 'TestError';
     type.validationCode = "name.equals('"+message+"', age);";
     var result = person.validate().fields;
-    expect(result.name).be.instanceOf(baqend.util.Validator);
+    expect(result.name).be.instanceOf(DB.util.Validator);
     expect(result.name.isValid).be.false;
     expect(result.name.errors).have.length(1);
     expect(result.name.errors[0]).eqls(message);
@@ -116,7 +114,7 @@ describe('Test validate', function() {
     type.validationCode = "date.isDate();";
     var result = person.validate().fields;
     person.date = "1982-13-48";
-    expect(result.date).be.instanceOf(baqend.util.Validator);
+    expect(result.date).be.instanceOf(DB.util.Validator);
     expect(result.date.isValid).be.false;
     expect(result.date.errors).have.length(1);
 

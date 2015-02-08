@@ -1,47 +1,44 @@
-if (typeof baqend == 'undefined') {
+if (typeof DB == 'undefined') {
   env = require('./env');
   var chai = require("chai");
   var chaiAsPromised = require("chai-as-promised");
   chai.use(chaiAsPromised);
   chai.config.includeStack = true;
   expect = chai.expect;
-  baqend = require('../lib');
+  DB = require('../lib');
 }
 
 describe('Test code', function() {
-  var db, code, entityType, personType;
+  var db, code, entityType, personType, emf;
 
 
   before(function() {
-    var emf = new baqend.EntityManagerFactory(env.TEST_SERVER);
+    emf = new DB.EntityManagerFactory(env.TEST_SERVER);
 
     var metamodel = emf.metamodel;
 
-    metamodel.init();
-    personType = new baqend.metamodel.EntityType(randomize("CodePerson"), metamodel.entity(Object));
-    metamodel.addType(personType);
+    return metamodel.load().then(function() {
+      personType = new DB.metamodel.EntityType(randomize("CodePerson"), metamodel.entity(Object));
+      metamodel.addType(personType);
 
-    personType.addAttribute(new baqend.metamodel.SingularAttribute("name", metamodel.baseType(String)));
-    personType.addAttribute(new baqend.metamodel.SingularAttribute("age", metamodel.baseType(Number)));
-    personType.addAttribute(new baqend.metamodel.SingularAttribute("date", metamodel.baseType(Date)));
-    personType.addAttribute(new baqend.metamodel.SingularAttribute("email", metamodel.baseType(String)));
-    return saveMetamodel(metamodel);
+      personType.addAttribute(new DB.metamodel.SingularAttribute("name", metamodel.baseType(String)));
+      personType.addAttribute(new DB.metamodel.SingularAttribute("age", metamodel.baseType(Number)));
+      personType.addAttribute(new DB.metamodel.SingularAttribute("date", metamodel.baseType(Date)));
+      personType.addAttribute(new DB.metamodel.SingularAttribute("email", metamodel.baseType(String)));
+      return saveMetamodel(metamodel);
+    });
   });
 
   describe('handler', function() {
     ['insert', 'update', 'delete', 'validate'].forEach(function(type) {
       var attr = 'on' + type[0].toUpperCase() + type.slice(1);
 
-
       describe(attr, function() {
         beforeEach(function() {
-          var emf = new baqend.EntityManagerFactory(env.TEST_SERVER);
-          return emf.createEntityManager(function(em) {
-            db = em;
-            code = em.code;
-            entityType = db.metamodel.entity(personType.typeConstructor);
-            return db.User.login('root', 'root');
-          });
+          db = emf.createEntityManager();
+          code = db.code;
+          entityType = db.metamodel.entity(personType.typeConstructor);
+          return db.User.login('root', 'root');
         });
 
         after(function() {
@@ -125,13 +122,10 @@ describe('Test code', function() {
     });
 
     beforeEach(function() {
-      var emf = new baqend.EntityManagerFactory(env.TEST_SERVER);
-      return emf.createEntityManager(function(em) {
-        db = em;
-        code = em.code;
-        entityType = db.metamodel.entity(personType.typeConstructor);
-        return db.User.login('root', 'root');
-      }).then(function() {
+      db = emf.createEntityManager();
+      code = db.code;
+      entityType = db.metamodel.entity(personType.typeConstructor);
+      return db.User.login('root', 'root').then(function() {
         return code.saveCode(bucket, fn, db.token).then(function(saved) {
           expect(saved().test).eqls(fn().test);
         });

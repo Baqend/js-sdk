@@ -16,8 +16,8 @@ glob.randomize = function(name) {
 };
 
 glob.saveMetamodel = function(metamodel, force) {
-  var emf = new baqend.EntityManagerFactory(env.TEST_SERVER);
-  return emf.createEntityManager().then(function(em) {
+  var emf = new DB.EntityManagerFactory(env.TEST_SERVER);
+  return emf.createEntityManager().ready().then(function(em) {
     return em.User.login('root', 'root').then(function() { return em; });
   }).then(function(em) {
     return metamodel.save(force, em.token);

@@ -1,10 +1,10 @@
-if (typeof baqend == 'undefined') {
+if (typeof DB == 'undefined') {
   env = require('./env');
   var chai = require("chai");
   var chaiAsPromised = require("chai-as-promised");
   chai.use(chaiAsPromised);
   expect = chai.expect;
-  baqend = require('../lib');
+  DB = require('../lib');
 }
 
 describe("Test db", function() {
@@ -42,11 +42,10 @@ describe("Test db", function() {
       }
     ];
 
-    var emf = new baqend.EntityManagerFactory(env.TEST_SERVER, model);
-    saveMetamodel(emf.metamodel);
-
-    return emf.createEntityManager().then(function(em) {
-      db = em;
+    var emf = new DB.EntityManagerFactory({host: env.TEST_SERVER, schema: model});
+    return saveMetamodel(emf.metamodel).then(function() {
+      db = emf.createEntityManager();
+      expect(db.isReady).be.true;
     });
   });
 
@@ -71,7 +70,7 @@ describe("Test db", function() {
       var TestClass = db.TestClass;
       var testClass = TestClass();
       expect(testClass).be.ok;
-      expect(baqend.binding.Managed.isInstance(testClass)).be.true;
+      expect(DB.binding.Managed.isInstance(testClass)).be.true;
 
       expect(db.TestClass.isInstance(testClass)).be.true;
       expect(db.TestEmbeddedClass.isInstance(testClass)).be.false;
@@ -105,8 +104,8 @@ describe("Test db", function() {
       var TestEmbeddedClass = db.TestEmbeddedClass;
       var testClass = TestEmbeddedClass();
       expect(testClass).be.ok;
-      expect(baqend.binding.Managed.isInstance(testClass)).be.true;
-      expect(baqend.binding.Entity.isInstance(testClass)).be.false;
+      expect(DB.binding.Managed.isInstance(testClass)).be.true;
+      expect(DB.binding.Entity.isInstance(testClass)).be.false;
 
       expect(db.TestClass.isInstance(testClass)).be.false;
       expect(db.TestEmbeddedClass.isInstance(testClass)).be.true;
@@ -156,7 +155,7 @@ describe("Test db", function() {
     });
 
     it('should add ref', function() {
-      var classFactory = new baqend.binding.Enhancer();
+      var classFactory = new DB.binding.Enhancer();
 
       var testClass = db.TestClass();
 
@@ -193,7 +192,7 @@ describe("Test db", function() {
       expect(testClass.remove).be.ok;
       expect(testClass.attr).be.ok;
 
-      expect(baqend.binding.Entity.isInstance(testClass)).be.true;
+      expect(DB.binding.Entity.isInstance(testClass)).be.true;
     });
 
     it('should call custom classes constructor', function() {
@@ -210,7 +209,7 @@ describe("Test db", function() {
     });
 
     it('should not enhance complete implemented classes', function() {
-      db.TestClass = Object.inherit(baqend.binding.Entity, {
+      db.TestClass = Object.inherit(DB.binding.Entity, {
         firstName: function() {
           return "firstName";
         },

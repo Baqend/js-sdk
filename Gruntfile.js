@@ -18,7 +18,7 @@ module.exports = function (grunt) {
         browserifyOptions: {
           builtins: [],
           insertGlobalVars: ['global'],
-          standalone: "baqend"
+          standalone: "DB"
         }
       },
 
@@ -32,7 +32,7 @@ module.exports = function (grunt) {
           browserifyOptions: {
             builtins: [],
             insertGlobalVars: ['global'],
-            standalone: "baqend",
+            standalone: "DB",
             debug: true
           }
         }
@@ -64,16 +64,6 @@ module.exports = function (grunt) {
         },
         files: {
           'build/debug.html': 'tpl/debug.tpl'
-        }
-      },
-      loader: {
-        options: {
-          data: {
-            loader: grunt.file.read('loader.js')
-          }
-        },
-        files: {
-          'build/test-loader.html': 'tpl/test-loader.tpl'
         }
       }
     },
@@ -147,13 +137,6 @@ module.exports = function (grunt) {
       options: {
         preserveComments: false,
         banner: ''
-      },
-
-      dist: {
-        files: {
-          'dist/baqend.min.js': 'dist/baqend.js',
-          'dist/loader.js': 'loader.js'
-        }
       }
     },
 
@@ -179,7 +162,6 @@ module.exports = function (grunt) {
 
   grunt.registerTask('debug', [
     'template:debug',
-    'template:loader',
     'connect:debug',
     'browserify:debug'
   ]);
@@ -193,7 +175,6 @@ module.exports = function (grunt) {
 
   grunt.registerTask('test', [
     'browserify:test',
-    'template:loader',
     'prepare:server',
     'run:server',
 

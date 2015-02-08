@@ -1,23 +1,23 @@
-if (typeof baqend == 'undefined') {
+if (typeof DB == 'undefined') {
   env = require('./env');
   var chai = require("chai");
   var chaiAsPromised = require("chai-as-promised");
   chai.use(chaiAsPromised);
   expect = chai.expect;
-  baqend = require('../lib');
+  DB = require('../lib');
 }
 /*
-var PersClassEntity = new baqend.metamodel.EntityType("/db/test.persistent.PersClass");
-var ChildPersClassEntity = new baqend.metamodel.EntityType("/db/test.persistent.ChildPersClass", PersClassEntity);
-var OtherPersClassEntity = new baqend.metamodel.EntityType("/db/test.persistent.OtherPersClass");
+var PersClassEntity = new DB.metamodel.EntityType("/db/test.persistent.PersClass");
+var ChildPersClassEntity = new DB.metamodel.EntityType("/db/test.persistent.ChildPersClass", PersClassEntity);
+var OtherPersClassEntity = new DB.metamodel.EntityType("/db/test.persistent.OtherPersClass");
 
-PersClassEntity.addAttribute(new baqend.metamodel.SingularAttribute("ref", OtherPersClassEntity));
-PersClassEntity.addAttribute(new baqend.metamodel.SingularAttribute("name", baqend.metamodel.BasicType.Integer));
-PersClassEntity.addAttribute(new baqend.metamodel.SingularAttribute("persRef", PersClassEntity));
+PersClassEntity.addAttribute(new DB.metamodel.SingularAttribute("ref", OtherPersClassEntity));
+PersClassEntity.addAttribute(new DB.metamodel.SingularAttribute("name", DB.metamodel.BasicType.Integer));
+PersClassEntity.addAttribute(new DB.metamodel.SingularAttribute("persRef", PersClassEntity));
 
-ChildPersClassEntity.addAttribute(new baqend.metamodel.SingularAttribute("value", baqend.metamodel.BasicType.String));
+ChildPersClassEntity.addAttribute(new DB.metamodel.SingularAttribute("value", DB.metamodel.BasicType.String));
 
-OtherPersClassEntity.addAttribute(new baqend.metamodel.SingularAttribute("value", baqend.metamodel.BasicType.Integer));
+OtherPersClassEntity.addAttribute(new DB.metamodel.SingularAttribute("value", DB.metamodel.BasicType.Integer));
 
 var test = {
   persistent: {}
@@ -52,7 +52,7 @@ var OtherPersClass = test.persistent.OtherPersClass = Object.inherit({
 
   var pu = null, em = null;
   beforeEach(function () {
-    factory = new baqend.EntityManagerFactory('http://localhost:8080');
+    factory = new DB.EntityManagerFactory('http://localhost:8080');
     em = factory.createEntityManager();
     pu = factory.persistenceUnitUtil;
   });

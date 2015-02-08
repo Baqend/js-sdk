@@ -1,10 +1,10 @@
-if (typeof baqend == 'undefined') {
+if (typeof DB == 'undefined') {
   env = require('./env');
   var chai = require("chai");
   var chaiAsPromised = require("chai-as-promised");
   chai.use(chaiAsPromised);
   expect = chai.expect;
-  baqend = require('../lib');
+  DB = require('../lib');
 }
 
 describe("Test Query", function() {
@@ -13,22 +13,22 @@ describe("Test Query", function() {
   before(function() {
     var personType, addressType;
 
-    emf = new baqend.EntityManagerFactory(env.TEST_SERVER);
+    emf = new DB.EntityManagerFactory(env.TEST_SERVER);
     metamodel = emf.metamodel;
 
-    metamodel.init();
-    metamodel.addType(personType = new baqend.metamodel.EntityType("QueryPerson", metamodel.entity(Object)));
-    metamodel.addType(addressType = new baqend.metamodel.EmbeddableType("QueryAddress"));
+    metamodel.init({});
+    metamodel.addType(personType = new DB.metamodel.EntityType("QueryPerson", metamodel.entity(Object)));
+    metamodel.addType(addressType = new DB.metamodel.EmbeddableType("QueryAddress"));
 
-    personType.addAttribute(new baqend.metamodel.SingularAttribute("name", metamodel.baseType(String)));
-    personType.addAttribute(new baqend.metamodel.SingularAttribute("address", addressType));
-    personType.addAttribute(new baqend.metamodel.SingularAttribute("age", metamodel.baseType(Number)));
-    personType.addAttribute(new baqend.metamodel.SingularAttribute("date", metamodel.baseType(Date)));
-    personType.addAttribute(new baqend.metamodel.ListAttribute("colors", metamodel.baseType(String)));
-    personType.addAttribute(new baqend.metamodel.SingularAttribute("birthplace", metamodel.baseType(baqend.GeoPoint)));
+    personType.addAttribute(new DB.metamodel.SingularAttribute("name", metamodel.baseType(String)));
+    personType.addAttribute(new DB.metamodel.SingularAttribute("address", addressType));
+    personType.addAttribute(new DB.metamodel.SingularAttribute("age", metamodel.baseType(Number)));
+    personType.addAttribute(new DB.metamodel.SingularAttribute("date", metamodel.baseType(Date)));
+    personType.addAttribute(new DB.metamodel.ListAttribute("colors", metamodel.baseType(String)));
+    personType.addAttribute(new DB.metamodel.SingularAttribute("birthplace", metamodel.baseType(DB.GeoPoint)));
 
-    addressType.addAttribute(new baqend.metamodel.SingularAttribute("zip", metamodel.baseType(Number)));
-    addressType.addAttribute(new baqend.metamodel.SingularAttribute("city", metamodel.baseType(String)));
+    addressType.addAttribute(new DB.metamodel.SingularAttribute("zip", metamodel.baseType(Number)));
+    addressType.addAttribute(new DB.metamodel.SingularAttribute("city", metamodel.baseType(String)));
 
     return saveMetamodel(metamodel);
   });
@@ -37,9 +37,7 @@ describe("Test Query", function() {
     var db;
 
     before(function() {
-      return emf.createEntityManager(function(em) {
-        db = em;
-      });
+      db =  emf.createEntityManager();
     });
 
     it("should create simple query", function() {
@@ -377,7 +375,7 @@ describe("Test Query", function() {
 
     it("should create near condition", function() {
       var q = db.QueryPerson.find()
-          .near('birthplace', new baqend.GeoPoint(85, 100), 3000)
+          .near('birthplace', new DB.GeoPoint(85, 100), 3000)
           .equal('name', 'Test QueryPerson');
 
       expect(q.toJSON()).eql({
@@ -396,7 +394,7 @@ describe("Test Query", function() {
 
     it("should create withinPolygon condition", function() {
       var q = db.QueryPerson.find()
-          .withinPolygon('birthplace', [new baqend.GeoPoint(85, 100), new baqend.GeoPoint(81, 89), new baqend.GeoPoint(90, 105)])
+          .withinPolygon('birthplace', [new DB.GeoPoint(85, 100), new DB.GeoPoint(81, 89), new DB.GeoPoint(90, 105)])
           .equal('name', 'Test QueryPerson');
 
       expect(q.toJSON()).eql({
@@ -414,7 +412,7 @@ describe("Test Query", function() {
 
     it("should create withinPolygon varargs condition", function() {
       var q = db.QueryPerson.find()
-          .withinPolygon('birthplace', new baqend.GeoPoint(85, 100), new baqend.GeoPoint(81, 89), new baqend.GeoPoint(90, 105))
+          .withinPolygon('birthplace', new DB.GeoPoint(85, 100), new DB.GeoPoint(81, 89), new DB.GeoPoint(90, 105))
           .equal('name', 'Test QueryPerson');
 
       expect(q.toJSON()).eql({
@@ -523,45 +521,43 @@ describe("Test Query", function() {
     var db, p0, p1, p2, p3;
 
     before(function() {
-      return emf.createEntityManager(function(em) {
-        db = em;
-      }).then(function() {
-        p0 = db.QueryPerson({
-          id: 'query_p0'
-        });
+      db = emf.createEntityManager();
 
-        p1 = db.QueryPerson({
-          id: 'query_p1',
-          name: 'QueryPerson 1',
-          age: 45,
-          date: new Date('1978-02-03T00:00Z'),
-          address: db.QueryAddress({city: 'Hamburg', zip: 22865}),
-          colors: baqend.List(['red', 'green']),
-          birthplace: new baqend.GeoPoint(35, 110)
-        });
-
-        p2 = db.QueryPerson({
-          id: 'query_p2',
-          name: 'QueryPerson 2',
-          age: 33,
-          date: new Date('1966-05-01T00:00Z'),
-          address: db.QueryAddress({city: 'Hamburg', zip: 23432}),
-          colors: baqend.List(['blue', 'green', 'red']),
-          birthplace: new baqend.GeoPoint(32, 112)
-        });
-
-        p3 = db.QueryPerson({
-          id: 'query_p3',
-          name: 'QueryPerson 3',
-          age: 23,
-          date: new Date('1989-05-01T00:00Z'),
-          address: db.QueryAddress({city: 'Munich', zip: 92438}),
-          colors: baqend.List(['yellow', 'blue', 'white']),
-          birthplace: new baqend.GeoPoint(29, 109)
-        });
-
-        return Promise.all([p0.save(true), p1.save(true), p2.save(true), p3.save(true)])
+      p0 = db.QueryPerson({
+        id: 'query_p0'
       });
+
+      p1 = db.QueryPerson({
+        id: 'query_p1',
+        name: 'QueryPerson 1',
+        age: 45,
+        date: new Date('1978-02-03T00:00Z'),
+        address: db.QueryAddress({city: 'Hamburg', zip: 22865}),
+        colors: DB.List(['red', 'green']),
+        birthplace: new DB.GeoPoint(35, 110)
+      });
+
+      p2 = db.QueryPerson({
+        id: 'query_p2',
+        name: 'QueryPerson 2',
+        age: 33,
+        date: new Date('1966-05-01T00:00Z'),
+        address: db.QueryAddress({city: 'Hamburg', zip: 23432}),
+        colors: DB.List(['blue', 'green', 'red']),
+        birthplace: new DB.GeoPoint(32, 112)
+      });
+
+      p3 = db.QueryPerson({
+        id: 'query_p3',
+        name: 'QueryPerson 3',
+        age: 23,
+        date: new Date('1989-05-01T00:00Z'),
+        address: db.QueryAddress({city: 'Munich', zip: 92438}),
+        colors: DB.List(['yellow', 'blue', 'white']),
+        birthplace: new DB.GeoPoint(29, 109)
+      });
+
+      return Promise.all([p0.save(true), p1.save(true), p2.save(true), p3.save(true)])
     });
 
     it('should return all objects', function() {
@@ -711,9 +707,9 @@ describe("Test Query", function() {
     it("should return birthplace withinPolygon matches", function() {
       return db.QueryPerson.find()
           .withinPolygon('birthplace',
-          new baqend.GeoPoint(30, 110), new baqend.GeoPoint(30, 115),
-          new baqend.GeoPoint(40, 115), new baqend.GeoPoint(40, 110),
-          new baqend.GeoPoint(30, 110))
+              new DB.GeoPoint(30, 110), new DB.GeoPoint(30, 115),
+              new DB.GeoPoint(40, 115), new DB.GeoPoint(40, 110),
+              new DB.GeoPoint(30, 110))
           .resultList()
           .then(function(list) {
             expectResult([p1, p2], list);

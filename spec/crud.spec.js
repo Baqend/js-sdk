@@ -1,54 +1,52 @@
-if (typeof baqend == 'undefined') {
+if (typeof DB == 'undefined') {
   env = require('./env');
   var chai = require("chai");
   var chaiAsPromised = require("chai-as-promised");
   chai.use(chaiAsPromised);
   chai.config.includeStack = true;
   expect = chai.expect;
-  baqend = require('../lib');
+  DB = require('../lib');
 }
 
 describe('Test dao', function() {
   var db, personType, addressType, childType, emf, metamodel, streetType;
 
   before(function() {
-    emf = new baqend.EntityManagerFactory(env.TEST_SERVER);
+    emf = new DB.EntityManagerFactory(env.TEST_SERVER);
     metamodel = emf.metamodel;
 
-    metamodel.init();
-    metamodel.addType(personType = new baqend.metamodel.EntityType("Person", metamodel.entity(Object)));
-    metamodel.addType(childType = new baqend.metamodel.EntityType("Child", personType));
-    metamodel.addType(addressType = new baqend.metamodel.EmbeddableType("Address"));
-    metamodel.addType(streetType = new baqend.metamodel.EntityType("Street", metamodel.entity(Object)));
+    metamodel.init({});
+    metamodel.addType(personType = new DB.metamodel.EntityType("Person", metamodel.entity(Object)));
+    metamodel.addType(childType = new DB.metamodel.EntityType("Child", personType));
+    metamodel.addType(addressType = new DB.metamodel.EmbeddableType("Address"));
+    metamodel.addType(streetType = new DB.metamodel.EntityType("Street", metamodel.entity(Object)));
 
-    personType.addAttribute(new baqend.metamodel.SingularAttribute("name", metamodel.baseType(String)));
-    personType.addAttribute(new baqend.metamodel.SingularAttribute("address", addressType));
-    personType.addAttribute(new baqend.metamodel.SingularAttribute("age", metamodel.baseType(Number)));
-    personType.addAttribute(new baqend.metamodel.SingularAttribute("date", metamodel.baseType(Date)));
-    personType.addAttribute(new baqend.metamodel.SingularAttribute("sister", personType));
-    personType.addAttribute(new baqend.metamodel.SingularAttribute("child", personType));
+    personType.addAttribute(new DB.metamodel.SingularAttribute("name", metamodel.baseType(String)));
+    personType.addAttribute(new DB.metamodel.SingularAttribute("address", addressType));
+    personType.addAttribute(new DB.metamodel.SingularAttribute("age", metamodel.baseType(Number)));
+    personType.addAttribute(new DB.metamodel.SingularAttribute("date", metamodel.baseType(Date)));
+    personType.addAttribute(new DB.metamodel.SingularAttribute("sister", personType));
+    personType.addAttribute(new DB.metamodel.SingularAttribute("child", personType));
 
-    childType.addAttribute(new baqend.metamodel.SingularAttribute('mother', personType));
-    childType.addAttribute(new baqend.metamodel.SingularAttribute('aunt', personType));
-    childType.addAttribute(new baqend.metamodel.SingularAttribute('father', personType));
-    childType.addAttribute(new baqend.metamodel.ListAttribute("listSiblings", personType));
-    childType.addAttribute(new baqend.metamodel.SetAttribute("setSiblings", personType));
-    childType.addAttribute(new baqend.metamodel.MapAttribute("mapSiblings", personType, personType));
+    childType.addAttribute(new DB.metamodel.SingularAttribute('mother', personType));
+    childType.addAttribute(new DB.metamodel.SingularAttribute('aunt', personType));
+    childType.addAttribute(new DB.metamodel.SingularAttribute('father', personType));
+    childType.addAttribute(new DB.metamodel.ListAttribute("listSiblings", personType));
+    childType.addAttribute(new DB.metamodel.SetAttribute("setSiblings", personType));
+    childType.addAttribute(new DB.metamodel.MapAttribute("mapSiblings", personType, personType));
 
-    addressType.addAttribute(new baqend.metamodel.SingularAttribute("street", streetType));
-    addressType.addAttribute(new baqend.metamodel.SingularAttribute("zip", metamodel.baseType(Number)));
+    addressType.addAttribute(new DB.metamodel.SingularAttribute("street", streetType));
+    addressType.addAttribute(new DB.metamodel.SingularAttribute("zip", metamodel.baseType(Number)));
 
-    streetType.addAttribute(new baqend.metamodel.SingularAttribute("name", metamodel.baseType(String)));
-    streetType.addAttribute(new baqend.metamodel.SingularAttribute("number", metamodel.baseType(Number)));
-    streetType.addAttribute(new baqend.metamodel.SingularAttribute("neighbor", personType));
+    streetType.addAttribute(new DB.metamodel.SingularAttribute("name", metamodel.baseType(String)));
+    streetType.addAttribute(new DB.metamodel.SingularAttribute("number", metamodel.baseType(Number)));
+    streetType.addAttribute(new DB.metamodel.SingularAttribute("neighbor", personType));
 
     return saveMetamodel(metamodel);
   });
 
   beforeEach(function() {
-    return emf.createEntityManager(function(em) {
-      db = em;
-    });
+    db = emf.createEntityManager();
   });
 
   describe('contains', function() {
@@ -75,6 +73,12 @@ describe('Test dao', function() {
   });
 
   describe('attach', function() {
+    before(function() {
+      if (!DB.isReady) {
+        return DB.connect(env.TEST_SERVER);
+      }
+    });
+
     it('should unattached object to db', function() {
       var obj = db.Person();
 
@@ -92,11 +96,10 @@ describe('Test dao', function() {
       var obj = db.Person();
       obj.attach(db);
 
-      return emf.createEntityManager().then(function(db2) {
-        expect(function() { obj.attach(db2); }).throw(baqend.error.EntityExistsError);
-        expect(obj._metadata.db).equals(db);
-        expect(db2.contains(obj)).be.false;
-      });
+      var db2 =  emf.createEntityManager();
+      expect(function() { obj.attach(db2); }).throw(DB.error.EntityExistsError);
+      expect(obj._metadata.db).equals(db);
+      expect(db2.contains(obj)).be.false;
     });
 
     it('should ignore attach object to same db', function() {
@@ -114,39 +117,24 @@ describe('Test dao', function() {
       expect(db.contains(obj)).be.true;
     });
 
-    var glob = (typeof window != 'undefined'? window: global);
     it('should attach implicit attached objects to same db', function() {
-      return emf.createEntityManager().then(function(globalDb) {
-        var prevDB = glob.DB;
-        glob.DB = globalDb;
+      var obj = new personType.typeConstructor();
+      expect(obj._metadata.db).equals(DB);
+      expect(DB.contains(obj)).be.false;
 
-        var obj = new personType.typeConstructor();
-        expect(obj._metadata.db).equals(globalDb);
-        expect(globalDb.contains(obj)).be.false;
+      obj.attach(DB);
 
-        obj.attach(globalDb);
-
-        expect(obj._metadata.db).equals(globalDb);
-        expect(globalDb.contains(obj)).be.true;
-
-        glob.DB = prevDB;
-      });
+      expect(obj._metadata.db).equals(DB);
+      expect(DB.contains(obj)).be.true;
     });
 
     it('should not reattach implicit attached objects to another db', function() {
-      return emf.createEntityManager().then(function(globalDb) {
-        var prevDB = glob.DB;
-        glob.DB = globalDb;
+      var obj = new personType.typeConstructor();
+      expect(obj._metadata.db).equals(DB);
 
-        var obj = new personType.typeConstructor();
-        expect(obj._metadata.db).equals(globalDb);
-
-        expect(function() { obj.attach(db); }).throw(baqend.error.EntityExistsError);
-        expect(obj._metadata.db).equals(globalDb);
-        expect(db.contains(obj)).be.false;
-
-        glob.DB = prevDB;
-      });
+      expect(function() { obj.attach(db); }).throw(DB.error.EntityExistsError);
+      expect(obj._metadata.db).equals(DB);
+      expect(db.contains(obj)).be.false;
     });
   });
 
@@ -202,12 +190,10 @@ describe('Test dao', function() {
     });
 
     it('should not save a stale object', function() {
-      var person;
+      var db2 = emf.createEntityManager();
+      var person = db2.Person();
 
-      return expect(emf.createEntityManager(function(db2) {
-        person = db2.Person();
-        return person.save();
-      }).then(function() {
+      return expect(person.save().then(function() {
         return db.Person.get(person._metadata.id).then(function(person2) {
           person2.name = 'Peter Parker';
           return person2.save();
@@ -216,18 +202,16 @@ describe('Test dao', function() {
         person.name = 'Alice Ford';
         return person.save();
       })).be.rejected.then(function(e) {
-        expect(e).instanceOf(baqend.error.PersistentError);
+        expect(e).instanceOf(DB.error.PersistentError);
         return expect(db.Person.get(person._metadata.id)).eventually.have.property('name', 'Peter Parker');
       });
     });
 
     it('should forcibly save a stale object', function() {
-      var person;
+      var db2 = emf.createEntityManager();
+      var person = db2.Person();
 
-      return emf.createEntityManager(function(db2) {
-        person = db2.Person();
-        return person.save();
-      }).then(function() {
+      return person.save().then(function() {
         return db.Person.get(person._metadata.id).then(function(person2) {
           person2.name = 'Peter Parker';
           return person2.save();
@@ -243,12 +227,10 @@ describe('Test dao', function() {
     });
 
     it('should not override an object that exists', function() {
-      var person;
+      var db2 = emf.createEntityManager();
+      var person = db2.Person();
 
-      return emf.createEntityManager(function(db2) {
-        person = db2.Person();
-        return person.save();
-      }).then(function() {
+      return person.save().then(function() {
         var newPerson = db.Person();
         newPerson._metadata.id = person._metadata.id;
         return expect(newPerson.save()).rejected;
@@ -256,12 +238,10 @@ describe('Test dao', function() {
     });
 
     it('should forcibly override an object that exists', function() {
-      var person;
+      var db2 = emf.createEntityManager();
+      var person = db2.Person();
 
-      return emf.createEntityManager(function(db2) {
-        person = db2.Person();
-        return person.save();
-      }).then(function() {
+      return person.save().then(function() {
         var newPerson = db.Person();
         newPerson.name = 'Peter Parker';
         newPerson._metadata.id = person._metadata.id;
@@ -276,10 +256,10 @@ describe('Test dao', function() {
     it('should not save an removed object', function() {
       var person = db.Person();
       return person.save().then(function() {
-        return emf.createEntityManager(function(db2) {
-          return db2.Person.get(person._metadata.id).then(function(person2) {
-            return person2.remove();
-          });
+        var db2 = emf.createEntityManager();
+
+        return db2.Person.get(person._metadata.id).then(function(person2) {
+          return person2.remove();
         });
       }).then(function() {
         person.name = "New Name";
@@ -290,10 +270,10 @@ describe('Test dao', function() {
     it('should forcibly save an removed object', function() {
       var person = db.Person();
       return person.save().then(function() {
-        return emf.createEntityManager(function(db2) {
-          return db2.Person.get(person._metadata.id).then(function(person2) {
-            return person2.remove();
-          });
+        var db2 = emf.createEntityManager();
+
+        return db2.Person.get(person._metadata.id).then(function(person2) {
+          return person2.remove();
         });
       }).then(function() {
         person.name = 'Peter Parker';
@@ -373,14 +353,13 @@ describe('Test dao', function() {
     });
 
     it('should refresh if the object is stale', function() {
+      var db2 = emf.createEntityManager();
       person.name = 'Tom Miller';
 
-      return emf.createEntityManager(function(db2) {
-        return db2.Person.get(person.id).then(function(person2) {
-          expect(person2.name).equals('Peter Mueller');
-          person2.name = 'Alice Ford';
-          return person2.save();
-        });
+      return db2.Person.get(person.id).then(function(person2) {
+        expect(person2.name).equals('Peter Mueller');
+        person2.name = 'Alice Ford';
+        return person2.save();
       }).then(function(person2) {
         return db.Person.get(person.id).then(function(person3) {
           expect(person3).equals(person);
@@ -399,13 +378,13 @@ describe('Test dao', function() {
     });
 
     it('should retrieved different version in different db context', function() {
-      return emf.createEntityManager().then(function(otherDb) {
-        var p1 = db.Person.get(person.id);
-        var p2 = otherDb.Person.get(person.id);
+      var db2 = emf.createEntityManager();
 
-        return Promise.all([p1, p2]).then(function(loaded) {
-          expect(loaded[0]).not.equals(loaded[1]);
-        });
+      var p1 = db.Person.get(person.id);
+      var p2 = db2.Person.get(person.id);
+
+      return Promise.all([p1, p2]).then(function(loaded) {
+        expect(loaded[0]).not.equals(loaded[1]);
       });
     });
   });
@@ -465,7 +444,7 @@ describe('Test dao', function() {
     });
 
     it('should be allowed to remove an object without id', function() {
-      return expect(person.remove().then(function(per) { return per.remove() })).be.rejectedWith(baqend.error.IllegalEntityError);
+      return expect(person.remove().then(function(per) { return per.remove() })).be.rejectedWith(DB.error.IllegalEntityError);
     });
 
     it('should be allowed to forcly remove an object without id', function() {
@@ -478,16 +457,14 @@ describe('Test dao', function() {
         var newPerson = db.Person();
         newPerson._metadata.id = person._metadata.id;
         return db.attach(newPerson);
-      })).be.rejectedWith(baqend.error.EntityExistsError);
+      })).be.rejectedWith(DB.error.EntityExistsError);
     });
 
     it('should not be allowed to remove outdated object', function() {
-      var person;
+      var db2 = emf.createEntityManager();
+      var person = db2.Person();
 
-      return expect(emf.createEntityManager().then(function(db2) {
-        person = db2.Person();
-        return person.save();
-      }).then(function() {
+      return expect(person.save().then(function() {
         return db.Person.get(person._metadata.id);
       }).then(function(person2) {
         person2.name = "Foo Bar";
@@ -498,12 +475,10 @@ describe('Test dao', function() {
     });
 
     it('should be allowed to forcibly remove outdated object', function() {
-      var person;
+      var db2 = emf.createEntityManager();
+      var person = db2.Person();
 
-      return emf.createEntityManager().then(function(db2) {
-        person = db2.Person();
-        return person.save();
-      }).then(function() {
+      return person.save().then(function() {
         return db.Person.get(person._metadata.id);
       }).then(function(person2) {
         person2.name = "Foo Bar";
@@ -553,12 +528,10 @@ describe('Test dao', function() {
     });
 
     it('should not allowed to update outdated object', function() {
-      var person;
+      var db2 = emf.createEntityManager();
+      var person = db2.Person();
 
-      return expect(emf.createEntityManager().then(function(db2) {
-        person = db2.Person();
-        return person.save();
-      }).then(function() {
+      return expect(person.save().then(function() {
         return db.Person.get(person._metadata.id);
       }).then(function(person2) {
         person2.name = "Foo Bar";
@@ -570,12 +543,10 @@ describe('Test dao', function() {
     });
 
     it('should allowed to forcibly update outdated object', function() {
-      var person;
+      var db2 = emf.createEntityManager();
+      var person = db2.Person();
 
-      return emf.createEntityManager().then(function(db2) {
-        person = db2.Person();
-        return person.save();
-      }).then(function() {
+      return person.save().then(function() {
         return db.Person.get(person._metadata.id);
       }).then(function(person2) {
         person2.name = "Foo Bar";
@@ -630,10 +601,10 @@ describe('Test dao', function() {
     });
 
     it('should not be allowed to insert existing object', function() {
-      return emf.createEntityManager().then(function(db2) {
-        var person = db2.Person();
-        return person.save();
-      }).then(function(saved) {
+      var db2 = emf.createEntityManager();
+      var person = db2.Person();
+
+      return person.save().then(function(saved) {
         var newPerson = db.Person();
         newPerson.name = "Blub";
         newPerson._metadata.id = saved._metadata.id;
@@ -728,9 +699,9 @@ describe('Test dao', function() {
       child.mother = mother;
       child.aunt = mother;
       child.father = father;
-      child.listSiblings = new baqend.List();
-      child.setSiblings = new baqend.Set();
-      child.mapSiblings = new baqend.Map();
+      child.listSiblings = new DB.List();
+      child.setSiblings = new DB.Set();
+      child.mapSiblings = new DB.Map();
       sibs = [];
       for(var i = 0; i < 6; i++) {
         var sib = db.Person();

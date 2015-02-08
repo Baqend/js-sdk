@@ -1,35 +1,35 @@
-if (typeof baqend == 'undefined') {
+if (typeof DB == 'undefined') {
   env = require('./env');
   var chai = require("chai");
   var chaiAsPromised = require("chai-as-promised");
   chai.use(chaiAsPromised);
   expect = chai.expect;
-  baqend = require('../lib');
+  DB = require('../lib');
 }
 
 describe("Test metamodel classes", function () {
   var metamodel;
 
   beforeEach(function() {
-    metamodel = new baqend.metamodel.Metamodel(null);
+    metamodel = new DB.metamodel.Metamodel(null);
   });
 
   describe("ModelBuilder", function() {
     it("should create basic and object type", function() {
-      metamodel.init();
+      metamodel.init({});
 
-      expect(metamodel.baseType(baqend.metamodel.BasicType.Date.ref)).equals(baqend.metamodel.BasicType.Date);
-      expect(metamodel.baseType(baqend.metamodel.BasicType.DateTime.ref)).equals(baqend.metamodel.BasicType.DateTime);
-      expect(metamodel.baseType(baqend.metamodel.BasicType.Boolean.ref)).equals(baqend.metamodel.BasicType.Boolean);
-      expect(metamodel.baseType(baqend.metamodel.BasicType.Double.ref)).equals(baqend.metamodel.BasicType.Double);
-      expect(metamodel.baseType(baqend.metamodel.BasicType.Integer.ref)).equals(baqend.metamodel.BasicType.Integer);
-      expect(metamodel.baseType(baqend.metamodel.BasicType.String.ref)).equals(baqend.metamodel.BasicType.String);
-      expect(metamodel.baseType(baqend.metamodel.BasicType.Time.ref)).equals(baqend.metamodel.BasicType.Time);
-      expect(metamodel.baseType(baqend.metamodel.BasicType.GeoPoint.ref)).equals(baqend.metamodel.BasicType.GeoPoint);
-      expect(metamodel.baseType(baqend.metamodel.BasicType.JsonArray.ref)).equals(baqend.metamodel.BasicType.JsonArray);
-      expect(metamodel.baseType(baqend.metamodel.BasicType.JsonObject.ref)).equals(baqend.metamodel.BasicType.JsonObject);
+      expect(metamodel.baseType(DB.metamodel.BasicType.Date.ref)).equals(DB.metamodel.BasicType.Date);
+      expect(metamodel.baseType(DB.metamodel.BasicType.DateTime.ref)).equals(DB.metamodel.BasicType.DateTime);
+      expect(metamodel.baseType(DB.metamodel.BasicType.Boolean.ref)).equals(DB.metamodel.BasicType.Boolean);
+      expect(metamodel.baseType(DB.metamodel.BasicType.Double.ref)).equals(DB.metamodel.BasicType.Double);
+      expect(metamodel.baseType(DB.metamodel.BasicType.Integer.ref)).equals(DB.metamodel.BasicType.Integer);
+      expect(metamodel.baseType(DB.metamodel.BasicType.String.ref)).equals(DB.metamodel.BasicType.String);
+      expect(metamodel.baseType(DB.metamodel.BasicType.Time.ref)).equals(DB.metamodel.BasicType.Time);
+      expect(metamodel.baseType(DB.metamodel.BasicType.GeoPoint.ref)).equals(DB.metamodel.BasicType.GeoPoint);
+      expect(metamodel.baseType(DB.metamodel.BasicType.JsonArray.ref)).equals(DB.metamodel.BasicType.JsonArray);
+      expect(metamodel.baseType(DB.metamodel.BasicType.JsonObject.ref)).equals(DB.metamodel.BasicType.JsonObject);
 
-      expect(metamodel.entity(baqend.metamodel.EntityType.Object.ref)).instanceof(baqend.metamodel.EntityType.Object);
+      expect(metamodel.entity(DB.metamodel.EntityType.Object.ref)).instanceof(DB.metamodel.EntityType.Object);
     });
 
     it("should build type with attributes", function() {
@@ -47,16 +47,16 @@ describe("Test metamodel classes", function () {
 
       var entity = metamodel.entity("/db/test.OtherPersClass");
 
-      expect(entity).instanceof(baqend.metamodel.EntityType);
+      expect(entity).instanceof(DB.metamodel.EntityType);
       expect(entity.ref).equals("/db/test.OtherPersClass");
-      expect(entity.superType).equals(metamodel.entity(baqend.metamodel.EntityType.Object.ref));
+      expect(entity.superType).equals(metamodel.entity(DB.metamodel.EntityType.Object.ref));
 
       expect(entity.typeConstructor).be.ok;
       expect(entity.declaredAttributes).length(1);
-      expect(entity.declaredAttributes[0]).instanceof(baqend.metamodel.SingularAttribute);
+      expect(entity.declaredAttributes[0]).instanceof(DB.metamodel.SingularAttribute);
       expect(entity.declaredAttributes[0].declaringType).equals(entity);
       expect(entity.declaredAttributes[0].name).equals("value");
-      expect(entity.declaredAttributes[0].type).equals(baqend.metamodel.BasicType.Integer);
+      expect(entity.declaredAttributes[0].type).equals(DB.metamodel.BasicType.Integer);
       expect(entity.declaredAttributes[0].typeConstructor).equals(Number);
     });
 
@@ -90,23 +90,23 @@ describe("Test metamodel classes", function () {
       metamodel.fromJSON(model);
 
       var entity = metamodel.entity("/db/test.PersClass");
-      expect(entity).instanceof(baqend.metamodel.EntityType);
+      expect(entity).instanceof(DB.metamodel.EntityType);
       expect(entity.ref).equals("/db/test.PersClass");
-      expect(entity.superType).equals(metamodel.entity(baqend.metamodel.EntityType.Object.ref));
+      expect(entity.superType).equals(metamodel.entity(DB.metamodel.EntityType.Object.ref));
       expect(entity.typeConstructor).be.ok;
       expect(entity.declaredAttributes).length(2);
 
       var name = entity.getDeclaredAttribute("name");
       expect(entity.getAttribute("name")).equals(name);
-      expect(name).instanceof(baqend.metamodel.SingularAttribute);
+      expect(name).instanceof(DB.metamodel.SingularAttribute);
       expect(name.declaringType).equals(entity);
       expect(name.name).equals("name");
-      expect(name.type).equals(baqend.metamodel.BasicType.String);
+      expect(name.type).equals(DB.metamodel.BasicType.String);
       expect(name.typeConstructor).equals(String);
 
       var ref = entity.getDeclaredAttribute("ref");
       expect(entity.getAttribute("ref")).equals(ref);
-      expect(ref).instanceof(baqend.metamodel.SingularAttribute);
+      expect(ref).instanceof(DB.metamodel.SingularAttribute);
       expect(ref.declaringType).equals(entity);
       expect(ref.name).equals("ref");
       expect(ref.type).equals(metamodel.entity("/db/test.ChildPersClass"));
@@ -116,7 +116,7 @@ describe("Test metamodel classes", function () {
       expect(entity.getAttribute("value")).be.null;
 
       entity = metamodel.entity("/db/test.ChildPersClass");
-      expect(entity).instanceof(baqend.metamodel.EntityType);
+      expect(entity).instanceof(DB.metamodel.EntityType);
       expect(entity.ref).equals("/db/test.ChildPersClass");
       expect(entity.superType).equals(metamodel.entity("/db/test.PersClass"));
       expect(entity.typeConstructor).be.ok;
@@ -124,10 +124,10 @@ describe("Test metamodel classes", function () {
 
       var value = entity.getDeclaredAttribute("value");
       expect(entity.getAttribute("value")).equals(value);
-      expect(value).instanceof(baqend.metamodel.SingularAttribute);
+      expect(value).instanceof(DB.metamodel.SingularAttribute);
       expect(value.declaringType).equals(entity);
       expect(value.name).equals("value");
-      expect(value.type).equals(baqend.metamodel.BasicType.Integer);
+      expect(value.type).equals(DB.metamodel.BasicType.Integer);
       expect(value.typeConstructor).equals(Number);
 
       expect(entity.getDeclaredAttribute("name")).be.null;
@@ -151,14 +151,14 @@ describe("Test metamodel classes", function () {
       metamodel.fromJSON([model]);
 
       var entity = metamodel.embeddable("/db/test.EmbeddedPersClass");
-      expect(entity).instanceof(baqend.metamodel.EmbeddableType);
+      expect(entity).instanceof(DB.metamodel.EmbeddableType);
       expect(entity.ref).equals("/db/test.EmbeddedPersClass");
       expect(entity.typeConstructor).be.ok;
       expect(entity.declaredAttributes).length(1);
-      expect(entity.declaredAttributes[0]).instanceof(baqend.metamodel.SingularAttribute);
+      expect(entity.declaredAttributes[0]).instanceof(DB.metamodel.SingularAttribute);
       expect(entity.declaredAttributes[0].declaringType).equals(entity);
       expect(entity.declaredAttributes[0].name).equals("name");
-      expect(entity.declaredAttributes[0].type).equals(baqend.metamodel.BasicType.String);
+      expect(entity.declaredAttributes[0].type).equals(DB.metamodel.BasicType.String);
       expect(entity.declaredAttributes[0].typeConstructor).equals(String);
     });
 
@@ -177,12 +177,12 @@ describe("Test metamodel classes", function () {
 
       var type = metamodel.entity("/db/test.TestClass");
       var attr = type.declaredAttributes[0];
-      expect(attr).instanceof(baqend.metamodel.SingularAttribute);
+      expect(attr).instanceof(DB.metamodel.SingularAttribute);
       expect(attr.declaringType).equals(type);
       expect(attr.name).equals("name");
-      expect(attr.type).equals(baqend.metamodel.BasicType.String);
+      expect(attr.type).equals(DB.metamodel.BasicType.String);
       expect(attr.typeConstructor).equals(String);
-      expect(attr.persistentAttributeType).equals(baqend.metamodel.Attribute.PersistentAttributeType.BASIC);
+      expect(attr.persistentAttributeType).equals(DB.metamodel.Attribute.PersistentAttributeType.BASIC);
       expect(attr.isAssociation).be.false;
       expect(attr.isCollection).be.false;
     });
@@ -202,12 +202,12 @@ describe("Test metamodel classes", function () {
 
       var type = metamodel.entity("/db/test.TestClass");
       var attr = type.declaredAttributes[0];
-      expect(attr).instanceof(baqend.metamodel.SingularAttribute);
+      expect(attr).instanceof(DB.metamodel.SingularAttribute);
       expect(attr.declaringType).equals(type);
       expect(attr.name).equals("name");
       expect(attr.type).equals(type);
       expect(attr.typeConstructor).be.ok;
-      expect(attr.persistentAttributeType).equals(baqend.metamodel.Attribute.PersistentAttributeType.ONE_TO_MANY);
+      expect(attr.persistentAttributeType).equals(DB.metamodel.Attribute.PersistentAttributeType.ONE_TO_MANY);
       expect(attr.isAssociation).be.true;
       expect(attr.isCollection).be.false;
     });
@@ -228,12 +228,12 @@ describe("Test metamodel classes", function () {
 
       var type = metamodel.embeddable("/db/test.TestClass");
       var attr = type.declaredAttributes[0];
-      expect(attr).instanceof(baqend.metamodel.SingularAttribute);
+      expect(attr).instanceof(DB.metamodel.SingularAttribute);
       expect(attr.declaringType).equals(type);
       expect(attr.name).equals("name");
       expect(attr.type).equals(type);
       expect(attr.typeConstructor).be.ok;
-      expect(attr.persistentAttributeType).equals(baqend.metamodel.Attribute.PersistentAttributeType.EMBEDDED);
+      expect(attr.persistentAttributeType).equals(DB.metamodel.Attribute.PersistentAttributeType.EMBEDDED);
       expect(attr.isAssociation).be.false;
       expect(attr.isCollection).be.false;
     });
@@ -253,15 +253,15 @@ describe("Test metamodel classes", function () {
 
       var type = metamodel.entity("/db/test.TestClass");
       var attr = type.declaredAttributes[0];
-      expect(attr).instanceof(baqend.metamodel.ListAttribute);
+      expect(attr).instanceof(DB.metamodel.ListAttribute);
       expect(attr.declaringType).equals(type);
       expect(attr.name).equals("name");
-      expect(attr.elementType).equals(baqend.metamodel.BasicType.String);
-      expect(attr.typeConstructor).equals(baqend.List);
-      expect(attr.persistentAttributeType).equals(baqend.metamodel.Attribute.PersistentAttributeType.ELEMENT_COLLECTION);
+      expect(attr.elementType).equals(DB.metamodel.BasicType.String);
+      expect(attr.typeConstructor).equals(DB.List);
+      expect(attr.persistentAttributeType).equals(DB.metamodel.Attribute.PersistentAttributeType.ELEMENT_COLLECTION);
       expect(attr.isAssociation).be.false;
       expect(attr.isCollection).be.true;
-      expect(attr.collectionType).equals(baqend.metamodel.PluralAttribute.CollectionType.LIST);
+      expect(attr.collectionType).equals(DB.metamodel.PluralAttribute.CollectionType.LIST);
     });
 
     it("should build model with set attribute", function() {
@@ -279,15 +279,15 @@ describe("Test metamodel classes", function () {
 
       var type = metamodel.entity("/db/test.TestClass");
       var attr = type.declaredAttributes[0];
-      expect(attr).instanceof(baqend.metamodel.SetAttribute);
+      expect(attr).instanceof(DB.metamodel.SetAttribute);
       expect(attr.declaringType).equals(type);
       expect(attr.name).equals("name");
-      expect(attr.elementType).equals(baqend.metamodel.BasicType.String);
-      expect(attr.typeConstructor).equals(baqend.Set);
-      expect(attr.persistentAttributeType).equals(baqend.metamodel.Attribute.PersistentAttributeType.ELEMENT_COLLECTION);
+      expect(attr.elementType).equals(DB.metamodel.BasicType.String);
+      expect(attr.typeConstructor).equals(DB.Set);
+      expect(attr.persistentAttributeType).equals(DB.metamodel.Attribute.PersistentAttributeType.ELEMENT_COLLECTION);
       expect(attr.isAssociation).be.false;
       expect(attr.isCollection).be.true;
-      expect(attr.collectionType).equals(baqend.metamodel.PluralAttribute.CollectionType.SET);
+      expect(attr.collectionType).equals(DB.metamodel.PluralAttribute.CollectionType.SET);
     });
 
     it("should build model with map attribute", function() {
@@ -305,58 +305,58 @@ describe("Test metamodel classes", function () {
 
       var type = metamodel.entity("/db/test.TestClass");
       var attr = type.declaredAttributes[0];
-      expect(attr).instanceof(baqend.metamodel.MapAttribute);
+      expect(attr).instanceof(DB.metamodel.MapAttribute);
       expect(attr.declaringType).equals(type);
       expect(attr.name).equals("name");
-      expect(attr.elementType).equals(baqend.metamodel.BasicType.Integer);
-      expect(attr.keyType).equals(baqend.metamodel.BasicType.String);
-      expect(attr.typeConstructor).equals(baqend.Map);
-      expect(attr.persistentAttributeType).equals(baqend.metamodel.Attribute.PersistentAttributeType.ELEMENT_COLLECTION);
+      expect(attr.elementType).equals(DB.metamodel.BasicType.Integer);
+      expect(attr.keyType).equals(DB.metamodel.BasicType.String);
+      expect(attr.typeConstructor).equals(DB.Map);
+      expect(attr.persistentAttributeType).equals(DB.metamodel.Attribute.PersistentAttributeType.ELEMENT_COLLECTION);
       expect(attr.isAssociation).be.false;
       expect(attr.isCollection).be.true;
-      expect(attr.collectionType).equals(baqend.metamodel.PluralAttribute.CollectionType.MAP);
+      expect(attr.collectionType).equals(DB.metamodel.PluralAttribute.CollectionType.MAP);
     });
   });
 
   describe("BasicType", function () {
     it("should be accessible by native constructors", function() {
-      metamodel.init();
+      metamodel.init({});
 
-      expect(metamodel.baseType(Boolean)).equals(baqend.metamodel.BasicType.Boolean);
-      expect(metamodel.baseType(Number)).equals(baqend.metamodel.BasicType.Double);
-      expect(metamodel.baseType(String)).equals(baqend.metamodel.BasicType.String);
-      expect(metamodel.baseType(Date)).equals(baqend.metamodel.BasicType.DateTime);
-      expect(metamodel.baseType(Object)).equals(baqend.metamodel.BasicType.JsonObject);
-      expect(metamodel.baseType(Array)).equals(baqend.metamodel.BasicType.JsonArray);
-      expect(metamodel.baseType(baqend.GeoPoint)).equals(baqend.metamodel.BasicType.GeoPoint);
+      expect(metamodel.baseType(Boolean)).equals(DB.metamodel.BasicType.Boolean);
+      expect(metamodel.baseType(Number)).equals(DB.metamodel.BasicType.Double);
+      expect(metamodel.baseType(String)).equals(DB.metamodel.BasicType.String);
+      expect(metamodel.baseType(Date)).equals(DB.metamodel.BasicType.DateTime);
+      expect(metamodel.baseType(Object)).equals(DB.metamodel.BasicType.JsonObject);
+      expect(metamodel.baseType(Array)).equals(DB.metamodel.BasicType.JsonArray);
+      expect(metamodel.baseType(DB.GeoPoint)).equals(DB.metamodel.BasicType.GeoPoint);
 
-      expect(metamodel.entity(Object)).instanceof(baqend.metamodel.EntityType.Object);
+      expect(metamodel.entity(Object)).instanceof(DB.metamodel.EntityType.Object);
     });
 
     it("should be accessible by simple name", function() {
-      metamodel.init();
+      metamodel.init({});
 
-      expect(metamodel.baseType('Date')).equals(baqend.metamodel.BasicType.Date);
-      expect(metamodel.baseType('DateTime')).equals(baqend.metamodel.BasicType.DateTime);
-      expect(metamodel.baseType('Boolean')).equals(baqend.metamodel.BasicType.Boolean);
-      expect(metamodel.baseType('Double')).equals(baqend.metamodel.BasicType.Double);
-      expect(metamodel.baseType('Integer')).equals(baqend.metamodel.BasicType.Integer);
-      expect(metamodel.baseType('String')).equals(baqend.metamodel.BasicType.String);
-      expect(metamodel.baseType('Time')).equals(baqend.metamodel.BasicType.Time);
-      expect(metamodel.baseType('GeoPoint')).equals(baqend.metamodel.BasicType.GeoPoint);
-      expect(metamodel.baseType('JsonArray')).equals(baqend.metamodel.BasicType.JsonArray);
-      expect(metamodel.baseType('JsonObject')).equals(baqend.metamodel.BasicType.JsonObject);
+      expect(metamodel.baseType('Date')).equals(DB.metamodel.BasicType.Date);
+      expect(metamodel.baseType('DateTime')).equals(DB.metamodel.BasicType.DateTime);
+      expect(metamodel.baseType('Boolean')).equals(DB.metamodel.BasicType.Boolean);
+      expect(metamodel.baseType('Double')).equals(DB.metamodel.BasicType.Double);
+      expect(metamodel.baseType('Integer')).equals(DB.metamodel.BasicType.Integer);
+      expect(metamodel.baseType('String')).equals(DB.metamodel.BasicType.String);
+      expect(metamodel.baseType('Time')).equals(DB.metamodel.BasicType.Time);
+      expect(metamodel.baseType('GeoPoint')).equals(DB.metamodel.BasicType.GeoPoint);
+      expect(metamodel.baseType('JsonArray')).equals(DB.metamodel.BasicType.JsonArray);
+      expect(metamodel.baseType('JsonObject')).equals(DB.metamodel.BasicType.JsonObject);
     });
   });
 
   describe("EntityType", function () {
     it("Object should have an id and version field", function () {
-      metamodel.init();
+      metamodel.init({});
 
-      var entity = metamodel.entity(baqend.metamodel.EntityType.Object.ref);
-      expect(entity.declaredId).instanceof(baqend.metamodel.SingularAttribute);
+      var entity = metamodel.entity(DB.metamodel.EntityType.Object.ref);
+      expect(entity.declaredId).instanceof(DB.metamodel.SingularAttribute);
       expect(entity.declaredId.name).equals("id");
-      expect(entity.declaredVersion).instanceof(baqend.metamodel.SingularAttribute);
+      expect(entity.declaredVersion).instanceof(DB.metamodel.SingularAttribute);
       expect(entity.declaredVersion.name).equals("version");
 
       expect(entity.id).equals(entity.declaredId);
@@ -413,12 +413,13 @@ describe('Test Metamodel', function() {
   var metamodel;
 
   beforeEach(function() {
-    metamodel = new baqend.metamodel.Metamodel(baqend.connector.Connector.create(env.TEST_SERVER));
+    metamodel = new DB.metamodel.Metamodel();
+    metamodel.connected(DB.connector.Connector.create(env.TEST_SERVER));
   });
 
   it('not init twice', function() {
-    metamodel.init();
-    expect(metamodel.init.bind(metamodel)).throw(Error);
+    metamodel.init({});
+    expect(metamodel.init.bind(metamodel, {})).throw(Error);
   });
 
   it("should only be allowed once to load the metamodel", function() {
@@ -434,30 +435,29 @@ describe('Test Metamodel', function() {
     });
   });
 
-  it("should not be allowed to load when used by an EntityManager", function() {
-    var emf = new baqend.EntityManagerFactory(env.TEST_SERVER);
-    return emf.createEntityManager().then(function(em) {
-      expect(function() { em.metamodel.load(); }).throw(Error);
-    });
+  it("should block the entityManager when isn't ready", function() {
+    var emf = new DB.EntityManagerFactory(env.TEST_SERVER);
+    expect(emf.createEntityManager().isReady).be.false;
+  });
+
+  it("should not block the entityManager when is ready", function() {
+    var emf = new DB.EntityManagerFactory(env.TEST_SERVER);
+    emf.metamodel.init({});
+    expect(emf.createEntityManager().isReady).be.true;
   });
 
   it("should not be allowed to save without initializsation", function() {
-    expect(function() {
-      metamodel.save();
-    }).throw(Error);
+    var emf = new DB.EntityManagerFactory(env.TEST_SERVER);
+
+    expect(saveMetamodel(emf.metamodel)).be.rejected;
   });
 
-  it("should allowe additive save when used by an EntityManager", function() {
-    var emf = new baqend.EntityManagerFactory(env.TEST_SERVER);
-    return emf.createEntityManager().then(function(em) {
-      em.metamodel.save();
-    });
-  });
+  it("should allow modification when used by an EntityManager", function() {
+    var emf = new DB.EntityManagerFactory(env.TEST_SERVER);
+    var em = emf.createEntityManager();
 
-  it("should not be allowed to forcely save when used by an EntityManager", function() {
-    var emf = new baqend.EntityManagerFactory(env.TEST_SERVER);
-    return emf.createEntityManager().then(function(em) {
-      expect(function() { em.metamodel.save(true); }).throw(Error);
+    return em.metamodel.init().then(function() {
+      return saveMetamodel(emf.metamodel);
     });
   });
 
@@ -465,23 +465,24 @@ describe('Test Metamodel', function() {
     var type, childType, embeddedType, metamodel;
 
     before(function() {
-      metamodel = new baqend.metamodel.Metamodel(baqend.connector.Connector.create(env.TEST_SERVER));
-      metamodel.init();
-      metamodel.addType(type = new baqend.metamodel.EntityType("jstest.Person", metamodel.entity(Object)));
-      metamodel.addType(childType = new baqend.metamodel.EntityType("jstest.ChildPerson", type));
-      metamodel.addType(embeddedType = new baqend.metamodel.EmbeddableType("jstest.EmbeddedPerson"));
+      metamodel = new DB.metamodel.Metamodel();
+      metamodel.connected(DB.connector.Connector.create(env.TEST_SERVER));
+      metamodel.init({});
+      metamodel.addType(type = new DB.metamodel.EntityType("jstest.Person", metamodel.entity(Object)));
+      metamodel.addType(childType = new DB.metamodel.EntityType("jstest.ChildPerson", type));
+      metamodel.addType(embeddedType = new DB.metamodel.EmbeddableType("jstest.EmbeddedPerson"));
 
-      type.addAttribute(new baqend.metamodel.SingularAttribute("name", metamodel.baseType(String)));
-      type.addAttribute(new baqend.metamodel.SingularAttribute("ref", type));
-      type.addAttribute(new baqend.metamodel.SingularAttribute("date", metamodel.baseType(Date)));
-      type.addAttribute(new baqend.metamodel.ListAttribute("list", metamodel.baseType('String')));
-      type.addAttribute(new baqend.metamodel.SetAttribute("set", metamodel.baseType('Integer')));
-      type.addAttribute(new baqend.metamodel.MapAttribute("map", metamodel.baseType('String'), type));
+      type.addAttribute(new DB.metamodel.SingularAttribute("name", metamodel.baseType(String)));
+      type.addAttribute(new DB.metamodel.SingularAttribute("ref", type));
+      type.addAttribute(new DB.metamodel.SingularAttribute("date", metamodel.baseType(Date)));
+      type.addAttribute(new DB.metamodel.ListAttribute("list", metamodel.baseType('String')));
+      type.addAttribute(new DB.metamodel.SetAttribute("set", metamodel.baseType('Integer')));
+      type.addAttribute(new DB.metamodel.MapAttribute("map", metamodel.baseType('String'), type));
 
-      childType.addAttribute(new baqend.metamodel.SingularAttribute("age", metamodel.baseType('Integer')));
+      childType.addAttribute(new DB.metamodel.SingularAttribute("age", metamodel.baseType('Integer')));
 
-      embeddedType.addAttribute(new baqend.metamodel.SingularAttribute("age", metamodel.baseType(Number)));
-      embeddedType.addAttribute(new baqend.metamodel.SingularAttribute("ref", type));
+      embeddedType.addAttribute(new DB.metamodel.SingularAttribute("age", metamodel.baseType(Number)));
+      embeddedType.addAttribute(new DB.metamodel.SingularAttribute("ref", type));
 
       return saveMetamodel(metamodel);
     });
@@ -499,7 +500,8 @@ describe('Test Metamodel', function() {
     });
 
     it('should be loadable', function() {
-      var model = new baqend.metamodel.Metamodel(baqend.connector.Connector.create(env.TEST_SERVER));
+      var model = new DB.metamodel.Metamodel();
+      model.connected(DB.connector.Connector.create(env.TEST_SERVER));
 
       return model.load().then(function() {
         var loadType = model.entity("jstest.Person");
@@ -515,9 +517,9 @@ describe('Test Metamodel', function() {
     });
 
     it('should be accessible via db', function() {
-      var emf = new baqend.EntityManagerFactory(env.TEST_SERVER);
+      var emf = new DB.EntityManagerFactory(env.TEST_SERVER);
 
-      return emf.createEntityManager().then(function(db) {
+      return emf.createEntityManager().ready().then(function(db) {
         var loadType = db.metamodel.entity("jstest.Person");
         var loadChildType = db.metamodel.entity("jstest.ChildPerson");
         var loadEmbeddedType = db.metamodel.embeddable("jstest.EmbeddedPerson");
@@ -533,66 +535,66 @@ describe('Test Metamodel', function() {
 
   function testLoadedTypes(loadType, loadChildType, loadEmbeddedType, metamodel) {
     expect(loadType).be.ok;
-    expect(loadType).instanceof(baqend.metamodel.EntityType);
+    expect(loadType).instanceof(DB.metamodel.EntityType);
     expect(loadType.ref).equals('/db/jstest.Person');
     expect(loadType.superType).equals(metamodel.entity(Object));
     expect(loadType.declaredAttributes).length(6);
 
     expect(loadChildType).be.ok;
-    expect(loadChildType).instanceof(baqend.metamodel.EntityType);
+    expect(loadChildType).instanceof(DB.metamodel.EntityType);
     expect(loadChildType.ref).equals('/db/jstest.ChildPerson');
     expect(loadChildType.superType).equals(loadType);
     expect(loadChildType.declaredAttributes).length(1);
 
     expect(loadEmbeddedType).be.ok;
-    expect(loadEmbeddedType).instanceof(baqend.metamodel.EmbeddableType);
+    expect(loadEmbeddedType).instanceof(DB.metamodel.EmbeddableType);
     expect(loadEmbeddedType.ref).equals('/db/jstest.EmbeddedPerson');
     expect(loadEmbeddedType.declaredAttributes).length(2);
 
-    expect(loadType.getDeclaredAttribute('name')).instanceof(baqend.metamodel.SingularAttribute);
+    expect(loadType.getDeclaredAttribute('name')).instanceof(DB.metamodel.SingularAttribute);
     expect(loadType.getDeclaredAttribute('name').declaringType).equals(loadType);
     expect(loadType.getDeclaredAttribute('name').name).equals('name');
     expect(loadType.getDeclaredAttribute('name').type).equals(metamodel.baseType(String));
 
-    expect(loadType.getDeclaredAttribute('ref')).instanceof(baqend.metamodel.SingularAttribute);
+    expect(loadType.getDeclaredAttribute('ref')).instanceof(DB.metamodel.SingularAttribute);
     expect(loadType.getDeclaredAttribute('ref').declaringType).equals(loadType);
     expect(loadType.getDeclaredAttribute('ref').name).equals('ref');
     expect(loadType.getDeclaredAttribute('ref').type).equals(loadType);
 
-    expect(loadType.getDeclaredAttribute('date')).instanceof(baqend.metamodel.SingularAttribute);
+    expect(loadType.getDeclaredAttribute('date')).instanceof(DB.metamodel.SingularAttribute);
     expect(loadType.getDeclaredAttribute('date').declaringType).equals(loadType);
     expect(loadType.getDeclaredAttribute('date').name).equals('date');
     expect(loadType.getDeclaredAttribute('date').type).equals(metamodel.baseType(Date));
 
-    expect(loadType.getDeclaredAttribute('list')).instanceof(baqend.metamodel.ListAttribute);
+    expect(loadType.getDeclaredAttribute('list')).instanceof(DB.metamodel.ListAttribute);
     expect(loadType.getDeclaredAttribute('list').declaringType).equals(loadType);
     expect(loadType.getDeclaredAttribute('list').name).equals('list');
     expect(loadType.getDeclaredAttribute('list').elementType).equals(metamodel.baseType('String'));
 
-    expect(loadType.getDeclaredAttribute('set')).instanceof(baqend.metamodel.SetAttribute);
+    expect(loadType.getDeclaredAttribute('set')).instanceof(DB.metamodel.SetAttribute);
     expect(loadType.getDeclaredAttribute('set').declaringType).equals(loadType);
     expect(loadType.getDeclaredAttribute('set').name).equals('set');
     expect(loadType.getDeclaredAttribute('set').elementType).equals(metamodel.baseType('Integer'));
 
-    expect(loadType.getDeclaredAttribute('map')).instanceof(baqend.metamodel.MapAttribute);
+    expect(loadType.getDeclaredAttribute('map')).instanceof(DB.metamodel.MapAttribute);
     expect(loadType.getDeclaredAttribute('map').declaringType).equals(loadType);
     expect(loadType.getDeclaredAttribute('map').name).equals('map');
     expect(loadType.getDeclaredAttribute('map').keyType).equals(metamodel.baseType('String'));
     expect(loadType.getDeclaredAttribute('map').elementType).equals(loadType);
 
 
-    expect(loadChildType.getDeclaredAttribute('age')).instanceof(baqend.metamodel.SingularAttribute);
+    expect(loadChildType.getDeclaredAttribute('age')).instanceof(DB.metamodel.SingularAttribute);
     expect(loadChildType.getDeclaredAttribute('age').declaringType).equals(loadChildType);
     expect(loadChildType.getDeclaredAttribute('age').name).equals('age');
     expect(loadChildType.getDeclaredAttribute('age').type).equals(metamodel.baseType('Integer'));
 
 
-    expect(loadEmbeddedType.getDeclaredAttribute('age')).instanceof(baqend.metamodel.SingularAttribute);
+    expect(loadEmbeddedType.getDeclaredAttribute('age')).instanceof(DB.metamodel.SingularAttribute);
     expect(loadEmbeddedType.getDeclaredAttribute('age').declaringType).equals(loadEmbeddedType);
     expect(loadEmbeddedType.getDeclaredAttribute('age').name).equals('age');
     expect(loadEmbeddedType.getDeclaredAttribute('age').type).equals(metamodel.baseType('Double'));
 
-    expect(loadEmbeddedType.getDeclaredAttribute('ref')).instanceof(baqend.metamodel.SingularAttribute);
+    expect(loadEmbeddedType.getDeclaredAttribute('ref')).instanceof(DB.metamodel.SingularAttribute);
     expect(loadEmbeddedType.getDeclaredAttribute('ref').declaringType).equals(loadEmbeddedType);
     expect(loadEmbeddedType.getDeclaredAttribute('ref').name).equals('ref');
     expect(loadEmbeddedType.getDeclaredAttribute('ref').type).equals(loadType);
@@ -605,7 +607,7 @@ describe('Test Metamodel', function() {
     var SchemaAclEmbeddedPersonName = randomize('SchemaAclEmbeddedPerson');
 
     function createUser(emf, username) {
-      return emf.createEntityManager().then(function(db) {
+      return emf.createEntityManager().ready().then(function(db) {
         return db.User.register(username, 'secret').then(function(user) {
           return db.User.logout().then(function() { return user });
         });
@@ -613,7 +615,7 @@ describe('Test Metamodel', function() {
     }
 
     before(function() {
-      var staticEmf = new baqend.EntityManagerFactory(env.TEST_SERVER);
+      var staticEmf = new DB.EntityManagerFactory(env.TEST_SERVER);
 
       return Promise.all([
         createUser(staticEmf, makeLogin()),
@@ -625,14 +627,14 @@ describe('Test Metamodel', function() {
         user3 = users[2];
 
         var metamodel = staticEmf.createMetamodel();
-        metamodel.init();
+        metamodel.init({});
 
         var type, embeddedType;
-        metamodel.addType(type = new baqend.metamodel.EntityType(SchemaAclPersonName, metamodel.entity(Object)));
-        metamodel.addType(embeddedType = new baqend.metamodel.EmbeddableType(SchemaAclEmbeddedPersonName));
+        metamodel.addType(type = new DB.metamodel.EntityType(SchemaAclPersonName, metamodel.entity(Object)));
+        metamodel.addType(embeddedType = new DB.metamodel.EmbeddableType(SchemaAclEmbeddedPersonName));
 
-        type.addAttribute(new baqend.metamodel.SingularAttribute("name", metamodel.baseType(String)));
-        embeddedType.addAttribute(new baqend.metamodel.SingularAttribute("name", metamodel.baseType(String)));
+        type.addAttribute(new DB.metamodel.SingularAttribute("name", metamodel.baseType(String)));
+        embeddedType.addAttribute(new DB.metamodel.SingularAttribute("name", metamodel.baseType(String)));
 
         type.createPermission.denyAccess(user2);
         type.updatePermission.denyAccess(user2).denyAccess(user3);
@@ -648,9 +650,9 @@ describe('Test Metamodel', function() {
 
         return saveMetamodel(metamodel);
       }).then(function() {
-        emf = new baqend.EntityManagerFactory(env.TEST_SERVER);
-        return emf.createEntityManager(db).then(function(em) {
-          db = em;
+        emf = new DB.EntityManagerFactory(env.TEST_SERVER);
+        return emf.metamodel.init().then(function() {
+          db = emf.createEntityManager(db);
           obj = db[SchemaAclPersonName]();
           return obj.insert();
         });
@@ -716,7 +718,7 @@ describe('Test Metamodel', function() {
         return metamodel.load(db.token).then(function() {
           var AclPerson = metamodel.entity(SchemaAclPersonName);
 
-          var child = new baqend.metamodel.EntityType(randomize("SchemaAclChildPerson"), AclPerson);
+          var child = new DB.metamodel.EntityType(randomize("SchemaAclChildPerson"), AclPerson);
           metamodel.addType(child);
 
           return expect(metamodel.save(child, false, db.token)).be.fulfilled;
@@ -782,7 +784,7 @@ describe('Test Metamodel', function() {
           var AclPerson = metamodel.entity(SchemaAclPersonName);
 
           var rnd = Math.floor(Math.random() * 1000000);
-          var child = new baqend.metamodel.EntityType("SchemaAclChildPerson" + rnd, AclPerson);
+          var child = new DB.metamodel.EntityType("SchemaAclChildPerson" + rnd, AclPerson);
           metamodel.addType(child);
 
           return expect(metamodel.save(child, false, db.token)).be.rejected;
@@ -851,7 +853,7 @@ describe('Test Metamodel', function() {
           var AclPerson = metamodel.entity(SchemaAclPersonName);
 
           var rnd = Math.floor(Math.random() * 1000000);
-          var child = new baqend.metamodel.EntityType("SchemaAclChildPerson" + rnd, AclPerson);
+          var child = new DB.metamodel.EntityType("SchemaAclChildPerson" + rnd, AclPerson);
           metamodel.addType(child);
 
           return expect(metamodel.save(child, false, db.token)).be.fulfilled;

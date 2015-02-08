@@ -1,24 +1,24 @@
-if (typeof baqend == 'undefined') {
+if (typeof DB == 'undefined') {
   env = require('./env');
   var chai = require("chai");
   var chaiAsPromised = require("chai-as-promised");
   chai.use(chaiAsPromised);
   chai.config.includeStack = true;
   expect = chai.expect;
-  baqend = require('../lib');
+  DB = require('../lib');
 }
 
 describe('Test Acl', function() {
 
   var db, emf;
   before(function() {
-    emf = new baqend.EntityManagerFactory(env.TEST_SERVER);
+    emf = new DB.EntityManagerFactory(env.TEST_SERVER);
     var metamodel = emf.metamodel;
     return metamodel.load().then(function() {
       if(!metamodel.managedType("AclPerson")) {
-        var AclPerson = new baqend.metamodel.EntityType("AclPerson", metamodel.entity(Object));
-        AclPerson.addAttribute(new baqend.metamodel.SingularAttribute("name", metamodel.baseType(String)));
-        AclPerson.addAttribute(new baqend.metamodel.SingularAttribute("age", metamodel.baseType(Number)));
+        var AclPerson = new DB.metamodel.EntityType("AclPerson", metamodel.entity(Object));
+        AclPerson.addAttribute(new DB.metamodel.SingularAttribute("name", metamodel.baseType(String)));
+        AclPerson.addAttribute(new DB.metamodel.SingularAttribute("age", metamodel.baseType(Number)));
         metamodel.addType(AclPerson);
         return saveMetamodel(metamodel, false);
       }
@@ -35,10 +35,9 @@ describe('Test Acl', function() {
   });
 
   function createUserDb() {
-    return emf.createEntityManager().then(function(em) {
-      return em.User.register(makeLogin(), 'secret').then(function() {
-        return em;
-      });
+    var em = emf.createEntityManager();
+    return em.User.register(makeLogin(), 'secret').then(function() {
+      return em;
     });
   }
 
