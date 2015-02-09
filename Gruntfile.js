@@ -17,8 +17,8 @@ module.exports = function (grunt) {
       options: {
         browserifyOptions: {
           builtins: [],
-          detectGlobals: false,
-          //insertGlobalVars: ['global'],
+          //detectGlobals: false,
+          insertGlobalVars: ['global'],
           standalone: "DB"
         }
       },
@@ -32,8 +32,8 @@ module.exports = function (grunt) {
           keepAlive: true,
           browserifyOptions: {
             builtins: [],
-            detectGlobals: false,
-            //insertGlobalVars: ['global'],
+            //detectGlobals: false,
+            insertGlobalVars: ['global'],
             standalone: "DB",
             debug: true
           }
