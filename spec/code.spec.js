@@ -163,7 +163,7 @@ describe('Test code', function() {
 
     it('should delete code', function() {
       return code.deleteCode(bucket, db.token).then(function() {
-        return expect(code.loadCode(bucket, db.token)).be.rejected;
+        return expect(code.loadCode(bucket, db.token)).become.null;
       });
     });
 

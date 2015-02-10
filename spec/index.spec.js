@@ -52,7 +52,7 @@ describe("Test Index", function() {
     }).then(function() {
       return meta.getIndexes(personType.name, db.token);
     }).then(function(indexes) {
-      expect(indexes).have.length(1);
+      expect(indexes).have.length(2);
       expect(indexes[0].isCompound).be.false;
       expect(indexes[0].keys[0].name).eqls(DB.metamodel.DbIndex.ASC);
     });
@@ -67,7 +67,7 @@ describe("Test Index", function() {
     }).then(function() {
       return meta.getIndexes(personType.name, db.token);
     }).then(function(indexes) {
-      expect(indexes).have.length(2);
+      expect(indexes).have.length(3);
     });
   });
 
@@ -80,14 +80,12 @@ describe("Test Index", function() {
     }).then(function() {
       return meta.getIndexes(personType.name, db.token);
     }).then(function(indexes) {
-      expect(indexes).have.length(2);
+      expect(indexes).have.length(3);
       return meta.dropAllIndexes(personType.name, db.token);
     }).then(function() {
       return delay(50);
     }).then(function() {
-      return meta.getIndexes(personType.name, db.token);
-    }).then(function(indexes) {
-      expect(indexes).be.empty;
+      return expect(meta.getIndexes(personType.name, db.token)).eventually.have.length(1);
     });
   });
 
@@ -101,9 +99,7 @@ describe("Test Index", function() {
     }).then(function() {
       return delay(50);
     }).then(function() {
-      return meta.getIndexes(personType.name, db.token);
-    }).then(function(indexes) {
-      expect(indexes).be.empty;
+      return expect(meta.getIndexes(personType.name, db.token)).eventually.have.length(1);
     });
   });
 
@@ -111,14 +107,14 @@ describe("Test Index", function() {
     var index = new DB.metamodel.DbIndex("name");
 
     return meta.getIndexes(personType.name, db.token).then(function(indexes) {
-      expect(indexes).be.empty;
+      expect(indexes).have.length(1);
       return meta.createIndex(personType.name, index, db.token);
     }).then(function() {
       return delay(50);
     }).then(function() {
       return meta.getIndexes(personType.name, db.token);
     }).then(function(indexes) {
-      expect(indexes).have.length(1);
+      expect(indexes).have.length(2);
     });
   });
 
@@ -137,7 +133,7 @@ describe("Test Index", function() {
     }).then(function() {
       return meta.getIndexes(personType.name, db.token);
     }).then(function(indexes) {
-      expect(indexes).have.length(1);
+      expect(indexes).have.length(2);
       expect(indexes[0].isCompound).be.true;
       expect(indexes[0].keys[0].name).eqls(DB.metamodel.DbIndex.ASC);
       expect(indexes[0].keys[1].age).eqls(DB.metamodel.DbIndex.DESC);
