@@ -347,7 +347,7 @@ describe('Test entity type', function () {
       var obj = EntityClass();
       obj[name] = undefined;
 
-      return obj.saveAndRefresh().then(function() {
+      return obj.save({refresh:true}).then(function() {
         expect(obj[name]).be.null;
       });
     });
@@ -356,7 +356,7 @@ describe('Test entity type', function () {
       var obj = EntityClass();
       obj[name] = null;
 
-      return obj.saveAndRefresh().then(function() {
+      return obj.save({refresh:true}).then(function() {
         expect(obj[name]).be.null;
       });
     });
@@ -369,7 +369,7 @@ describe('Test entity type', function () {
       it(value + " should be saved and refreshed", function() {
         obj[name] = value;
 
-        return obj.saveAndRefresh().then(function() {
+        return obj.save({refresh:true}).then(function() {
             expect(obj[name]).eql(expectedValue);
         });
       });

@@ -557,7 +557,7 @@ describe("Test Query", function() {
         birthplace: new DB.GeoPoint(29, 109)
       });
 
-      return Promise.all([p0.save(true), p1.save(true), p2.save(true), p3.save(true)])
+      return Promise.all([p0.save({force:true}), p1.save({force:true}), p2.save({force:true}), p3.save({force:true})])
     });
 
     it('should return all objects', function() {

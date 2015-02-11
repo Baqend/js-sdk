@@ -82,9 +82,6 @@ describe("Test db", function() {
       expect(testClass.save).be.ok;
       expect(testClass.insert).be.ok;
       expect(testClass.update).be.ok;
-      expect(testClass.saveAndRefresh).be.ok;
-      expect(testClass.insertAndRefresh).be.ok;
-      expect(testClass.updateAndRefresh).be.ok;
       expect(testClass.refresh).be.ok;
       expect(testClass.remove).be.ok;
       expect(testClass.attr).be.ok;
@@ -117,9 +114,6 @@ describe("Test db", function() {
       expect(testClass.save).be.undefined;
       expect(testClass.insert).be.undefined;
       expect(testClass.update).be.undefined;
-      expect(testClass.saveAndRefresh).be.undefined;
-      expect(testClass.insertAndRefresh).be.undefined;
-      expect(testClass.updateAndRefresh).be.undefined;
       expect(testClass.refresh).be.undefined;
       expect(testClass.remove).be.undefined;
       expect(testClass.attr).be.undefined;
@@ -183,9 +177,6 @@ describe("Test db", function() {
       expect(testClass.save).be.ok;
       expect(testClass.insert).be.ok;
       expect(testClass.update).be.ok;
-      expect(testClass.saveAndRefresh).be.ok;
-      expect(testClass.insertAndRefresh).be.ok;
-      expect(testClass.updateAndRefresh).be.ok;
       expect(testClass.refresh).be.ok;
       expect(testClass.remove).be.ok;
       expect(testClass.attr).be.ok;
@@ -226,9 +217,6 @@ describe("Test db", function() {
       expect(testClass.save).be.ok;
       expect(testClass.insert).be.ok;
       expect(testClass.update).be.ok;
-      expect(testClass.saveAndRefresh).be.ok;
-      expect(testClass.insertAndRefresh).be.ok;
-      expect(testClass.updateAndRefresh).be.ok;
       expect(testClass.refresh).be.ok;
       expect(testClass.remove).be.ok;
       expect(testClass.attr).be.ok;

@@ -167,7 +167,7 @@ describe('Test dao', function() {
     it('should save and refresh object', function() {
       var person = db.Person();
       person.name = "Old Name";
-      var promise = expect(person.saveAndRefresh()).eventually.have.property('name', 'Old Name');
+      var promise = expect(person.save({refresh:true})).eventually.have.property('name', 'Old Name');
       person.name = "New Name";
       return promise;
     });
@@ -218,7 +218,7 @@ describe('Test dao', function() {
         });
       }).then(function() {
         person.name = 'Alice Ford';
-        return person.save(true);
+        return person.save({force:true});
       }).then(function() {
         return db.Person.get(person._metadata.id).then(function(person2) {
           expect(person2.name).equals('Alice Ford');
@@ -245,7 +245,7 @@ describe('Test dao', function() {
         var newPerson = db.Person();
         newPerson.name = 'Peter Parker';
         newPerson._metadata.id = person._metadata.id;
-        return newPerson.save(true);
+        return newPerson.save({force:true});
       }).then(function() {
         return db.Person.get(person._metadata.id).then(function(person2) {
           expect(person2.name).equals('Peter Parker');
@@ -277,7 +277,7 @@ describe('Test dao', function() {
         });
       }).then(function() {
         person.name = 'Peter Parker';
-        return person.save(true);
+        return person.save({force:true});
       }).then(function() {
         return db.Person.get(person._metadata.id).then(function(person2) {
           expect(person2.name).equals('Peter Parker');
@@ -305,7 +305,7 @@ describe('Test dao', function() {
     it('should not save afterward changed values but refrehs it', function() {
       var person = db.Person();
       person.name = 'Old Name';
-      var promise = person.saveAndRefresh();
+      var promise = person.save({refresh:true});
       person.name = 'New Name';
       return promise.then(function() {
         expect(person._metadata.isDirty).be.false;
@@ -448,7 +448,7 @@ describe('Test dao', function() {
     });
 
     it('should be allowed to forcly remove an object without id', function() {
-      return expect(person.remove().then(function(per) { return per.remove(true) } )).be.fulfilled;
+      return expect(person.remove().then(function(per) { return per.remove({force:true}) } )).be.fulfilled;
     });
 
     it('should not be allowed to add removed objects with same id', function() {
@@ -484,7 +484,7 @@ describe('Test dao', function() {
         person2.name = "Foo Bar";
         return person2.save();
       }).then(function() {
-        return person.remove(true);
+        return person.remove({force:true});
       }).then(function() {
         return expect(db.Person.get(person._metadata.id)).become(null);
       });
@@ -521,7 +521,7 @@ describe('Test dao', function() {
 
     it('should update and refresh object', function() {
       person.name = 'New Name';
-      var promise = expect(person.updateAndRefresh()).eventually.have.property('name', 'New Name');
+      var promise = expect(person.update({refresh:true})).eventually.have.property('name', 'New Name');
       person.name = 'Newer Name';
 
       return promise;
@@ -553,7 +553,7 @@ describe('Test dao', function() {
         return person2.save();
       }).then(function() {
         person.name = "New Name";
-        return person.update(true);
+        return person.update({force:true});
       }).then(function() {
         return db.Person.get(person._metadata.id);
       }).then(function(loaded) {
@@ -582,7 +582,7 @@ describe('Test dao', function() {
     it('should insert and refresh object', function() {
       var person = db.Person();
       person.name = "Peter Insert";
-      var promise = expect(person.insertAndRefresh()).eventually.have.property('name', 'Peter Insert');
+      var promise = expect(person.insert({refresh:true})).eventually.have.property('name', 'Peter Insert');
       person.name = "New Peter Insert";
       return promise;
     });
@@ -673,7 +673,7 @@ describe('Test dao', function() {
 
     var child, father, mother, sister, street, address, sibs;
 
-    before(function() {
+    beforeEach(function() {
       child = db.Child();
       father = db.Person();
       mother = db.Person();
@@ -718,12 +718,8 @@ describe('Test dao', function() {
       child.mapSiblings.set(sibs[4], sibs[5]);
     });
 
-    after(function() {
-      return child.remove(true, true);
-    });
-
     it('should save and convert result to JSON', function() {
-      return child.save(false, true).then(function(saved) {
+      return child.save({depth:true}).then(function(saved) {
         var json = saved.toJSON();
         expect(json.aunt).eqls(mother._metadata.ref);
         expect(json.name).eqls(child.name);
@@ -731,7 +727,7 @@ describe('Test dao', function() {
     });
 
     it('should save and remove referenced objects by depth', function() {
-      return child.save(false, 2).then(function() {
+      return child.save({depth:2}).then(function() {
         var promises = [
           expect(db.Child.get(child._metadata.id)).not.become(null),
           expect(db.Person.get(mother._metadata.id)).not.become(null),
@@ -744,7 +740,7 @@ describe('Test dao', function() {
         });
         return Promise.all(promises);
       }).then(function() {
-        return child.remove(false, 2);
+        return child.remove({depth: 2});
       }).then(function(removed) {
         expect(removed).equals(child);
         var promises = [
@@ -762,7 +758,7 @@ describe('Test dao', function() {
     });
 
     it('should save and remove referenced objects by reachability', function() {
-      return child.save(false, true).then(function() {
+      return child.save({depth:true}).then(function() {
         var promises = [
           expect(db.Child.get(child._metadata.id)).not.become(null),
           expect(db.Person.get(mother._metadata.id)).not.become(null),
@@ -775,7 +771,7 @@ describe('Test dao', function() {
         });
         return Promise.all(promises);
       }).then(function() {
-        return child.remove(false, true);
+        return child.remove({depth:true});
       }).then(function(removed) {
         expect(removed).equals(child);
         var promises = [
@@ -794,7 +790,7 @@ describe('Test dao', function() {
 
     it('should get referenced objects by depth', function() {
       var db2;
-      return child.save(false, true).then(function(saved) {
+      return child.save({depth:true}).then(function(saved) {
         child = saved;
         return emf.createEntityManager();
       }).then(function(em) {
@@ -821,7 +817,7 @@ describe('Test dao', function() {
 
     it('should get referenced objects by reachability', function() {
       var db2;
-      return child.save(false, true).then(function(saved) {
+      return child.save({depth:true}).then(function(saved) {
         child = saved;
         return emf.createEntityManager();
       }).then(function(em) {
@@ -844,7 +840,7 @@ describe('Test dao', function() {
     });
 
     it('should not get all referenced objects', function() {
-      return child.save(false, true).then(function(saved) {
+      return child.save({depth:true}).then(function(saved) {
         child = saved;
         return emf.createEntityManager();
       }).then(function(em) {
@@ -858,8 +854,8 @@ describe('Test dao', function() {
     });
 
     it('should refresh all referenced objects by reachability', function() {
-      return child.save(false, true).then(function(saved) {
-        var promise = saved.refresh(true);
+      return child.save({depth:true}).then(function(saved) {
+        var promise = saved.refresh({depth:true});
         saved.father.sister.name = "New Name";
         saved.father.name = "New Name";
         return promise;
@@ -870,8 +866,8 @@ describe('Test dao', function() {
     });
 
     it('should refresh all referenced objects by depth', function() {
-      return child.save(false, 2).then(function(saved) {
-        var promise = saved.refresh(true);
+      return child.save({depth:2}).then(function(saved) {
+        var promise = saved.refresh({depth:true});
         saved.father.sister.name = "New Name";
         saved.father.name = "New Name";
         return promise;
@@ -882,8 +878,8 @@ describe('Test dao', function() {
     });
 
     it('should not refresh all referenced objects', function() {
-      return child.save(false, true).then(function(saved) {
-        var promise = saved.refresh(1);
+      return child.save({depth:true}).then(function(saved) {
+        var promise = saved.refresh({depth:1});
         saved.father.sister.name = "New Name";
         saved.father.name = "New Name";
         return promise;
@@ -894,7 +890,7 @@ describe('Test dao', function() {
     });
 
     it('should insert referenced objects by depth', function() {
-      return child.insert(false, 2).then(function() {
+      return child.insert({depth:2}).then(function() {
         return Promise.all([
           expect(db.Child.get(child._metadata.id)).not.become(null),
           expect(db.Person.get(mother._metadata.id)).not.become(null),
@@ -906,7 +902,7 @@ describe('Test dao', function() {
     });
 
     it('should insert referenced objects by reachability', function() {
-      return child.insert(false, true).then(function() {
+      return child.insert({depth:true}).then(function() {
         return Promise.all([
           expect(db.Child.get(child._metadata.id)).not.become(null),
           expect(db.Person.get(mother._metadata.id)).not.become(null),
@@ -918,10 +914,10 @@ describe('Test dao', function() {
     });
 
     it('should update all referenced objects by depth', function() {
-      return child.save(false, true).then(function(saved) {
+      return child.save({depth:true}).then(function(saved) {
         saved.father.sister.name = "New Name";
         saved.father.name = "New Name";
-        return saved.update(true, 2);
+        return saved.update({force:true, depth:2});
       }).then(function(loaded) {
         expect(loaded.father.sister.name).equals("New Name");
         expect(loaded.father.name).equals("New Name");
@@ -929,10 +925,10 @@ describe('Test dao', function() {
     });
 
     it('should update all referenced objects by reachability', function() {
-      return child.save(false, true).then(function(saved) {
+      return child.save({depth:true}).then(function(saved) {
         saved.father.sister.name = "New Name";
         saved.father.name = "New Name";
-        return saved.update(true, true);
+        return saved.update({force:true, depth:true});
       }).then(function(loaded) {
         expect(loaded.father.sister.name).equals("New Name");
         expect(loaded.father.name).equals("New Name");
@@ -940,10 +936,10 @@ describe('Test dao', function() {
     });
 
     it('should update and refresh all referenced objects by reachability', function() {
-      return child.save(false, true).then(function(saved) {
+      return child.save({depth:true}).then(function(saved) {
         saved.father.sister.name = "New Name";
         saved.father.name = "New Name";
-        var promise = saved.updateAndRefresh(true, true);
+        var promise = saved.update({refresh:true, force:true, depth: true});
         saved.father.sister.name = "Newer Name";
         saved.father.name = "Newer Name";
         return promise;
@@ -999,7 +995,7 @@ describe('Test dao', function() {
       person.child.name = "Custom Child Person";
       person.child.id = childId;
 
-      return person.saveAndRefresh(false, true, function(result) {
+      return person.save({refresh:true, depth: true}, function(result) {
         expect(person.id).equals(myId);
         expect(person.name).equals("Custom Person");
         expect(person.child.id).equals(childId);
