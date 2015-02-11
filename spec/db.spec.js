@@ -8,40 +8,38 @@ if (typeof DB == 'undefined') {
 }
 
 describe("Test db", function() {
-  var db;
-
-  beforeEach(function() {
-    var model = [
-      {
-        "class": "/db/TestClass",
-        "fields": {
-          "testValue": {
-            "name": "testValue",
-            "type": "/db/Integer"
-          }
-        }
-      },
-      {
-        "class": "/db/test.NsClass",
-        "fields": {
-          "value": {
-            "name": "value",
-            "type": "/db/Integer"
-          }
-        }
-      },
-      {
-        "class": "/db/TestEmbeddedClass",
-        "embedded": true,
-        "fields": {
-          "value": {
-            "name": "value",
-            "type": "/db/Integer"
-          }
+  var db, model = [
+    {
+      "class": "/db/TestClass",
+      "fields": {
+        "testValue": {
+          "name": "testValue",
+          "type": "/db/Integer"
         }
       }
-    ];
+    },
+    {
+      "class": "/db/test.NsClass",
+      "fields": {
+        "value": {
+          "name": "value",
+          "type": "/db/Integer"
+        }
+      }
+    },
+    {
+      "class": "/db/TestEmbeddedClass",
+      "embedded": true,
+      "fields": {
+        "value": {
+          "name": "value",
+          "type": "/db/Integer"
+        }
+      }
+    }
+  ];
 
+  beforeEach(function() {
     var emf = new DB.EntityManagerFactory({host: env.TEST_SERVER, schema: model});
     return saveMetamodel(emf.metamodel).then(function() {
       db = emf.createEntityManager();
@@ -243,6 +241,27 @@ describe("Test db", function() {
 
       expect(function() {db.TestClass = function() {}}).throw(Error);
     });
+
+    it('should allow adding classes before initialization', function() {
+      var emf = new DB.EntityManagerFactory({schema: model});
+
+      var db = emf.createEntityManager();
+      db.TestClass = function(a,b,c) {
+        this.a = a;
+        this.b = b;
+        this.c = c;
+      };
+
+      expect(db.isReady).be.false;
+      emf.connect(env.TEST_SERVER);
+
+      return db.ready().then(function() {
+        var testClass = db.TestClass(1,2,3);
+        expect(testClass.a).equals(1);
+        expect(testClass.b).equals(2);
+        expect(testClass.c).equals(3);
+      });
+    })
   });
 
   describe('Test dao methods', function() {

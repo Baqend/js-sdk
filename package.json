@@ -1,15 +1,15 @@
 {
   "name": "baqend",
   "version": "0.0.1",
-  "description": "A JavaScript JPA implementation for the Orestes-Server",
+  "description": "The Baqend JavaScript SDK",
   "author": {
     "name": "Baqend.com",
-    "email": "alle@baqend.com"
+    "email": "info@baqend.com"
   },
   "homepage": "http://baqend.com",
   "main": "lib/index.js",
   "dependencies": {
-    "jahcode": ">=1.1.0",
+    "jahcode": "^1.1.5",
     "lie": "^2.8.0",
     "node-uuid": "git+https://github.com/broofa/node-uuid",
     "validator": "^3.22.0"
@@ -28,7 +28,6 @@
     "grunt-mocha-test": "^0.11.0",
     "grunt-run": "^0.2.2",
     "grunt-template": "^0.2.3",
-    "jahcode": "^1.1.5",
     "jquery": "^2.1.1",
     "karma": "*",
     "karma-chai": "^0.1.0",
