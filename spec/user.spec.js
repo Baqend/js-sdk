@@ -160,7 +160,7 @@ describe('Test user and roles', function() {
       var oldToken;
       return db.register(login, 'secret').then(function() {
         return new Promise(function(resolve) {
-          setTimeout(resolve, 1100);
+          setTimeout(resolve, 1500);
         });
       }).then(function() {
         expect(db.token).be.ok;
