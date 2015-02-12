@@ -1,6 +1,8 @@
 module.exports = function (grunt) {
-
   'use strict';
+
+  var banner = '/*! <%= pkg.name %> <%= pkg.version %> | <%= copyright %> | <%= pkg.license %> */\n';
+  var longBanner = grunt.file.read('tpl/banner.tpl');
 
   // redirect mocha node tests to the given xml
   // @see https://github.com/peerigon/xunit-file/blob/master/lib/xunit-file.js
@@ -9,6 +11,10 @@ module.exports = function (grunt) {
   var TEST = 'spec/{env.js,spec.helper.js,**/*.spec.js}';
 
   grunt.initConfig({
+    pkg: grunt.file.readJSON('package.json'),
+    copyright: grunt.file.read('LICENSE.md').split(/[\r\n]/)[0],
+    date: new Date().toUTCString(),
+
     /**
      * Building
      * ========
@@ -20,7 +26,8 @@ module.exports = function (grunt) {
           //detectGlobals: false,
           insertGlobalVars: ['global'],
           standalone: "DB"
-        }
+        },
+        banner: longBanner
       },
 
       debug: {
@@ -36,7 +43,8 @@ module.exports = function (grunt) {
             insertGlobalVars: ['global'],
             standalone: "DB",
             debug: true
-          }
+          },
+          banner: longBanner
         }
       },
 
@@ -138,7 +146,9 @@ module.exports = function (grunt) {
     uglify: {
       options: {
         preserveComments: false,
-        banner: ''
+        banner: banner,
+        mangle: true,
+        compress: true
       },
 
       dist: {
