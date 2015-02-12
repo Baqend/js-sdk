@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: binding/Entity.js</title>
+    
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+    
+    <h1 class="page-title">Source: binding/Entity.js</h1>
+    
+    
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source"><code>var Managed = require('./Managed');
+var Lockable = require('../util/Lockable');
+
+/**
+ * @mixin baqend.binding.Entity
+ * @extends baqend.binding.Managed
+ * @extends baqend.util.Lockable
+ */
+var Entity = module.exports = Managed.inherit(Lockable, /** @lends baqend.binding.Entity.prototype */ {
+
+  /**
+   * Gets the unique id of this object
+   * @return {*} The unique id
+   */
+  get id() {
+    return this._metadata.id;
+  },
+
+  /**
+   * Sets the id of this object, if it is not already set throws an error otherwise
+   * @param {String} value The new unique id of the object
+   */
+  set id(value) {
+    if (this._metadata.id)
+      throw new Error('Id can\'t be set twice.');
+
+    this._metadata.id = value;
+  },
+
+  /**
+   * Gets the version of this object
+   * @return {*} The version of the object
+   */
+  get version() {
+    return this._metadata.version;
+  },
+
+  /**
+   * Sets the version of this object
+   * @param {String} value The version of the object
+   */
+  set version(value) {
+    this._metadata.version = value;
+  },
+
+  /**
+   * The object read/write permissions
+   * @type baqend.Acl
+   */
+  get acl() {
+    return this._metadata.acl;
+  },
+
+  /**
+   * Attach this object to the given db
+   * @param {baqend.EntityManager} db The db which will be used for future crud operations
+   */
+  attach: function(db) {
+    db.attach(this);
+  },
+
+  /**
+   * Saves the object. Inserts the object if it doesn't exists and updates the object if the object exist.
+   * @param {Object} [options] The save options
+   * @param {Boolean} [options.force=false] Force the save operation, the version will not be validated.
+   * @param {Number|Boolean} [options.depth=0] The object depth which will be saved. Depth 0 save this object only,
+   * &lt;code>true&lt;/code> saves the objects by reachability.
+   * @param {Boolean} [options.refresh=false] Refresh the local object state with the remote state.
+   * @param {baqend.binding.Entity~doneCallback=} doneCallback Called when the operation succeed.
+   * @param {baqend.binding.Entity~failCallback=} failCallback Called when the operation failed.
+   * @return {Promise&lt;baqend.binding.Entity>} A Promise that will be fulfilled when the asynchronous operation completes.
+   */
+  save: function(options, doneCallback, failCallback) {
+    if (Function.isInstance(options)) {
+      failCallback = doneCallback;
+      doneCallback = options;
+      options = {};
+    }
+
+    return this._metadata.db.save(this, options).then(doneCallback, failCallback);
+  },
+
+  /**
+   * Inserts a new object. Inserts the object if it doesn't exists and raise an error if the object already exist.
+   * @param {Object} [options] The insertion options
+   * @param {Number|Boolean} [options.depth=0] The object depth which will be inserted. Depth 0 insert this object only,
+   * &lt;code>true&lt;/code> inserts objects by reachability.
+   * @param {Boolean} [options.refresh=false] Refresh the local object state with the remote state.
+   * @param {baqend.binding.Entity~doneCallback=} doneCallback Called when the operation succeed.
+   * @param {baqend.binding.Entity~failCallback=} failCallback Called when the operation failed.
+   * @return {Promise&lt;baqend.binding.Entity>} A Promise that will be fulfilled when the asynchronous operation completes.
+   */
+  insert: function(options, doneCallback, failCallback) {
+    if (Function.isInstance(options)) {
+      failCallback = doneCallback;
+      doneCallback = options;
+      options = {};
+    }
+
+    return this._metadata.db.insert(this, options).then(doneCallback, failCallback);
+  },
+
+  /**
+   * Updates an existing object.
+   * Updates the object if it exists and raise an error if the object doesn't exist.
+   * @param {Object} [options] The update options
+   * @param {Boolean} [options.force=false] Force the update operation, the version will not be validated, only existence will be checked.
+   * @param {Number|Boolean} [options.depth=0] The object depth which will be updated. Depth 0 updates this object only,
+   * &lt;code>true&lt;/code> updates objects by reachability.
+   * @param {Boolean} [options.refresh=false] Refresh the local object state with the remote state.
+   * @param {baqend.binding.Entity~doneCallback=} doneCallback Called when the operation succeed.
+   * @param {baqend.binding.Entity~failCallback=} failCallback Called when the operation failed.
+   * @return {Promise&lt;baqend.binding.Entity>} A Promise that will be fulfilled when the asynchronous operation completes.
+   */
+  update: function(options, doneCallback, failCallback) {
+    if (Function.isInstance(options)) {
+      failCallback = doneCallback;
+      doneCallback = options;
+      options = {};
+    }
+
+    return this._metadata.db.update(this, options).then(doneCallback, failCallback);;
+  },
+
+  /**
+   * Refresh the local object state, with the server state.
+   * Removed objects will be marked as removed.
+   * @param {Object} [options] The refresh options
+   * @param {Number|Boolean} [options.depth=0] The object depth which will be refreshed. Depth 0 refreshes this object only,
+   * &lt;code>true&lt;/code> refreshes objects by reachability.
+   * @param {baqend.binding.Entity~doneCallback=} doneCallback Called when the operation succeed.
+   * @param {baqend.binding.Entity~failCallback=} failCallback Called when the operation failed.
+   * @return {Promise&lt;baqend.binding.Entity>} A Promise that will be fulfilled when the asynchronous operation completes.
+   */
+  refresh: function(options, doneCallback, failCallback) {
+    if (Function.isInstance(options)) {
+      failCallback = doneCallback;
+      doneCallback = options;
+      options = {};
+    }
+
+    return this._metadata.db.refresh(this, options).then(doneCallback, failCallback);
+  },
+
+  /**
+   * Remove an existing object.
+   * @param {Object} [options] The remove options
+   * @param {Boolean} [options.force=false] Force the remove operation, the version will not be validated.
+   * @param {Number|Boolean} [options.depth=0] The object depth which will be removed. Depth 0 removes this object only,
+   * &lt;code>true&lt;/code> removes objects by reachability.
+   * @param {baqend.binding.Entity~doneCallback=} doneCallback Called when the operation succeed.
+   * @param {baqend.binding.Entity~failCallback=} failCallback Called when the operation failed.
+   * @return {Promise&lt;baqend.binding.Entity>} A Promise that will be fulfilled when the asynchronous operation completes.
+   */
+  remove: function(options, doneCallback, failCallback) {
+    if (Function.isInstance(options)) {
+      failCallback = doneCallback;
+      doneCallback = options;
+      options = {};
+    }
+
+    return this._metadata.db.remove(this, options).then(doneCallback, failCallback);
+  },
+
+  attr: function() {
+    throw new Error("Attr is not yet implemented.");
+  },
+
+  /**
+   * Validates the entity by using the validation code of the entity type
+   *
+   * @returns {baqend.util.ValidationResult} Contains the result of the Validation
+   */
+  validate: function() {
+    return this._metadata.db.validate(this);
+  },
+
+  /**
+   * Converts the entity to an JSON-Object.
+   * @param {Boolean} includeObjectInfo
+   * @return {Object} JSON-Object
+   */
+  toJSON: function(includeObjectInfo) {
+    return this._metadata.getDatabaseObject(!includeObjectInfo, !includeObjectInfo);
+  }
+});
+
+/**
+ * The done callback is called, when the asynchronous operation completes successfully
+ * @callback baqend.binding.Entity~doneCallback
+ * @param {baqend.binding.Entity} entity This entity
+ * @return {Promise&lt;*>|*|undefined} A Promise, result or undefined
+ */
+
+/**
+ * The fail callback is called, when the asynchronous operation is rejected by an error
+ * @callback baqend.binding.Entity~failCallback
+ * @param {baqend.error.PersistentError} error The error which reject the operation
+ * @return {Promise&lt;*>|*|undefined} A Promise, result or undefined
+ */
+
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Index</a></h2><h3>Classes</h3><ul><li><a href="baqend.Acl.html">Acl</a></li><li><a href="baqend.binding.Accessor.html">Accessor</a></li><li><a href="baqend.binding.Enhancer.html">Enhancer</a></li><li><a href="baqend.binding.EntityFactory.html">EntityFactory</a></li><li><a href="baqend.binding.ManagedFactory.html">ManagedFactory</a></li><li><a href="baqend.binding.UserFactory.html">UserFactory</a></li><li><a href="baqend.Collection.html">Collection</a></li><li><a href="baqend.connector.Connector.html">Connector</a></li><li><a href="baqend.connector.IFrameConnector.html">IFrameConnector</a></li><li><a href="baqend.connector.Message.html">Message</a></li><li><a href="baqend.connector.NodeConnector.html">NodeConnector</a></li><li><a href="baqend.connector.XMLHttpConnector.html">XMLHttpConnector</a></li><li><a href="baqend.EntityManager.html">EntityManager</a></li><li><a href="baqend.EntityManagerFactory.html">EntityManagerFactory</a></li><li><a href="baqend.EntityTransaction.html">EntityTransaction</a></li><li><a href="baqend.error.CommunicationError.html">CommunicationError</a></li><li><a href="baqend.error.EntityExistsError.html">EntityExistsError</a></li><li><a href="baqend.error.EntityNotFoundError.html">EntityNotFoundError</a></li><li><a href="baqend.error.IllegalEntityError.html">IllegalEntityError</a></li><li><a href="baqend.error.PersistentError.html">PersistentError</a></li><li><a href="baqend.error.RollbackError.html">RollbackError</a></li><li><a href="baqend.GeoPoint.html">GeoPoint</a></li><li><a href="baqend.IndexIterator.html">IndexIterator</a></li><li><a href="baqend.List.html">List</a></li><li><a href="baqend.Map.html">Map</a></li><li><a href="baqend.Map.Iterator.html">Iterator</a></li><li><a href="baqend.message.AbortTransaction.html">AbortTransaction</a></li><li><a href="baqend.message.AdhocCountQuery.html">AdhocCountQuery</a></li><li><a href="baqend.message.AdhocQuery.html">AdhocQuery</a></li><li><a href="baqend.message.AdhocQueryIds.html">AdhocQueryIds</a></li><li><a href="baqend.message.ApiVersion.html">ApiVersion</a></li><li><a href="baqend.message.CallBaqendCode.html">CallBaqendCode</a></li><li><a href="baqend.message.CommitTransaction.html">CommitTransaction</a></li><li><a href="baqend.message.Connect.html">Connect</a></li><li><a href="baqend.message.Create.html">Create</a></li><li><a href="baqend.message.CreateDropIndex.html">CreateDropIndex</a></li><li><a href="baqend.message.CreateObject.html">CreateObject</a></li><li><a href="baqend.message.CreateQuery.html">CreateQuery</a></li><li><a href="baqend.message.DeleteAllSchemas.html">DeleteAllSchemas</a></li><li><a href="baqend.message.DeleteBaqendCode.html">DeleteBaqendCode</a></li><li><a href="baqend.message.DeleteBaqendHandler.html">DeleteBaqendHandler</a></li><li><a href="baqend.message.DeleteFile.html">DeleteFile</a></li><li><a href="baqend.message.DeleteObject.html">DeleteObject</a></li><li><a href="baqend.message.DeleteSchema.html">DeleteSchema</a></li><li><a href="baqend.message.DropAllIndexes.html">DropAllIndexes</a></li><li><a href="baqend.message.GetActiveTransactions.html">GetActiveTransactions</a></li><li><a href="baqend.message.GetAllCodeResources.html">GetAllCodeResources</a></li><li><a href="baqend.message.GetAllSchemas.html">GetAllSchemas</a></li><li><a href="baqend.message.GetBaqendCode.html">GetBaqendCode</a></li><li><a href="baqend.message.GetBaqendHandler.html">GetBaqendHandler</a></li><li><a href="baqend.message.GetBloomFilter.html">GetBloomFilter</a></li><li><a href="baqend.message.GetBucketNames.html">GetBucketNames</a></li><li><a href="baqend.message.GetBucketOids.html">GetBucketOids</a></li><li><a href="baqend.message.GetFile.html">GetFile</a></li><li><a href="baqend.message.GetObject.html">GetObject</a></li><li><a href="baqend.message.GetOrestesConfig.html">GetOrestesConfig</a></li><li><a href="baqend.message.GetQueryCode.html">GetQueryCode</a></li><li><a href="baqend.message.GetQueryParameters.html">GetQueryParameters</a></li><li><a href="baqend.message.GetSchema.html">GetSchema</a></li><li><a href="baqend.message.GetTransactionChangeset.html">GetTransactionChangeset</a></li><li><a href="baqend.message.GetTransactionStateObject.html">GetTransactionStateObject</a></li><li><a href="baqend.message.ListAllApis.html">ListAllApis</a></li><li><a href="baqend.message.ListAllResources.html">ListAllResources</a></li><li><a href="baqend.message.ListApiSpecification.html">ListApiSpecification</a></li><li><a href="baqend.message.ListBucketSubresurces.html">ListBucketSubresurces</a></li><li><a href="baqend.message.ListDbResources.html">ListDbResources</a></li><li><a href="baqend.message.ListIndexes.html">ListIndexes</a></li><li><a href="baqend.message.ListQueryResources.html">ListQueryResources</a></li><li><a href="baqend.message.ListReplicationResources.html">ListReplicationResources</a></li><li><a href="baqend.message.ListThisQueryResources.html">ListThisQueryResources</a></li><li><a href="baqend.message.ListTransactionalSubresurces.html">ListTransactionalSubresurces</a></li><li><a href="baqend.message.ListTransactionBucketResources.html">ListTransactionBucketResources</a></li><li><a href="baqend.message.ListTransactionResources.html">ListTransactionResources</a></li><li><a href="baqend.message.Login.html">Login</a></li><li><a href="baqend.message.Logout.html">Logout</a></li><li><a href="baqend.message.Me.html">Me</a></li><li><a href="baqend.message.NewTransaction.html">NewTransaction</a></li><li><a href="baqend.message.QueryTransactional.html">QueryTransactional</a></li><li><a href="baqend.message.Register.html">Register</a></li><li><a href="baqend.message.ReplaceAllSchemas.html">ReplaceAllSchemas</a></li><li><a href="baqend.message.ReplaceFile.html">ReplaceFile</a></li><li><a href="baqend.message.ReplaceObject.html">ReplaceObject</a></li><li><a href="baqend.message.ReplaceSchema.html">ReplaceSchema</a></li><li><a href="baqend.message.RunQuery.html">RunQuery</a></li><li><a href="baqend.message.RunQueryTransactional.html">RunQueryTransactional</a></li><li><a href="baqend.message.SetBaqendCode.html">SetBaqendCode</a></li><li><a href="baqend.message.SetBaqendHandler.html">SetBaqendHandler</a></li><li><a href="baqend.message.UpdateAllSchemas.html">UpdateAllSchemas</a></li><li><a href="baqend.message.UpdateField.html">UpdateField</a></li><li><a href="baqend.message.UpdateOrestesConfig.html">UpdateOrestesConfig</a></li><li><a href="baqend.message.UpdatePartially.html">UpdatePartially</a></li><li><a href="baqend.message.UpdateSchema.html">UpdateSchema</a></li><li><a href="baqend.message.ValidateUser.html">ValidateUser</a></li><li><a href="baqend.metamodel.Attribute.html">Attribute</a></li><li><a href="baqend.metamodel.BasicType.html">BasicType</a></li><li><a href="baqend.metamodel.CollectionAttribute.html">CollectionAttribute</a></li><li><a href="baqend.metamodel.DbIndex.html">DbIndex</a></li><li><a href="baqend.metamodel.EmbeddableType.html">EmbeddableType</a></li><li><a href="baqend.metamodel.EntityType.html">EntityType</a></li><li><a href="baqend.metamodel.EntityType.Object.html">Object</a></li><li><a href="baqend.metamodel.ListAttribute.html">ListAttribute</a></li><li><a href="baqend.metamodel.ManagedType.html">ManagedType</a></li><li><a href="baqend.metamodel.MapAttribute.html">MapAttribute</a></li><li><a href="baqend.metamodel.Metamodel.html">Metamodel</a></li><li><a href="baqend.metamodel.ModelBuilder.html">ModelBuilder</a></li><li><a href="baqend.metamodel.PluralAttribute.html">PluralAttribute</a></li><li><a href="baqend.metamodel.SetAttribute.html">SetAttribute</a></li><li><a href="baqend.metamodel.SingularAttribute.html">SingularAttribute</a></li><li><a href="baqend.metamodel.Type.html">Type</a></li><li><a href="baqend.PropertyIterator.html">PropertyIterator</a></li><li><a href="baqend.Query.html">Query</a></li><li><a href="baqend.Query.Builder.html">Builder</a></li><li><a href="baqend.Query.Condition.html">Condition</a></li><li><a href="baqend.Query.Filter.html">Filter</a></li><li><a href="baqend.Query.Node.html">Node</a></li><li><a href="baqend.Query.Operator.html">Operator</a></li><li><a href="baqend.Set.html">Set</a></li><li><a href="baqend.TypedQuery.html">TypedQuery</a></li><li><a href="baqend.util.Metadata.html">Metadata</a></li><li><a href="baqend.util.Permission.html">Permission</a></li><li><a href="baqend.util.ValidationResult.html">ValidationResult</a></li><li><a href="baqend.util.Validator.html">Validator</a></li></ul><h3>Namespaces</h3><ul><li><a href="baqend.html">baqend</a></li><li><a href="baqend.util.html">util</a></li></ul><h3>Mixins</h3><ul><li><a href="baqend.binding.Entity.html">Entity</a></li><li><a href="baqend.binding.Managed.html">Managed</a></li><li><a href="baqend.binding.Role.html">Role</a></li><li><a href="baqend.binding.User.html">User</a></li><li><a href="baqend.Iterable.html">Iterable</a></li><li><a href="baqend.Iterator.html">Iterator</a></li><li><a href="baqend.util.Lockable.html">Lockable</a></li></ul><h3>Global</h3><ul><li><a href="global.html#names">names</a></li><li><a href="global.html#next">next</a></li></ul>
+</nav>
+
+<br clear="both">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.2.2</a> on Thu Feb 12 2015 18:49:46 GMT+0100 (MEZ)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>
