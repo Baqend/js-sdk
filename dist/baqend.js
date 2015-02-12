@@ -1,5 +1,5 @@
 /*!
-* The Baqend JavaScript SDK 0.9.1-SNAPSHOT
+* The Baqend JavaScript SDK 0.9.0-Test.5
 * http://baqend.com
 *
 * Copyright (c) 2015 Baqend GmbH
@@ -19,7 +19,7 @@
 *
 * Released under the MIT license
 *
-* Date: Thu, 12 Feb 2015 17:49:38 GMT
+* Date: Thu, 12 Feb 2015 18:06:05 GMT
 */
 !function(e){if("object"==typeof exports&&"undefined"!=typeof module)module.exports=e();else if("function"==typeof define&&define.amd)define([],e);else{var f;"undefined"!=typeof window?f=window:"undefined"!=typeof global?f=global:"undefined"!=typeof self&&(f=self),f.DB=e()}}(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
 var uuid = require('node-uuid');
@@ -8934,7 +8934,7 @@ function Promise(resolver) {
     return new Promise(resolver);
   }
   if (typeof resolver !== 'function') {
-    throw new TypeError('reslover must be a function');
+    throw new TypeError('resolver must be a function');
   }
   this.state = states.PENDING;
   this.queue = [];
@@ -9570,9 +9570,13 @@ exports.install = function (t) {
 
     'use strict';
 
-    validator = { version: '3.24.0' };
+    validator = { version: '3.30.0' };
 
-    var email = /^((([a-z]|\d|[!#\$%&'\*\+\-\/=\?\^_`{\|}~]|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])+(\.([a-z]|\d|[!#\$%&'\*\+\-\/=\?\^_`{\|}~]|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])+)*)|((\x22)((((\x20|\x09)*(\x0d\x0a))?(\x20|\x09)+)?(([\x01-\x08\x0b\x0c\x0e-\x1f\x7f]|\x21|[\x23-\x5b]|[\x5d-\x7e]|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(\\([\x01-\x09\x0b\x0c\x0d-\x7f]|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF]))))*(((\x20|\x09)*(\x0d\x0a))?(\x20|\x09)+)?(\x22)))@((([a-z]|\d|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(([a-z]|\d|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])([a-z]|\d|-|\.|_|~|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])*([a-z]|\d|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])))\.)+(([a-z]|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(([a-z]|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])([a-z]|\d|-|\.|_|~|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])*([a-z]|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])))$/i;
+    var emailAddress = /((([a-z]|\d|[!#\$%&'\*\+\-\/=\?\^_`{\|}~]|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])+(\.([a-z]|\d|[!#\$%&'\*\+\-\/=\?\^_`{\|}~]|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])+)*)|((\x22)((((\x20|\x09)*(\x0d\x0a))?(\x20|\x09)+)?(([\x01-\x08\x0b\x0c\x0e-\x1f\x7f]|\x21|[\x23-\x5b]|[\x5d-\x7e]|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(\\([\x01-\x09\x0b\x0c\x0d-\x7f]|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF]))))*(((\x20|\x09)*(\x0d\x0a))?(\x20|\x09)+)?(\x22)))@((([a-z]|\d|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(([a-z]|\d|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])([a-z]|\d|-|\.|_|~|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])*([a-z]|\d|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])))\.)+(([a-z]|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(([a-z]|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])([a-z]|\d|-|\.|_|~|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])*([a-z]|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])))/;
+    var displayName = /([a-z]|\d|[!#\$%&'\*\+\-\/=\?\^_`{\|}~\.]|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])+([a-z]|\d|[!#\$%&'\*\+\-\/=\?\^_`{\|}~\.]|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF]|\s)*/;
+
+    var email = new RegExp('^' + emailAddress.source + '$', 'i');
+    var emailWithDisplayName = new RegExp('^' + displayName.source + '<' + emailAddress.source + '>$', 'i');
 
     var creditCard = /^(?:4[0-9]{12}(?:[0-9]{3})?|5[1-5][0-9]{14}|6(?:011|5[0-9][0-9])[0-9]{12}|3[47][0-9]{13}|3(?:0[0-5]|[68][0-9])[0-9]{11}|(?:2131|1800|35\d{3})\d{11})$/;
 
@@ -9591,9 +9595,9 @@ exports.install = function (t) {
 
     var alpha = /^[a-zA-Z]+$/
       , alphanumeric = /^[a-zA-Z0-9]+$/
-      , numeric = /^-?[0-9]+$/
-      , int = /^(?:-?(?:0|[1-9][0-9]*))$/
-      , float = /^(?:-?(?:[0-9]+))?(?:\.[0-9]*)?(?:[eE][\+\-]?(?:[0-9]+))?$/
+      , numeric = /^[-+]?[0-9]+$/
+      , int = /^(?:[-+]?(?:0|[1-9][0-9]*))$/
+      , float = /^(?:[-+]?(?:[0-9]+))?(?:\.[0-9]*)?(?:[eE][\+\-]?(?:[0-9]+))?$/
       , hexadecimal = /^[0-9a-fA-F]+$/
       , hexcolor = /^#?([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/;
 
@@ -9605,6 +9609,14 @@ exports.install = function (t) {
     var surrogatePair = /[\uD800-\uDBFF][\uDC00-\uDFFF]/;
 
     var base64 = /^(?:[A-Za-z0-9+\/]{4})*(?:[A-Za-z0-9+\/]{2}==|[A-Za-z0-9+\/]{3}=|[A-Za-z0-9+\/]{4})$/;
+
+    var phones = {
+      'zh-CN': /^(\+?0?86\-?)?1[345789]\d{9}$/,
+      'en-ZA': /^(\+?27|0)\d{9}$/,
+      'en-AU': /^(\+?61|0)4\d{8}/,
+      'fr-FR': /^(\+?33|0)[67]\d{8}$/,
+      'pt-PT': /^(\+351)?9[1236]\d{7}$/
+    };
 
     validator.extend = function (name, fn) {
         validator[name] = function () {
@@ -9675,8 +9687,14 @@ exports.install = function (t) {
         return pattern.test(str);
     };
 
-    validator.isEmail = function (str) {
-        return email.test(str);
+    var default_email_options = {
+        allow_display_name: false
+    };
+
+    validator.isEmail = function (str, options) {
+        options = merge(options, default_email_options);
+
+        return email.test(str) || (options.allow_display_name === true && emailWithDisplayName.test(str));
     };
 
     var default_url_options = {
@@ -9684,6 +9702,7 @@ exports.install = function (t) {
       , require_tld: true
       , require_protocol: false
       , allow_underscores: false
+      , allow_trailing_dot: false
     };
 
     validator.isURL = function (url, options) {
@@ -9783,14 +9802,20 @@ exports.install = function (t) {
     var default_fqdn_options = {
         require_tld: true
       , allow_underscores: false
+      , allow_trailing_dot: false
     };
 
     validator.isFQDN = function (str, options) {
         options = merge(options, default_fqdn_options);
+
+        /* Remove the optional trailing dot before checking validity */
+        if (options.allow_trailing_dot && str[str.length - 1] === '.') {
+            str = str.substring(0, str.length - 1);
+        }
         var parts = str.split('.');
         if (options.require_tld) {
             var tld = parts.pop();
-            if (!parts.length || !/^[a-z]{2,}$/i.test(tld)) {
+            if (!parts.length || !/^([a-z\u00a1-\uffff]{2,}|xn[a-z0-9-]{2,})$/i.test(tld)) {
                 return false;
             }
         }
@@ -9965,6 +9990,13 @@ exports.install = function (t) {
         return false;
     };
 
+    validator.isMobilePhone = function(str, locale) {
+        if (locale in phones) {
+            return phones[locale].test(str);
+        }
+        return false;
+    };
+
     validator.isJSON = function (str) {
         try {
             JSON.parse(str);
@@ -10031,7 +10063,7 @@ exports.install = function (t) {
     };
 
     validator.stripLow = function (str, keep_new_lines) {
-        var chars = keep_new_lines ? '\x00-\x09\x0B\x0C\x0E-\x1F\x7F' : '\x00-\x1F\x7F';
+        var chars = keep_new_lines ? '\\x00-\\x09\\x0B\\x0C\\x0E-\\x1F\\x7F' : '\\x00-\\x1F\\x7F';
         return validator.blacklist(str, chars);
     };
 
@@ -10054,15 +10086,15 @@ exports.install = function (t) {
         }
         var parts = email.split('@', 2);
         parts[1] = parts[1].toLowerCase();
-        if (options.lowercase) {
-            parts[0] = parts[0].toLowerCase();
-        }
         if (parts[1] === 'gmail.com' || parts[1] === 'googlemail.com') {
-            if (!options.lowercase) {
-                parts[0] = parts[0].toLowerCase();
+            parts[0] = parts[0].toLowerCase().replace(/\./g, '');
+            if (parts[0][0] === '+') {
+                return false;
             }
-            parts[0] = parts[0].replace(/\./g, '').split('+')[0];
+            parts[0] = parts[0].split('+')[0];
             parts[1] = 'gmail.com';
+        } else if (options.lowercase) {
+            parts[0] = parts[0].toLowerCase();
         }
         return parts.join('@');
     };
