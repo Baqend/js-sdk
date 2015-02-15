@@ -103,7 +103,7 @@ module.exports = function (grunt) {
     clean: {
       dist: {
         src: [
-          'dist'
+          'dist', 'doc'
         ]
       }
     },
@@ -162,7 +162,11 @@ module.exports = function (grunt) {
       dist: {
         src: ['lib/**/*.js'],
         options: {
-          destination: 'dist/doc'
+          destination: 'doc',
+          template : "tpl/theme",
+          configure : "jsdoc.conf.json",
+          private: undefined,
+          package: 'package.json'
         }
       }
     }
