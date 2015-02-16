@@ -212,7 +212,8 @@ function generate(title, nav, docs, filename, resolveLinks) {
     var docData = {
         title: title,
         docs: docs,
-        nav: nav
+        nav: nav,
+        active: docs[0].longname
     };
 
     var outpath = path.join(outdir, filename),

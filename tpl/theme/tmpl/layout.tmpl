@@ -36,7 +36,7 @@
         <?js= self.linkto(key, '<span class="name">' + key + '</span>') ?>
         <ul>
           <?js self.nav[key].forEach(function(item) { ?>
-            <li><?js= self.linkto(item.longname, '<span class="name">' + item.name + '</span>') ?></li>
+            <li><?js= self.linkto(item.longname, '<span class="name">' + item.name + '</span>', item.longname == active? 'active': '') ?></li>
           <?js }) ?>
         </ul>
       </li>
