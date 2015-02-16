@@ -511,10 +511,10 @@ describe('Test dao', function() {
 
     it('should update object', function() {
       person.name = 'New Name';
-      expect(person._metadata.version).equals('1');
+      expect(person._metadata.version).equals(1);
       return person.update().then(function() {
         expect(person.name).equals('New Name');
-        expect(person._metadata.version).equals('2');
+        expect(person._metadata.version).equals(2);
         return expect(db.Person.get(person._metadata.id)).eventually.have.property('name', 'New Name');
       });
     });
@@ -558,7 +558,7 @@ describe('Test dao', function() {
         return db.Person.get(person._metadata.id);
       }).then(function(loaded) {
         expect(loaded.name).equals("New Name");
-        expect(loaded._metadata.version).equals("3");
+        expect(loaded._metadata.version).equals(3);
       });
     });
 
