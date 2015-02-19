@@ -22,13 +22,13 @@
   "bugs": {
     "url": "https://github.com/Baqend/js-sdk/issues"
   },
-  "keywords": {
+  "keywords": [
     "backend",
     "baqend",
     "mongodb",
     "sdk",
     "backend-as-a-service"
-  },
+  ],
   "devDependencies": {
     "chai": "^1.9.1",
     "chai-as-promised": "^4.1.1",
