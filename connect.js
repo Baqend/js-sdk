@@ -41,7 +41,7 @@ function receive(xhr, message, headers) {
     entity: xhr.responseText
   };
 
-  message.source.postMessage(JSON.stringify(msg), message.origin || '*');
+   message.source.postMessage(JSON.stringify(msg), 'null' !== message.origin ? message.origin : '*');
 }
 
 function applyCacheRule(node) {
