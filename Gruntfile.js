@@ -23,8 +23,8 @@ module.exports = function (grunt) {
       options: {
         browserifyOptions: {
           builtins: [],
-          //detectGlobals: false,
-          insertGlobalVars: ['global'],
+          detectGlobals: false,
+          //insertGlobalVars: ['global'],
           standalone: "DB"
         },
         banner: longBanner
@@ -38,9 +38,9 @@ module.exports = function (grunt) {
           watch: true,
           keepAlive: true,
           browserifyOptions: {
-            builtins: [],
-            //detectGlobals: false,
-            insertGlobalVars: ['global'],
+            //builtins: [],
+            detectGlobals: false,
+            //insertGlobalVars: ['global'],
             standalone: "DB",
             debug: true
           },
