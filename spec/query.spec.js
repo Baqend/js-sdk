@@ -769,6 +769,17 @@ describe("Test Query", function() {
           });
     });
 
+    it("should be allowed to use limit and offset before a filter", function() {
+      return db.QueryPerson.find()
+          .offset(1)
+          .limit(2)
+          .ascending('age')
+          .resultList()
+          .then(function(list) {
+            expectSortedResult([p3, p2], list);
+          });
+    });
+
     it("should count the number of matching objects", function() {
       return db.QueryPerson.find()
           .containsAny('colors', 'green', 'blue')

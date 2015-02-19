@@ -1,0 +1,332 @@
+#header .links,
+#header .menu-settings,
+#header .menu-app,
+#nav ul {
+  list-style: none;
+}
+#header .links,
+#header .menu-settings,
+#header .menu-app,
+#nav ul {
+  display: block;
+  margin: 0;
+  padding: 0;
+}
+#header {
+  width: 100%;
+  line-height: 40px;
+  background: linear-gradient(to bottom, #444444 0, #222222 100%);
+  /* Old browsers */
+  position: relative;
+  z-index: 1001;
+}
+#header .links {
+  text-align: center;
+  font-size: 0;
+  height: 40px;
+}
+#header .links li {
+  display: inline-block;
+  font-size: 16px;
+}
+#header .links li:before,
+#header .links li:last-child:after {
+  content: "";
+  height: 25px;
+  border-left: 1px solid white;
+}
+#header .links a {
+  display: inline-block;
+  padding: 0 15px;
+  height: 40px;
+  color: white;
+}
+#header .links a:hover {
+  text-decoration: underline;
+}
+#header .icon-menu,
+#header .icon-settings {
+  font-size: 32px;
+  position: absolute;
+  top: 3px;
+  color: white;
+  border: none;
+}
+#header .icon-menu {
+  left: 20px;
+  z-index: 1;
+}
+#header .icon-settings {
+  right: 5px;
+}
+#header .icon-settings.opened + .menu-settings {
+  display: block;
+}
+#header .app-name {
+  padding: 0 20px;
+  position: absolute;
+  left: 76px;
+  color: white;
+  display: block;
+  max-width: 200px;
+  text-overflow: ellipsis;
+}
+#header .app-name:hover {
+  cursor: pointer;
+}
+#header .app-name.opened {
+  background-color: white;
+  color: black;
+  box-shadow: -1px -3px 2px rgba(0, 0, 0, 0.68);
+}
+#header .app-name.opened + .menu-app {
+  display: block;
+}
+#header .menu-settings,
+#header .menu-app {
+  display: none;
+  position: absolute;
+  z-index: -1;
+  top: 40px;
+  font-size: 13px;
+  line-height: 30px;
+  background-color: white;
+  min-width: 200px;
+  border: 1px solid #600c0c;
+  border-top: none;
+  box-shadow: -1px 0 2px rgba(0, 0, 0, 0.68);
+}
+#header .menu-settings a,
+#header .menu-app a {
+  display: block;
+  padding: 0 20px;
+}
+#header .menu-settings a:hover,
+#header .menu-app a:hover {
+  background-color: #efefef;
+}
+#header .menu-settings {
+  right: 0;
+}
+#header .menu-app {
+  left: 75px;
+}
+#nav {
+  width: 215px;
+  height: 100%;
+  margin-top: -40px;
+  padding-top: 40px;
+  background-color: #fffdf7;
+  position: relative;
+  z-index: 1000;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.28);
+  transform: translateX(-215px);
+  transition: transform 500ms ease;
+  color: #222222;
+  overflow: hidden;
+}
+#nav + #content,
+#nav + #content .info,
+#nav + #content .error {
+  transition: left 0 linear 0, top 500ms ease;
+  left: 0;
+}
+#nav.opened {
+  transform: translateX(0px);
+}
+#nav.opened + #content,
+#nav.opened + #content .info,
+#nav.opened + #content .error {
+  left: 215px;
+  transition: left 0 linear 500ms, top 500ms ease;
+}
+#nav .filter {
+  margin: 10px;
+  border-color: #600c0c;
+  border-style: solid;
+  border-width: 0 0 1px 0;
+  background-color: transparent;
+  box-shadow: none;
+  color: black;
+  font-size: 12px;
+  line-height: 20px;
+  padding: 0 10px;
+  width: 195px;
+}
+#nav .filter:focus {
+  box-shadow: none;
+  outline: none;
+}
+#nav .filter::-webkit-input-placeholder {
+  color: #8e8e8e;
+  font-size: 0.92em;
+  vertical-align: middle;
+}
+#nav .filter::-moz-placeholder {
+  /* Firefox 19+ */
+  color: #8e8e8e;
+  font-size: 0.92em;
+  vertical-align: middle;
+}
+#nav .filter:-ms-input-placeholder {
+  color: #8e8e8e;
+  font-size: 0.69em;
+  vertical-align: middle;
+}
+#nav > ul {
+  overflow: auto;
+  margin-right: -100px;
+  height: 100%;
+  padding-bottom: 50px;
+}
+#nav > ul > li {
+  overflow: hidden;
+  margin-bottom: 6px;
+  height: 33px;
+}
+#nav > ul > li.opened {
+  height: auto;
+  margin-bottom: 0;
+}
+#nav > ul > li.opened form {
+  visibility: visible;
+}
+#nav > ul > li form {
+  visibility: hidden;
+}
+#nav li {
+  width: 215px;
+  position: relative;
+  margin: 0;
+}
+#nav li a,
+#nav li .a {
+  width: 100%;
+  padding-left: 10px;
+  margin-left: 10px;
+  padding-right: 20px;
+  display: block;
+  line-height: 36px;
+  position: relative;
+  color: #777;
+  transition: background-color 200ms ease;
+}
+#nav li a .name,
+#nav li .a .name {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin-right: 20px;
+}
+#nav li a:hover,
+#nav li .a:hover {
+  color: black;
+}
+#nav li a.active,
+#nav li .a.active {
+  font-weight: bold;
+  color: black;
+  border-left: 4px solid #802c2c;
+  margin-left: 6px;
+  /*&:after {
+          content: "";
+          width: 30px;
+          height: 30px;
+          box-shadow: inset 4px -4px 4px rgba(0,0,0,.14);
+          display: block;
+          background-color: white;
+          transform: rotate(45deg);
+          position: absolute;
+          z-index: 10;
+          right: -15px;
+          top: 50%;
+          margin-top: -18px;
+        }*/
+}
+#nav li li {
+  font-size: 13px;
+}
+#nav li li a {
+  padding-left: 38px;
+  padding-right: 0;
+  line-height: 24px;
+}
+#nav li li a:before {
+  content: "";
+  position: absolute;
+  left: 21px;
+  bottom: 11px;
+  width: 11px;
+  height: 24px;
+  border-style: solid;
+  border-color: #ccc;
+  border-width: 0 0 1px 1px;
+}
+#nav li li:first-child a:before {
+  height: 18px;
+}
+#nav .add-class {
+  display: block;
+  padding: 0 20px 0 48px;
+  position: relative;
+  box-sizing: content-box;
+}
+#nav .add-class input {
+  padding-right: 15px;
+  display: block;
+  height: 0px;
+  width: 100%;
+  font-size: 13px;
+  opacity: 0;
+  transition: height 500ms ease, opacity 500ms ease;
+}
+#nav .add-class.opened input {
+  height: 24px;
+  opacity: 1;
+}
+#nav .add-class .icon-plus,
+#nav .add-class .icon-submit {
+  font-size: 21px;
+  color: black;
+  border: none;
+  position: absolute;
+  z-index: 1;
+  background: none;
+}
+#nav .add-class .icon-submit {
+  bottom: 3px;
+  right: 10px;
+}
+#nav .add-class .icon-plus {
+  top: -30px;
+  right: 20px;
+}
+#nav .add-class .icon-plus:hover {
+  cursor: pointer;
+  background-color: #400000;
+  color: white;
+}
+body {
+  margin: 0;
+  padding: 50px 70px 0 255px;
+}
+#header *,
+#nav * {
+  box-sizing: border-box;
+}
+#header {
+  position: fixed;
+  left: 0;
+  top: 0;
+}
+#header .app-name {
+  left: 0;
+  max-width: none;
+  text-overflow: clip;
+}
+#nav {
+  position: fixed;
+  top: 40px;
+  left: 0;
+  padding-left: 0;
+}
