@@ -38,7 +38,7 @@ module.exports = function (grunt) {
           watch: true,
           keepAlive: true,
           browserifyOptions: {
-            //builtins: [],
+            builtins: [],
             detectGlobals: false,
             //insertGlobalVars: ['global'],
             standalone: "DB",
