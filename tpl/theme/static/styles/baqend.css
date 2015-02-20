@@ -186,7 +186,7 @@
 }
 #nav > ul > li.opened {
   height: auto;
-  margin-bottom: 0;
+  margin-bottom: 3px;
 }
 #nav > ul > li.opened form {
   visibility: visible;
@@ -308,25 +308,14 @@
 }
 body {
   margin: 0;
-  padding: 50px 70px 0 255px;
+  padding: 0 70px 0 255px;
 }
-#header *,
 #nav * {
   box-sizing: border-box;
 }
-#header {
-  position: fixed;
-  left: 0;
-  top: 0;
-}
-#header .app-name {
-  left: 0;
-  max-width: none;
-  text-overflow: clip;
-}
 #nav {
   position: fixed;
-  top: 40px;
+  top: 0;
   left: 0;
   padding-left: 0;
 }
