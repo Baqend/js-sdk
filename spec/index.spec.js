@@ -48,7 +48,7 @@ describe("Test Index", function() {
     expect(index.isCompound).be.false;
 
     return meta.createIndex(personType.name, index, db.token).then(function() {
-      return delay(50);
+      return delay(300);
     }).then(function() {
       return meta.getIndexes(personType.name, db.token);
     }).then(function(indexes) {
@@ -63,7 +63,7 @@ describe("Test Index", function() {
     var index2 = new DB.metamodel.DbIndex("address");
 
     return Promise.all([meta.createIndex(personType.name, index1, db.token), meta.createIndex(personType.name, index2, db.token)]).then(function() {
-      return delay(50);
+      return delay(300);
     }).then(function() {
       return meta.getIndexes(personType.name, db.token);
     }).then(function(indexes) {
@@ -76,14 +76,14 @@ describe("Test Index", function() {
     var index2 = new DB.metamodel.DbIndex("address");
 
     return Promise.all([meta.createIndex(personType.name, index1, db.token), meta.createIndex(personType.name, index2, db.token)]).then(function() {
-      return delay(50);
+      return delay(300);
     }).then(function() {
       return meta.getIndexes(personType.name, db.token);
     }).then(function(indexes) {
       expect(indexes).have.length(3);
       return meta.dropAllIndexes(personType.name, db.token);
     }).then(function() {
-      return delay(50);
+      return delay(300);
     }).then(function() {
       return expect(meta.getIndexes(personType.name, db.token)).eventually.have.length(1);
     });
@@ -93,11 +93,11 @@ describe("Test Index", function() {
     var index = new DB.metamodel.DbIndex("name");
 
     return meta.createIndex(personType.name, index, db.token).then(function() {
-      return delay(50);
+      return delay(300);
     }).then(function() {
       return meta.dropIndex(personType.name, index, db.token);
     }).then(function() {
-      return delay(50);
+      return delay(300);
     }).then(function() {
       return expect(meta.getIndexes(personType.name, db.token)).eventually.have.length(1);
     });
@@ -110,7 +110,7 @@ describe("Test Index", function() {
       expect(indexes).have.length(1);
       return meta.createIndex(personType.name, index, db.token);
     }).then(function() {
-      return delay(50);
+      return delay(300);
     }).then(function() {
       return meta.getIndexes(personType.name, db.token);
     }).then(function(indexes) {
@@ -129,7 +129,7 @@ describe("Test Index", function() {
     expect(index.hasKey("age")).be.true;
 
     return meta.createIndex(personType.name, index, db.token).then(function() {
-      return delay(50);
+      return delay(300);
     }).then(function() {
       return meta.getIndexes(personType.name, db.token);
     }).then(function(indexes) {
@@ -166,7 +166,7 @@ describe("Test Index", function() {
   it('should create unique index', function() {
     var index = new DB.metamodel.DbIndex("name", true);
     return meta.createIndex(personType.name, index, db.token).then(function() {
-      return delay(50);
+      return delay(300);
     }).then(function() {
       var person1 = db[personType.name]();
       var person2 = db[personType.name]();
