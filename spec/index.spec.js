@@ -40,7 +40,9 @@ describe("Test Index", function() {
   });
 
   afterEach(function() {
-    return meta.dropAllIndexes(personType.name, db.token);
+    return meta.dropAllIndexes(personType.name, db.token).then(function() {
+      return delay(300);
+    });
   });
 
   it('should retrieve indexes', function() {
