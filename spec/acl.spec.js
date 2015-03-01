@@ -198,14 +198,14 @@ describe('Test Acl', function() {
 
         role23 = db.Role();
         role23.name = "Role2_3";
-        role23.users.add(db.getReference(db2.me._metadata.ref));
-        role23.users.add(db.getReference(db3.me._metadata.ref));
+        role23.addUser(db.getReference(db2.me._metadata.ref));
+        role23.addUser(db.getReference(db3.me._metadata.ref));
         var promise1 = role23.save();
 
         role13 = db.Role();
         role13.name = "Role1_3";
-        role13.users.add(db.User.me);
-        role13.users.add(db.getReference(db3.me._metadata.ref));
+        role13.addUser(db.User.me);
+        role13.addUser(db.getReference(db3.me._metadata.ref));
         var promise2 = role13.save();
 
         return Promise.all([promise1, promise2]);
