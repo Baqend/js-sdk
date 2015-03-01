@@ -164,7 +164,7 @@ module.exports = function (grunt) {
         options: {
           destination: 'doc',
           template : "tpl/theme",
-          configure : "jsdoc.conf.json",
+          configure : "tpl/jsdoc.conf.json",
           private: undefined,
           package: 'package.json'
         }

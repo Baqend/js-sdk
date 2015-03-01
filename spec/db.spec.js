@@ -249,7 +249,20 @@ describe("Test db", function() {
         expect(testClass.b).equals(2);
         expect(testClass.c).equals(3);
       });
-    })
+    });
+
+    it("enhanced objects should be enumarable", function() {
+      var obj = db.TestClass();
+
+      var expected = ['id', 'version', 'testValue'];
+      var count = 0;
+      for (var prop in obj) {
+        count++;
+        expect(expected).include(prop);
+      }
+
+      expect(count).equals(expected.length);
+    });
   });
 
   describe('Test dao methods', function() {
