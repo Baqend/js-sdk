@@ -91,9 +91,9 @@ module.exports = function (grunt) {
 
     run: {
       server: {
-        cmd: "java",
+        cmd: process.platform === "win32"? "bin\\baqend.bat": "bin/baqend",
         options: {
-          cwd: "node_modules/orestes",
+          cwd: "build/baqend",
           wait: false,
           ready: 5000
         }
@@ -197,7 +197,6 @@ module.exports = function (grunt) {
 
   grunt.registerTask('test', [
     'browserify:test',
-    'prepare:server',
     'run:server',
 
     // don't fail task when a test failed
@@ -210,14 +209,6 @@ module.exports = function (grunt) {
   ]);
 
   grunt.registerTask('default', 'debug');
-
-  grunt.registerTask('prepare', 'Finds the executable server jar and configuration in node_modules/orestes folder', function() {
-    var jar = grunt.file.expand({cwd: 'node_modules/orestes'}, 'orestes-mongo*.jar')[0];
-
-    grunt.config('run.server.args', ['-jar', jar, "config.json"]);
-
-    grunt.log.write('Executable Jar: ' + jar);
-  });
 
   var previous_force_state = grunt.option("force");
 

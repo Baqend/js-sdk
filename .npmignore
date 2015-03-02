@@ -2,4 +2,5 @@
 /.grunt
 /node_modules
 /build
+*.iml
 .DS_Store
