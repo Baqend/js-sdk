@@ -10,7 +10,7 @@
   "homepage": "http://baqend.com",
   "main": "lib/index.js",
   "dependencies": {
-    "jahcode": "^1.1.5",
+    "jahcode": "^1.1.6",
     "lie": "^2.8.0",
     "node-uuid": "git+https://github.com/broofa/node-uuid",
     "validator": "^3.22.0"

@@ -215,11 +215,11 @@ describe('Test entity type', function () {
   }
 
   describe("refList value", function() {
-    test("refList", new DB.List(), DB.List([testObject(), testObject(), null, testObject()]));
+    test("refList", new DB.List(), new DB.List([testObject(), testObject(), null, testObject()]));
   });
 
   describe("embeddedList value", function() {
-    test("embeddedList", new DB.List(), DB.List([embeddableObject(), embeddableObject(), null, embeddableObject()]));
+    test("embeddedList", new DB.List(), new DB.List([embeddableObject(), embeddableObject(), null, embeddableObject()]));
   });
 
   for (name in simpleTypes) {
@@ -235,14 +235,14 @@ describe('Test entity type', function () {
   }
 
   describe("refSet value", function() {
-    test("refSet", new DB.Set(), DB.Set([testObject(), null, testObject(), testObject()]));
+    test("refSet", new DB.Set(), new DB.Set([testObject(), null, testObject(), testObject()]));
   });
 
   describe("simpleMap value", function() {
-    var map = DB.Map([
-      {key: "Test", value: true},
-      {key: "String", value: false},
-      {key: "123", value: null}
+    var map = new DB.Map([
+      ["Test", true],
+      ["String", false],
+      ["123", null]
     ]);
 
     test("simplebooleanMap", new DB.Map(), new DB.Map(map));
@@ -298,41 +298,41 @@ describe('Test entity type', function () {
   }
 
   describe("simpleRefMap value", function() {
-    var map = DB.Map([
-      {key: "Test", value: testObject()},
-      {key: "String", value: testObject()},
-      {key: "123", value: testObject()},
-      {key: "null", value: null}
+    var map = new DB.Map([
+      ["Test", testObject()],
+      ["String", testObject()],
+      ["123", testObject()],
+      ["null", null]
     ]);
 
     test("simpleRefMap", new DB.Map(), map);
   });
 
   describe("refSimpleMap value", function() {
-    var map = DB.Map([
-      {key: testObject(), value: true},
-      {key: testObject(), value: false},
-      {key: testObject(), value: null}
+    var map = new DB.Map([
+      [testObject(), true],
+      [testObject(), false],
+      [testObject(), null]
     ]);
 
     test("refSimpleMap", new DB.Map(), map);
   });
 
   describe("refMap value", function() {
-    var map = DB.Map([
-      {key: testObject(), value: testObject()},
-      {key: testObject(), value: testObject()},
-      {key: testObject(), value: null}
+    var map = new DB.Map([
+      [testObject(), testObject()],
+      [testObject(), testObject()],
+      [testObject(), null]
     ]);
 
     test("refMap", new DB.Map(), map);
   });
 
   describe("simpleEmbeddedMap value", function() {
-    var map = DB.Map([
-      {key: "Test", value: embeddableObject()},
-      {key: "String", value: embeddableObject()},
-      {key: "123", value: null}
+    var map = new DB.Map([
+      ["Test", embeddableObject()],
+      ["String", embeddableObject()],
+      ["123", null]
     ]);
 
     test("simpleEmbeddedMap", new DB.Map(), map);

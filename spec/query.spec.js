@@ -533,7 +533,7 @@ describe("Test Query", function() {
         age: 45,
         date: new Date('1978-02-03T00:00Z'),
         address: db.QueryAddress({city: 'Hamburg', zip: 22865}),
-        colors: DB.List(['red', 'green']),
+        colors: new DB.List(['red', 'green']),
         birthplace: new DB.GeoPoint(35, 110)
       });
 
@@ -543,7 +543,7 @@ describe("Test Query", function() {
         age: 33,
         date: new Date('1966-05-01T00:00Z'),
         address: db.QueryAddress({city: 'Hamburg', zip: 23432}),
-        colors: DB.List(['blue', 'green', 'red']),
+        colors: new DB.List(['blue', 'green', 'red']),
         birthplace: new DB.GeoPoint(32, 112)
       });
 
@@ -553,7 +553,7 @@ describe("Test Query", function() {
         age: 23,
         date: new Date('1989-05-01T00:00Z'),
         address: db.QueryAddress({city: 'Munich', zip: 92438}),
-        colors: DB.List(['yellow', 'blue', 'white']),
+        colors: new DB.List(['yellow', 'blue', 'white']),
         birthplace: new DB.GeoPoint(29, 109)
       });
 
