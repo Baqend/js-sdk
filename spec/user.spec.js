@@ -32,6 +32,7 @@ describe('Test user and roles', function() {
       expect(db.User.register).be.ok;
       expect(db.User.login).be.ok;
       expect(db.User.logout).be.ok;
+      expect(db.User.newPassword).be.ok;
     });
 
     it('should register and login a new user', function() {
@@ -169,6 +170,88 @@ describe('Test user and roles', function() {
       }).then(function() {
         expect(db.token).not.eqls(oldToken);
       });
+    });
+
+    it('should change password', function() {
+      var oldLogin = makeLogin();
+      var oldToken;
+      return db.User.register(oldLogin, "secret").then(function() {
+        oldToken = db.token;
+        return new Promise(function(resolve) {
+          setTimeout(resolve, 1100);
+        });
+      }).then(function() {
+        return db.me.newPassword(oldLogin, "secret", "newSecret");
+      }).then(function() {
+        expect(oldToken).not.eqls(db.token);
+        return db.User.logout();
+      }).then(function() {
+        return db.User.login(oldLogin, "newSecret");
+      }).then(function() {
+        return db.User.logout();
+      }).then(function() {
+        return expect(db.User.login(oldLogin, "secret")).be.rejected;
+      });
+    });
+
+    it('should be allowed to change password as root', function() {
+      var oldLogin = makeLogin();
+      var oldToken;
+      return db.User.register(oldLogin, "secret").then(function() {
+        oldToken = db.token;
+        return new Promise(function(resolve) {
+          setTimeout(resolve, 1100);
+        }).then(function() { return db.User.logout() });
+      }).then(function() {
+        return db.User.login("root", "root");
+      }).then(function() {
+        expect(db.me.username).eqls("root");
+        return db.User.newPassword(oldLogin, "", "newSecret");
+      }).then(function() {
+        expect(db.me.username).eqls("root");
+        return db.User.logout();
+      }).then(function() {
+        return expect(db.User.login(oldLogin, "newSecret")).be.fulfilled.then(function() { return db.User.logout() });
+      }).then(function() {
+        return expect(db.User.login(oldLogin, "secret")).be.rejected;
+      });
+    });
+
+    it('should change password of inserted user', function() {
+      var name = makeLogin();
+      var newUser = db.User.fromJSON({
+        username: name
+      });
+      var oldToken;
+      return db.User.login('root', 'root', function() {
+        oldToken = db.token;
+        return newUser.save();
+      }).then(function() {
+        return db.User.newPassword(name, "", "newPassword").then(function() {return db.User.logout();});
+      }).then(function() {
+        return expect(db.User.login(name, "newPassword")).be.fulfilled;
+      }).then(function() {
+        expect(db.me.username).eqls(name);
+        expect(db.token).not.eqls(oldToken);
+      });
+    });
+
+    it('should not be allowed to login on inserted user', function() {
+      var name = makeLogin();
+      var newUser = db.User.fromJSON({
+        username: name
+      });
+      var oldToken;
+      return db.User.login('root', 'root', function() {
+        oldToken = db.token;
+        return newUser.save().then(function() { return db.User.logout(); });
+      }).then(function() {
+        return expect(db.User.login(name, "")).be.rejected;
+      });
+    });
+
+    it('should not be allowed to register with an empty password', function() {
+      return expect(db.User.register(makeLogin(), "")).be.rejected;
     });
   });
 
