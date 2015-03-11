@@ -181,7 +181,7 @@ describe('Test user and roles', function() {
           setTimeout(resolve, 1100);
         });
       }).then(function() {
-        return db.me.newPassword(oldLogin, "secret", "newSecret");
+        return db.me.newPassword("secret", "newSecret");
       }).then(function() {
         expect(oldToken).not.eqls(db.token);
         return db.User.logout();
