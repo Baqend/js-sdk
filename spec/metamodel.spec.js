@@ -38,7 +38,8 @@ describe("Test metamodel classes", function () {
         "fields": {
           "value": {
             "name": "value",
-            "type": "/db/Integer"
+            "type": "/db/Integer",
+            "order": 0
           }
         }
       };
@@ -58,6 +59,7 @@ describe("Test metamodel classes", function () {
       expect(entity.declaredAttributes[0].name).equals("value");
       expect(entity.declaredAttributes[0].type).equals(DB.metamodel.BasicType.Integer);
       expect(entity.declaredAttributes[0].typeConstructor).equals(Number);
+      expect(entity.declaredAttributes[0].order).equals(0);
     });
 
     it("should build type with inheritance", function() {
