@@ -480,6 +480,7 @@ describe('Test Metamodel', function() {
       type.addAttribute(new DB.metamodel.ListAttribute("list", metamodel.baseType('String')));
       type.addAttribute(new DB.metamodel.SetAttribute("set", metamodel.baseType('Integer')));
       type.addAttribute(new DB.metamodel.MapAttribute("map", metamodel.baseType('String'), type));
+      type.addAttribute(new DB.metamodel.SingularAttribute("removeMe", metamodel.baseType('String')));
 
       childType.addAttribute(new DB.metamodel.SingularAttribute("age", metamodel.baseType('Integer')));
 
@@ -533,6 +534,14 @@ describe('Test Metamodel', function() {
         testLoadedTypes(loadType, loadChildType, loadEmbeddedType, db.metamodel);
       });
     });
+
+    it('should be allowed to remove attributes', function() {
+      expect(function() {type.removeAttribute('removeMeNot')}).to.throw(Error);
+      expect(type.getAttribute('removeMe')).to.be.ok;
+      type.removeAttribute('removeMe');
+      expect(type.getAttribute('removeMe')).to.be.null;
+      type.addAttribute(new DB.metamodel.SingularAttribute("removeMe", metamodel.baseType('String')));
+    });
   });
 
   function testLoadedTypes(loadType, loadChildType, loadEmbeddedType, metamodel) {
@@ -540,7 +549,7 @@ describe('Test Metamodel', function() {
     expect(loadType).instanceof(DB.metamodel.EntityType);
     expect(loadType.ref).equals('/db/jstest.Person');
     expect(loadType.superType).equals(metamodel.entity(Object));
-    expect(loadType.declaredAttributes).length(6);
+    expect(loadType.declaredAttributes).length(7);
 
     expect(loadChildType).be.ok;
     expect(loadChildType).instanceof(DB.metamodel.EntityType);
