@@ -448,10 +448,10 @@ describe('Test Metamodel', function() {
     expect(emf.createEntityManager().isReady).be.true;
   });
 
-  it("should not be allowed to save without initializsation", function() {
+  it("should not be allowed to save without initialization", function() {
     var emf = new DB.EntityManagerFactory(env.TEST_SERVER);
 
-    expect(saveMetamodel(emf.metamodel)).be.rejected;
+    return expect(saveMetamodel(emf.metamodel)).be.rejected;
   });
 
   it("should allow modification when used by an EntityManager", function() {
