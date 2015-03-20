@@ -62,7 +62,8 @@
     "uglify-js": "^2.3.6"
   },
   "scripts": {
-    "test": "grunt mochaTest:test"
+    "test": "grunt mochaTest:test",
+    "dist": "grunt dist"
   },
   "engines": {
     "node": ">=0.2.0"
