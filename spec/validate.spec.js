@@ -17,12 +17,18 @@ describe('Test validate', function() {
 
     metamodel.init({});
     var personType = new DB.metamodel.EntityType("ValidatePerson", metamodel.entity(Object));
+    var addressType = new DB.metamodel.EmbeddableType("ValidateAddress");
+    metamodel.addType(addressType);
     metamodel.addType(personType);
 
     personType.addAttribute(new DB.metamodel.SingularAttribute("name", metamodel.baseType(String)));
     personType.addAttribute(new DB.metamodel.SingularAttribute("age", metamodel.baseType(Number)));
     personType.addAttribute(new DB.metamodel.SingularAttribute("date", metamodel.baseType(Date)));
     personType.addAttribute(new DB.metamodel.SingularAttribute("email", metamodel.baseType(String)));
+    personType.addAttribute(new DB.metamodel.SingularAttribute("address", addressType));
+
+    addressType.addAttribute(new DB.metamodel.SingularAttribute("zip", metamodel.baseType(Number)));
+    addressType.addAttribute(new DB.metamodel.SingularAttribute("street", metamodel.baseType(String)));
 
     personType.validationCode = "email.isEmail();";
 
@@ -33,6 +39,7 @@ describe('Test validate', function() {
 
   beforeEach(function() {
     person = db.ValidatePerson();
+    person.address = db.ValidateAddress();
     type = DB.util.Metadata.get(person).type;
   });
 
@@ -80,17 +87,49 @@ describe('Test validate', function() {
   it('should use own validate function', function() {
     person.age = 20;
     var message = 'TestError';
-    type.validationCode = "email.is('"+message+"', function(value) { return value <= 18 && value >= 13 });";
+    type.validationCode = "age.is('"+message+"', function(value) { return value <= 18 && value >= 13 });";
+    var result = person.validate().fields;
+    expect(result.age).be.instanceOf(DB.util.Validator);
+    expect(result.age.isValid).be.false;
+    expect(result.age.errors).have.length(1);
+    expect(result.age.errors[0]).eqls(message);
+
+    person.age = 15;
+    result = person.validate().fields;
+    expect(result.age.isValid).be.true;
+    expect(result.age.errors).have.length(0);
+  });
+
+  it('should use validation library in "is" function', function() {
+    person.email = "testtest.de";
+    var message = 'TestError';
+    type.validationCode = "email.is('"+message+"', function(value, validate) { return validate.isEmail(value); });";
     var result = person.validate().fields;
     expect(result.email).be.instanceOf(DB.util.Validator);
     expect(result.email.isValid).be.false;
     expect(result.email.errors).have.length(1);
     expect(result.email.errors[0]).eqls(message);
 
-    person.age = 15;
+    person.email = "test@test.de";
     result = person.validate().fields;
-    expect(result.name.isValid).be.true;
-    expect(result.name.errors).have.length(0);
+    expect(result.email.isValid).be.true;
+    expect(result.email.errors).have.length(0);
+  });
+
+  it('should validate embedded objects in "is" function', function() {
+    person.address.street = "UPPERCASE STREET";
+    var message = 'TestError';
+    type.validationCode = "address.is('"+message+"', function(value, validate) { return validate.isLowercase(value.street); });";
+    var result = person.validate().fields;
+    expect(result.address).be.instanceOf(DB.util.Validator);
+    expect(result.address.isValid).be.false;
+    expect(result.address.errors).have.length(1);
+    expect(result.address.errors[0]).eqls(message);
+
+    person.address.street = "lowercase street";
+    result = person.validate().fields;
+    expect(result.address.isValid).be.true;
+    expect(result.address.errors).have.length(0);
   });
 
   it('should allow validate functions with multiple arguments', function() {
