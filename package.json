@@ -12,7 +12,7 @@
   "dependencies": {
     "jahcode": "^1.1.6",
     "lie": "^2.8.1",
-    "node-uuid": "git+https://github.com/broofa/node-uuid",
+    "node-uuid": "^1.4.3",
     "validator": "^3.34.0"
   },
   "repository": {
