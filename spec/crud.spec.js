@@ -802,7 +802,7 @@ describe('Test dao', function() {
         expect(db2.containsById(sister)).be.false;
         expect(db2.containsById(mother)).be.false;
         expect(db2.containsById(street)).be.false;
-        return em.Child.get(child._metadata.id, 2);
+        return em.Child.get(child._metadata.id, {depth: 2});
       }).then(function(loaded) {
         expect(loaded.father.sister._metadata.isAvailable).be.true;
         expect(loaded.father._metadata.isAvailable).be.true;
@@ -826,7 +826,7 @@ describe('Test dao', function() {
         expect(db2.containsById(sister)).be.false;
         expect(db2.containsById(mother)).be.false;
         expect(db2.containsById(street)).be.false;
-        return em.Child.get(child._metadata.id, true);
+        return em.Child.get(child._metadata.id, {depth: true});
       }).then(function(loaded) {
         expect(loaded.father.sister._metadata.isAvailable).be.true;
         expect(loaded.father._metadata.isAvailable).be.true;
@@ -844,7 +844,7 @@ describe('Test dao', function() {
         child = saved;
         return emf.createEntityManager();
       }).then(function(em) {
-        return em.Child.get(child._metadata.id, 1);
+        return em.Child.get(child._metadata.id, {depth: 1});
       }).then(function(loaded) {
         expect(loaded.father.sister._metadata.isAvailable).be.false;
         expect(loaded.father._metadata.isAvailable).be.true;
