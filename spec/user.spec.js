@@ -19,6 +19,12 @@ describe('Test user and roles', function() {
     return DB.ready().then(function() {
       emf = new DB.EntityManagerFactory(env.TEST_SERVER);
       return emf.metamodel.init();
+    }).then(function(metamodel) {
+      var userEntity = metamodel.entity("User");
+      if(!userEntity.getAttribute("email")) {
+        userEntity.addAttribute(new DB.metamodel.SingularAttribute("email", metamodel.baseType(String)));
+        return saveMetamodel(metamodel);
+      }
     });
   });
 
@@ -49,6 +55,19 @@ describe('Test user and roles', function() {
         expect(user).equals(db.User.me);
         expect(db.token).be.ok;
       });
+    });
+
+    it('should register user from object', function() {
+      var user = db.User({ username: makeLogin(), email: "test@mail.de" });
+      return db.User.register(user, 'secret').then(function(loaded) {
+        expect(loaded.username).eqls(user.username);
+        expect(loaded.email).eqls("test@mail.de");
+      });
+    });
+
+    it('should fail to register if username is missing', function() {
+      var user = { foobar: makeLogin() };
+      return expect(db.User.register(user, 'secret')).be.rejected;
     });
 
     it('should logout an user', function() {
@@ -145,7 +164,7 @@ describe('Test user and roles', function() {
     it('should logout user', function() {
       expect(db.isGlobal).be.false;
       var login = makeLogin();
-      return db.register(login, 'secret').then(function() {
+      return db.User.register(login, 'secret').then(function() {
         expect(db.token).be.ok;
         expect(db.me).be.ok;
         return db.logout();
@@ -159,7 +178,7 @@ describe('Test user and roles', function() {
       expect(db.isGlobal).be.false;
       var login = makeLogin();
       var oldToken;
-      return db.register(login, 'secret').then(function() {
+      return db.User.register(login, 'secret').then(function() {
         return new Promise(function(resolve) {
           setTimeout(resolve, 1500);
         });
@@ -286,7 +305,7 @@ describe('Test user and roles', function() {
 
     it('should autologin on global instances', function() {
       var login = makeLogin();
-      return DB.register(login, 'secret').then(function() {
+      return DB.User.register(login, 'secret').then(function() {
         var db = DB.entityManagerFactory.createEntityManager(true);
         return db.ready().then(function() {
           expect(db.me).be.ok;
@@ -347,7 +366,7 @@ describe('Test user and roles', function() {
     it('should renew token', function() {
       var login = makeLogin();
       var oldToken;
-      return db.register(login, 'secret').then(function() {
+      return db.User.register(login, 'secret').then(function() {
         return new Promise(function(resolve) {
           setTimeout(resolve, 1100);
         });
