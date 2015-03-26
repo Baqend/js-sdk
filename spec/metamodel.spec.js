@@ -737,7 +737,7 @@ describe('Test Metamodel', function() {
       });
 
       it('should allow object load', function() {
-        return expect(db[SchemaAclPersonName].get(obj.id)).be.fulfilled;
+        return expect(db[SchemaAclPersonName].load(obj.id)).be.fulfilled;
       });
 
       it('should allow object creation', function() {
@@ -803,7 +803,7 @@ describe('Test Metamodel', function() {
       });
 
       it('should allow object load', function() {
-        return expect(db[SchemaAclPersonName].get(obj.id)).be.fulfilled;
+        return expect(db[SchemaAclPersonName].load(obj.id)).be.fulfilled;
       });
 
       it('should deny object creation', function() {
@@ -811,14 +811,14 @@ describe('Test Metamodel', function() {
       });
 
       it('should deny object update', function() {
-        return db[SchemaAclPersonName].get(obj.id).then(function(obj) {
+        return db[SchemaAclPersonName].load(obj.id).then(function(obj) {
           obj.name = 'New Name';
           return expect(obj.save()).be.rejected;
         });
       });
 
       it('should deny object removal', function() {
-        return db[SchemaAclPersonName].get(obj.id).then(function(obj) {
+        return db[SchemaAclPersonName].load(obj.id).then(function(obj) {
           return expect(obj.remove()).be.rejected;
         });
       });
@@ -872,7 +872,7 @@ describe('Test Metamodel', function() {
       });
 
       it('should allow object load', function() {
-        return expect(db[SchemaAclPersonName].get(obj.id)).be.fulfilled;
+        return expect(db[SchemaAclPersonName].load(obj.id)).be.fulfilled;
       });
 
       it('should allow object creation', function() {
@@ -880,14 +880,14 @@ describe('Test Metamodel', function() {
       });
 
       it('should deny object update', function() {
-        return db[SchemaAclPersonName].get(obj.id).then(function(obj) {
+        return db[SchemaAclPersonName].load(obj.id).then(function(obj) {
           obj.name = 'New Name';
           return expect(obj.save()).be.rejected;
         });
       });
 
       it('should deny object removal', function() {
-        return db[SchemaAclPersonName].get(obj.id).then(function(obj) {
+        return db[SchemaAclPersonName].load(obj.id).then(function(obj) {
           return expect(obj.remove()).be.rejected;
         });
       });

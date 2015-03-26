@@ -233,12 +233,12 @@ describe('Test Acl', function() {
       var id;
       return obj.save().then(function(o) {
         id = obj.id;
-        return db.AclPerson.get(id);
+        return db.AclPerson.load(id);
       }).then(function(obj) {
         return Promise.all([
-          expect(db.AclPerson.get(id)).eventually.property('id', id),
-          expect(db2.AclPerson.get(id)).eventually.property('id', id),
-          expect(db3.AclPerson.get(id)).eventually.be.null
+          expect(db.AclPerson.load(id)).eventually.property('id', id),
+          expect(db2.AclPerson.load(id)).eventually.property('id', id),
+          expect(db3.AclPerson.load(id)).eventually.be.null
         ]);
       });
     });
@@ -251,9 +251,9 @@ describe('Test Acl', function() {
       return obj.save().then(function() {
         id = obj.id;
         return Promise.all([
-          expect(db.AclPerson.get(id)).eventually.property('id', id),
-          expect(db2.AclPerson.get(id)).eventually.be.null,
-          expect(db3.AclPerson.get(id)).eventually.property('id', id)
+          expect(db.AclPerson.load(id)).eventually.property('id', id),
+          expect(db2.AclPerson.load(id)).eventually.be.null,
+          expect(db3.AclPerson.load(id)).eventually.property('id', id)
         ]);
       });
     });
@@ -266,9 +266,9 @@ describe('Test Acl', function() {
       return obj.save().then(function() {
         id = obj.id;
         return Promise.all([
-          expect(db.AclPerson.get(id)).eventually.property('id', id),
-          expect(db2.AclPerson.get(id)).eventually.be.null,
-          expect(db3.AclPerson.get(id)).eventually.property('id', id)
+          expect(db.AclPerson.load(id)).eventually.property('id', id),
+          expect(db2.AclPerson.load(id)).eventually.be.null,
+          expect(db3.AclPerson.load(id)).eventually.property('id', id)
         ]);
       });
     });
@@ -281,9 +281,9 @@ describe('Test Acl', function() {
       return obj.save().then(function() {
         id = obj.id;
         return Promise.all([
-          expect(db.AclPerson.get(id)).eventually.property('id', id),
-          expect(db2.AclPerson.get(id)).eventually.be.null,
-          expect(db3.AclPerson.get(id)).eventually.be.null
+          expect(db.AclPerson.load(id)).eventually.property('id', id),
+          expect(db2.AclPerson.load(id)).eventually.be.null,
+          expect(db3.AclPerson.load(id)).eventually.be.null
         ]);
       });
     });

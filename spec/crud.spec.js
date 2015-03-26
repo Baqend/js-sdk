@@ -164,10 +164,10 @@ describe('Test dao', function() {
       });
     });
 
-    it('should save and refresh object', function() {
+    it('should save and reload object', function() {
       var person = db.Person();
       person.name = "Old Name";
-      var promise = expect(person.save({refresh:true})).eventually.have.property('name', 'Old Name');
+      var promise = expect(person.save({reload:true})).eventually.have.property('name', 'Old Name');
       person.name = "New Name";
       return promise;
     });
@@ -194,7 +194,7 @@ describe('Test dao', function() {
       var person = db2.Person();
 
       return expect(person.save().then(function() {
-        return db.Person.get(person._metadata.id).then(function(person2) {
+        return db.Person.load(person._metadata.id).then(function(person2) {
           person2.name = 'Peter Parker';
           return person2.save();
         });
@@ -203,7 +203,7 @@ describe('Test dao', function() {
         return person.save();
       })).be.rejected.then(function(e) {
         expect(e).instanceOf(DB.error.PersistentError);
-        return expect(db.Person.get(person._metadata.id)).eventually.have.property('name', 'Peter Parker');
+        return expect(db.Person.load(person._metadata.id)).eventually.have.property('name', 'Peter Parker');
       });
     });
 
@@ -212,7 +212,7 @@ describe('Test dao', function() {
       var person = db2.Person();
 
       return person.save().then(function() {
-        return db.Person.get(person._metadata.id).then(function(person2) {
+        return db.Person.load(person._metadata.id).then(function(person2) {
           person2.name = 'Peter Parker';
           return person2.save();
         });
@@ -220,7 +220,7 @@ describe('Test dao', function() {
         person.name = 'Alice Ford';
         return person.save({force:true});
       }).then(function() {
-        return db.Person.get(person._metadata.id).then(function(person2) {
+        return db.Person.load(person._metadata.id).then(function(person2) {
           expect(person2.name).equals('Alice Ford');
         });
       });
@@ -247,7 +247,7 @@ describe('Test dao', function() {
         newPerson._metadata.id = person._metadata.id;
         return newPerson.save({force:true});
       }).then(function() {
-        return db.Person.get(person._metadata.id).then(function(person2) {
+        return db.Person.load(person._metadata.id).then(function(person2) {
           expect(person2.name).equals('Peter Parker');
         });
       });
@@ -258,7 +258,7 @@ describe('Test dao', function() {
       return person.save().then(function() {
         var db2 = emf.createEntityManager();
 
-        return db2.Person.get(person._metadata.id).then(function(person2) {
+        return db2.Person.load(person._metadata.id).then(function(person2) {
           return person2.remove();
         });
       }).then(function() {
@@ -272,14 +272,14 @@ describe('Test dao', function() {
       return person.save().then(function() {
         var db2 = emf.createEntityManager();
 
-        return db2.Person.get(person._metadata.id).then(function(person2) {
+        return db2.Person.load(person._metadata.id).then(function(person2) {
           return person2.remove();
         });
       }).then(function() {
         person.name = 'Peter Parker';
         return person.save({force:true});
       }).then(function() {
-        return db.Person.get(person._metadata.id).then(function(person2) {
+        return db.Person.load(person._metadata.id).then(function(person2) {
           expect(person2.name).equals('Peter Parker');
         });
       });
@@ -305,7 +305,7 @@ describe('Test dao', function() {
     it('should not save afterward changed values but refrehs it', function() {
       var person = db.Person();
       person.name = 'Old Name';
-      var promise = person.save({refresh:true});
+      var promise = person.save({reload:true});
       person.name = 'New Name';
       return promise.then(function() {
         expect(person._metadata.isDirty).be.false;
@@ -333,7 +333,7 @@ describe('Test dao', function() {
     });
 
     it('should retrieved object', function() {
-      return db.Person.get(person._metadata.id).then(function(loaded) {
+      return db.Person.load(person._metadata.id).then(function(loaded) {
         expect(loaded).be.ok;
         expect(loaded._metadata.ref).equals(person._metadata.ref);
         expect(loaded.name).equals("Peter Mueller");
@@ -343,8 +343,8 @@ describe('Test dao', function() {
     });
 
     it('should retrieved same version in same db context', function() {
-      var p1 = db.Person.get(person.id);
-      var p2 = db.Person.get(person.id);
+      var p1 = db.Person.load(person.id);
+      var p2 = db.Person.load(person.id);
 
       return Promise.all([p1, p2]).then(function(loaded) {
         expect(loaded[0]).be.ok;
@@ -356,12 +356,12 @@ describe('Test dao', function() {
       var db2 = emf.createEntityManager();
       person.name = 'Tom Miller';
 
-      return db2.Person.get(person.id).then(function(person2) {
+      return db2.Person.load(person.id).then(function(person2) {
         expect(person2.name).equals('Peter Mueller');
         person2.name = 'Alice Ford';
         return person2.save();
       }).then(function(person2) {
-        return db.Person.get(person.id).then(function(person3) {
+        return db.Person.load(person.id).then(function(person3) {
           expect(person3).equals(person);
           expect(person3.name).equals('Alice Ford');
           expect(person3._metadata.version).equals(person2._metadata.version);
@@ -372,7 +372,7 @@ describe('Test dao', function() {
     it('should not refresh if a loaded object is still up to date', function() {
       person.name = 'Tom Miller';
 
-      return db.Person.get(person.id).then(function(obj) {
+      return db.Person.load(person.id).then(function(obj) {
         expect(obj.name).equals('Tom Miller');
       });
     });
@@ -380,8 +380,8 @@ describe('Test dao', function() {
     it('should retrieved different version in different db context', function() {
       var db2 = emf.createEntityManager();
 
-      var p1 = db.Person.get(person.id);
-      var p2 = db2.Person.get(person.id);
+      var p1 = db.Person.load(person.id);
+      var p2 = db2.Person.load(person.id);
 
       return Promise.all([p1, p2]).then(function(loaded) {
         expect(loaded[0]).not.equals(loaded[1]);
@@ -404,7 +404,7 @@ describe('Test dao', function() {
     it('should remove object from database', function() {
       return person.remove().then(function(removed) {
         expect(person).eqls(removed);
-        return expect(db.Person.get(person.id)).become(null);
+        return expect(db.Person.load(person.id)).become(null);
       });
     });
 
@@ -433,7 +433,7 @@ describe('Test dao', function() {
         expect(saved._metadata.version).be.ok;
         expect(saved._metadata.isPersistent).be.true;
         expect(saved._metadata.isDirty).be.false;
-        return db.Person.get(saved._metadata.id);
+        return db.Person.load(saved._metadata.id);
       }).then(function(loaded) {
         expect(loaded).be.ok;
         expect(loaded._metadata.ref).equals(person._metadata.ref);
@@ -465,7 +465,7 @@ describe('Test dao', function() {
       var person = db2.Person();
 
       return expect(person.save().then(function() {
-        return db.Person.get(person._metadata.id);
+        return db.Person.load(person._metadata.id);
       }).then(function(person2) {
         person2.name = "Foo Bar";
         return person2.save();
@@ -479,14 +479,14 @@ describe('Test dao', function() {
       var person = db2.Person();
 
       return person.save().then(function() {
-        return db.Person.get(person._metadata.id);
+        return db.Person.load(person._metadata.id);
       }).then(function(person2) {
         person2.name = "Foo Bar";
         return person2.save();
       }).then(function() {
         return person.remove({force:true});
       }).then(function() {
-        return expect(db.Person.get(person._metadata.id)).become(null);
+        return expect(db.Person.load(person._metadata.id)).become(null);
       });
     });
   });
@@ -515,13 +515,13 @@ describe('Test dao', function() {
       return person.update().then(function() {
         expect(person.name).equals('New Name');
         expect(person._metadata.version).equals(2);
-        return expect(db.Person.get(person._metadata.id)).eventually.have.property('name', 'New Name');
+        return expect(db.Person.load(person._metadata.id)).eventually.have.property('name', 'New Name');
       });
     });
 
-    it('should update and refresh object', function() {
+    it('should update and reload object', function() {
       person.name = 'New Name';
-      var promise = expect(person.update({refresh:true})).eventually.have.property('name', 'New Name');
+      var promise = expect(person.update({reload:true})).eventually.have.property('name', 'New Name');
       person.name = 'Newer Name';
 
       return promise;
@@ -532,7 +532,7 @@ describe('Test dao', function() {
       var person = db2.Person();
 
       return expect(person.save().then(function() {
-        return db.Person.get(person._metadata.id);
+        return db.Person.load(person._metadata.id);
       }).then(function(person2) {
         person2.name = "Foo Bar";
         return person2.save();
@@ -547,7 +547,7 @@ describe('Test dao', function() {
       var person = db2.Person();
 
       return person.save().then(function() {
-        return db.Person.get(person._metadata.id);
+        return db.Person.load(person._metadata.id);
       }).then(function(person2) {
         person2.name = "Foo Bar";
         return person2.save();
@@ -555,7 +555,7 @@ describe('Test dao', function() {
         person.name = "New Name";
         return person.update({force:true});
       }).then(function() {
-        return db.Person.get(person._metadata.id);
+        return db.Person.load(person._metadata.id);
       }).then(function(loaded) {
         expect(loaded.name).equals("New Name");
         expect(loaded._metadata.version).equals(3);
@@ -575,14 +575,14 @@ describe('Test dao', function() {
       var person = db.Person();
       person.name = "Peter Insert";
       return person.insert().then(function() {
-        return expect(db.Person.get(person._metadata.id)).become(person);
+        return expect(db.Person.load(person._metadata.id)).become(person);
       });
     });
 
-    it('should insert and refresh object', function() {
+    it('should insert and reload object', function() {
       var person = db.Person();
       person.name = "Peter Insert";
-      var promise = expect(person.insert({refresh:true})).eventually.have.property('name', 'Peter Insert');
+      var promise = expect(person.insert({reload:true})).eventually.have.property('name', 'Peter Insert');
       person.name = "New Peter Insert";
       return promise;
     });
@@ -591,7 +591,7 @@ describe('Test dao', function() {
       var person = db.Person();
       person.name = "Peter Insert";
       return person.insert().then(function() {
-        return db.Person.get(person._metadata.id);
+        return db.Person.load(person._metadata.id);
       }).then(function(loaded) {
         loaded.name = "Peter Inserted";
         expect(function() {
@@ -614,55 +614,55 @@ describe('Test dao', function() {
 
   });
 
-  describe('refresh', function() {
+  describe('load', function() {
 
-    it('should refresh object', function() {
+    it('should load object', function() {
       var person = db.Person();
       person.name = "Old Name";
       return person.save(function() {
         return emf.createEntityManager();
       }).then(function(db2) {
-        return db2.Person.get(person._metadata.id);
+        return db2.Person.load(person._metadata.id);
       }).then(function(loaded) {
         loaded.name = "New Name";
         return loaded.save();
       }).then(function() {
         expect(person).have.property('name', 'Old Name');
-        return expect(person.refresh()).eventually.have.property('name', 'New Name');
+        return expect(person.load()).eventually.have.property('name', 'New Name');
       });
     });
 
-    it('should refresh object with same version', function() {
+    it('should load object with same version', function() {
       var person = db.Person();
       person.name = "Old Name";
       return person.save(function() {
         return emf.createEntityManager();
       }).then(function(db2) {
-        return db2.Person.get(person._metadata.id);
+        return db2.Person.load(person._metadata.id);
       }).then(function(loaded) {
         loaded.name = "New Name";
         return loaded.save();
       }).then(function() {
         person._metadata.version = 2;
         expect(person).have.property('name', 'Old Name');
-        return expect(db.Person.get(person._metadata.id)).eventually.have.property('name', 'Old Name');
+        return expect(db.Person.load(person._metadata.id)).eventually.have.property('name', 'Old Name');
       }).then(function() {
-        return expect(person.refresh()).eventually.have.property('name', 'New Name');
+        return expect(person.load()).eventually.have.property('name', 'New Name');
       });
     });
 
-    it('should refresh object when removed', function() {
+    it('should load object when removed', function() {
       var person = db.Person();
       person.name = "Old Name";
 
       return person.save().then(function(obj) {
         return emf.createEntityManager();
       }).then(function(db2) {
-        return db2.Person.get(person.id);
+        return db2.Person.load(person.id);
       }).then(function(loaded) {
         return loaded.remove();
       }).then(function() {
-        return person.refresh();
+        return person.load();
       }).then(function(obj) {
         return expect(obj).be.null;
       });
@@ -729,14 +729,14 @@ describe('Test dao', function() {
     it('should save and remove referenced objects by depth', function() {
       return child.save({depth:2}).then(function() {
         var promises = [
-          expect(db.Child.get(child._metadata.id)).not.become(null),
-          expect(db.Person.get(mother._metadata.id)).not.become(null),
-          expect(db.Person.get(father._metadata.id)).not.become(null),
-          expect(db.Street.get(street._metadata.id)).not.become(null),
-          expect(db.Person.get(sister._metadata.id)).not.become(null)
+          expect(db.Child.load(child._metadata.id)).not.become(null),
+          expect(db.Person.load(mother._metadata.id)).not.become(null),
+          expect(db.Person.load(father._metadata.id)).not.become(null),
+          expect(db.Street.load(street._metadata.id)).not.become(null),
+          expect(db.Person.load(sister._metadata.id)).not.become(null)
         ];
         sibs.forEach(function(sib) {
-          promises.push(expect(db.Person.get(sib._metadata.id)).not.become(null))
+          promises.push(expect(db.Person.load(sib._metadata.id)).not.become(null))
         });
         return Promise.all(promises);
       }).then(function() {
@@ -744,14 +744,14 @@ describe('Test dao', function() {
       }).then(function(removed) {
         expect(removed).equals(child);
         var promises = [
-          expect(db.Child.get(child._metadata.id)).become(null),
-          expect(db.Person.get(mother._metadata.id)).become(null),
-          expect(db.Person.get(father._metadata.id)).become(null),
-          expect(db.Street.get(street._metadata.id)).become(null),
-          expect(db.Person.get(sister._metadata.id)).become(null)
+          expect(db.Child.load(child._metadata.id)).become(null),
+          expect(db.Person.load(mother._metadata.id)).become(null),
+          expect(db.Person.load(father._metadata.id)).become(null),
+          expect(db.Street.load(street._metadata.id)).become(null),
+          expect(db.Person.load(sister._metadata.id)).become(null)
         ];
         sibs.forEach(function(sib) {
-          promises.push(expect(db.Person.get(sib._metadata.id)).become(null))
+          promises.push(expect(db.Person.load(sib._metadata.id)).become(null))
         });
         return Promise.all(promises);
       });
@@ -760,14 +760,14 @@ describe('Test dao', function() {
     it('should save and remove referenced objects by reachability', function() {
       return child.save({depth:true}).then(function() {
         var promises = [
-          expect(db.Child.get(child._metadata.id)).not.become(null),
-          expect(db.Person.get(mother._metadata.id)).not.become(null),
-          expect(db.Person.get(father._metadata.id)).not.become(null),
-          expect(db.Street.get(street._metadata.id)).not.become(null),
-          expect(db.Person.get(sister._metadata.id)).not.become(null)
+          expect(db.Child.load(child._metadata.id)).not.become(null),
+          expect(db.Person.load(mother._metadata.id)).not.become(null),
+          expect(db.Person.load(father._metadata.id)).not.become(null),
+          expect(db.Street.load(street._metadata.id)).not.become(null),
+          expect(db.Person.load(sister._metadata.id)).not.become(null)
         ];
         sibs.forEach(function(sib) {
-          promises.push(expect(db.Person.get(sib._metadata.id)).not.become(null))
+          promises.push(expect(db.Person.load(sib._metadata.id)).not.become(null))
         });
         return Promise.all(promises);
       }).then(function() {
@@ -775,14 +775,14 @@ describe('Test dao', function() {
       }).then(function(removed) {
         expect(removed).equals(child);
         var promises = [
-          expect(db.Child.get(child._metadata.id)).become(null),
-          expect(db.Person.get(mother._metadata.id)).become(null),
-          expect(db.Person.get(father._metadata.id)).become(null),
-          expect(db.Street.get(street._metadata.id)).become(null),
-          expect(db.Person.get(sister._metadata.id)).become(null)
+          expect(db.Child.load(child._metadata.id)).become(null),
+          expect(db.Person.load(mother._metadata.id)).become(null),
+          expect(db.Person.load(father._metadata.id)).become(null),
+          expect(db.Street.load(street._metadata.id)).become(null),
+          expect(db.Person.load(sister._metadata.id)).become(null)
         ];
         sibs.forEach(function(sib) {
-          promises.push(expect(db.Person.get(sib._metadata.id)).become(null))
+          promises.push(expect(db.Person.load(sib._metadata.id)).become(null))
         });
         return Promise.all(promises);
       });
@@ -802,7 +802,7 @@ describe('Test dao', function() {
         expect(db2.containsById(sister)).be.false;
         expect(db2.containsById(mother)).be.false;
         expect(db2.containsById(street)).be.false;
-        return em.Child.get(child._metadata.id, {depth: 2});
+        return em.Child.load(child._metadata.id, {depth: 2});
       }).then(function(loaded) {
         expect(loaded.father.sister._metadata.isAvailable).be.true;
         expect(loaded.father._metadata.isAvailable).be.true;
@@ -826,7 +826,7 @@ describe('Test dao', function() {
         expect(db2.containsById(sister)).be.false;
         expect(db2.containsById(mother)).be.false;
         expect(db2.containsById(street)).be.false;
-        return em.Child.get(child._metadata.id, {depth: true});
+        return em.Child.load(child._metadata.id, {depth: true});
       }).then(function(loaded) {
         expect(loaded.father.sister._metadata.isAvailable).be.true;
         expect(loaded.father._metadata.isAvailable).be.true;
@@ -844,7 +844,7 @@ describe('Test dao', function() {
         child = saved;
         return emf.createEntityManager();
       }).then(function(em) {
-        return em.Child.get(child._metadata.id, {depth: 1});
+        return em.Child.load(child._metadata.id, {depth: 1});
       }).then(function(loaded) {
         expect(loaded.father.sister._metadata.isAvailable).be.false;
         expect(loaded.father._metadata.isAvailable).be.true;
@@ -853,9 +853,9 @@ describe('Test dao', function() {
       });
     });
 
-    it('should refresh all referenced objects by reachability', function() {
+    it('should load all referenced objects by reachability', function() {
       return child.save({depth:true}).then(function(saved) {
-        var promise = saved.refresh({depth:true});
+        var promise = saved.load({depth:true});
         saved.father.sister.name = "New Name";
         saved.father.name = "New Name";
         return promise;
@@ -865,9 +865,9 @@ describe('Test dao', function() {
       });
     });
 
-    it('should refresh all referenced objects by depth', function() {
+    it('should load all referenced objects by depth', function() {
       return child.save({depth:2}).then(function(saved) {
-        var promise = saved.refresh({depth:true});
+        var promise = saved.load({depth:true});
         saved.father.sister.name = "New Name";
         saved.father.name = "New Name";
         return promise;
@@ -877,9 +877,9 @@ describe('Test dao', function() {
       });
     });
 
-    it('should not refresh all referenced objects', function() {
+    it('should not load all referenced objects', function() {
       return child.save({depth:true}).then(function(saved) {
-        var promise = saved.refresh({depth:1});
+        var promise = saved.load({depth:1});
         saved.father.sister.name = "New Name";
         saved.father.name = "New Name";
         return promise;
@@ -892,11 +892,11 @@ describe('Test dao', function() {
     it('should insert referenced objects by depth', function() {
       return child.insert({depth:2}).then(function() {
         return Promise.all([
-          expect(db.Child.get(child._metadata.id)).not.become(null),
-          expect(db.Person.get(mother._metadata.id)).not.become(null),
-          expect(db.Person.get(father._metadata.id)).not.become(null),
-          expect(db.Street.get(street._metadata.id)).not.become(null),
-          expect(db.Person.get(sister._metadata.id)).not.become(null)
+          expect(db.Child.load(child._metadata.id)).not.become(null),
+          expect(db.Person.load(mother._metadata.id)).not.become(null),
+          expect(db.Person.load(father._metadata.id)).not.become(null),
+          expect(db.Street.load(street._metadata.id)).not.become(null),
+          expect(db.Person.load(sister._metadata.id)).not.become(null)
         ]);
       });
     });
@@ -904,11 +904,11 @@ describe('Test dao', function() {
     it('should insert referenced objects by reachability', function() {
       return child.insert({depth:true}).then(function() {
         return Promise.all([
-          expect(db.Child.get(child._metadata.id)).not.become(null),
-          expect(db.Person.get(mother._metadata.id)).not.become(null),
-          expect(db.Person.get(father._metadata.id)).not.become(null),
-          expect(db.Street.get(street._metadata.id)).not.become(null),
-          expect(db.Person.get(sister._metadata.id)).not.become(null)
+          expect(db.Child.load(child._metadata.id)).not.become(null),
+          expect(db.Person.load(mother._metadata.id)).not.become(null),
+          expect(db.Person.load(father._metadata.id)).not.become(null),
+          expect(db.Street.load(street._metadata.id)).not.become(null),
+          expect(db.Person.load(sister._metadata.id)).not.become(null)
         ]);
       });
     });
@@ -935,11 +935,11 @@ describe('Test dao', function() {
       });
     });
 
-    it('should update and refresh all referenced objects by reachability', function() {
+    it('should update and reload all referenced objects by reachability', function() {
       return child.save({depth:true}).then(function(saved) {
         saved.father.sister.name = "New Name";
         saved.father.name = "New Name";
-        var promise = saved.update({refresh:true, force:true, depth: true});
+        var promise = saved.update({reload:true, force:true, depth: true});
         saved.father.sister.name = "Newer Name";
         saved.father.name = "Newer Name";
         return promise;
@@ -958,7 +958,7 @@ describe('Test dao', function() {
     });
 
     afterEach(function() {
-      return db.Person.get(myId).then(function(obj) {
+      return db.Person.load(myId).then(function(obj) {
         return obj.remove();
       });
     });
@@ -972,13 +972,13 @@ describe('Test dao', function() {
         expect(person.id).equals(myId);
         expect(person.name).equals("Custom Person");
         expect(person).equals(result);
-        return db.Person.get(myId);
+        return db.Person.load(myId);
       }).then(function(person) {
         expect(person.id).equals(myId);
         expect(person.name).equals("Custom Person");
         return emf.createEntityManager();
       }).then(function(db2) {
-        return db2.Person.get(myId);
+        return db2.Person.load(myId);
       }).then(function(person) {
         expect(person.id).equals(myId);
         expect(person.name).equals("Custom Person");
@@ -995,28 +995,28 @@ describe('Test dao', function() {
       person.child.name = "Custom Child Person";
       person.child.id = childId;
 
-      return person.save({refresh:true, depth: true}, function(result) {
+      return person.save({reload:true, depth: true}, function(result) {
         expect(person.id).equals(myId);
         expect(person.name).equals("Custom Person");
         expect(person.child.id).equals(childId);
         expect(person.child.name).equals("Custom Child Person");
         return emf.createEntityManager();
       }).then(function(db2) {
-        return db2.Person.get(childId).then(function(child) {
+        return db2.Person.load(childId).then(function(child) {
           expect(child.id).equals(childId);
           expect(child.name).equals("Custom Child Person");
-          return db2.Person.get(myId);
+          return db2.Person.load(myId);
         }).then(function(person) {
           expect(person.id).equals(myId);
           expect(person.name).equals("Custom Person");
           expect(person.child.id).equals(childId);
           expect(person.child.name).equals("Custom Child Person");
-          return db2.Person.get(childId);
+          return db2.Person.load(childId);
         }).then(function(child) {
           return child.remove();
         });
       }).then(function() {
-        return person.child.refresh();
+        return person.child.load();
       }).then(function(obj) {
         expect(obj).be.null;
       });
