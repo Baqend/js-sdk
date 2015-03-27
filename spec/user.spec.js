@@ -57,6 +57,16 @@ describe('Test user and roles', function() {
       });
     });
 
+    it('should not set token and me', function() {
+      var user = db.User({ username: makeLogin(), email: "test@mail.de" });
+      return db.User.logout().then(function() {
+        return db.register(user, 'secret', true)
+      }).then(function() {
+        expect(db.me).not.ok;
+        expect(db.token).not.ok;
+      });
+    });
+
     it('should register user from object', function() {
       var user = db.User({ username: makeLogin(), email: "test@mail.de" });
       return db.User.register(user, 'secret').then(function(loaded) {
