@@ -253,13 +253,13 @@ describe('Test dao', function() {
       });
     });
 
-    it('should not save an removed object', function() {
+    it('should not save an deleted object', function() {
       var person = db.Person();
       return person.save().then(function() {
         var db2 = emf.createEntityManager();
 
         return db2.Person.load(person._metadata.id).then(function(person2) {
-          return person2.remove();
+          return person2.delete();
         });
       }).then(function() {
         person.name = "New Name";
@@ -267,13 +267,13 @@ describe('Test dao', function() {
       });
     });
 
-    it('should forcibly save an removed object', function() {
+    it('should forcibly save an deleted object', function() {
       var person = db.Person();
       return person.save().then(function() {
         var db2 = emf.createEntityManager();
 
         return db2.Person.load(person._metadata.id).then(function(person2) {
-          return person2.remove();
+          return person2.delete();
         });
       }).then(function() {
         person.name = 'Peter Parker';
@@ -390,7 +390,7 @@ describe('Test dao', function() {
   });
 
 
-  describe('remove', function() {
+  describe('delete', function() {
     var person;
 
     beforeEach(function() {
@@ -401,34 +401,34 @@ describe('Test dao', function() {
       return person.save();
     });
 
-    it('should remove object from database', function() {
-      return person.remove().then(function(removed) {
-        expect(person).eqls(removed);
+    it('should delete object from database', function() {
+      return person.delete().then(function(deleted) {
+        expect(person).eqls(deleted);
         return expect(db.Person.load(person.id)).become(null);
       });
     });
 
-    it('should remove object from EntityManager', function() {
+    it('should delete object from EntityManager', function() {
       expect(db.contains(person)).be.true;
-      return person.remove().then(function() {
+      return person.delete().then(function() {
         expect(db.contains(person)).be.false;
       });
     });
 
     it('should mark as dirty', function() {
-      return person.remove().then(function(deleted) {
+      return person.delete().then(function(deleted) {
         expect(deleted._metadata.isDirty).be.true;
       });
     });
 
-    it('should remove version', function() {
-      return person.remove().then(function(deleted) {
+    it('should delete version', function() {
+      return person.delete().then(function(deleted) {
         expect(deleted._metadata.version).be.null;
       });
     });
 
-    it('should be allowed to save after remove', function() {
-      return person.remove().then(function(per) { return per.save(); }).then(function(saved) {
+    it('should be allowed to save after delete', function() {
+      return person.delete().then(function(per) { return per.save(); }).then(function(saved) {
         expect(saved._metadata.id).be.ok;
         expect(saved._metadata.version).be.ok;
         expect(saved._metadata.isPersistent).be.true;
@@ -443,16 +443,16 @@ describe('Test dao', function() {
       });
     });
 
-    it('should be allowed to remove an object without id', function() {
-      return expect(person.remove().then(function(per) { return per.remove() })).be.rejectedWith(DB.error.IllegalEntityError);
+    it('should be allowed to delete an object without id', function() {
+      return expect(person.delete().then(function(per) { return per.delete() })).be.rejectedWith(DB.error.IllegalEntityError);
     });
 
-    it('should be allowed to forcly remove an object without id', function() {
-      return expect(person.remove().then(function(per) { return per.remove({force:true}) } )).be.fulfilled;
+    it('should be allowed to forcly delete an object without id', function() {
+      return expect(person.delete().then(function(per) { return per.delete({force:true}) } )).be.fulfilled;
     });
 
-    it('should not be allowed to add removed objects with same id', function() {
-      return expect(person.remove().then(function() {
+    it('should not be allowed to add deleted objects with same id', function() {
+      return expect(person.delete().then(function() {
         db.attach(person);
         var newPerson = db.Person();
         newPerson._metadata.id = person._metadata.id;
@@ -460,7 +460,7 @@ describe('Test dao', function() {
       })).be.rejectedWith(DB.error.EntityExistsError);
     });
 
-    it('should not be allowed to remove outdated object', function() {
+    it('should not be allowed to delete outdated object', function() {
       var db2 = emf.createEntityManager();
       var person = db2.Person();
 
@@ -470,11 +470,11 @@ describe('Test dao', function() {
         person2.name = "Foo Bar";
         return person2.save();
       }).then(function() {
-        return person.remove();
+        return person.delete();
       })).be.rejected;
     });
 
-    it('should be allowed to forcibly remove outdated object', function() {
+    it('should be allowed to forcibly delete outdated object', function() {
       var db2 = emf.createEntityManager();
       var person = db2.Person();
 
@@ -484,7 +484,7 @@ describe('Test dao', function() {
         person2.name = "Foo Bar";
         return person2.save();
       }).then(function() {
-        return person.remove({force:true});
+        return person.delete({force:true});
       }).then(function() {
         return expect(db.Person.load(person._metadata.id)).become(null);
       });
@@ -651,7 +651,7 @@ describe('Test dao', function() {
       });
     });
 
-    it('should load object when removed', function() {
+    it('should load object when deleted', function() {
       var person = db.Person();
       person.name = "Old Name";
 
@@ -660,7 +660,7 @@ describe('Test dao', function() {
       }).then(function(db2) {
         return db2.Person.load(person.id);
       }).then(function(loaded) {
-        return loaded.remove();
+        return loaded.delete();
       }).then(function() {
         return person.load();
       }).then(function(obj) {
@@ -726,7 +726,7 @@ describe('Test dao', function() {
       });
     });
 
-    it('should save and remove referenced objects by depth', function() {
+    it('should save and delete referenced objects by depth', function() {
       return child.save({depth:2}).then(function() {
         var promises = [
           expect(db.Child.load(child._metadata.id)).not.become(null),
@@ -740,9 +740,9 @@ describe('Test dao', function() {
         });
         return Promise.all(promises);
       }).then(function() {
-        return child.remove({depth: 2});
-      }).then(function(removed) {
-        expect(removed).equals(child);
+        return child.delete({depth: 2});
+      }).then(function(deleted) {
+        expect(deleted).equals(child);
         var promises = [
           expect(db.Child.load(child._metadata.id)).become(null),
           expect(db.Person.load(mother._metadata.id)).become(null),
@@ -757,7 +757,7 @@ describe('Test dao', function() {
       });
     });
 
-    it('should save and remove referenced objects by reachability', function() {
+    it('should save and delete referenced objects by reachability', function() {
       return child.save({depth:true}).then(function() {
         var promises = [
           expect(db.Child.load(child._metadata.id)).not.become(null),
@@ -771,9 +771,9 @@ describe('Test dao', function() {
         });
         return Promise.all(promises);
       }).then(function() {
-        return child.remove({depth:true});
-      }).then(function(removed) {
-        expect(removed).equals(child);
+        return child.delete({depth:true});
+      }).then(function(deleted) {
+        expect(deleted).equals(child);
         var promises = [
           expect(db.Child.load(child._metadata.id)).become(null),
           expect(db.Person.load(mother._metadata.id)).become(null),
@@ -959,7 +959,7 @@ describe('Test dao', function() {
 
     afterEach(function() {
       return db.Person.load(myId).then(function(obj) {
-        return obj.remove();
+        return obj.delete();
       });
     });
 
@@ -1013,7 +1013,7 @@ describe('Test dao', function() {
           expect(person.child.name).equals("Custom Child Person");
           return db2.Person.load(childId);
         }).then(function(child) {
-          return child.remove();
+          return child.delete();
         });
       }).then(function() {
         return person.child.load();

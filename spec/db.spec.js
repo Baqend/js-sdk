@@ -83,7 +83,7 @@ describe("Test db", function() {
       expect(testClass.insert).be.ok;
       expect(testClass.update).be.ok;
       expect(testClass.load).be.ok;
-      expect(testClass.remove).be.ok;
+      expect(testClass.delete).be.ok;
       expect(testClass.attr).be.ok;
     });
 
@@ -178,7 +178,7 @@ describe("Test db", function() {
       expect(testClass.insert).be.ok;
       expect(testClass.update).be.ok;
       expect(testClass.load).be.ok;
-      expect(testClass.remove).be.ok;
+      expect(testClass.delete).be.ok;
       expect(testClass.attr).be.ok;
 
       expect(DB.binding.Entity.isInstance(testClass)).be.true;
@@ -218,7 +218,7 @@ describe("Test db", function() {
       expect(testClass.insert).be.ok;
       expect(testClass.update).be.ok;
       expect(testClass.load).be.ok;
-      expect(testClass.remove).be.ok;
+      expect(testClass.delete).be.ok;
       expect(testClass.attr).be.ok;
 
       expect(testClass.save()).equals('overwritten');

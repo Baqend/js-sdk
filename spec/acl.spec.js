@@ -31,7 +31,7 @@ describe('Test Acl', function() {
 
   after(function() {
     var user = db.User.me;
-    return user.remove();
+    return user.delete();
   });
 
   function createUserDb() {
@@ -220,8 +220,8 @@ describe('Test Acl', function() {
 
     after(function() {
       return Promise.all([
-        db2.User.me.remove(),
-        db3.User.me.remove()
+        db2.User.me.delete(),
+        db3.User.me.delete()
       ]);
     });
 

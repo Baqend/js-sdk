@@ -647,7 +647,7 @@ describe('Test Metamodel', function() {
         type.addAttribute(new DB.metamodel.SingularAttribute("name", metamodel.baseType(String)));
         embeddedType.addAttribute(new DB.metamodel.SingularAttribute("name", metamodel.baseType(String)));
 
-        type.createPermission.denyAccess(user2);
+        type.insertPermission.denyAccess(user2);
         type.updatePermission.denyAccess(user2).denyAccess(user3);
         type.deletePermission.denyAccess(user2).denyAccess(user3).allowAccess(user1);
         type.queryPermission.allowAccess(user2);
@@ -675,7 +675,7 @@ describe('Test Metamodel', function() {
       return metamodel.load().then(function() {
         var AclPerson = metamodel.entity(SchemaAclPersonName);
 
-        expect(AclPerson.createPermission.isDenied(user2)).be.true;
+        expect(AclPerson.insertPermission.isDenied(user2)).be.true;
         expect(AclPerson.updatePermission.isDenied(user2)).be.true;
         expect(AclPerson.deletePermission.isDenied(user2)).be.true;
         expect(AclPerson.queryPermission.isAllowed(user2)).be.true;
@@ -752,7 +752,7 @@ describe('Test Metamodel', function() {
 
       it('should allow object removal', function() {
         return db[SchemaAclPersonName]().insert().then(function(obj) {
-          return expect(obj.remove()).be.fulfilled;
+          return expect(obj.delete()).be.fulfilled;
         });
       });
     });
@@ -819,7 +819,7 @@ describe('Test Metamodel', function() {
 
       it('should deny object removal', function() {
         return db[SchemaAclPersonName].load(obj.id).then(function(obj) {
-          return expect(obj.remove()).be.rejected;
+          return expect(obj.delete()).be.rejected;
         });
       });
     });
@@ -888,7 +888,7 @@ describe('Test Metamodel', function() {
 
       it('should deny object removal', function() {
         return db[SchemaAclPersonName].load(obj.id).then(function(obj) {
-          return expect(obj.remove()).be.rejected;
+          return expect(obj.delete()).be.rejected;
         });
       });
     });
