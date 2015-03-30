@@ -1,6 +1,6 @@
 {
   "name": "baqend",
-  "version": "0.9.1-SNAPSHOT",
+  "version": "0.9.1",
   "description": "Baqend JavaScript SDK",
   "license": "MIT",
   "author": {
