@@ -47,7 +47,7 @@
     });
 ?>
 
-<table class="params">
+<table class="params table">
     <thead>
     <tr>
         <?js if (params.hasName) {?>
@@ -110,11 +110,17 @@
                 </td>
             <?js } ?>
 
-            <td class="description last"><?js= param.description ?><?js if (param.subparams) { ?>
+            <td class="description last"><?js= param.description ?></td>
+        </tr>
+        <?js if (param.subparams) { ?>
+        <tr>
+            <td colspan="4" class="subparams">
                 <h6>Properties</h6>
                 <?js= self.partial('params.tmpl', param.subparams) ?>
-            <?js } ?></td>
+            </td>
         </tr>
+        <?js } ?>
+
 
     <?js }); ?>
     </tbody>
