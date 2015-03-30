@@ -1,4 +1,8 @@
-.bs-
+header
+{
+    display: block;
+    padding: 0px 4px;
+}
 
 .class-description {
     font-size: 130%;
@@ -63,7 +67,6 @@ h4
     font-size: 18px;
     letter-spacing: -0.33px;
     margin-bottom: 12px;
-    color: #4d4e53;
 }
 
 h5, .container-overview .subsection-title
