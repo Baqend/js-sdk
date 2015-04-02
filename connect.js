@@ -41,7 +41,10 @@ function receive(xhr, message, headers) {
     entity: xhr.responseText
   };
 
-   message.source.postMessage(JSON.stringify(msg), 'null' !== message.origin ? message.origin : '*');
+  if (message.origin == 'null' || message.origin == 'file:')
+    message.origin = '*';
+
+  message.source.postMessage(JSON.stringify(msg), message.origin);
 }
 
 function applyCacheRule(node) {
