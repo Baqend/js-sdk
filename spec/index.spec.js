@@ -55,8 +55,9 @@ describe("Test Index", function() {
       return meta.getIndexes(personType.name, db.token);
     }).then(function(indexes) {
       expect(indexes).have.length(2);
-      expect(indexes[0].isCompound).be.false;
-      expect(indexes[0].keys[0].name).eqls(DB.metamodel.DbIndex.ASC);
+      var index = indexes.filter(function(el) { return el.keys[0].name })[0];
+      expect(index.isCompound).be.false;
+      expect(index.keys[0].name).eqls(DB.metamodel.DbIndex.ASC);
     });
   });
 
@@ -136,6 +137,7 @@ describe("Test Index", function() {
       return meta.getIndexes(personType.name, db.token);
     }).then(function(indexes) {
       expect(indexes).have.length(2);
+      var index = indexes.filter(function(el) { return el.keys[0].name })[0];
       expect(indexes[0].isCompound).be.true;
       expect(indexes[0].keys[0].name).eqls(DB.metamodel.DbIndex.ASC);
       expect(indexes[0].keys[1].age).eqls(DB.metamodel.DbIndex.DESC);
