@@ -138,9 +138,9 @@ describe("Test Index", function() {
     }).then(function(indexes) {
       expect(indexes).have.length(2);
       var index = indexes.filter(function(el) { return el.keys[0].name })[0];
-      expect(indexes[0].isCompound).be.true;
-      expect(indexes[0].keys[0].name).eqls(DB.metamodel.DbIndex.ASC);
-      expect(indexes[0].keys[1].age).eqls(DB.metamodel.DbIndex.DESC);
+      expect(index.isCompound).be.true;
+      expect(index.keys[0].name).eqls(DB.metamodel.DbIndex.ASC);
+      expect(index.keys[1].age).eqls(DB.metamodel.DbIndex.DESC);
     });
   });
 

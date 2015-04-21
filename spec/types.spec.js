@@ -58,43 +58,51 @@ describe('Test entity type', function () {
 
   var EntityType = new DB.metamodel.EntityType('jstest.Type', metamodel.entity(Object));
   var EmbeddedType = new DB.metamodel.EmbeddableType('jstest.Embedded');
-  var simpleTypes = {
+  var types = {
     // values used for collection tests
-    "boolean": {type: metamodel.baseType('Boolean'), values: [true, false] },
-    "float": {type: metamodel.baseType('Double'), values: [-2.3, 4] },
-    "integer": {type: metamodel.baseType('Integer'), values: [0, -4, 56] },
-    "string": { type: metamodel.baseType('String'), values: ["", "Test String"] },
-    "time": { type: metamodel.baseType('Time'), values: [new Date("1970-01-01T17:33:14")] },
-    "date": { type: metamodel.baseType('Date'), values: [new Date("2013-11-22")] },
-    "dateTime": { type: metamodel.baseType('DateTime'), values: [new Date()] },
-    "geoPoint": { type: metamodel.baseType('GeoPoint'), values: [new DB.GeoPoint(34.5658, 110.4576)] }
+    "boolean": {type: metamodel.baseType('Boolean'), simple:true, values: [true, false] },
+    "float": {type: metamodel.baseType('Double'), simple:true, values: [-2.3, 4] },
+    "integer": {type: metamodel.baseType('Integer'), simple:true, values: [0, -4, 56] },
+    "string": { type: metamodel.baseType('String'), simple:true, values: ["", "Test String"] },
+    "time": { type: metamodel.baseType('Time'), simple:true, values: [new Date("1970-01-01T17:33:14")] },
+    "date": { type: metamodel.baseType('Date'), simple:true, values: [new Date("2013-11-22")] },
+    "dateTime": { type: metamodel.baseType('DateTime'), simple:true, values: [new Date()] },
+    "geoPoint": { type: metamodel.baseType('GeoPoint'), values: [new DB.GeoPoint(34.5658, 110.4576), new DB.GeoPoint(0, 0)] },
+    "jsonArray": { type: metamodel.baseType('JsonArray'), values: [[1,'string',{key:'value'}, [1,2,3]], [], [null, 0, false, '', [], {}]] },
+    "jsonObject": { type: metamodel.baseType('JsonObject'), values: [
+      {k1:1, k2:'string', k3:{key:'value'}, k4:[1,2,3]}, {}, {k1:null, k2:0, k3:false, k4:'', k5:[], k6:{}}
+    ]}
   };
 
   for (var i = 0, type; type = [EntityType, EmbeddedType][i]; ++i) {
-    for (var name in simpleTypes) {
-      type.addAttribute(new DB.metamodel.SingularAttribute(name, simpleTypes[name].type));
+    for (var name in types) {
+      type.addAttribute(new DB.metamodel.SingularAttribute(name, types[name].type));
     }
 
-    type.addAttribute(new DB.metamodel.SingularAttribute("jsonArray", metamodel.baseType('JsonArray')));
-    type.addAttribute(new DB.metamodel.SingularAttribute("jsonObject", metamodel.baseType('JsonObject')));
     type.addAttribute(new DB.metamodel.SingularAttribute("ref", EntityType));
     type.addAttribute(new DB.metamodel.SingularAttribute("embedded", EmbeddedType));
 
-    for (var name in simpleTypes) {
-      type.addAttribute(new DB.metamodel.ListAttribute(name + "List", simpleTypes[name].type));
+    for (var name in types) {
+      type.addAttribute(new DB.metamodel.ListAttribute(name + "List", types[name].type));
     }
     type.addAttribute(new DB.metamodel.ListAttribute("refList", EntityType));
     type.addAttribute(new DB.metamodel.ListAttribute("embeddedList", EmbeddedType));
 
-    for (var name in simpleTypes) {
-      type.addAttribute(new DB.metamodel.SetAttribute(name + "Set", simpleTypes[name].type));
+    for (var name in types) {
+      if (types[name].simple) {
+        type.addAttribute(new DB.metamodel.SetAttribute(name + "Set", types[name].type));
+      }
     }
+
     type.addAttribute(new DB.metamodel.SetAttribute("refSet", EntityType));
 
-    for (var name in simpleTypes) {
-      type.addAttribute(new DB.metamodel.MapAttribute(name + "simpleMap", simpleTypes[name].type, metamodel.baseType('String')));
-      type.addAttribute(new DB.metamodel.MapAttribute("simple" + name + "Map", metamodel.baseType('String'), simpleTypes[name].type));
+    for (var name in types) {
+      type.addAttribute(new DB.metamodel.MapAttribute("simple" + name + "Map", metamodel.baseType('String'), types[name].type));
+      if (types[name].simple) {
+        type.addAttribute(new DB.metamodel.MapAttribute(name + "simpleMap", types[name].type, metamodel.baseType('String')));
+      }
     }
+
     type.addAttribute(new DB.metamodel.MapAttribute("simpleRefMap", metamodel.baseType('String'), EntityType));
     type.addAttribute(new DB.metamodel.MapAttribute("refSimpleMap", EntityType, metamodel.baseType('String')));
     type.addAttribute(new DB.metamodel.MapAttribute("refMap", EntityType, EntityType));
@@ -202,10 +210,10 @@ describe('Test entity type', function () {
     test("embedded", new EmbeddedType.typeConstructor(), embeddableObject(), [{}, null]);
   });
 
-  for (name in simpleTypes) {
+  for (name in types) {
     describe(name + "List value", function() {
       var list = new DB.List();
-      var vals = simpleTypes[name].values;
+      var vals = types[name].values;
       for (var i = 0; i < vals.length; ++i) {
         list.add(vals[i]);
       }
@@ -222,16 +230,18 @@ describe('Test entity type', function () {
     test("embeddedList", new DB.List(), new DB.List([embeddableObject(), embeddableObject(), null, embeddableObject()]));
   });
 
-  for (name in simpleTypes) {
-    describe(name + "Set value", function() {
-      var set = new DB.Set();
-      var vals = simpleTypes[name].values;
-      for (var i = 0; i < vals.length; ++i) {
-        set.add(vals[i]);
-      }
+  for (name in types) {
+    if (types[name].simple) {
+      describe(name + "Set value", function() {
+        var set = new DB.Set();
+        var vals = types[name].values;
+        for (var i = 0; i < vals.length; ++i) {
+          set.add(vals[i]);
+        }
 
-      test(name + "Set", set);
-    });
+        test(name + "Set", set);
+      });
+    }
   }
 
   describe("refSet value", function() {
@@ -275,10 +285,10 @@ describe('Test entity type', function () {
     });
   });
 
-  for (name in simpleTypes) {
+  for (name in types) {
     describe("simple" + name + "Map value", function() {
       var map = new DB.Map();
-      var vals = simpleTypes[name].values;
+      var vals = types[name].values;
       for (var i = 0; i < vals.length; ++i) {
         map.set("key" + i, vals[i]);
       }
@@ -286,15 +296,17 @@ describe('Test entity type', function () {
       test("simple" + name + "Map", map);
     });
 
-    describe(name + "simpleMap value", function() {
-      var keys = simpleTypes[name].values;
-      var map = new DB.Map();
-      for (var i = 0; i < keys.length; ++i) {
-        map.set(keys[i], "value" + i);
-      }
+    if (types[name].simple) {
+      describe(name + "simpleMap value", function() {
+        var keys = types[name].values;
+        var map = new DB.Map();
+        for (var i = 0; i < keys.length; ++i) {
+          map.set(keys[i], "value" + i);
+        }
 
-      test(name + "simpleMap", map);
-    });
+        test(name + "simpleMap", map);
+      });
+    }
   }
 
   describe("simpleRefMap value", function() {
