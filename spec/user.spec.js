@@ -293,6 +293,57 @@ describe('Test user and roles', function() {
       return DB.logout();
     });
 
+    if(typeof global != "undefined") {
+      it('should remove cookie if password has been changed', function() {
+        var login = makeLogin();
+        return DB.User.register(login, 'secret').then(function() {
+          return new Promise(function(resolve) {
+            setTimeout(function() {
+              resolve();
+            }, 1100);
+          });
+        }).then(function() {
+          return db.User.login(login, 'secret');
+        }).then(function() {
+          return db.me.newPassword('secret', 'newSecret');
+        }).then(function() {
+          expect(DB._connector.cookie).be.ok;
+          return DB.renew();
+        }).then(function() {
+          expect(DB._connector.cookie).be.null;
+        });
+      });
+
+      it('should remove cookie if token is invalid', function() {
+        var login = makeLogin();
+        return DB.User.register(login, 'secret').then(function() {
+          expect(DB._connector.cookie).be.ok;
+          DB._connector.cookie = DB._connector.cookie.replace(/.{1}$/, DB._connector.cookie.substr(0, DB._connector.cookie.length) == '0'? '1': '0');
+          return DB.renew();
+        }).then(function(user) {
+          expect(user).be.null;
+          expect(DB._connector.cookie).be.null;
+        });
+      });
+
+      it('should not remove cookie if not global', function() {
+        var login = makeLogin();
+        var oldCookie;
+        return DB.User.register(login, 'secret').then(function() {
+          return db.User.login(login, 'secret');
+        }).then(function() {
+          expect(DB._connector.cookie).be.ok;
+          oldCookie = DB._connector.cookie;
+          db.token = db.token.replace(/.{1}$/, db.token.substr(0, db.token.length) == '0'? '1': '0');
+          return db.renew();
+        }).then(function(user) {
+          expect(user).be.null;
+          expect(DB._connector.cookie).eqls(oldCookie);
+        });
+      });
+
+    }
+
     it('should use cookie if global', function() {
       var login = makeLogin();
       return DB.User.register(login, 'secret').then(function() {
