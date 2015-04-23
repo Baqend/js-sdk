@@ -170,6 +170,14 @@ module.exports = function (grunt) {
           package: 'package.json'
         }
       }
+    },
+
+    titaniumifier: {
+      dist: {
+        files: {
+          "./dist": "."
+        }
+      }
     }
   });
 
@@ -182,6 +190,7 @@ module.exports = function (grunt) {
   grunt.loadNpmTasks('grunt-mocha-test');
   grunt.loadNpmTasks('grunt-run');
   grunt.loadNpmTasks('grunt-jsdoc');
+  grunt.loadNpmTasks('grunt-titaniumifier');
 
   grunt.registerTask('debug', [
     'template:debug',
