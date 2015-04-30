@@ -92,7 +92,7 @@ module.exports = function (grunt) {
     run: {
       server: {
         cmd: process.platform === "win32"? "bin\\baqend.bat": "bin/baqend",
-        args: ["config.json"],
+        args: ["--config", "config.json"],
         options: {
           cwd: "build/baqend",
           wait: false,
