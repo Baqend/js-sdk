@@ -306,35 +306,52 @@ describe("Test db", function() {
       expect(json._objectInfo).be.undefined;
     });
 
-    it('should convert to JSON including objectInfo', function() {
+    it('should convert to JSON including metadata', function() {
+      var testClass = db.TestClass();
+      testClass.attach(db);
+
+      testClass.testValue = 5;
+      var json = testClass.toJSON();
+      expect(json).be.ok;
+      expect(json.testValue).eqls(testClass.testValue);
+      expect(json._metadata).be.undefined;
+      expect(json.id).be.ok;
+      expect(json.acl).be.ok;
+    });
+
+    it('should convert to JSON excluding metadata', function() {
       var testClass = db.TestClass();
       testClass.attach(db);
 
       testClass.testValue = 5;
       var json = testClass.toJSON(true);
       expect(json).be.ok;
-      expect(json.testValue).eqls(testClass.testValue);
+      expect(json.testValue).equal(testClass.testValue);
       expect(json._metadata).be.undefined;
-      expect(json._objectInfo).be.ok;
+      expect(json.id).be.undefined;
+      expect(json.acl).be.undefined;
     });
 
-    it('should convert from JSON', function() {
+    it('should convert from JSON including metadata', function() {
       var testClass = db.TestClass();
       testClass.attach(db);
 
       testClass.testValue = 5;
       var newTestClass = db.TestClass.fromJSON(testClass.toJSON());
       expect(newTestClass).be.ok;
-      expect(newTestClass.testValue).eqls(testClass.testValue);
+      expect(newTestClass).equal(testClass);
+      expect(newTestClass.testValue).equal(testClass.testValue);
     });
 
-    it('should convert from JSON including objectInfo', function() {
+    it('should convert from JSON excluding metadata', function() {
       var testClass = db.TestClass();
       testClass.attach(db);
 
       testClass.testValue = 5;
       var newTestClass = db.TestClass.fromJSON(testClass.toJSON(true));
-      expect(newTestClass).eqls(testClass);
+      expect(newTestClass).not.equal(testClass);
+      expect(newTestClass.id).not.equal(testClass.id);
+      expect(newTestClass.testValue).eql(testClass.testValue);
     });
 
   });

@@ -195,13 +195,13 @@ describe('Test entity type', function () {
 
       obj.ref = ref;
 
-      var json = state.getDatabaseObject();
+      var json = state.getJson();
       var refId = DB.util.Metadata.get(ref).ref;
       expect(refId).contain('/db/');
       expect(json.ref).be.ok;
       expect(json.ref).equals(refId);
 
-      state.setDatabaseObject(json);
+      state.setJson(json);
       expect(obj.ref).equals(ref);
     });
   });
@@ -260,9 +260,9 @@ describe('Test entity type', function () {
     it("should add key", function() {
       obj.simplebooleanMap = new DB.Map(map);
 
-      var json = state.getDatabaseObject();
+      var json = state.getJson();
       json.simplebooleanMap['add'] = true;
-      state.setDatabaseObject(json);
+      state.setJson(json);
 
       expect(obj.simplebooleanMap.size).equals(4);
       expect(obj.simplebooleanMap.get('123')).be.null;
@@ -274,9 +274,9 @@ describe('Test entity type', function () {
     it("should remove key", function() {
       obj.simplebooleanMap = new DB.Map(map);
 
-      var json = state.getDatabaseObject();
+      var json = state.getJson();
       delete json.simplebooleanMap['123'];
-      state.setDatabaseObject(json);
+      state.setJson(json);
 
       expect(obj.simplebooleanMap.size).equals(2);
       expect(obj.simplebooleanMap.get('123')).be.undefined;
