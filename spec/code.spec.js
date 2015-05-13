@@ -139,9 +139,24 @@ describe('Test code', function() {
       });
     });
 
+    it('should return string', function() {
+      return code.saveCode(bucket + "string", function() { return "test" }, db.token).then(function() {
+        return db.run(bucket + "string");
+      }).then(function(returned) {
+        expect(returned).eqls("test");
+      });
+    });
+
+    it('should return array', function() {
+      return code.saveCode(bucket + "array", function() { return ["test"] }, db.token).then(function() {
+        return db.run(bucket + "array");
+      }).then(function(returned) {
+        expect(returned).eqls(["test"]);
+      });
+    });
+
     it('should run code', function() {
       var obj = { "foo": "bar" };
-      code.removeCode(bucket);
       return db.run(bucket, obj).then(function(result) {
         expect(result.this.foo).eqls(obj.foo);
       });
