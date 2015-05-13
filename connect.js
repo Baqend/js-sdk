@@ -29,7 +29,7 @@ function send(event) {
     xhr.send(msg.entity);
   } else {
     applyCacheRule(node);
-    receive({status: node.text? 200: 404, responseText: node.text}, msg, {});
+    receive({status: node.text? 200: 404, responseText: node.text}, msg, {'Content-Type': 'application/json'});
   }
 }
 
