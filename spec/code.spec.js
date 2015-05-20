@@ -97,25 +97,25 @@ describe('Test code', function() {
     });
   });
 
-  describe('code', function() {
+  describe('methods', function() {
 
     var fn, bucket;
 
     before(function() {
-      fn = function() {
+      fn = function(data) {
         return {
           "test": "test",
-          "this": this
+          "this": data
         };
       };
       bucket = randomize("code.Test");
     });
 
     after(function() {
-      return code.loadResources(db.token).then(function(list) {
+      return code.loadMethods(db.token).then(function(list) {
         var promises = [];
         list.forEach(function(val) {
-          promises.push(code.deleteCode(val.substring(val.lastIndexOf('/')+1), db.token));
+          promises.push(code.deleteMethod(val.match("^/code/([^/]*)/method")[1], db.token));
         });
         return Promise.all(promises);
       });
@@ -126,30 +126,30 @@ describe('Test code', function() {
       code = db.code;
       entityType = db.metamodel.entity(personType.typeConstructor);
       return db.User.login('root', 'root').then(function() {
-        return code.saveCode(bucket, fn, db.token).then(function(saved) {
+        return code.saveMethod(bucket, fn, db.token).then(function(saved) {
           expect(saved().test).eqls(fn().test);
         });
       });
     });
 
     it('should load code', function() {
-      return code.loadCode(bucket, db.token).then(function(loaded) {
+      return code.loadMethod(bucket, db.token).then(function(loaded) {
         expect(loaded().test).eqls(fn().test);
-        expect(code.getCode(bucket)).be.null;
+        expect(code.getMethod(bucket)).be.null;
       });
     });
 
     it('should return string', function() {
-      return code.saveCode(bucket + "string", function() { return "test" }, db.token).then(function() {
-        return db.run(bucket + "string");
+      return code.saveMethod(bucket + "string", function() { return "test" }, db.token).then(function() {
+        return db.methods.get(bucket + "string");
       }).then(function(returned) {
         expect(returned).eqls("test");
       });
     });
 
     it('should return array', function() {
-      return code.saveCode(bucket + "array", function() { return ["test"] }, db.token).then(function() {
-        return db.run(bucket + "array");
+      return code.saveMethod(bucket + "array", function() { return ["test"] }, db.token).then(function() {
+        return db.methods.get(bucket + "array");
       }).then(function(returned) {
         expect(returned).eqls(["test"]);
       });
@@ -157,39 +157,69 @@ describe('Test code', function() {
 
     it('should run code', function() {
       var obj = { "foo": "bar" };
-      return db.run(bucket, obj).then(function(result) {
+      return db.methods.post(bucket, obj).then(function(result) {
         expect(result.this.foo).eqls(obj.foo);
       });
     });
 
-    it('should run code locally', function() {
-      var obj = { "foo": "bar" };
-      var fn = function() {
-        return {
-          that: this
-        }
-      };
-      var bucket = "localBucket";
-      code.setCode(bucket, fn);
-      return db.run(bucket, obj).then(function(result) {
-        expect(result.that.foo).eqls(obj.foo);
-      });
-    });
-
     it('should delete code', function() {
-      return code.deleteCode(bucket, db.token).then(function() {
-        return expect(code.loadCode(bucket, db.token)).become(null);
+      return code.deleteMethod(bucket, db.token).then(function() {
+        return expect(code.loadMethod(bucket, db.token)).become(null);
       });
     });
 
     it('should load list of code resources', function() {
       var bucket = randomize("resources");
-      return code.saveCode(bucket, function() {
+      return code.saveMethod(bucket, function() {
         return "yeah";
       }, db.token).then(function() {
-        return expect(code.loadResources(db.token)).to.eventually.include('/code/' + bucket);
+        return expect(code.loadMethods(db.token)).to.eventually.include('/code/' + bucket + '/method');
       }).then(function() {
-        return code.deleteCode(bucket, db.token);
+        return code.deleteMethod(bucket, db.token);
+      });
+    });
+
+    it('should run code by get request', function() {
+      var bucket = randomize("resources");
+      return code.saveMethod(bucket, function() {
+        return "yeah";
+      }, db.token).then(function() {
+        return db.methods.get(bucket);
+      }).then(function(result) {
+        expect(result).eqls("yeah");
+      });
+    });
+
+    it('should accept string parameter', function() {
+      var bucket = randomize("resources");
+      return code.saveMethod(bucket, function(data) {
+        return data;
+      }, db.token).then(function() {
+        return db.methods.post(bucket, "yeah");
+      }).then(function(result) {
+        expect(result).eqls("yeah");
+      });
+    });
+
+    it('should accept array parameter', function() {
+      var bucket = randomize("resources");
+      return code.saveMethod(bucket, function(data) {
+        return data;
+      }, db.token).then(function() {
+        return db.methods.post(bucket, ["yeah"]);
+      }).then(function(result) {
+        expect(result[0]).eqls("yeah");
+      });
+    });
+
+    it('should accept query object', function() {
+      var bucket = randomize("resources");
+      return code.saveMethod(bucket, function(data) {
+        return data.first + data.last;
+      }, db.token).then(function() {
+        return db.methods.get(bucket, { first: 'firstName', last: 'lastName' });
+      }).then(function(result) {
+        expect(result).eqls("firstNamelastName");
       });
     });
   });
