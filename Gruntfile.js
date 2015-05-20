@@ -134,7 +134,8 @@ module.exports = function (grunt) {
     mochaTest: {
       test: {
         options: {
-          reporter: 'mocha-jenkins-reporter'
+          reporter: 'mocha-jenkins-reporter',
+          timeout: 4000
         },
         src: [TEST]
       }
