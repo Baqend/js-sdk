@@ -15,6 +15,12 @@ module.exports = function(config) {
     // frameworks to use
     frameworks: ['mocha', 'chai', 'chai-as-promised'],
 
+    client: {
+      mocha: {
+        timeout: 4000
+      }
+    },
+
     // list of files / patterns to load in the browser
     files: [
       'node_modules/jahcode/jahcode.js',
