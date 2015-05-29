@@ -730,6 +730,7 @@ describe('Test Metamodel', function() {
           var AclPerson = metamodel.entity(SchemaAclPersonName);
 
           var child = new DB.metamodel.EntityType(randomize("SchemaAclChildPerson"), AclPerson);
+          child.schemaReplacePermission.allowAccess(db.User.me);
           metamodel.addType(child);
 
           return expect(metamodel.save(child, false, db.token)).be.fulfilled;
@@ -796,6 +797,7 @@ describe('Test Metamodel', function() {
 
           var rnd = Math.floor(Math.random() * 1000000);
           var child = new DB.metamodel.EntityType("SchemaAclChildPerson" + rnd, AclPerson);
+          child.schemaReplacePermission.allowAccess(db.User.me);
           metamodel.addType(child);
 
           return expect(metamodel.save(child, false, db.token)).be.rejected;
@@ -865,6 +867,7 @@ describe('Test Metamodel', function() {
 
           var rnd = Math.floor(Math.random() * 1000000);
           var child = new DB.metamodel.EntityType("SchemaAclChildPerson" + rnd, AclPerson);
+          child.schemaReplacePermission.allowAccess(db.User.me);
           metamodel.addType(child);
 
           return expect(metamodel.save(child, false, db.token)).be.fulfilled;
