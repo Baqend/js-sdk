@@ -25,7 +25,8 @@ module.exports = function (grunt) {
           builtins: [],
           detectGlobals: false,
           //insertGlobalVars: ['global'],
-          standalone: "DB"
+          standalone: "DB",
+          exclude: ['websocket']
         },
         banner: longBanner
       },
@@ -42,7 +43,8 @@ module.exports = function (grunt) {
             detectGlobals: false,
             //insertGlobalVars: ['global'],
             standalone: "DB",
-            debug: true
+            debug: true,
+            exclude: ['websocket']
           },
           banner: longBanner
         }

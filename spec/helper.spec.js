@@ -23,3 +23,11 @@ glob.saveMetamodel = function(metamodel, force) {
     return metamodel.save(force, em.token);
   });
 };
+
+glob.sleep = function(time, value) {
+  return new Promise(function(success) {
+    setTimeout(function() {
+      success(value);
+    }, time);
+  });
+};
