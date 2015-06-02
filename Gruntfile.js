@@ -124,6 +124,11 @@ module.exports = function (grunt) {
       test: {
         hostname: 'jenkins.baqend.com',
         configFile: 'karma.conf.js',
+        client: {
+          mocha: {
+            timeout: 4000
+          }
+        },
         browsers: ['PhantomJS', 'IE9-Win', 'IE10-Win', 'IE11-Win', 'Firefox-Win', 'Chrome-Win', 'Chrome-Linux', 'Firefox-Linux', 'Safari-Mac'],
         reporters: ['junit'],
         singleRun: true,
