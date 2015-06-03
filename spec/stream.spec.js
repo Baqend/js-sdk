@@ -7,6 +7,7 @@ if (typeof DB == 'undefined') {
   DB = require('../lib');
 }
 describe("Streaming Queries", function() {
+  var t = 200;
   var emf, metamodel, db, stream;
   var p0, p1, p2, p3, objects;
 
@@ -109,9 +110,9 @@ describe("Streaming Queries", function() {
       result.match = match;
     });
 
-    return sleep(100).then(function() {
+    return sleep(t).then(function() {
       p1.name = "Felix";
-      return sleep(100, p1.save());
+      return sleep(t, p1.save());
     }).then(function() {
       expect(result.object).to.be.equal(p1);
       expect(result.operation).to.be.equal("update");
@@ -128,10 +129,10 @@ describe("Streaming Queries", function() {
       result.match = match;
     });
 
-    return sleep(100).then(function() {
+    return sleep(t).then(function() {
       var object = db.QueryPerson.fromJSON(p3.toJSON(true));
       object.name = "franz";
-      return sleep(100, object.insert());
+      return sleep(t, object.insert());
     }).then(function() {
       expect(result.object.name).to.be.equal("franz");
       expect(result.operation).to.be.equal("insert");
@@ -152,11 +153,11 @@ describe("Streaming Queries", function() {
     stream.on('match', listener);
     stream.on('match', listener);
 
-    return sleep(100).then(function() {
+    return sleep(t).then(function() {
       return insert.insert()
     }).then(function(obj) {
       obj.name = "frrrrranz";
-      return sleep(100, obj.save());
+      return sleep(t, obj.save());
     }).then(function() {
       expect(received.length).to.be.equal(4);
     });
@@ -170,14 +171,14 @@ describe("Streaming Queries", function() {
     };
     stream.on('match', listener);
 
-    return sleep(100).then(function() {
+    return sleep(t).then(function() {
       var insert = db.QueryPerson.fromJSON(p3.toJSON(true));
       insert.name = "franz";
-      return sleep(100, insert.insert());
+      return sleep(t, insert.insert());
     }).then(function(obj) {
       stream.off('match', listener);
       obj.name = "";
-      return sleep(100, obj.save())
+      return sleep(t, obj.save())
     }).then(function() {
       expect(calls).to.be.equal(1);
     });
@@ -192,14 +193,14 @@ describe("Streaming Queries", function() {
     };
     stream.once('match', listener);
 
-    return sleep(100).then(function() {
+    return sleep(t).then(function() {
       var insert = db.QueryPerson.fromJSON(p3.toJSON(true));
       insert.name = "franz";
       return insert.insert();
     }).then(function(obj) {
       stream.off('match', listener);
       obj.name = "";
-      return sleep(100, obj.save())
+      return sleep(t, obj.save())
     }).then(function() {
       expect(calls).to.be.equal(1);
     });
