@@ -15,12 +15,12 @@ glob.randomize = function(name) {
   return name + rnd;
 };
 
-glob.saveMetamodel = function(metamodel, force) {
+glob.saveMetamodel = function(metamodel) {
   var emf = new DB.EntityManagerFactory(env.TEST_SERVER);
   return emf.createEntityManager().ready().then(function(em) {
     return em.User.login('root', 'root').then(function() { return em; });
   }).then(function(em) {
-    return metamodel.save(force, em.token);
+    return metamodel.save(em.token);
   });
 };
 
