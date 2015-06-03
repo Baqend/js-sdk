@@ -463,6 +463,106 @@ describe('Test Metamodel', function() {
     });
   });
 
+  it('should update schema', function() {
+    var emf = new DB.EntityManagerFactory(env.TEST_SERVER);
+    var db = emf.createEntityManager();
+    var metamodel = db.metamodel;
+    var SchemaUpdatePerson = randomize('SchemaUpdatePerson');
+    var initialType;
+
+    var code = 'name.equals("test")';
+
+    return  db.ready().then(function() {
+      return db.login('root', 'root');
+    }).then(function() {
+      var type = new DB.metamodel.EntityType(SchemaUpdatePerson, metamodel.entity(Object));
+      metamodel.addType(type);
+
+      type.addAttribute(new DB.metamodel.SingularAttribute("name", metamodel.baseType(String)));
+      type.addAttribute(new DB.metamodel.SingularAttribute("street", metamodel.baseType(String)));
+      type.addAttribute(new DB.metamodel.SingularAttribute("age", metamodel.baseType('Integer')));
+
+      initialType = type.toJSON();
+
+      return metamodel.update(initialType, db.token);
+    }).then(function() {
+      var UpdatePerson = metamodel.entity(SchemaUpdatePerson);
+      var renameField = {
+        operation: 'renameField',
+        bucket: UpdatePerson.ref,
+        from: 'name',
+        to: 'lastName'
+      };
+      var deleteField = {
+        operation: 'deleteField',
+        bucket: UpdatePerson.ref,
+        name: 'street'
+      };
+      var upcastField = {
+        operation: 'upcastField',
+        bucket: UpdatePerson.ref,
+        name: 'age',
+        type: metamodel.baseType("Double").ref
+      };
+      var reorderField = {
+        operation: 'reorderField',
+        bucket: UpdatePerson.ref,
+        name: 'age',
+        order: 1
+      };
+      var addField = {
+        operation: 'addField',
+        bucket: UpdatePerson.ref,
+        field: {
+          name: "firstName",
+          type: "String",
+          order: 2
+        }
+      };
+      var updateValidationCode = {
+        operation: 'updateValidationCode',
+        bucket: UpdatePerson.ref,
+        validationCode: code
+      };
+      return metamodel.update([renameField, deleteField, upcastField, reorderField, addField, updateValidationCode], db.token)
+    }).then(function() {
+      var newPerson = metamodel.entity(SchemaUpdatePerson);
+      expect(newPerson.getDeclaredAttribute("firstName")).be.ok;
+      expect(newPerson.getDeclaredAttribute("firstName").type).equals(metamodel.baseType(String));
+      expect(newPerson.getDeclaredAttribute("firstName").order).equals(2);
+
+      expect(newPerson.getDeclaredAttribute("age")).be.ok;
+      expect(newPerson.getDeclaredAttribute("age").type).equals(metamodel.baseType('Double'));
+      expect(newPerson.getDeclaredAttribute("age").order).equals(1);
+
+      expect(newPerson.getDeclaredAttribute("lastName")).be.ok;
+      expect(newPerson.getDeclaredAttribute("lastName").type).equals(metamodel.baseType(String));
+
+      expect(newPerson.getDeclaredAttribute("name")).not.ok;
+      expect(newPerson.getDeclaredAttribute("street")).not.ok;
+
+      expect(Function.isInstance(newPerson.validationCode)).be.ok;
+    }).then(function() {
+      initialType.operation = "replaceClass";
+      return metamodel.update(initialType, db.token);
+    }).then(function() {
+      var newPerson = metamodel.entity(SchemaUpdatePerson);
+      expect(newPerson.getDeclaredAttribute("firstName")).not.ok;
+      expect(newPerson.getDeclaredAttribute("lastName")).not.ok;
+      expect(newPerson.getDeclaredAttribute("age").type).equals(metamodel.baseType('Integer'));
+      expect(newPerson.getDeclaredAttribute("name")).be.ok;
+      expect(newPerson.getDeclaredAttribute("street")).be.ok;
+      expect(Function.isInstance(newPerson.validationCode)).be.ok;
+    }).then(function() {
+      return metamodel.update({
+        bucket: SchemaUpdatePerson,
+        operation: 'deleteClass'
+      }, db.token);
+    }).then(function() {
+      expect(metamodel.entity(SchemaUpdatePerson)).not.ok;
+    });
+  });
+
   describe("Testmodel", function() {
     var type, childType, embeddedType, metamodel;
 
@@ -612,7 +712,7 @@ describe('Test Metamodel', function() {
   }
 
   describe('Acl', function() {
-    var db, emf, obj, user1, user2, user3;
+    var db, emf, obj, user1, user2, user3, initialType, initialEmbeddedType;
 
     var SchemaAclPersonName = randomize('SchemaAclPerson');
     var SchemaAclEmbeddedPersonName = randomize('SchemaAclEmbeddedPerson');
@@ -715,13 +815,7 @@ describe('Test Metamodel', function() {
 
       it('should deny schema add', function() {
         return metamodel.load(db.token).then(function() {
-          return expect(metamodel.save(false, db.token)).be.rejected;
-        });
-      });
-
-      it('should deny schema replace', function() {
-        return metamodel.load(db.token).then(function() {
-          return expect(metamodel.save(true, db.token)).be.rejected;
+          return expect(metamodel.save(db.token)).be.rejected;
         });
       });
 
@@ -733,7 +827,7 @@ describe('Test Metamodel', function() {
           child.schemaReplacePermission.allowAccess(db.User.me);
           metamodel.addType(child);
 
-          return expect(metamodel.save(child, false, db.token)).be.fulfilled;
+          return expect(metamodel.save(child, db.token)).be.fulfilled;
         });
       });
 
@@ -781,13 +875,7 @@ describe('Test Metamodel', function() {
 
       it('should deny schema add', function() {
         return metamodel.load(db.token).then(function() {
-          return expect(metamodel.save(false, db.token)).be.rejected;
-        });
-      });
-
-      it('should deny schema replace', function() {
-        return metamodel.load(db.token).then(function() {
-          return expect(metamodel.save(true, db.token)).be.rejected;
+          return expect(metamodel.save(db.token)).be.rejected;
         });
       });
 
@@ -800,7 +888,7 @@ describe('Test Metamodel', function() {
           child.schemaReplacePermission.allowAccess(db.User.me);
           metamodel.addType(child);
 
-          return expect(metamodel.save(child, false, db.token)).be.rejected;
+          return expect(metamodel.save(child, db.token)).be.rejected;
         });
       });
 
@@ -850,14 +938,16 @@ describe('Test Metamodel', function() {
       it('should deny schema add', function() {
         return metamodel.load(db.token).then(function() {
           var AclPerson = metamodel.entity(SchemaAclPersonName);
-          return expect(metamodel.save(AclPerson, false, db.token)).be.rejected;
+          return expect(metamodel.save(AclPerson, db.token)).be.rejected;
         });
       });
 
       it('should deny schema replace', function() {
         return metamodel.load(db.token).then(function() {
           var AclPerson = metamodel.entity(SchemaAclPersonName);
-          return expect(metamodel.save(AclPerson, true, db.token)).be.rejected;
+          var json = AclPerson.toJSON();
+          json.operation = 'replaceClass';
+          return expect(metamodel.update(json, db.token)).be.rejected;
         });
       });
 
@@ -870,7 +960,7 @@ describe('Test Metamodel', function() {
           child.schemaReplacePermission.allowAccess(db.User.me);
           metamodel.addType(child);
 
-          return expect(metamodel.save(child, false, db.token)).be.fulfilled;
+          return expect(metamodel.save(child, db.token)).be.fulfilled;
         });
       });
 
