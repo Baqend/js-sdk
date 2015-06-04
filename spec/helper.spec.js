@@ -12,7 +12,7 @@ glob.makeLogin = function() {
 
 glob.randomize = function(name) {
   var rnd = Math.floor(Math.random() * 1000000);
-  return name + rnd;
+  return name + "_random_" + rnd;
 };
 
 glob.saveMetamodel = function(metamodel) {

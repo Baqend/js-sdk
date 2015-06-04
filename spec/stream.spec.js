@@ -8,6 +8,7 @@ if (typeof DB == 'undefined') {
 }
 describe("Streaming Queries", function() {
   var t = 200;
+  var bucket = randomize("StreamingQueryPerson");
   var emf, metamodel, db, stream;
   var p0, p1, p2, p3, objects;
 
@@ -19,7 +20,7 @@ describe("Streaming Queries", function() {
     db = emf.createEntityManager();
 
     metamodel.init({});
-    metamodel.addType(personType = new DB.metamodel.EntityType("QueryPerson", metamodel.entity(Object)));
+    metamodel.addType(personType = new DB.metamodel.EntityType(bucket, metamodel.entity(Object)));
     metamodel.addType(addressType = new DB.metamodel.EmbeddableType("QueryAddress"));
 
     personType.addAttribute(new DB.metamodel.SingularAttribute("name", metamodel.baseType(String)));
@@ -34,11 +35,11 @@ describe("Streaming Queries", function() {
 
     return saveMetamodel(metamodel).then(function() {
 
-      p0 = db.QueryPerson({
+      p0 = db[bucket]({
         id: 'query_p0'
       });
 
-      p1 = db.QueryPerson({
+      p1 = db[bucket]({
         id: 'query_p1',
         name: 'QueryPerson 1',
         age: 45,
@@ -48,7 +49,7 @@ describe("Streaming Queries", function() {
         birthplace: new DB.GeoPoint(35, 110)
       });
 
-      p2 = db.QueryPerson({
+      p2 = db[bucket]({
         id: 'query_p2',
         name: 'QueryPerson 2',
         age: 33,
@@ -58,7 +59,7 @@ describe("Streaming Queries", function() {
         birthplace: new DB.GeoPoint(32, 112)
       });
 
-      p3 = db.QueryPerson({
+      p3 = db[bucket]({
         id: 'query_p3',
         name: 'QueryPerson 3',
         age: 23,
@@ -69,17 +70,25 @@ describe("Streaming Queries", function() {
       });
       objects = [p0, p1, p2, p3];
       return Promise.all([p0.save({force: true}), p1.save({force: true}), p2.save({force: true}), p3.save({force: true})]);
+    }).then(function() {
+      //Prewarm Storm
+      /*var testStream = db[bucket].find().equal("name", "muh").stream(false);
+      testStream.on("match", function(){});
+      testStream.off();
+      return sleep(t);*/
     });
   });
 
   afterEach(function() {
     //Unregister Stream
-    ["match", "nonmatch", "both"].forEach(stream.off.bind(stream));
+    stream.off();
     //Remove excess objects
-    return db.QueryPerson.find().notIn("id", [p0.id, p1.id, p2.id, p3.id]).resultList(function(result) {
-      return Promise.all(result.map(function(person) {
-        return person.delete();
-      }));
+    return sleep(t).then(function() {
+      db[bucket].find().notIn("id", [p0.id, p1.id, p2.id, p3.id]).resultList(function(result) {
+        return Promise.all(result.map(function(person) {
+          return person.delete();
+        }));
+      })
     });
   });
 
@@ -87,7 +96,7 @@ describe("Streaming Queries", function() {
   it("should return the initial result", function() {
     var received = [];
     var promise = new Promise(function(success, error) {
-      stream = db.QueryPerson.find().stream();
+      stream = db[bucket].find().stream();
       stream.on('match', function(object, operation, match) {
         received.push(object);
         if (received.length == 4)
@@ -102,7 +111,7 @@ describe("Streaming Queries", function() {
   });
 
   it("should return updated object", function() {
-    stream = db.QueryPerson.find().stream(false);
+    stream = db[bucket].find().stream(false);
     var result = {};
     stream.on('match', function(object, operation, match) {
       result.object = object;
@@ -121,7 +130,7 @@ describe("Streaming Queries", function() {
   });
 
   it("should return inserted object", function() {
-    stream = db.QueryPerson.find().equal("name", "franz").stream(false);
+    stream = db[bucket].find().equal("name", "franz").stream(false);
     var result = {};
     stream.on('match', function(object, operation, match) {
       result.object = object;
@@ -130,7 +139,7 @@ describe("Streaming Queries", function() {
     });
 
     return sleep(t).then(function() {
-      var object = db.QueryPerson.fromJSON(p3.toJSON(true));
+      var object = db[bucket].fromJSON(p3.toJSON(true));
       object.name = "franz";
       return sleep(t, object.insert());
     }).then(function() {
@@ -140,12 +149,29 @@ describe("Streaming Queries", function() {
     });
   });
 
+  it.skip("should return removed object", function() {
+    stream = db[bucket].find().equal("name", "franz").stream(false);
+    var result = {};
+    stream.on('remove', function(obj, operation, match) {
+      result.operation = operation;
+    });
+
+    var object = db[bucket].fromJSON(p3.toJSON(true));
+    object.name = "franz";
+
+    return object.insert().then(function() {
+      return sleep(t, object.delete());
+    }).then(function() {
+      expect(result.operation).to.be.equal("remove");
+    });
+  });
+
   it("should allow multiple listeners", function() {
     var received = [];
-    var insert = db.QueryPerson.fromJSON(p3.toJSON(true));
+    var insert = db[bucket].fromJSON(p3.toJSON(true));
     insert.name = "franz";
 
-    stream = db.QueryPerson.find().stream(false);
+    stream = db[bucket].find().stream(false);
     var listener = function(object, operation, match) {
       received.push(object);
       expect(object.id).to.be.equal(insert.id);
@@ -165,14 +191,14 @@ describe("Streaming Queries", function() {
 
   it("should allow to unregister", function() {
     var calls = 0;
-    stream = db.QueryPerson.find().stream(false);
+    stream = db[bucket].find().stream(false);
     var listener = function(object, operation, match) {
       expect(++calls).to.be.at.most(1);
     };
     stream.on('match', listener);
 
     return sleep(t).then(function() {
-      var insert = db.QueryPerson.fromJSON(p3.toJSON(true));
+      var insert = db[bucket].fromJSON(p3.toJSON(true));
       insert.name = "franz";
       return sleep(t, insert.insert());
     }).then(function(obj) {
@@ -187,18 +213,17 @@ describe("Streaming Queries", function() {
 
   it("should only be called once", function() {
     var calls = 0;
-    stream = db.QueryPerson.find().stream(false);
+    stream = db[bucket].find().stream(false);
     var listener = function(object, operation, match) {
       expect(++calls).to.be.at.most(1);
     };
     stream.once('match', listener);
 
     return sleep(t).then(function() {
-      var insert = db.QueryPerson.fromJSON(p3.toJSON(true));
+      var insert = db[bucket].fromJSON(p3.toJSON(true));
       insert.name = "franz";
       return insert.insert();
     }).then(function(obj) {
-      stream.off('match', listener);
       obj.name = "";
       return sleep(t, obj.save())
     }).then(function() {
