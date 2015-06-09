@@ -524,7 +524,18 @@ describe('Test Metamodel', function() {
         bucket: UpdatePerson.ref,
         validationCode: code
       };
-      return metamodel.update([renameField, deleteField, upcastField, reorderField, addField, updateValidationCode], db.token)
+
+      return metamodel.update(renameField, db.token).then(function() {
+        return metamodel.update(upcastField, db.token);
+      }).then(function() {
+        return metamodel.update(reorderField, db.token);
+      }).then(function() {
+        return metamodel.update(addField, db.token);
+      }).then(function() {
+        return metamodel.update(updateValidationCode, db.token);
+      }).then(function() {
+        return metamodel.update(deleteField, db.token);
+      });
     }).then(function() {
       var newPerson = metamodel.entity(SchemaUpdatePerson);
       expect(newPerson.getDeclaredAttribute("firstName")).be.ok;
