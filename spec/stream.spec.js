@@ -125,7 +125,7 @@ describe("Streaming Queries", function() {
     }).then(function() {
       expect(result.object).to.be.equal(p1);
       expect(result.operation).to.be.equal("update");
-      expect(result.match).to.be.true;
+      expect(result.match).to.be.equal("add");
     });
   });
 
@@ -145,15 +145,16 @@ describe("Streaming Queries", function() {
     }).then(function() {
       expect(result.object.name).to.be.equal("franz");
       expect(result.operation).to.be.equal("insert");
-      expect(result.match).to.be.true;
+      expect(result.match).to.be.equal("add");
     });
   });
 
-  it.skip("should return removed object", function() {
+  it("should return removed object", function() {
     stream = db[bucket].find().equal("name", "franz").stream(false);
     var result = {};
     stream.on('remove', function(obj, operation, match) {
       result.operation = operation;
+      result.match = match;
     });
 
     var object = db[bucket].fromJSON(p3.toJSON(true));
@@ -162,7 +163,8 @@ describe("Streaming Queries", function() {
     return object.insert().then(function() {
       return sleep(t, object.delete());
     }).then(function() {
-      expect(result.operation).to.be.equal("remove");
+      expect(result.match).to.be.equal("remove");
+      expect(result.operation).to.be.equal("delete");
     });
   });
 
