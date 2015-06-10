@@ -554,7 +554,11 @@ describe('Test Metamodel', function() {
 
       expect(Function.isInstance(newPerson.validationCode)).be.ok;
     }).then(function() {
-      initialType.operation = "replaceClass";
+      return metamodel.update({
+        bucket: SchemaUpdatePerson,
+        operation: 'deleteClass'
+      }, db.token);
+    }).then(function() {
       return metamodel.update(initialType, db.token);
     }).then(function() {
       var newPerson = metamodel.entity(SchemaUpdatePerson);
@@ -563,7 +567,7 @@ describe('Test Metamodel', function() {
       expect(newPerson.getDeclaredAttribute("age").type).equals(metamodel.baseType('Integer'));
       expect(newPerson.getDeclaredAttribute("name")).be.ok;
       expect(newPerson.getDeclaredAttribute("street")).be.ok;
-      expect(Function.isInstance(newPerson.validationCode)).be.ok;
+      expect(newPerson.validationCode).be.null;
     }).then(function() {
       return metamodel.update({
         bucket: SchemaUpdatePerson,
