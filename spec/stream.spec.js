@@ -125,7 +125,7 @@ describe("Streaming Queries", function() {
     }).then(function() {
       expect(result.object).to.be.equal(p1);
       expect(result.operation).to.be.equal("update");
-      expect(result.match).to.be.equal("add");
+      expect(result.match).to.be.equal("match");
     });
   });
 
@@ -145,7 +145,7 @@ describe("Streaming Queries", function() {
     }).then(function() {
       expect(result.object.name).to.be.equal("franz");
       expect(result.operation).to.be.equal("insert");
-      expect(result.match).to.be.equal("add");
+      expect(result.match).to.be.equal("match");
     });
   });
 
