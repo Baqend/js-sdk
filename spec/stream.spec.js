@@ -93,7 +93,7 @@ describe("Streaming Queries", function() {
   });
 
 
-  it("should return the initial result", function() {
+  it.skip("should return the initial result", function() {
     var received = [];
     var promise = new Promise(function(success, error) {
       stream = db[bucket].find().stream();
@@ -110,7 +110,7 @@ describe("Streaming Queries", function() {
     });
   });
 
-  it("should return updated object", function() {
+  it.skip("should return updated object", function() {
     stream = db[bucket].find().stream(false);
     var result = {};
     stream.on('match', function(object, operation, match) {
@@ -150,7 +150,7 @@ describe("Streaming Queries", function() {
   });
 
   it("should return removed object", function() {
-    stream = db[bucket].find().equal("name", "franz").stream(false);
+    stream = db[bucket].find().equal("name", "franzi").stream(false);
     var result = {};
     stream.on('remove', function(obj, operation, match) {
       result.operation = operation;
@@ -158,7 +158,7 @@ describe("Streaming Queries", function() {
     });
 
     var object = db[bucket].fromJSON(p3.toJSON(true));
-    object.name = "franz";
+    object.name = "franzi";
 
     return object.insert().then(function() {
       return sleep(t, object.delete());
@@ -168,7 +168,7 @@ describe("Streaming Queries", function() {
     });
   });
 
-  it("should allow multiple listeners", function() {
+  it.skip("should allow multiple listeners", function() {
     var received = [];
     var insert = db[bucket].fromJSON(p3.toJSON(true));
     insert.name = "franz";
@@ -191,7 +191,7 @@ describe("Streaming Queries", function() {
     });
   });
 
-  it("should allow to unregister", function() {
+  it.skip("should allow to unregister", function() {
     var calls = 0;
     stream = db[bucket].find().stream(false);
     var listener = function(object, operation, match) {
@@ -213,7 +213,7 @@ describe("Streaming Queries", function() {
   });
 
 
-  it("should only be called once", function() {
+  it.skip("should only be called once", function() {
     var calls = 0;
     stream = db[bucket].find().stream(false);
     var listener = function(object, operation, match) {
