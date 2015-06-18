@@ -93,7 +93,7 @@ describe("Streaming Queries", function() {
   });
 
 
-  it.skip("should return the initial result", function() {
+  it("should return the initial result", function() {
     var received = [];
     var promise = new Promise(function(success, error) {
       stream = db[bucket].find().stream();
@@ -110,7 +110,7 @@ describe("Streaming Queries", function() {
     });
   });
 
-  it.skip("should return updated object", function() {
+  it("should return updated object", function() {
     stream = db[bucket].find().stream(false);
     var result = {};
     stream.on('match', function(object, operation, match) {
@@ -168,7 +168,7 @@ describe("Streaming Queries", function() {
     });
   });
 
-  it.skip("should allow multiple listeners", function() {
+  it("should allow multiple listeners", function() {
     var received = [];
     var insert = db[bucket].fromJSON(p3.toJSON(true));
     insert.name = "franz";
@@ -191,7 +191,7 @@ describe("Streaming Queries", function() {
     });
   });
 
-  it.skip("should allow to unregister", function() {
+  it("should allow to unregister", function() {
     var calls = 0;
     stream = db[bucket].find().stream(false);
     var listener = function(object, operation, match) {
@@ -213,7 +213,7 @@ describe("Streaming Queries", function() {
   });
 
 
-  it.skip("should only be called once", function() {
+  it("should only be called once", function() {
     var calls = 0;
     stream = db[bucket].find().stream(false);
     var listener = function(object, operation, match) {
