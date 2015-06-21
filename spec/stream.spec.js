@@ -73,9 +73,9 @@ describe("Streaming Queries", function() {
     }).then(function() {
       //Prewarm Storm
       /*var testStream = db[bucket].find().equal("name", "muh").stream(false);
-      testStream.on("match", function(){});
-      testStream.off();
-      return sleep(t);*/
+       testStream.on("match", function(){});
+       testStream.off();
+       return sleep(t);*/
     });
   });
 
@@ -153,6 +153,7 @@ describe("Streaming Queries", function() {
     stream = db[bucket].find().equal("name", "franzi").stream(false);
     var result = {};
     stream.on('remove', function(obj, operation, match) {
+      result.object = object;
       result.operation = operation;
       result.match = match;
     });
@@ -163,8 +164,40 @@ describe("Streaming Queries", function() {
     return object.insert().then(function() {
       return sleep(t, object.delete());
     }).then(function() {
+      expect(result.object.id).to.be.equal(object.id);
       expect(result.match).to.be.equal("remove");
       expect(result.operation).to.be.equal("delete");
+    });
+  });
+
+  it("should return all changes", function() {
+    stream = db[bucket].find().equal("age", 23).stream(false);
+    var results = [];
+    stream.on('all', function(object, operation, match) {
+      var result = {};
+      result.object = object;
+      result.operation = operation;
+      result.match = match;
+      results.push(result);
+    });
+
+
+    var object = db[bucket].fromJSON(p3.toJSON(true));
+
+    return sleep(t).then(function() {
+      object.name = "flo";
+      return object.insert();
+    }).then(function() {
+      object.name = "karl-friedrich";
+      return object.save();
+    }).then(function() {
+      return sleep(t, object.delete());
+    }).then(function() {
+      expect(results.length).to.be.equal(3);
+      expect(results[0].operation).to.be.equal("insert");
+      expect(results[1].operation).to.be.equal("update");
+      expect(results[2].operation).to.be.equal("delete");
+      expect(results[2].object.id).to.be.equal(object.id);
     });
   });
 
@@ -233,5 +266,6 @@ describe("Streaming Queries", function() {
     });
   });
 
-});
+})
+;
 
