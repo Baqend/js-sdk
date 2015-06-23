@@ -498,12 +498,6 @@ describe('Test Metamodel', function() {
         bucket: UpdatePerson.ref,
         name: 'street'
       };
-      var upcastField = {
-        operation: 'upcastField',
-        bucket: UpdatePerson.ref,
-        name: 'age',
-        type: metamodel.baseType("Double").ref
-      };
       var reorderField = {
         operation: 'reorderField',
         bucket: UpdatePerson.ref,
@@ -528,8 +522,6 @@ describe('Test Metamodel', function() {
       return metamodel.update(renameField, db.token).then(function() {
         return metamodel.update(reorderField, db.token);
       }).then(function() {
-        return metamodel.update(upcastField, db.token);
-      }).then(function() {
         return metamodel.update(addField, db.token);
       }).then(function() {
         return metamodel.update(updateValidationCode, db.token);
@@ -543,7 +535,6 @@ describe('Test Metamodel', function() {
       expect(newPerson.getDeclaredAttribute("firstName").order).equals(2);
 
       expect(newPerson.getDeclaredAttribute("age")).be.ok;
-      expect(newPerson.getDeclaredAttribute("age").type).equals(metamodel.baseType('Double'));
       expect(newPerson.getDeclaredAttribute("age").order).equals(1);
 
       expect(newPerson.getDeclaredAttribute("lastName")).be.ok;
