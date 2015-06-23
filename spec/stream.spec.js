@@ -13,8 +13,12 @@ describe("Streaming Queries", function() {
   var p0, p1, p2, p3, objects;
 
   before(function() {
-    var personType, addressType;
+    // skips test for ie9
+    if(typeof window != 'undefined' && !window.WebSocket) {
+      this.skip();
+    }
 
+    var personType, addressType;
     emf = new DB.EntityManagerFactory(env.TEST_SERVER);
     metamodel = emf.metamodel;
     db = emf.createEntityManager();
@@ -93,7 +97,7 @@ describe("Streaming Queries", function() {
   });
 
 
-  it("should return the initial result", function() {
+  it.skip("should return the initial result", function() {
     var received = [];
     var promise = new Promise(function(success, error) {
       stream = db[bucket].find().stream();
