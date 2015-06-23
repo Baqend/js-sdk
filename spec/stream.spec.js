@@ -7,7 +7,7 @@ if (typeof DB == 'undefined') {
   DB = require('../lib');
 }
 describe("Streaming Queries", function() {
-  var t = 200;
+  var t = 400;
   var bucket = randomize("StreamingQueryPerson");
   var emf, metamodel, db, stream;
   var p0, p1, p2, p3, objects;
