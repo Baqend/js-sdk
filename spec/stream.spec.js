@@ -97,7 +97,7 @@ describe("Streaming Queries", function() {
   });
 
 
-  it.skip("should return the initial result", function() {
+  it("should return the initial result", function() {
     var received = [];
     var promise = new Promise(function(success, error) {
       stream = db[bucket].find().stream();
