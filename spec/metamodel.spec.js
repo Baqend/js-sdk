@@ -526,9 +526,9 @@ describe('Test Metamodel', function() {
       };
 
       return metamodel.update(renameField, db.token).then(function() {
-        return metamodel.update(upcastField, db.token);
-      }).then(function() {
         return metamodel.update(reorderField, db.token);
+      }).then(function() {
+        return metamodel.update(upcastField, db.token);
       }).then(function() {
         return metamodel.update(addField, db.token);
       }).then(function() {
