@@ -14,7 +14,7 @@ if (typeof DB == 'undefined') {
 describe("Test Index", function() {
   this.timeout(6000);
 
-  var sleepTime = 2000;
+  var sleepTime = 1000;
 
   var db, personType, meta;
 
