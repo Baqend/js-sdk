@@ -470,8 +470,6 @@ describe('Test Metamodel', function() {
     var SchemaUpdatePerson = randomize('SchemaUpdatePerson');
     var initialType;
 
-    var code = 'name.equals("test")';
-
     return  db.ready().then(function() {
       return db.login('root', 'root');
     }).then(function() {
@@ -493,17 +491,6 @@ describe('Test Metamodel', function() {
         from: 'name',
         to: 'lastName'
       };
-      var deleteField = {
-        operation: 'deleteField',
-        bucket: UpdatePerson.ref,
-        name: 'street'
-      };
-      var reorderField = {
-        operation: 'reorderField',
-        bucket: UpdatePerson.ref,
-        name: 'age',
-        order: 1
-      };
       var addField = {
         operation: 'addField',
         bucket: UpdatePerson.ref,
@@ -513,59 +500,18 @@ describe('Test Metamodel', function() {
           order: 2
         }
       };
-      var updateValidationCode = {
-        operation: 'updateValidationCode',
-        bucket: UpdatePerson.ref,
-        validationCode: code
-      };
 
       return metamodel.update(renameField, db.token).then(function() {
-        return metamodel.update(reorderField, db.token);
       }).then(function() {
         return metamodel.update(addField, db.token);
-      }).then(function() {
-        return metamodel.update(updateValidationCode, db.token);
-      }).then(function() {
-        return metamodel.update(deleteField, db.token);
       });
     }).then(function() {
       var newPerson = metamodel.entity(SchemaUpdatePerson);
       expect(newPerson.getDeclaredAttribute("firstName")).be.ok;
       expect(newPerson.getDeclaredAttribute("firstName").type).equals(metamodel.baseType(String));
-      expect(newPerson.getDeclaredAttribute("firstName").order).equals(2);
-
-      expect(newPerson.getDeclaredAttribute("age")).be.ok;
-      expect(newPerson.getDeclaredAttribute("age").order).equals(1);
 
       expect(newPerson.getDeclaredAttribute("lastName")).be.ok;
       expect(newPerson.getDeclaredAttribute("lastName").type).equals(metamodel.baseType(String));
-
-      expect(newPerson.getDeclaredAttribute("name")).not.ok;
-      expect(newPerson.getDeclaredAttribute("street")).not.ok;
-
-      expect(Function.isInstance(newPerson.validationCode)).be.ok;
-    }).then(function() {
-      return metamodel.update({
-        bucket: SchemaUpdatePerson,
-        operation: 'deleteClass'
-      }, db.token);
-    }).then(function() {
-      return metamodel.update(initialType, db.token);
-    }).then(function() {
-      var newPerson = metamodel.entity(SchemaUpdatePerson);
-      expect(newPerson.getDeclaredAttribute("firstName")).not.ok;
-      expect(newPerson.getDeclaredAttribute("lastName")).not.ok;
-      expect(newPerson.getDeclaredAttribute("age").type).equals(metamodel.baseType('Integer'));
-      expect(newPerson.getDeclaredAttribute("name")).be.ok;
-      expect(newPerson.getDeclaredAttribute("street")).be.ok;
-      expect(newPerson.validationCode).be.null;
-    }).then(function() {
-      return metamodel.update({
-        bucket: SchemaUpdatePerson,
-        operation: 'deleteClass'
-      }, db.token);
-    }).then(function() {
-      expect(metamodel.entity(SchemaUpdatePerson)).not.ok;
     });
   });
 
