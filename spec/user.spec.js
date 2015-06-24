@@ -60,7 +60,7 @@ describe('Test user and roles', function() {
     it('should not set token and me', function() {
       var user = db.User({ username: makeLogin(), email: "test@mail.de" });
       return db.User.logout().then(function() {
-        return db.register(user, 'secret', true)
+        return db.User.register(user, 'secret', false);
       }).then(function() {
         expect(db.me).not.ok;
         expect(db.token).not.ok;
@@ -348,7 +348,8 @@ describe('Test user and roles', function() {
       var login = makeLogin();
       return DB.User.register(login, 'secret').then(function() {
         expect(DB.isGlobal).be.true;
-        expect(DB.token).be.not.ok;
+        expect(DB.me).be.ok;
+        expect(DB.token).be.ok;
         return DB.renew();
       });
     });
@@ -357,7 +358,8 @@ describe('Test user and roles', function() {
       var login = makeLogin();
       return DB.User.register(login, 'secret').then(function() {
         expect(DB.isGlobal).be.true;
-        expect(DB.token).be.not.ok;
+        expect(DB.me).be.ok;
+        expect(DB.token).be.ok;
         return DB.logout();
       }).then(function() {
         return expect(DB.renew()).become(null);
@@ -370,16 +372,16 @@ describe('Test user and roles', function() {
         var db = DB.entityManagerFactory.createEntityManager(true);
         return db.ready().then(function() {
           expect(db.me).be.ok;
+          expect(db.token).be.ok;
         });
       });
     });
 
     it('should not autologin on global instances', function() {
-      var login = makeLogin();
       var db = DB.entityManagerFactory.createEntityManager(true);
-
-      return DB.ready().then(function() {
+      return db.ready().then(function() {
         expect(db.me).be.not.ok;
+        expect(db.token).be.not.ok;
       });
     });
   });

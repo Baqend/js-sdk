@@ -29,7 +29,7 @@ function send(event) {
     xhr.send(msg.entity);
   } else {
     applyCacheRule(node);
-    receive({status: node.text? 200: 404, responseText: node.text}, msg, {'Content-Type': 'application/json'});
+    receive({status: node.text? 200: 404, responseText: node.text}, msg, getHeaders(node));
   }
 }
 
@@ -52,4 +52,12 @@ function applyCacheRule(node) {
   if(~cacheControl.indexOf('no-cache')) {
     node.parentNode.removeChild(node);
   }
+}
+
+function getHeaders(node) {
+  var headers = {'Content-Type': 'application/json'};
+  var token = node.getAttribute('data-token');
+  if (token)
+    headers['orestes-authorization-token'] = token;
+  return headers;
 }
