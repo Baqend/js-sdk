@@ -98,7 +98,7 @@ module.exports = function (grunt) {
         options: {
           cwd: "build/baqend",
           wait: false,
-          ready: 5000
+          ready: 10000
         }
       }
     },
