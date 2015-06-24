@@ -88,7 +88,7 @@ describe("Streaming Queries", function() {
     stream.off();
     //Remove excess objects
     return sleep(t).then(function() {
-      db[bucket].find().notIn("id", [p0.id, p1.id, p2.id, p3.id]).resultList(function(result) {
+      return db[bucket].find().notIn("id", [p0.id, p1.id, p2.id, p3.id]).resultList(function(result) {
         return Promise.all(result.map(function(person) {
           return person.delete();
         }));
@@ -101,45 +101,52 @@ describe("Streaming Queries", function() {
     var received = [];
     var promise = new Promise(function(success, error) {
       stream = db[bucket].find().stream();
-      stream.on('match', function(object, operation, match) {
-        received.push(object);
+      stream.on('match', function(e) {
+        received.push(e);
         if (received.length == 4)
           success();
       });
     });
 
     return promise.then(function() {
-      expect(objects).to.include.members(received);
-      expect(received).to.include.members(objects);
+      received.forEach(function(result) {
+        expect(result.type).to.be.equal("match");
+        expect(objects).to.include(result.data);
+        expect(result.operation).to.be.equal("insert");
+        expect(result.target).to.be.equal(stream);
+        expect(result.date.getTime()).be.ok;
+        expect(result.initial).be.true;
+        expect(result.query).be.equal(stream.query);
+      });
     });
   });
 
   it("should return updated object", function() {
     stream = db[bucket].find().stream(false);
-    var result = {};
-    stream.on('match', function(object, operation, match) {
-      result.object = object;
-      result.operation = operation;
-      result.match = match;
+    var result;
+    stream.on('match', function(e) {
+      result = e;
     });
 
     return sleep(t).then(function() {
       p1.name = "Felix";
       return sleep(t, p1.save());
     }).then(function() {
-      expect(result.object).to.be.equal(p1);
+      expect(result.type).to.be.equal("match");
+      expect(result.data).to.be.equal(p1);
       expect(result.operation).to.be.equal("update");
-      expect(result.match).to.be.equal("match");
+      expect(result.target).to.be.equal(stream);
+      expect(result.date.getTime()).be.ok;
+      expect(result.initial).be.false;
+      expect(result.query).be.equal(stream.query);
     });
   });
 
   it("should return inserted object", function() {
     stream = db[bucket].find().equal("name", "franz").stream(false);
-    var result = {};
-    stream.on('match', function(object, operation, match) {
-      result.object = object;
-      result.operation = operation;
-      result.match = match;
+    var result;
+    stream.on('match', function(e) {
+      result = e;
     });
 
     return sleep(t).then(function() {
@@ -147,19 +154,21 @@ describe("Streaming Queries", function() {
       object.name = "franz";
       return sleep(t, object.insert());
     }).then(function() {
-      expect(result.object.name).to.be.equal("franz");
+      expect(result.type).to.be.equal("match");
+      expect(result.data.name).to.be.equal("franz");
       expect(result.operation).to.be.equal("insert");
-      expect(result.match).to.be.equal("match");
+      expect(result.target).to.be.equal(stream);
+      expect(result.date.getTime()).be.ok;
+      expect(result.query).be.equal(stream.query);
+      expect(result.initial).be.false;
     });
   });
 
   it("should return removed object", function() {
     stream = db[bucket].find().equal("name", "franzi").stream(false);
-    var result = {};
-    stream.on('remove', function(obj, operation, match) {
-      result.object = object;
-      result.operation = operation;
-      result.match = match;
+    var result;
+    stream.on('remove', function(e) {
+      result = e;
     });
 
     var object = db[bucket].fromJSON(p3.toJSON(true));
@@ -168,23 +177,22 @@ describe("Streaming Queries", function() {
     return object.insert().then(function() {
       return sleep(t, object.delete());
     }).then(function() {
-      expect(result.object.id).to.be.equal(object.id);
-      expect(result.match).to.be.equal("remove");
+      expect(result.data.id).to.be.equal(object.id);
+      expect(result.type).to.be.equal("remove");
       expect(result.operation).to.be.equal("delete");
+      expect(result.target).to.be.equal(stream);
+      expect(result.date.getTime()).be.ok;
+      expect(result.query).be.equal(stream.query);
+      expect(result.initial).be.false;
     });
   });
 
   it("should return all changes", function() {
     stream = db[bucket].find().equal("age", 23).stream(false);
     var results = [];
-    stream.on('all', function(object, operation, match) {
-      var result = {};
-      result.object = object;
-      result.operation = operation;
-      result.match = match;
-      results.push(result);
+    stream.on('all', function(e) {
+      results.push(e);
     });
-
 
     var object = db[bucket].fromJSON(p3.toJSON(true));
 
@@ -201,7 +209,7 @@ describe("Streaming Queries", function() {
       expect(results[0].operation).to.be.equal("insert");
       expect(results[1].operation).to.be.equal("update");
       expect(results[2].operation).to.be.equal("delete");
-      expect(results[2].object.id).to.be.equal(object.id);
+      expect(results[2].data.id).to.be.equal(object.id);
     });
   });
 
@@ -211,9 +219,9 @@ describe("Streaming Queries", function() {
     insert.name = "franz";
 
     stream = db[bucket].find().stream(false);
-    var listener = function(object, operation, match) {
-      received.push(object);
-      expect(object.id).to.be.equal(insert.id);
+    var listener = function(e) {
+      received.push(e);
+      expect(e.data.id).to.be.equal(insert.id);
     };
     stream.on('match', listener);
     stream.on('match', listener);
@@ -231,7 +239,7 @@ describe("Streaming Queries", function() {
   it("should allow to unregister", function() {
     var calls = 0;
     stream = db[bucket].find().stream(false);
-    var listener = function(object, operation, match) {
+    var listener = function(e) {
       expect(++calls).to.be.at.most(1);
     };
     stream.on('match', listener);
@@ -253,7 +261,7 @@ describe("Streaming Queries", function() {
   it("should only be called once", function() {
     var calls = 0;
     stream = db[bucket].find().stream(false);
-    var listener = function(object, operation, match) {
+    var listener = function(e) {
       expect(++calls).to.be.at.most(1);
     };
     stream.once('match', listener);
