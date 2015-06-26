@@ -100,10 +100,10 @@ describe("Streaming Queries", function() {
   it("should return the initial result", function() {
     var received = [];
     var promise = new Promise(function(success, error) {
-      stream = db[bucket].find().stream();
+      stream = db[bucket].find().limit(3).stream();
       stream.on('match', function(e) {
         received.push(e);
-        if (received.length == 4)
+        if (received.length == 3)
           success();
       });
     });
