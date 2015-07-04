@@ -21,7 +21,6 @@ describe("Streaming Queries", function() {
     var personType, addressType;
     emf = new DB.EntityManagerFactory(env.TEST_SERVER);
     metamodel = emf.metamodel;
-    db = emf.createEntityManager();
 
     metamodel.init({});
     metamodel.addType(personType = new DB.metamodel.EntityType(bucket, metamodel.entity(Object)));
@@ -38,6 +37,7 @@ describe("Streaming Queries", function() {
     addressType.addAttribute(new DB.metamodel.SingularAttribute("city", metamodel.baseType(String)));
 
     return saveMetamodel(metamodel).then(function() {
+      db = emf.createEntityManager();
 
       p0 = db[bucket]({
         id: 'query_p0'

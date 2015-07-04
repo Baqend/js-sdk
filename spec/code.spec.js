@@ -3,13 +3,13 @@ if (typeof DB == 'undefined') {
   var chai = require("chai");
   var chaiAsPromised = require("chai-as-promised");
   chai.use(chaiAsPromised);
-  chai.config.includeStack = true;
+  //chai.config.includeStack = true;
   expect = chai.expect;
   DB = require('../lib');
 }
 
 describe('Test code', function() {
-  var db, code, entityType, personType, emf;
+  var db, code, entityType, personType, emf, rootToken;
 
 
   before(function() {
@@ -25,131 +25,208 @@ describe('Test code', function() {
       personType.addAttribute(new DB.metamodel.SingularAttribute("age", metamodel.baseType(Number)));
       personType.addAttribute(new DB.metamodel.SingularAttribute("date", metamodel.baseType(Date)));
       personType.addAttribute(new DB.metamodel.SingularAttribute("email", metamodel.baseType(String)));
-      return saveMetamodel(metamodel);
+
+      return loadRootToken().then(function(token) {
+        rootToken = token;
+        return metamodel.save(token);
+      });
     });
   });
 
   describe('handler', function() {
-    ['insert', 'update', 'delete', 'validate'].forEach(function(type) {
-      var attr = 'on' + type[0].toUpperCase() + type.slice(1);
+    var handlers = ['insert', 'update', 'delete', 'validate'];
 
-      describe(attr, function() {
-        beforeEach(function() {
-          db = emf.createEntityManager();
-          code = db.code;
-          entityType = db.metamodel.entity(personType.typeConstructor);
-          return db.User.login('root', 'root');
-        });
+    before(function() {
+      db = emf.createEntityManager();
+      code = db.code;
+      entityType = db.metamodel.entity(personType.typeConstructor);
+    });
 
-        after(function() {
-          return code["delete" + attr.substring(2)](entityType, db.token);
-        });
+    afterEach(function() {
+      return Promise.all(handlers.map(function(type) {
+        return code.deleteCode(entityType, type, rootToken);
+      }));
+    });
 
-        it('should return null if no code has been loaded', function() {
-          expect(db[personType.name][attr]).be.null;
-        });
+    handlers.forEach(function(type) {
+      var signature = 'on' + type.substring(0,1).toUpperCase() + type.substring(1);
 
+      describe(signature, function() {
         it('should set and get code', function() {
-          var fn = new Function("return '"+type+Math.random().toString()+"';");
-          return code["save" + attr.substring(2)](entityType, fn, db.token).then(function() {
-            expect(db[personType.name][attr]()).equals(fn());
-          }).then(function() {
-            return code["load" + attr.substring(2)](entityType, db.token);
-          }).then(function() {
-            expect(db[personType.name][attr]()).equals(fn());
+          var fn = "exports." + signature + " = function(db, obj) { return '"+type+Math.random().toString()+"'; }";
+          return code.saveCode(entityType, type, fn, rootToken).then(function() {
+            return code.loadCode(entityType, type, rootToken);
+          }).then(function(code) {
+            expect(code).equals(fn);
           });
         });
 
         it('should delete code', function() {
-          var fn = new Function("return '"+type+Math.random().toString()+"';");
-          return code["save" + attr.substring(2)](entityType, fn, db.token).then(function() {
-            expect(db[personType.name][attr]()).equals(fn());
-            return code["delete" + attr.substring(2)](entityType, db.token);
-          }).then(function() {
-            expect(db[personType.name][attr]).be.null;
-            return expect(code["load" + attr.substring(2)](entityType, db.token)).become(null);
+          var fn = "exports." + signature + " = function(db, obj) { return '"+type+Math.random().toString()+"'; }";
+          return code.saveCode(entityType, type, fn, rootToken).then(function() {
+            return code.deleteCode(entityType, type, rootToken);
+          }).then(function(fn) {
+            expect(fn).be.null;
+            return expect(code.loadCode(entityType, type, rootToken)).become(null);
           });
         });
-
-        if(type != 'validate') {
-          it('should apply EntityManager', function() {
-            var fn = new Function("db", "return db;");
-            db.code.setHandler(personType.name, type, fn);
-            expect(db[personType.name][attr]()).be.ok;
-          });
-
-          it('should use parameter as this', function() {
-            var obj = {
-              test: "test"
-            };
-            var fn = new Function("return this;");
-            db.code.setHandler(personType.name, type, fn);
-            expect(db[personType.name][attr](obj)).equals(obj);
-          });
-        } else {
-          it('should not apply EntityManager', function() {
-            entityType.validationCode = new Function("return db");
-            expect(db[personType.name][attr]).to.throw(ReferenceError);
-          });
-        }
       });
+    });
 
+    it('call insert handler', function() {
+      return code.saveCode(entityType, 'insert', function(module, exports) {
+        exports.onInsert = function(db, obj) {
+          obj.name = 'changed ' + obj.name;
+        }
+      }, rootToken).then(function() {
+        var obj = db[personType.name]({
+          name: 'test'
+        });
+
+        return obj.insert({reload: true});
+      }).then(function(obj) {
+        expect(obj.name).equals('changed test');
+      });
+    });
+
+    it('call update handler', function() {
+      return code.saveCode(entityType, 'update', function(module, exports) {
+        exports.onUpdate = function(db, obj) {
+          obj.name = 'updated ' + obj.name;
+        }
+      }, rootToken).then(function() {
+        var obj = db[personType.name]({
+          name: 'test'
+        });
+
+        return obj.insert();
+      }).then(function(obj) {
+        expect(obj.name).equals('test');
+        obj.name = 'new name';
+        return obj.save({reload: true});
+      }).then(function(obj) {
+        expect(obj.name).equals('updated new name');
+      });
+    });
+
+    it('call delete handler', function() {
+      return expect(code.saveCode(entityType, 'delete', function(module, exports) {
+        exports.onDelete = function(db, obj) {
+          throw new Abort('Delete not accepted.');
+        }
+      }, rootToken).then(function() {
+        var obj = db[personType.name]({
+          name: 'test'
+        });
+
+        return obj.save();
+      }).then(function(obj) {
+        expect(obj.name).equals('test');
+        return obj.delete();
+      })).be.rejectedWith("Delete not accepted.")
+    });
+
+    it('call validation handler', function() {
+      return code.saveCode(entityType, 'validate', function(name) {
+        name.equals('String is not valid', 'test');
+      }, rootToken).then(function() {
+        var obj = db[personType.name]({
+          name: 'test'
+        });
+
+        return obj.save();
+      }).then(function(obj) {
+        obj.name = 'new name';
+        return obj.save();
+      }).catch(function(e) {
+        expect(e.message).contains('Object is not valid');
+        return e.data;
+      }).then(function(result) {
+        expect(result.name.isValid).be.false;
+        expect(result.name.errors[0]).equals('String is not valid');
+      });
+    });
+
+    it('should run validation handler in own scope', function() {
+      return code.saveCode(entityType, 'validate', function(name) {
+        setTimeout(function() {
+          val++;
+        }, 300)
+      }, rootToken).then(function() {
+        var obj = db[personType.name]({
+          name: 'test'
+        });
+
+        return obj.save();
+      }).then(function() {
+        expect(true).be.false;
+      }, function(e) {
+        expect(e.status).equals(500);
+      });
     });
   });
 
   describe('methods', function() {
-
     var fn, bucket;
 
     before(function() {
-      fn = function(data) {
-        return {
-          "test": "test",
-          "this": data
-        };
+      fn = function(module, exports) {
+        exports.call = function(db, data) {
+          return {
+            "test": "test",
+            "this": data
+          };
+        }
       };
       bucket = randomize("code.Test");
-    });
-
-    after(function() {
-      return code.loadMethods(db.token).then(function(list) {
-        var promises = [];
-        list.forEach(function(val) {
-          promises.push(code.deleteMethod(val.match("^/code/([^/]*)/method")[1], db.token));
-        });
-        return Promise.all(promises);
-      });
-    });
-
-    beforeEach(function() {
       db = emf.createEntityManager();
       code = db.code;
       entityType = db.metamodel.entity(personType.typeConstructor);
-      return db.User.login('root', 'root').then(function() {
-        return code.saveMethod(bucket, fn, db.token).then(function(saved) {
-          expect(saved().test).eqls(fn().test);
-        });
+    });
+
+    beforeEach(function() {
+      return code.saveCode(bucket, 'method', fn, rootToken).then(function(saved) {
+        var module = {exports: {}};
+        saved(module, module.exports);
+        expect(module.exports.call).be.a('function');
       });
     });
 
+    afterEach(function() {
+      return code.deleteCode(bucket, 'method', rootToken);
+    });
+
     it('should load code', function() {
-      return code.loadMethod(bucket, db.token).then(function(loaded) {
-        expect(loaded().test).eqls(fn().test);
-        expect(code.getMethod(bucket)).be.null;
+      return code.loadCode(bucket, 'method', rootToken, true).then(function(loaded) {
+        var module = {exports: {}};
+        loaded(module, module.exports);
+        expect(module.exports.call).be.a('function');
       });
     });
 
     it('should return string', function() {
-      return code.saveMethod(bucket + "string", function() { return "test" }, db.token).then(function() {
-        return db.methods.get(bucket + "string");
+      var fn = function(module, exports) {
+        exports.call = function(db, data) {
+          return "test";
+        }
+      };
+
+      return code.saveCode(bucket, 'method', fn, rootToken).then(function() {
+        return db.methods.get(bucket);
       }).then(function(returned) {
-        expect(returned).eqls("test");
+        expect(returned).equals("test");
       });
     });
 
     it('should return array', function() {
-      return code.saveMethod(bucket + "array", function() { return ["test"] }, db.token).then(function() {
-        return db.methods.get(bucket + "array");
+      var fn = function(module, exports) {
+        exports.call = function(db, data) {
+          return ["test"];
+        }
+      };
+
+      return code.saveCode(bucket, 'method', fn, rootToken).then(function() {
+        return db.methods.get(bucket);
       }).then(function(returned) {
         expect(returned).eqls(["test"]);
       });
@@ -163,27 +240,27 @@ describe('Test code', function() {
     });
 
     it('should delete code', function() {
-      return code.deleteMethod(bucket, db.token).then(function() {
-        return expect(code.loadMethod(bucket, db.token)).become(null);
+      return code.deleteCode(bucket, 'method', rootToken).then(function() {
+        return expect(code.loadCode(bucket, 'method', rootToken)).become(null);
       });
     });
 
     it('should load list of code resources', function() {
       var bucket = randomize("resources");
-      return code.saveMethod(bucket, function() {
-        return "yeah";
-      }, db.token).then(function() {
-        return expect(code.loadMethods(db.token)).to.eventually.include('/code/' + bucket + '/method');
+      return code.saveCode(bucket, 'method', function(module, exports) {
+        exports.call = function() { return "yeah" };
+      }, rootToken).then(function() {
+        return expect(code.loadMethods(rootToken)).to.eventually.include('/code/' + bucket + '/method');
       }).then(function() {
-        return code.deleteMethod(bucket, db.token);
+        return code.deleteCode(bucket, 'method', rootToken);
       });
     });
 
     it('should run code by get request', function() {
       var bucket = randomize("resources");
-      return code.saveMethod(bucket, function() {
-        return "yeah";
-      }, db.token).then(function() {
+      return code.saveCode(bucket, 'method', function(module, exports) {
+        exports.call = function() { return "yeah" };
+      }, rootToken).then(function() {
         return db.methods.get(bucket);
       }).then(function(result) {
         expect(result).eqls("yeah");
@@ -192,9 +269,9 @@ describe('Test code', function() {
 
     it('should accept string parameter', function() {
       var bucket = randomize("resources");
-      return code.saveMethod(bucket, function(data) {
-        return data;
-      }, db.token).then(function() {
+      return code.saveCode(bucket, 'method', function(module, exports) {
+        exports.call = function(db, data) { return data };
+      }, rootToken).then(function() {
         return db.methods.post(bucket, "yeah");
       }).then(function(result) {
         expect(result).eqls("yeah");
@@ -203,23 +280,23 @@ describe('Test code', function() {
 
     it('should accept array parameter', function() {
       var bucket = randomize("resources");
-      return code.saveMethod(bucket, function(data) {
-        return data;
-      }, db.token).then(function() {
+      return code.saveCode(bucket, 'method', function(module, exports) {
+        exports.call = function(db, data) { return data };
+      }, rootToken).then(function() {
         return db.methods.post(bucket, ["yeah"]);
       }).then(function(result) {
-        expect(result[0]).eqls("yeah");
+        expect(result).eqls(["yeah"]);
       });
     });
 
     it('should accept query object', function() {
       var bucket = randomize("resources");
-      return code.saveMethod(bucket, function(data) {
-        return data.first + data.last;
-      }, db.token).then(function() {
+      return code.saveCode(bucket, 'method', function(module, exports) {
+        exports.call = function(db, data) { return data.first + ' ' + data.last };
+      }, rootToken).then(function() {
         return db.methods.get(bucket, { first: 'firstName', last: 'lastName' });
       }).then(function(result) {
-        expect(result).eqls("firstNamelastName");
+        expect(result).eqls("firstName lastName");
       });
     });
   });

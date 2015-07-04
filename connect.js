@@ -36,7 +36,7 @@ function send(event) {
 function receive(xhr, message, headers) {
   var msg = {
     mid: message.mid,
-    statusCode: xhr.status,
+    status: xhr.status,
     headers: headers,
     entity: xhr.responseText
   };

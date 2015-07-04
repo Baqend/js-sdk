@@ -15,12 +15,24 @@ glob.randomize = function(name) {
   return name + "_random_" + rnd;
 };
 
+var token = null;
+glob.loadRootToken = function() {
+  if (token) {
+    return Promise.resolve(token);
+  } else {
+    var emf = new DB.EntityManagerFactory(env.TEST_SERVER);
+    return emf.createEntityManager().ready().then(function(em) {
+      return em.User.login('root', 'root').then(function() {
+        token = em.token;
+        return em.token;
+      });
+    });
+  }
+};
+
 glob.saveMetamodel = function(metamodel) {
-  var emf = new DB.EntityManagerFactory(env.TEST_SERVER);
-  return emf.createEntityManager().ready().then(function(em) {
-    return em.User.login('root', 'root').then(function() { return em; });
-  }).then(function(em) {
-    return metamodel.save(em.token);
+  return loadRootToken().then(function(token) {
+    return metamodel.save(token);
   });
 };
 

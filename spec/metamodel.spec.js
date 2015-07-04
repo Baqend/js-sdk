@@ -431,7 +431,7 @@ describe('Test Metamodel', function() {
   });
 
   it("should not be allowed to load after save metamodel", function() {
-    metamodel.init();
+    metamodel.init({});
     return saveMetamodel(metamodel).then(function() {
       expect(function() { metamodel.load() }).throw(Error);
     });
