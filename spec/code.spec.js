@@ -139,7 +139,7 @@ describe('Test code', function() {
         obj.name = 'new name';
         return obj.save();
       }).catch(function(e) {
-        expect(e.message).contains('Object is not valid');
+        expect(e.message).contain('Object is not valid');
         return e.data;
       }).then(function(result) {
         expect(result.name.isValid).be.false;
@@ -246,7 +246,6 @@ describe('Test code', function() {
     });
 
     it('should load list of code resources', function() {
-      var bucket = randomize("resources");
       return code.saveCode(bucket, 'method', function(module, exports) {
         exports.call = function() { return "yeah" };
       }, rootToken).then(function() {
@@ -257,7 +256,6 @@ describe('Test code', function() {
     });
 
     it('should run code by get request', function() {
-      var bucket = randomize("resources");
       return code.saveCode(bucket, 'method', function(module, exports) {
         exports.call = function() { return "yeah" };
       }, rootToken).then(function() {
@@ -267,8 +265,19 @@ describe('Test code', function() {
       });
     });
 
+    it('should allow require in baqend code', function() {
+      return code.saveCode(bucket, 'method', function(module, exports) {
+        var http = require('http');
+
+        exports.call = function() { return {ready: !!http.get} };
+      }, rootToken).then(function() {
+        return db.methods.get(bucket);
+      }).then(function(result) {
+        expect(result.ready).be.true;
+      });
+    });
+
     it('should accept string parameter', function() {
-      var bucket = randomize("resources");
       return code.saveCode(bucket, 'method', function(module, exports) {
         exports.call = function(db, data) { return data };
       }, rootToken).then(function() {
@@ -279,7 +288,6 @@ describe('Test code', function() {
     });
 
     it('should accept array parameter', function() {
-      var bucket = randomize("resources");
       return code.saveCode(bucket, 'method', function(module, exports) {
         exports.call = function(db, data) { return data };
       }, rootToken).then(function() {
@@ -290,7 +298,6 @@ describe('Test code', function() {
     });
 
     it('should accept query object', function() {
-      var bucket = randomize("resources");
       return code.saveCode(bucket, 'method', function(module, exports) {
         exports.call = function(db, data) { return data.first + ' ' + data.last };
       }, rootToken).then(function() {

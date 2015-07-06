@@ -31,7 +31,7 @@
     "backend-as-a-service"
   ],
   "devDependencies": {
-    "chai": "^2.2.0",
+    "chai": "^2.3.0",
     "chai-as-promised": "^4.3.0",
     "grunt": "^0.4.5",
     "grunt-browserify": "^3.6.0",
