@@ -99,7 +99,7 @@ describe('Test code', function() {
           name: 'test'
         });
 
-        return obj.insert();
+        return obj.insert({reload: true});
       }).then(function(obj) {
         expect(obj.name).equals('test');
         obj.name = 'new name';
