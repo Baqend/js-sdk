@@ -126,7 +126,7 @@ module.exports = function (grunt) {
         configFile: 'karma.conf.js',
         client: {
           mocha: {
-            timeout: 4000
+            timeout: 30000
           }
         },
         browsers: ['PhantomJS', 'IE9-Win', 'IE10-Win', 'IE11-Win', 'Firefox-Win', 'Chrome-Win', 'Chrome-Linux', 'Firefox-Linux', 'Safari-Mac'],
