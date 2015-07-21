@@ -12,14 +12,8 @@ describe('Test user and roles', function() {
   var emf, db;
 
   before(function() {
-    if (!DB.isReady) {
-      DB.connect(env.TEST_SERVER);
-    }
-
-    return DB.ready().then(function() {
-      emf = new DB.EntityManagerFactory(env.TEST_SERVER);
-      return emf.metamodel.init();
-    }).then(function(metamodel) {
+    emf = new DB.EntityManagerFactory(env.TEST_SERVER);
+    return emf.metamodel.init().then(function(metamodel) {
       var userEntity = metamodel.entity("User");
       if(!userEntity.getAttribute("email")) {
         userEntity.addAttribute(new DB.metamodel.SingularAttribute("email", metamodel.baseType(String)));
@@ -286,7 +280,12 @@ describe('Test user and roles', function() {
 
   describe('on global DB', function() {
     before(function() {
-      return DB.logout();
+      if (!DB.isReady)
+        DB.connect(env.TEST_SERVER);
+
+      return DB.ready().then(function() {
+        return DB.logout();
+      });
     });
 
     afterEach(function() {
