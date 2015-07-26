@@ -21,6 +21,7 @@ describe("Test Query", function() {
     metamodel.addType(addressType = new DB.metamodel.EmbeddableType("QueryAddress"));
 
     personType.addAttribute(new DB.metamodel.SingularAttribute("name", metamodel.baseType(String)));
+    personType.addAttribute(new DB.metamodel.SingularAttribute("person", personType));
     personType.addAttribute(new DB.metamodel.SingularAttribute("address", addressType));
     personType.addAttribute(new DB.metamodel.SingularAttribute("age", metamodel.baseType(Number)));
     personType.addAttribute(new DB.metamodel.SingularAttribute("date", metamodel.baseType(Date)));
@@ -65,7 +66,19 @@ describe("Test Query", function() {
       });
     });
 
+    it("should create simple query with reference", function() {
+      var q = db.QueryPerson.find()
+          .equal('person', '/db/QueryPerson/30')
+          .equal('age', 3);
 
+      expect(q.resultClass).equals(metamodel.entity('QueryPerson').typeConstructor);
+      expect(q.firstResult).equals(0);
+      expect(q.maxResults).equals(-1);
+      expect(q.toJSON()).eql({
+        person: '/db/QueryPerson/30',
+        age: 3
+      });
+    });
     it("should replace other conditions with equal condition", function() {
       var q = db.QueryPerson.find()
           .between('age', 2, 20)
@@ -529,6 +542,7 @@ describe("Test Query", function() {
 
       p1 = db.QueryPerson({
         id: 'query_p1',
+        person: p0,
         name: 'QueryPerson 1',
         age: 45,
         date: new Date('1978-02-03T00:00Z'),
@@ -539,6 +553,7 @@ describe("Test Query", function() {
 
       p2 = db.QueryPerson({
         id: 'query_p2',
+        person: p1,
         name: 'QueryPerson 2',
         age: 33,
         date: new Date('1966-05-01T00:00Z'),
@@ -549,6 +564,7 @@ describe("Test Query", function() {
 
       p3 = db.QueryPerson({
         id: 'query_p3',
+        person: p1,
         name: 'QueryPerson 3',
         age: 23,
         date: new Date('1989-05-01T00:00Z'),
@@ -611,6 +627,24 @@ describe("Test Query", function() {
           .resultList()
           .then(function(list) {
             expectResult([p3], list);
+          });
+    });
+
+    it("should return person references p1", function() {
+      return db.QueryPerson.find()
+          .equal('person', p1)
+          .resultList()
+          .then(function(list) {
+            expectResult([p2, p3], list);
+          });
+    });
+
+    it("should return person references null", function() {
+      return db.QueryPerson.find()
+          .isNull('person')
+          .resultList()
+          .then(function(list) {
+            expectResult([p0], list);
           });
     });
 

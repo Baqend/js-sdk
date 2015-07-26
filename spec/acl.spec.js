@@ -189,6 +189,52 @@ describe('Test Acl', function() {
     });
   });
 
+  describe('save and load', function() {
+    it('an empty set', function() {
+      var person = db.AclPerson();
+      var acl = person.acl;
+
+      return person.save({reload: true}).then(function() {
+        expect(person.acl.read.allRules().length).equals(0);
+        expect(person.acl.write.allRules().length).equals(0);
+      });
+    });
+
+    it('a read set', function() {
+      var person = db.AclPerson();
+      var acl = person.acl;
+      acl.allowReadAccess(db.User.me);
+
+      return person.save({reload: true}).then(function() {
+        expect(person.acl.isReadAllowed(db.User.me)).be.true;
+        expect(person.acl.isWriteAllowed(db.User.me)).be.false;
+      });
+    });
+
+    it('a write set', function() {
+      var person = db.AclPerson();
+      var acl = person.acl;
+      acl.allowWriteAccess(db.User.me);
+
+      return person.save({reload: true}).then(function() {
+        expect(person.acl.isReadAllowed(db.User.me)).be.false;
+        expect(person.acl.isWriteAllowed(db.User.me)).be.true;
+      });
+    });
+
+    it('a write set', function() {
+      var person = db.AclPerson();
+      var acl = person.acl;
+      acl.allowReadAccess(db.User.me);
+      acl.allowWriteAccess(db.User.me);
+
+      return person.save({reload: true}).then(function() {
+        expect(person.acl.isReadAllowed(db.User.me)).be.true;
+        expect(person.acl.isWriteAllowed(db.User.me)).be.true;
+      });
+    });
+  });
+
   describe('protected Object operations', function() {
     var db2, db3, role23, role13;
     before(function() {

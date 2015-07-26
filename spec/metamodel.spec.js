@@ -352,7 +352,7 @@ describe("Test metamodel classes", function () {
   });
 
   describe("EntityType", function () {
-    it("Object should have an id and version field", function () {
+    it("Object should have metadata fields", function () {
       metamodel.init({});
 
       var entity = metamodel.entity(DB.metamodel.EntityType.Object.ref);
@@ -360,9 +360,28 @@ describe("Test metamodel classes", function () {
       expect(entity.declaredId.name).equals("id");
       expect(entity.declaredVersion).instanceof(DB.metamodel.SingularAttribute);
       expect(entity.declaredVersion.name).equals("version");
+      expect(entity.declaredAcl).instanceof(DB.metamodel.SingularAttribute);
+      expect(entity.declaredAcl.name).equals("acl");
 
       expect(entity.id).equals(entity.declaredId);
       expect(entity.version).equals(entity.declaredVersion);
+      expect(entity.acl).equals(entity.declaredAcl);
+    });
+
+    it("Object metadata fields should be iterable", function() {
+      metamodel.init({});
+
+      var entity = metamodel.entity(DB.metamodel.EntityType.Object.ref);
+      var names = ["id", "version", "acl"];
+      var count = 0;
+      for (var iter = entity.attributes(), item = iter.next(); !item.done; item = iter.next()) {
+        var attr = item.value;
+        var index = names.indexOf(attr.name);
+        expect(index).equals(attr.order);
+        expect(attr).equals(entity.getAttribute(attr.name));
+        count++;
+      }
+      expect(count).equals(3);
     });
 
     it("attributes should be iterable", function () {
@@ -396,7 +415,7 @@ describe("Test metamodel classes", function () {
 
       var entity = metamodel.entity("/db/test.ChildPersClass");
 
-      var names = ["name", "ref", "value"];
+      var names = ["id", "version", "acl", "name", "ref", "value"];
       for (var iter = entity.attributes(), item = iter.next(); !item.done; item = iter.next()) {
         var attr = item.value;
         var index = names.indexOf(attr.name);
