@@ -312,7 +312,37 @@ describe('Test dao', function() {
         expect(person.name).equals('Old Name');
       })
     });
+
+
+    describe('optimisticSave', function() {
+
+      it('should retry if the object is out of date', function() {
+        var db2 = emf.createEntityManager();
+        var person = db2.Person();
+        var newPerson;
+
+        var i = 0;
+
+        return person.save().then(function() {
+          return db.Person.load(person._metadata.id);
+        }).then(function(per) {
+          newPerson = per;
+          newPerson.name = 'Peter Parker';
+          person.name = 'New Name';
+          return person.save();
+        }).then(function() {
+          return newPerson.optimisticSave(function(optimisticPerson) {
+            optimisticPerson.name = ++i;
+          });
+        }).then(function(result) {
+          expect(result.name).equals(2);
+          expect(result.version).equals(3);
+        });
+      });
+
+    });
   });
+
 
   describe('get', function() {
     var person;
