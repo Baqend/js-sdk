@@ -340,6 +340,63 @@ describe('Test dao', function() {
         });
       });
 
+      it('should be allowed to abort the process', function() {
+        var db2 = emf.createEntityManager();
+        var person = db2.Person();
+        var newPerson;
+
+        var i = 0;
+
+        return person.save().then(function() {
+          return db.Person.load(person._metadata.id);
+        }).then(function(per) {
+          newPerson = per;
+          newPerson.name = 'Peter Parker';
+          person.name = 'New Name';
+          return person.save();
+        }).then(function() {
+          return newPerson.optimisticSave(function(optimisticPerson, abort) {
+            i++;
+            if(i == 2) {
+              return abort();
+            }
+            optimisticPerson.name = i;
+          });
+        }).then(function(result) {
+          expect(result.name).equals("New Name");
+          expect(result.version).equals(2);
+        });
+      });
+
+      it('should be allowed to return a promise', function() {
+        var db2 = emf.createEntityManager();
+        var person = db2.Person();
+        var newPerson;
+
+        var otherPerson = db2.Person();
+        otherPerson.name = "OtherName";
+
+        return otherPerson.save().then(function() {
+          return person.save();
+        }).then(function() {
+          return db.Person.load(person._metadata.id);
+        }).then(function(per) {
+          newPerson = per;
+          newPerson.name = 'Peter Parker';
+          person.name = 'New Name';
+          return person.save();
+        }).then(function() {
+          return newPerson.optimisticSave(function(optimisticPerson) {
+            return db.Person.load(otherPerson.id).then(function(loadedOtherPerson) {
+              optimisticPerson.name = loadedOtherPerson.name
+            });
+          });
+        }).then(function(result) {
+          expect(result.name).equals("OtherName");
+          expect(result.version).equals(3);
+        });
+      });
+
     });
   });
 
