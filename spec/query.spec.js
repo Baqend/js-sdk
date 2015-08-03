@@ -833,6 +833,20 @@ describe("Test Query", function() {
           });
     });
 
+    it("should allow large query", function() {
+      var inQuery = [];
+      for(var i = 0; i < 5000; ++i) {
+        inQuery.push("QueryPerson " + i);
+      }
+
+      return db.QueryPerson.find()
+          .in('name', inQuery)
+          .resultList()
+          .then(function(list) {
+            expectResult([p1, p2, p3], list);
+          });
+    });
+
 
     function expectResult(expectedResult, actualResult) {
       expect(actualResult.length).equals(expectedResult.length);
