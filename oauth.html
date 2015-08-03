@@ -1,15 +1,22 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+  <script src="https://code.jquery.com/jquery-1.10.2.js"></script>
   <meta charset="UTF-8">
   <title></title>
 </head>
 <body>
-<button onclick="DB.loginWithOAuth()">Google OAuth</button>
+<form >
+<input>
+<button type="submit">Login</button>
+</form>
 
-<script src="build/baqend.js"></script>
+<script src="dist/baqend.js"></script>
 <script>
-  DB.connect('https://oauth-test.baqend.com')
+  $("form").submit(function(){
+    DB.loginWithOAuth($("input").val())
+  })
+  DB.connect('https://internal.baqend.com:8443')
 </script>
 </body>
 </html>
