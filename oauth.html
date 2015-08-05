@@ -7,16 +7,27 @@
 </head>
 <body>
 <form >
-<input>
-<button type="submit">Login</button>
+  Google ID:
+<input type="text" id="google" value="176758262145-m4n5s37mu9jpfceea6n5608fofmibnei.apps.googleusercontent.com">
+<button onclick="callOAuth('google')">Login with Google</button>
+  <br>
+  Facebook ID:
+  <input type="text" id="facebook" value="1632701890347759">
+  <button onclick="callOAuth('facebook')">Login with Facebook</button>
+  <br>
+  GitHub ID:
+  <input type="text" id="github" value="b715d31b104ecfe6e7aa">
+  <button onclick="callOAuth('github')">Login with GitHub</button>
+  <br>
 </form>
-
+<span id="user"></span>
 <script src="dist/baqend.js"></script>
 <script>
-  $("form").submit(function(){
-    DB.loginWithOAuth($("input").val())
-  })
-  DB.connect('https://internal.baqend.com:8443')
+function callOAuth(provider){
+  DB.loginWithOAuth(provider, $('#' + provider).val())
+}
+
+  DB.connect('https://internal.baqend.com')
 </script>
 </body>
 </html>
