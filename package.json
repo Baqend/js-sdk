@@ -66,7 +66,9 @@
   "scripts": {
     "test": "grunt mochaTest:test",
     "dist": "grunt dist",
-    "preversion": "node scripts/preversion"
+    "preversion": "node scripts/preversion",
+    "version": "node scripts/version",
+    "postversion": "node scripts/postversion"
   },
   "engines": {
     "node": ">=0.2.0"
