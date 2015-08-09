@@ -60,11 +60,13 @@
     "karma-webdriver-launcher": "^1.0.1",
     "mocha": "^2.2.1",
     "mocha-jenkins-reporter": "^0.1.6",
+    "shelljs": "^0.5.1",
     "uglify-js": "^2.4.19"
   },
   "scripts": {
     "test": "grunt mochaTest:test",
-    "dist": "grunt dist"
+    "dist": "grunt dist",
+    "preversion": "node scripts/preversion"
   },
   "engines": {
     "node": ">=0.2.0"
