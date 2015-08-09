@@ -65,7 +65,7 @@ var buildResult =
   exec('git add package.json').code ||
   exec('git add -f dist doc').code ||
   exec('git commit -m "release ' + version + '"').code ||
-  exec('git tag ' + version + ' -m "release ${releaseVersion}"').code;
+  exec('git tag ' + version + ' -m "release ' + version + '"').code;
 
 if (buildResult) {
   console.error('Build failed.');
@@ -75,11 +75,9 @@ if (buildResult) {
 
 console.log('Release:');
 //release
-if (process.argv[3] != '--dry-run') {
-  exec('git push').code ||
-  exec('git push --tags').code ||
-  exec('npm publish');
-}
+exec('git push').code ||
+exec('git push --tags').code ||
+exec('npm publish');
 
 console.log('Postrelease:');
 var devVersion = exec('npm version --no-git-tag-version prerelease').output.trim();
