@@ -1,5 +1,13 @@
 require('shelljs/global');
 
+var versionArg = process.argv[2];
+if (!versionArg) {
+  console.error('Missing version arg!');
+  console.log('Usage npm run release <version> | major | minor | patch [--dry-run]');
+  exit(1);
+}
+
+
 var requiredBranch = 'master';
 var requiredNPMUser = 'info@baqend.com';
 
@@ -43,4 +51,40 @@ if (statusLines.length > 0) {
 
 if (behind || ahead || statusLines.length > 0)
   exit(1);
+
+//prepare release
+console.log('Build:');
+var versionCmd = exec('npm version --no-git-tag-version ' + versionArg);
+if (versionCmd.code != 0) {
+  exit(1);
+}
+var version = versionCmd.output.trim();
+
+var buildResult =
+  exec('npm run dist').code ||
+  exec('git add package.json').code ||
+  exec('git add -f dist doc').code ||
+  exec('git commit -m "release ' + version + '"').code ||
+  exec('git tag ' + version + ' -m "release ${releaseVersion}"').code;
+
+if (buildResult) {
+  console.error('Build failed.');
+  exec('git reset --hard origin/' + requiredBranch);
+  exit(1);
+}
+
+console.log('Release:');
+//release
+if (process.argv[3] != '--dry-run') {
+  exec('git push').code ||
+  exec('git push --tags').code ||
+  exec('npm publish');
+}
+
+console.log('Postrelease:');
+var devVersion = exec('npm version --no-git-tag-version prerelease').output.trim();
+exec('git rm --cached -r dist doc').code ||
+exec('git add package.json').code ||
+exec('git commit -m "new development version ' + devVersion + '"');
+
 

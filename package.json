@@ -1,6 +1,6 @@
 {
   "name": "baqend",
-  "version": "0.9.3",
+  "version": "0.9.3-0",
   "description": "Baqend JavaScript SDK",
   "license": "MIT",
   "author": {
@@ -66,9 +66,7 @@
   "scripts": {
     "test": "grunt mochaTest:test",
     "dist": "grunt dist",
-    "preversion": "node scripts/preversion",
-    "version": "node scripts/version",
-    "postversion": "node scripts/postversion"
+    "release": "node scripts/release"
   },
   "engines": {
     "node": ">=0.2.0"
