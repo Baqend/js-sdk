@@ -37,6 +37,9 @@
 
     button i {
       margin-right: 5px;
+      font-size: 16px !important;
+      height: 100% !important;
+      border-right: 2px #000;
     }
 
     span {
@@ -55,16 +58,35 @@
       border-color: #5295FF;
     }
 
-    #githubbutten {
+    #githubbutton {
       background: #e45c00 none repeat scroll 0% 0%;
       border-color: #f06c10;
     }
+    #linkedinbutton {
+      background: #0077B5 none repeat scroll 0% 0%;
+      border-color: #0077B5;
+    }
+    #twitterbutton {
+      display: inline-block;
+      border: #ccc solid 1px;
+      border-radius: 3px;
+      background: #f8f8f8;
+      background: -webkit-linear-gradient(#fff, #dedede);
+      background: linear-gradient(#fff, #dedede);
+
+      /* Text */
+      font: bold 11px/17px Helvetica, Arial, sans-serif;
+      text-decoration: none;
+      color: #333;
+      text-shadow: 0 1px 0 rgba(255, 255, 255, .5);
+      white-space: nowrap;
+    }
+
 
     #user {
       font-size: 15px;
     }
   </style>
-
 </head>
 <body>
 <h2>OAuth Test Page</h2>
@@ -76,7 +98,8 @@
     </div>
       <button type="submit" id="googlebutton">
         <i class="fa fa-google"></i>
-        <span>Login with Google</span>
+        <span class="divider"></span>
+        <span>Sign in with Google</span>
       </button>
 </form>
 
@@ -88,7 +111,7 @@
     </div>
       <button type="submit" id="facebookbutton">
         <i class="fa fa-facebook-square"></i>
-        <span>Login with Facebook</span>
+        <span>Sign in with Facebook</span>
       </button>
 </form>
 
@@ -98,12 +121,33 @@
     <label for="github">GitHub ID:</label>
    <input type="text" id="github" value="3acc2b8492269356cf2a" class="form-control input-sm">
     </div>
-      <button type="submit" id="githubbutten">
+      <button type="submit" id="githubbutton">
         <i class="fa fa-github"></i>
-        <span>Login with GitHub</span>
+        <span>Sign in with GitHub</span>
       </button>
 </form>
 
+<form onsubmit="return callOAuth('twitter')" class="form-inline">
+  <div class="form-group">
+    <label for="twitter">Twitter ID:</label>
+    <input type="text" id="twitter" value="ZBNHKepBC5qvuM5R6JuIM8iS1" class="form-control input-sm">
+  </div>
+  <button type="submit" id="twitterbutton">
+    <i class="fa fa-twitter" style="color: #4099ff"></i>
+    <span>Sign in with Twitter</span>
+  </button>
+</form>
+
+<form onsubmit="return callOAuth('linkedin')" class="form-inline">
+  <div class="form-group">
+    <label for="linkedin">Twitter ID:</label>
+    <input type="text" id="linkedin" value="77y232vpeucrqr" class="form-control input-sm">
+  </div>
+  <button type="submit" id="linkedinbutton">
+        <i class="fa fa-linkedin"></i>
+    <span>Sign in with LinkedIn</span>
+  </button>
+</form>
 
 <div id="user"></div>
 
@@ -113,7 +157,13 @@
 
   DB.connect('https://oauth-test.baqend.com');
   function callOAuth(provider) {
-    DB.loginWithOAuth(provider, $('#' + provider).val()).then(function(user) {
+    var promise;
+    if(provider=="linkedin") {
+      promise = DB.loginWithOAuth(provider, $('#' + provider).val(), {scope: 'r_emailaddress'});
+    } else {
+      promise = DB.loginWithOAuth(provider, $('#' + provider).val());
+    }
+    promise.then(function(user) {
       $("#user").text(user);
     }, function(error) {
       $("#user").text(error.message + error.stack + JSON.stringify(error.cause));
