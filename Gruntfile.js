@@ -41,12 +41,13 @@ module.exports = function (grunt) {
           browserifyOptions: {
             builtins: [],
             detectGlobals: false,
+            //insertGlobals: false,
             //insertGlobalVars: ['global'],
             standalone: "DB",
-            //debug: true,
+            debug: true,
             exclude: ['websocket']
           },
-          banner: longBanner
+          banner: ''
         }
       },
 
