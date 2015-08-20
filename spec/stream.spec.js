@@ -166,6 +166,7 @@ describe("Streaming Queries", function() {
 
   it("should return removed object", function() {
     stream = db[bucket].find().equal("name", "franzi").stream(false);
+
     var result;
     stream.on('remove', function(e) {
       result = e;
@@ -174,34 +175,41 @@ describe("Streaming Queries", function() {
     var object = db[bucket].fromJSON(p3.toJSON(true));
     object.name = "franzi";
 
-    return object.insert().then(function() {
-      return sleep(t, object.delete());
-    }).then(function() {
-      expect(result.data.id).to.be.equal(object.id);
-      expect(result.type).to.be.equal("remove");
-      expect(result.operation).to.be.equal("delete");
-      expect(result.target).to.be.equal(stream);
-      expect(result.date.getTime()).be.ok;
-      expect(result.query).be.equal(stream.query);
-      expect(result.initial).be.false;
+    return sleep(t).then(function() {
+      return object.insert().then(function() {
+        return sleep(t, object.delete());
+      }).then(function() {
+        expect(result.data.id).to.be.equal(object.id);
+        expect(result.type).to.be.equal("remove");
+        expect(result.operation).to.be.equal("delete");
+        expect(result.target).to.be.equal(stream);
+        expect(result.date.getTime()).be.ok;
+        expect(result.query).be.equal(stream.query);
+        expect(result.initial).be.false;
+      });
     });
+
   });
 
   it("should return all changes", function() {
     stream = db[bucket].find().equal("age", 23).stream(false);
+    sleep(t);
+
     var results = [];
     stream.on('all', function(e) {
       results.push(e);
     });
 
     var object = db[bucket].fromJSON(p3.toJSON(true));
-
+    return sleep(t).then();
     return sleep(t).then(function() {
       object.name = "flo";
-      return object.insert();
+      sleep(t);
+      return sleep(t).then(object.insert());
     }).then(function() {
       object.name = "karl-friedrich";
-      return object.save();
+      sleep(t);
+      return sleep(t).then(object.save());
     }).then(function() {
       return sleep(t, object.delete());
     }).then(function() {
