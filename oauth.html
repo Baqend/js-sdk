@@ -164,7 +164,7 @@
       promise = DB.loginWithOAuth(provider, $('#' + provider).val());
     }
     promise.then(function(user) {
-      $("#user").text(user);
+      $("#user").text(user + user.username);
     }, function(error) {
       $("#user").text(error.message + error.stack + JSON.stringify(error.cause));
     });
