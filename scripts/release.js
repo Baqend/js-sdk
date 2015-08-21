@@ -83,6 +83,7 @@ console.log('Postrelease:');
 var devVersion = exec('npm version --no-git-tag-version prerelease').output.trim();
 exec('git rm --cached -r dist doc').code ||
 exec('git add package.json').code ||
-exec('git commit -m "new development version ' + devVersion + '"');
+exec('git commit -m "new development version ' + devVersion + '"').code ||
+exec('git push').code;
 
 
