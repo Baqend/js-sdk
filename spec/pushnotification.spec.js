@@ -25,7 +25,7 @@ describe('Test Push Notifications', function() {
   });
 
   it('should register device', function() {
-    return Promise.all([db.Device.register("IOS", TEST_APNS_DEVICE), db.Device.register("Android", TEST_GCM_APIKEY)]);
+    return Promise.all([db.Device.register("IOS", TEST_APNS_DEVICE), db.Device.register("Android", TEST_GCM_DEVICE)]);
   });
 
 });
