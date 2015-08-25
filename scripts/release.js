@@ -1,4 +1,5 @@
 require('shelljs/global');
+var fs = require('fs');
 
 var versionArg = process.argv[2];
 if (!versionArg) {
@@ -7,7 +8,9 @@ if (!versionArg) {
   exit(1);
 }
 
+var pkg = JSON.parse(fs.readFileSync('package.json', 'utf-8'));
 
+var pushNPM = !pkg.private;
 var requiredBranch = 'master';
 var requiredNPMUser = 'info@baqend.com';
 
@@ -76,8 +79,10 @@ if (buildResult) {
 console.log('Release:');
 //release
 exec('git push').code ||
-exec('git push --tags').code ||
-exec('npm publish');
+exec('git push --tags').code;
+
+if (pushNPM)
+  exec('npm publish');
 
 console.log('Postrelease:');
 var devVersion = exec('npm version --no-git-tag-version prerelease').output.trim();
