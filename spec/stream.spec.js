@@ -203,12 +203,10 @@ describe("Streaming Queries", function() {
     var object = db[bucket].fromJSON(p3.toJSON(true));
     return sleep(t).then(function() {
       object.name = "flo";
-      sleep(t);
-      return sleep(t).then(object.insert());
+      return sleep(t, object.insert());
     }).then(function() {
       object.name = "karl-friedrich";
-      sleep(t);
-      return sleep(t).then(object.save());
+      return sleep(t, object.save());
     }).then(function() {
       return sleep(t, object.delete());
     }).then(function() {
