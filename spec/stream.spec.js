@@ -176,17 +176,17 @@ describe("Streaming Queries", function() {
     object.name = "franzi";
 
     return sleep(t).then(function() {
-      return object.insert().then(function() {
-        return sleep(t, object.delete());
-      }).then(function() {
-        expect(result.data.id).to.be.equal(object.id);
-        expect(result.type).to.be.equal("remove");
-        expect(result.operation).to.be.equal("delete");
-        expect(result.target).to.be.equal(stream);
-        expect(result.date.getTime()).be.ok;
-        expect(result.query).be.equal(stream.query);
-        expect(result.initial).be.false;
-      });
+      return object.insert();
+    }).then(function() {
+      return sleep(t, object.delete());
+    }).then(function() {
+      expect(result.data.id).to.be.equal(object.id);
+      expect(result.type).to.be.equal("remove");
+      expect(result.operation).to.be.equal("delete");
+      expect(result.target).to.be.equal(stream);
+      expect(result.date.getTime()).be.ok;
+      expect(result.query).be.equal(stream.query);
+      expect(result.initial).be.false;
     });
 
   });
@@ -201,7 +201,6 @@ describe("Streaming Queries", function() {
     });
 
     var object = db[bucket].fromJSON(p3.toJSON(true));
-    return sleep(t).then();
     return sleep(t).then(function() {
       object.name = "flo";
       sleep(t);

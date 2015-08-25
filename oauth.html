@@ -140,12 +140,23 @@
 
 <form onsubmit="return callOAuth('linkedin')" class="form-inline">
   <div class="form-group">
-    <label for="linkedin">Twitter ID:</label>
-    <input type="text" id="linkedin" value="77y232vpeucrqr" class="form-control input-sm">
+    <label for="linkedin">Linkedin ID:</label>
+    <input type="text" id="linkedin" name="linkedin" value="77y232vpeucrqr" class="form-control input-sm">
   </div>
   <button type="submit" id="linkedinbutton">
         <i class="fa fa-linkedin"></i>
     <span>Sign in with LinkedIn</span>
+  </button>
+</form>
+
+<form onsubmit="return uploadFile(this.file)" class="form-inline">
+  <div class="form-group">
+    <label for="file">File:</label>
+    <input type="file" id="file" name="file" class="form-control input-sm">
+  </div>
+  <button type="submit" id="file-button">
+    <i class="fa fa-file"></i>
+    <span>Upload File</span>
   </button>
 </form>
 
@@ -155,7 +166,7 @@
 <script src="./build/baqend.js"></script>
 <script>
 
-  DB.connect('https://oauth-test.baqend.com');
+  DB.connect('https://local.baqend.com:8443');
   function callOAuth(provider) {
     var promise;
     if(provider=="linkedin") {
@@ -168,6 +179,40 @@
     }, function(error) {
       $("#user").text(error.message + error.stack + JSON.stringify(error.cause));
     });
+    return false;
+  }
+
+  function updatePermission() {
+    var aclMessage = new DB.message.SetFileBucketAcls('bucket', {
+      load: new DB.util.Permission(),
+      insert: new DB.util.Permission(),
+      update: new DB.util.Permission(),
+      delete: new DB.util.Permission()
+    });
+
+    DB._send(aclMessage);
+  }
+
+  function uploadFile(input) {
+    var file = input.files[0];
+
+    var promise = new Promise(function(success, error) {
+      var req = new XMLHttpRequest();
+      var url = DB._connector.origin + '/file/bucket/' + file.name;
+      req.open("PUT", url, true);
+      //req.overrideMimeType()
+      req.onreadystatechange = function() {
+        if (req.readyState == 4) {
+          if (req.status == 204) {
+            success(req.status);
+          } else {
+            error(req.status);
+          }
+        }
+      };
+      req.send(file);
+    });
+
     return false;
   }
 </script>
