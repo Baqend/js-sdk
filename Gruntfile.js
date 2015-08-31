@@ -44,7 +44,8 @@ module.exports = function (grunt) {
             //insertGlobals: false,
             //insertGlobalVars: ['global'],
             standalone: "DB",
-            debug: true
+            debug: true,
+            exclude: ['websocket']
           },
           banner: ''
         }

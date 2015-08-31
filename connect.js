@@ -8,6 +8,18 @@ function send(event) {
   msg.origin = event.origin;
   msg.source = event.source;
 
+  if (msg.method == 'OAUTH') {
+    addEventListener("storage", function handle(event) {
+      if (event.key == 'oauth-response') {
+        var response = JSON.parse(event.newValue);
+        receive(msg, response.status, response.headers, response.entity);
+        localStorage.removeItem('oauth-response');
+        removeEventListener("storage", handle, false);
+      }
+    }, false);
+    return;
+  }
+
   var node = msg.method == 'GET' && document.getElementById(msg.path);
   if(!node) {
     var xhr = new XMLHttpRequest();
@@ -18,7 +30,7 @@ function send(event) {
         msg.responseHeaders.forEach(function(name) {
           headers[name] = xhr.getResponseHeader(name);
         });
-        receive(xhr, msg, headers);
+        receive(msg, xhr.status, headers, xhr.responseText);
       }
     };
 
@@ -29,22 +41,22 @@ function send(event) {
     xhr.send(msg.entity);
   } else {
     applyCacheRule(node);
-    receive({status: node.text? 200: 404, responseText: node.text}, msg, getHeaders(node));
+    receive(msg, node.text? 200: 404, getHeaders(node), node.text);
   }
 }
 
-function receive(xhr, message, headers) {
-  var msg = {
+function receive(message, status, headers, entity) {
+  var response = {
     mid: message.mid,
-    status: xhr.status,
+    status: status,
     headers: headers,
-    entity: xhr.responseText
+    entity: entity
   };
 
   if (message.origin == 'null' || message.origin == 'file:')
     message.origin = '*';
 
-  message.source.postMessage(JSON.stringify(msg), message.origin);
+  message.source.postMessage(JSON.stringify(response), message.origin);
 }
 
 function applyCacheRule(node) {

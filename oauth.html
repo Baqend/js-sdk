@@ -1,15 +1,220 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.4.0/css/font-awesome.min.css">
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
   <meta charset="UTF-8">
-  <title></title>
+  <title>OAuth Test Page</title>
+
+  <style>
+    body {
+      margin-left: 20px;
+      margin-top: 15px;
+    }
+    form {
+      margin-bottom: 10px;
+    }
+    input {
+      width: 600px !important;
+    }
+
+    label {
+      display: inline-block;
+      width: 90px;
+    }
+
+    button {
+      padding: 3px 8px;
+      text-align: left;
+      color: #FFF;
+      font-size: 12px;
+      font-weight: bold;
+      width: 170px;
+      border-width: 2px;
+      border-radius: 2px;
+    }
+
+    button i {
+      margin-right: 5px;
+      font-size: 16px !important;
+      height: 100% !important;
+      border-right: 2px #000;
+    }
+
+    span {
+      vertical-align: middle;
+    }
+
+    #facebookbutton {
+      background: transparent linear-gradient(#4C69BA, #3B55A0) repeat scroll 0% 0%;
+      font-family: helvetica, arial, sans-serif;
+      border-color: #4C69BA;
+    }
+
+    #googlebutton {
+      background: #4285F4 none repeat scroll 0% 0%;
+      font-family: "Roboto", sans-serif;
+      border-color: #5295FF;
+    }
+
+    #githubbutton {
+      background: #e45c00 none repeat scroll 0% 0%;
+      border-color: #f06c10;
+    }
+    #linkedinbutton {
+      background: #0077B5 none repeat scroll 0% 0%;
+      border-color: #0077B5;
+    }
+    #twitterbutton {
+      display: inline-block;
+      border: #ccc solid 1px;
+      border-radius: 3px;
+      background: #f8f8f8;
+      background: -webkit-linear-gradient(#fff, #dedede);
+      background: linear-gradient(#fff, #dedede);
+
+      /* Text */
+      font: bold 11px/17px Helvetica, Arial, sans-serif;
+      text-decoration: none;
+      color: #333;
+      text-shadow: 0 1px 0 rgba(255, 255, 255, .5);
+      white-space: nowrap;
+    }
+
+
+    #user {
+      font-size: 15px;
+    }
+  </style>
 </head>
 <body>
-<button onclick="DB.loginWithOAuth()">Google OAuth</button>
+<h2>OAuth Test Page</h2>
+<form onsubmit="return callOAuth('google')" class="form-inline">
+  <div class="form-group">
+   <label for="google">Google ID:</label>
+   <input type="text" id="google" value="176758262145-m4n5s37mu9jpfceea6n5608fofmibnei.apps.googleusercontent.com"
+          class="form-control input-sm">
+    </div>
+      <button type="submit" id="googlebutton">
+        <i class="fa fa-google"></i>
+        <span class="divider"></span>
+        <span>Sign in with Google</span>
+      </button>
+</form>
 
-<script src="build/baqend.js"></script>
+
+<form onsubmit="return callOAuth('facebook')" class="form-inline">
+  <div class="form-group">
+  <label for="facebook">Facebook ID:</label>
+   <input type="text" id="facebook" value="1632701890347759" class="form-control input-sm">
+    </div>
+      <button type="submit" id="facebookbutton">
+        <i class="fa fa-facebook-square"></i>
+        <span>Sign in with Facebook</span>
+      </button>
+</form>
+
+
+<form onsubmit="return callOAuth('github')" class="form-inline">
+  <div class="form-group">
+    <label for="github">GitHub ID:</label>
+   <input type="text" id="github" value="3acc2b8492269356cf2a" class="form-control input-sm">
+    </div>
+      <button type="submit" id="githubbutton">
+        <i class="fa fa-github"></i>
+        <span>Sign in with GitHub</span>
+      </button>
+</form>
+
+<form onsubmit="return callOAuth('twitter')" class="form-inline">
+  <div class="form-group">
+    <label for="twitter">Twitter ID:</label>
+    <input type="text" id="twitter" value="ZBNHKepBC5qvuM5R6JuIM8iS1" class="form-control input-sm">
+  </div>
+  <button type="submit" id="twitterbutton">
+    <i class="fa fa-twitter" style="color: #4099ff"></i>
+    <span>Sign in with Twitter</span>
+  </button>
+</form>
+
+<form onsubmit="return callOAuth('linkedin')" class="form-inline">
+  <div class="form-group">
+    <label for="linkedin">Linkedin ID:</label>
+    <input type="text" id="linkedin" name="linkedin" value="77y232vpeucrqr" class="form-control input-sm">
+  </div>
+  <button type="submit" id="linkedinbutton">
+        <i class="fa fa-linkedin"></i>
+    <span>Sign in with LinkedIn</span>
+  </button>
+</form>
+
+<form onsubmit="return uploadFile(this.file)" class="form-inline">
+  <div class="form-group">
+    <label for="file">File:</label>
+    <input type="file" id="file" name="file" class="form-control input-sm">
+  </div>
+  <button type="submit" id="file-button">
+    <i class="fa fa-file"></i>
+    <span>Upload File</span>
+  </button>
+</form>
+
+<div id="user"></div>
+
+<script src="https://code.jquery.com/jquery-1.10.2.js"></script>
+<script src="./build/baqend.js"></script>
 <script>
-  DB.connect('https://oauth-test.baqend.com')
+
+  DB.connect('https://oauth-test.baqend.com');
+  function callOAuth(provider) {
+    var promise;
+    if(provider=="linkedin") {
+      promise = DB.loginWithOAuth(provider, $('#' + provider).val(), {scope: 'r_emailaddress'});
+    } else {
+      promise = DB.loginWithOAuth(provider, $('#' + provider).val());
+    }
+    promise.then(function(user) {
+      $("#user").text(user + user.username);
+    }, function(error) {
+      $("#user").text(error.message + error.stack + JSON.stringify(error.cause));
+    });
+    return false;
+  }
+
+  function updatePermission() {
+    var aclMessage = new DB.message.SetFileBucketAcls('bucket', {
+      load: new DB.util.Permission(),
+      insert: new DB.util.Permission(),
+      update: new DB.util.Permission(),
+      delete: new DB.util.Permission()
+    });
+
+    DB._send(aclMessage);
+  }
+
+  function uploadFile(input) {
+    var file = input.files[0];
+
+    var promise = new Promise(function(success, error) {
+      var req = new XMLHttpRequest();
+      var url = DB._connector.origin + '/file/bucket/' + file.name;
+      req.open("PUT", url, true);
+      //req.overrideMimeType()
+      req.onreadystatechange = function() {
+        if (req.readyState == 4) {
+          if (req.status == 204) {
+            success(req.status);
+          } else {
+            error(req.status);
+          }
+        }
+      };
+      req.send(file);
+    });
+
+    return false;
+  }
 </script>
 </body>
 </html>
