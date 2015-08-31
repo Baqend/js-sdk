@@ -14,7 +14,7 @@ describe("Streaming Queries", function() {
 
   before(function() {
     // skips test for ie9
-    if(typeof window != 'undefined' && !window.WebSocket) {
+    if (typeof window != 'undefined' && !window.WebSocket) {
       this.skip();
     }
 
@@ -193,7 +193,6 @@ describe("Streaming Queries", function() {
 
   it("should return all changes", function() {
     stream = db[bucket].find().equal("age", 23).stream(false);
-    sleep(t);
 
     var results = [];
     stream.on('all', function(e) {
@@ -201,23 +200,27 @@ describe("Streaming Queries", function() {
     });
 
     var object = db[bucket].fromJSON(p3.toJSON(true));
-    return sleep(t).then();
-    return sleep(t).then(function() {
+
+   return sleep(t).then(function() {
       object.name = "flo";
-      sleep(t);
-      return sleep(t).then(object.insert());
+      return object.insert();
     }).then(function() {
-      object.name = "karl-friedrich";
-      sleep(t);
-      return sleep(t).then(object.save());
+      return sleep(t).then(function() {
+        object.name = "karl-friedrich";
+        return object.save();
+      });
     }).then(function() {
-      return sleep(t, object.delete());
+      return sleep(t).then(function() {
+        return object.delete();
+      });
     }).then(function() {
-      expect(results.length).to.be.equal(3);
-      expect(results[0].operation).to.be.equal("insert");
-      expect(results[1].operation).to.be.equal("update");
-      expect(results[2].operation).to.be.equal("delete");
-      expect(results[2].data.id).to.be.equal(object.id);
+      return sleep(t).then(function() {
+        expect(results.length).to.be.equal(3);
+        expect(results[0].operation).to.be.equal("insert");
+        expect(results[1].operation).to.be.equal("update");
+        expect(results[2].operation).to.be.equal("delete");
+        expect(results[2].data.id).to.be.equal(object.id);
+      });
     });
   });
 
