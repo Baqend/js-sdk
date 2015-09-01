@@ -73,95 +73,179 @@ describe('Test code', function() {
       });
     });
 
-    it('call insert handler', function() {
-      return code.saveCode(entityType, 'insert', function(module, exports) {
-        exports.onInsert = function(db, obj) {
-          obj.name = 'changed ' + obj.name;
-        }
-      }, rootToken).then(function() {
-        var obj = db[personType.name]({
-          name: 'test'
-        });
+    describe('onInsert', function() {
+      it('should call handler', function() {
+        return code.saveCode(entityType, 'insert', function(module, exports) {
+          exports.onInsert = function(db, obj) {
+            obj.name = 'changed ' + obj.name;
+          }
+        }, rootToken).then(function() {
+          var obj = db[personType.name]({
+            name: 'test'
+          });
 
-        return obj.insert({reload: true});
-      }).then(function(obj) {
-        expect(obj.name).equals('changed test');
+          return obj.insert({reload: true});
+        }).then(function(obj) {
+          expect(obj.name).equals('changed test');
+        });
+      });
+
+      it('should allow to load before image', function() {
+        return code.saveCode(entityType, 'insert', function(module, exports) {
+          exports.onInsert = function(db, obj) {
+            return db[obj._metadata.type.name].load(obj.id, function(before) {
+              if (before != null)
+                throw new Abort('A object was found!');
+            });
+          }
+        }, rootToken).then(function() {
+          var obj = db[personType.name]({
+            name: 'test'
+          });
+
+          return obj.save({reload:true});
+        }).then(function(obj) {
+          expect(obj.name).equals('test');
+        });
       });
     });
 
-    it('call update handler', function() {
-      return code.saveCode(entityType, 'update', function(module, exports) {
-        exports.onUpdate = function(db, obj) {
-          obj.name = 'updated ' + obj.name;
-        }
-      }, rootToken).then(function() {
-        var obj = db[personType.name]({
-          name: 'test'
-        });
+    describe('onUpdate', function() {
+      it('should call handler', function() {
+        return code.saveCode(entityType, 'update', function(module, exports) {
+          exports.onUpdate = function(db, obj) {
+            obj.name = 'updated ' + obj.name;
+          }
+        }, rootToken).then(function() {
+          var obj = db[personType.name]({
+            name: 'test'
+          });
 
-        return obj.insert({reload: true});
-      }).then(function(obj) {
-        expect(obj.name).equals('test');
-        obj.name = 'new name';
-        return obj.save({reload: true});
-      }).then(function(obj) {
-        expect(obj.name).equals('updated new name');
+          return obj.insert({reload: true});
+        }).then(function(obj) {
+          expect(obj.name).equals('test');
+          obj.name = 'new name';
+          return obj.save({reload: true});
+        }).then(function(obj) {
+          expect(obj.name).equals('updated new name');
+        });
+      });
+
+      it('should allow to load before image', function() {
+        return code.saveCode(entityType, 'update', function(module, exports) {
+          exports.onUpdate = function(db, obj) {
+            return db[obj._metadata.type.name].load(obj.id, function(before) {
+              obj.name += ' before ' + before.name;
+              return obj;
+            });
+          }
+        }, rootToken).then(function() {
+          var obj = db[personType.name]({
+            name: 'test'
+          });
+
+          return obj.save();
+        }).then(function(obj) {
+          obj.name = 'new name';
+          return obj.save({reload: true});
+        }).then(function(obj) {
+          expect(obj.name).equals('new name before test');
+        });
       });
     });
 
-    it('call delete handler', function() {
-      return expect(code.saveCode(entityType, 'delete', function(module, exports) {
-        exports.onDelete = function(db, obj) {
-          throw new Abort('Delete not accepted.');
-        }
-      }, rootToken).then(function() {
-        var obj = db[personType.name]({
-          name: 'test'
+    describe('onDelete', function() {
+      it('should call handler', function() {
+        return expect(code.saveCode(entityType, 'delete', function(module, exports) {
+          exports.onDelete = function(db, obj) {
+            throw new Abort('Delete not accepted.');
+          }
+        }, rootToken).then(function() {
+          var obj = db[personType.name]({
+            name: 'test'
+          });
+
+          return obj.save();
+        }).then(function(obj) {
+          expect(obj.name).equals('test');
+          return obj.delete();
+        })).be.rejectedWith("Delete not accepted.")
+      });
+
+      it('should allow to load before image', function() {
+        return code.saveCode(entityType, 'delete', function(module, exports) {
+          exports.onDelete = function(db, obj) {
+            return db[obj._metadata.type.name].load(obj.id, function(obj) {
+              if (obj.name != 'test')
+                throw new Abort('name was ' + obj.name + ' not test');
+            });
+          }
+        }, rootToken).then(function() {
+          var obj = db[personType.name]({
+            name: 'test'
+          });
+
+          return obj.save();
+        }).then(function(obj) {
+          return obj.delete();
         });
+      });
 
-        return obj.save();
-      }).then(function(obj) {
-        expect(obj.name).equals('test');
-        return obj.delete();
-      })).be.rejectedWith("Delete not accepted.")
-    });
+      it('should be abortable', function() {
+        return expect(code.saveCode(entityType, 'delete', function(module, exports) {
+          exports.onDelete = function(db, obj) {
+            throw new Abort('delete not permitted');
+          }
+        }, rootToken).then(function() {
+          var obj = db[personType.name]({
+            name: 'test'
+          });
 
-    it('call validation handler', function() {
-      return code.saveCode(entityType, 'validate', function(name) {
-        name.equals('String is not valid', 'test');
-      }, rootToken).then(function() {
-        var obj = db[personType.name]({
-          name: 'test'
-        });
-
-        return obj.save();
-      }).then(function(obj) {
-        obj.name = 'new name';
-        return obj.save();
-      }).catch(function(e) {
-        expect(e.message).contain('Object is not valid');
-        return e.data;
-      }).then(function(result) {
-        expect(result.name.isValid).be.false;
-        expect(result.name.errors[0]).equals('String is not valid');
+          return obj.save();
+        }).then(function(obj) {
+          return obj.delete();
+        })).be.rejectedWith("delete not permitted");
       });
     });
 
-    it('should run validation handler in own scope', function() {
-      return code.saveCode(entityType, 'validate', function(name) {
-        setTimeout(function() {
-          val++;
-        }, 300)
-      }, rootToken).then(function() {
-        var obj = db[personType.name]({
-          name: 'test'
-        });
+    describe('onValidate', function() {
+      it('should call handler', function() {
+        return code.saveCode(entityType, 'validate', function(name) {
+          name.equals('String is not valid', 'test');
+        }, rootToken).then(function() {
+          var obj = db[personType.name]({
+            name: 'test'
+          });
 
-        return obj.save();
-      }).then(function() {
-        expect(true).be.false;
-      }, function(e) {
-        expect(e.status).equals(500);
+          return obj.save();
+        }).then(function(obj) {
+          obj.name = 'new name';
+          return obj.save();
+        }).catch(function(e) {
+          expect(e.message).contain('Object is not valid');
+          return e.data;
+        }).then(function(result) {
+          expect(result.name.isValid).be.false;
+          expect(result.name.errors[0]).equals('String is not valid');
+        });
+      });
+
+      it('should run in own scope', function() {
+        return code.saveCode(entityType, 'validate', function(name) {
+          setTimeout(function() {
+            val++;
+          }, 300)
+        }, rootToken).then(function() {
+          var obj = db[personType.name]({
+            name: 'test'
+          });
+
+          return obj.save();
+        }).then(function() {
+          expect(true).be.false;
+        }, function(e) {
+          expect(e.status).equals(500);
+        });
       });
     });
   });
