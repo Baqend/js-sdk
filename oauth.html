@@ -90,10 +90,11 @@
 </head>
 <body>
 <h2>OAuth Test Page</h2>
-<form onsubmit="return callOAuth('google')" class="form-inline">
+<form onsubmit="return print(DB.User.loginWithGoogle(this.google.value))" class="form-inline">
   <div class="form-group">
    <label for="google">Google ID:</label>
-   <input type="text" id="google" value="176758262145-m4n5s37mu9jpfceea6n5608fofmibnei.apps.googleusercontent.com"
+   <input type="text" id="google" name="google"
+          value="176758262145-m4n5s37mu9jpfceea6n5608fofmibnei.apps.googleusercontent.com"
           class="form-control input-sm">
     </div>
       <button type="submit" id="googlebutton">
@@ -104,10 +105,10 @@
 </form>
 
 
-<form onsubmit="return callOAuth('facebook')" class="form-inline">
+<form onsubmit="return print(DB.User.loginWithFacebook(this.facebook.value))" class="form-inline">
   <div class="form-group">
   <label for="facebook">Facebook ID:</label>
-   <input type="text" id="facebook" value="1632701890347759" class="form-control input-sm">
+   <input type="text" id="facebook" name="facebook" value="1632701890347759" class="form-control input-sm">
     </div>
       <button type="submit" id="facebookbutton">
         <i class="fa fa-facebook-square"></i>
@@ -116,7 +117,7 @@
 </form>
 
 
-<form onsubmit="return callOAuth('github')" class="form-inline">
+<form onsubmit="return print(DB.User.loginWithGitHub(this.github.value))" class="form-inline">
   <div class="form-group">
     <label for="github">GitHub ID:</label>
    <input type="text" id="github" value="3acc2b8492269356cf2a" class="form-control input-sm">
@@ -127,10 +128,10 @@
       </button>
 </form>
 
-<form onsubmit="return callOAuth('twitter')" class="form-inline">
+<form onsubmit="return print(DB.User.loginWithTwitter(this.twitter.value))" class="form-inline">
   <div class="form-group">
     <label for="twitter">Twitter ID:</label>
-    <input type="text" id="twitter" value="ZBNHKepBC5qvuM5R6JuIM8iS1" class="form-control input-sm">
+    <input type="text" id="twitter" name="twitter" value="ZBNHKepBC5qvuM5R6JuIM8iS1" class="form-control input-sm">
   </div>
   <button type="submit" id="twitterbutton">
     <i class="fa fa-twitter" style="color: #4099ff"></i>
@@ -138,7 +139,7 @@
   </button>
 </form>
 
-<form onsubmit="return callOAuth('linkedin')" class="form-inline">
+<form onsubmit="return print(DB.User.loginWithLinkedIn(this.linkedin.value))" class="form-inline">
   <div class="form-group">
     <label for="linkedin">Linkedin ID:</label>
     <input type="text" id="linkedin" name="linkedin" value="77y232vpeucrqr" class="form-control input-sm">
@@ -167,13 +168,7 @@
 <script>
 
   DB.connect('https://oauth-test.baqend.com');
-  function callOAuth(provider) {
-    var promise;
-    if(provider=="linkedin") {
-      promise = DB.loginWithOAuth(provider, $('#' + provider).val(), {scope: 'r_emailaddress'});
-    } else {
-      promise = DB.loginWithOAuth(provider, $('#' + provider).val());
-    }
+  function print(promise) {
     promise.then(function(user) {
       $("#user").text(user + user.username);
     }, function(error) {
