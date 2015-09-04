@@ -12,7 +12,7 @@ describe('Test Push Notifications', function() {
   var emf, db;
 
   var TEST_GCM_DEVICE = "APA91bFBRJGMI2OkQxhV3peP4ncZOIxGJBJ8s0tkKyWvzQErpZmuSzMzm6ugz3rOauMQ1CRui0bBsEQvuN0W8X1wTP547C6MSNcErnNYXyvc1F5eKZCs-GAtE_NcESolea2AM6_cRe9R";
-  var TEST_GCM_APIKEY = "AIzaSyCjswZVNArWwGT8Pb3ZyVYILyWJwzKWUwo";
+  var TEST_GCM_APIKEY = "AIzaSyAQvWS3mtqnTfLAA3LjepyQRrqDisVRnE0";
 
   before(function() {
     emf = new DB.EntityManagerFactory(env.TEST_SERVER);
