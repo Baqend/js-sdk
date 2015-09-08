@@ -39,7 +39,7 @@ describe('Test user and roles', function() {
       var login = makeLogin();
       return db.User.register(login, 'secret').then(function(user) {
         expect(user).be.ok;
-        expect(DB.binding.User.isInstance(user)).be.true;
+        expect(DB.binding.User.isUser(user)).be.true;
         expect(user._metadata.id).be.ok;
         expect(user._metadata.version).be.ok;
         expect(user._metadata.isPersistent).be.true;
@@ -52,7 +52,7 @@ describe('Test user and roles', function() {
     });
 
     it('should not set token and me', function() {
-      var user = db.User({ username: makeLogin(), email: "test@mail.de" });
+      var user = new db.User({ username: makeLogin(), email: "test@mail.de" });
       return db.User.logout().then(function() {
         return db.User.register(user, 'secret', false);
       }).then(function() {
@@ -62,7 +62,7 @@ describe('Test user and roles', function() {
     });
 
     it('should register user from object', function() {
-      var user = db.User({ username: makeLogin(), email: "test@mail.de" });
+      var user = new db.User({ username: makeLogin(), email: "test@mail.de" });
       return db.User.register(user, 'secret').then(function(loaded) {
         expect(loaded.username).eqls(user.username);
         expect(loaded.email).eqls("test@mail.de");
@@ -116,7 +116,7 @@ describe('Test user and roles', function() {
         user = u;
 
         expect(user).be.ok;
-        expect(DB.binding.User.isInstance(user)).be.true;
+        expect(DB.binding.User.isUser(user)).be.true;
         expect(user._metadata.id).be.ok;
         expect(user._metadata.version).be.ok;
         expect(user._metadata.isPersistent).be.true;
@@ -389,20 +389,20 @@ describe('Test user and roles', function() {
     var user1, user2, user3;
 
     beforeEach(function() {
-      user1 = db.User();
+      user1 = new db.User();
       user1.username = makeLogin();
 
-      user2 = db.User();
+      user2 = new db.User();
       user2.username = makeLogin();
 
-      user3 = db.User();
+      user3 = new db.User();
       user3.username = makeLogin();
 
       return Promise.all([user1.insert(), user2.insert(), user3.insert()]);
     });
 
     it('should save and load', function() {
-      var role = db.Role();
+      var role = new db.Role();
       role.addUser(user1);
       role.addUser(user3);
 
@@ -434,7 +434,7 @@ describe('Test user and roles', function() {
         });
       }).then(function() {
         oldToken = db.token;
-        var role = db.Role();
+        var role = new db.Role();
         role.addUser(user1);
         return role.insert();
       }).then(function() {

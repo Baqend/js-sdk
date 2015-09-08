@@ -80,7 +80,7 @@ describe('Test code', function() {
             obj.name = 'changed ' + obj.name;
           }
         }, rootToken).then(function() {
-          var obj = db[personType.name]({
+          var obj = new db[personType.name]({
             name: 'test'
           });
 
@@ -99,7 +99,7 @@ describe('Test code', function() {
             });
           }
         }, rootToken).then(function() {
-          var obj = db[personType.name]({
+          var obj = new db[personType.name]({
             name: 'test'
           });
 
@@ -117,7 +117,7 @@ describe('Test code', function() {
             obj.name = 'updated ' + obj.name;
           }
         }, rootToken).then(function() {
-          var obj = db[personType.name]({
+          var obj = new db[personType.name]({
             name: 'test'
           });
 
@@ -140,7 +140,7 @@ describe('Test code', function() {
             });
           }
         }, rootToken).then(function() {
-          var obj = db[personType.name]({
+          var obj = new db[personType.name]({
             name: 'test'
           });
 
@@ -161,7 +161,7 @@ describe('Test code', function() {
             throw new Abort('Delete not accepted.');
           }
         }, rootToken).then(function() {
-          var obj = db[personType.name]({
+          var obj = new db[personType.name]({
             name: 'test'
           });
 
@@ -181,7 +181,7 @@ describe('Test code', function() {
             });
           }
         }, rootToken).then(function() {
-          var obj = db[personType.name]({
+          var obj = new db[personType.name]({
             name: 'test'
           });
 
@@ -197,7 +197,7 @@ describe('Test code', function() {
             throw new Abort('delete not permitted');
           }
         }, rootToken).then(function() {
-          var obj = db[personType.name]({
+          var obj = new db[personType.name]({
             name: 'test'
           });
 
@@ -213,7 +213,7 @@ describe('Test code', function() {
         return code.saveCode(entityType, 'validate', function(name) {
           name.equals('String is not valid', 'test');
         }, rootToken).then(function() {
-          var obj = db[personType.name]({
+          var obj = new db[personType.name]({
             name: 'test'
           });
 
@@ -236,7 +236,7 @@ describe('Test code', function() {
             val++;
           }, 300)
         }, rootToken).then(function() {
-          var obj = db[personType.name]({
+          var obj = new db[personType.name]({
             name: 'test'
           });
 

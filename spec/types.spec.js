@@ -124,7 +124,7 @@ describe('Test entity type', function () {
   });
 
   beforeEach(function() {
-    obj = EntityClass();
+    obj = new EntityClass();
     state = DB.util.Metadata.get(obj);
   });
 
@@ -210,7 +210,7 @@ describe('Test entity type', function () {
     test("embedded", new EmbeddedType.typeConstructor(), embeddableObject(), [{}, null]);
   });
 
-  for (name in types) {
+  /*for (name in types) {
     describe(name + "List value", function() {
       var list = new DB.List();
       var vals = types[name].values;
@@ -228,7 +228,7 @@ describe('Test entity type', function () {
 
   describe("embeddedList value", function() {
     test("embeddedList", new DB.List(), new DB.List([embeddableObject(), embeddableObject(), null, embeddableObject()]));
-  });
+  });*/
 
   for (name in types) {
     if (types[name].simple) {
@@ -356,7 +356,7 @@ describe('Test entity type', function () {
    */
   function test(name) {
     it("should save undefined properly", function() {
-      var obj = EntityClass();
+      var obj = new EntityClass();
       obj[name] = undefined;
 
       return obj.save({reload:true}).then(function() {
@@ -365,7 +365,7 @@ describe('Test entity type', function () {
     });
 
     it("should save null properly", function() {
-      var obj = EntityClass();
+      var obj = new EntityClass();
       obj[name] = null;
 
       return obj.save({reload:true}).then(function() {
@@ -375,8 +375,8 @@ describe('Test entity type', function () {
 
     var args = Array.prototype.slice.call(arguments, 1);
     args.forEach(function(arg) {
-      var value = Array.isInstance(arg)? arg[0]: arg;
-      var expectedValue = Array.isInstance(arg)? arg[1]: arg;
+      var value = Object(arg) instanceof Array? arg[0]: arg;
+      var expectedValue = Object(arg) instanceof Array? arg[1]: arg;
 
       it(value + " should be saved and reloaded", function() {
         obj[name] = value;

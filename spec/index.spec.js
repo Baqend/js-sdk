@@ -167,8 +167,8 @@ describe("Test Index", function() {
     return meta.createIndex(personType.name, index, db.token).then(function() {
       return sleep(sleepTime);
     }).then(function() {
-      var person1 = db[personType.name]();
-      var person2 = db[personType.name]();
+      var person1 = new db[personType.name]();
+      var person2 = new db[personType.name]();
       person1.name = "foobar";
       person2.name = "foobar";
       return expect(Promise.all([person1.insert(), person2.insert()])).be.rejected;

@@ -56,8 +56,6 @@ describe("Test db", function() {
   describe('Test enhancement', function() {
     it('should add DAO methods', function() {
       expect(db.TestClass).be.ok;
-      expect(db.TestClass.isInstance).be.ok;
-      expect(db.TestClass.asInstance).be.ok;
       expect(db.TestClass.find).be.ok;
       expect(db.TestClass.load).be.ok;
       expect(db.TestClass.methods).be.ok;
@@ -66,17 +64,13 @@ describe("Test db", function() {
       expect(db.TestClass.partialUpdate).be.ok;
 
       var TestClass = db.TestClass;
-      var testClass = TestClass();
+      var testClass = new TestClass();
       expect(testClass).be.ok;
-      expect(DB.binding.Managed.isInstance(testClass)).be.true;
+      //expect(DB.binding.Managed.isInstance(testClass)).be.true;
 
-      expect(db.TestClass.isInstance(testClass)).be.true;
-      expect(db.TestEmbeddedClass.isInstance(testClass)).be.false;
-      expect(db.TestClass.isInstance(null)).be.false;
-
-      expect(db.TestClass.asInstance(testClass)).equals(testClass);
-      expect(db.TestEmbeddedClass.asInstance(testClass)).be.null;
-      expect(db.TestClass.asInstance(null)).be.null;
+      expect(testClass instanceof db.TestClass).be.true;
+      expect(testClass instanceof db.TestEmbeddedClass).be.false;
+      expect(null instanceof db.TestClass).be.false;
 
       expect("testValue" in testClass).be.true;
       expect(testClass.save).be.ok;
@@ -97,18 +91,14 @@ describe("Test db", function() {
       expect(db.TestEmbeddedClass.partialUpdate).be.undefined;
 
       var TestEmbeddedClass = db.TestEmbeddedClass;
-      var testClass = TestEmbeddedClass();
+      var testClass = new TestEmbeddedClass();
       expect(testClass).be.ok;
-      expect(DB.binding.Managed.isInstance(testClass)).be.true;
-      expect(DB.binding.Entity.isInstance(testClass)).be.false;
+      //expect(DB.binding.Managed.isInstance(testClass)).be.true;
+      //expect(DB.binding.Entity.isInstance(testClass)).be.false;
 
-      expect(db.TestClass.isInstance(testClass)).be.false;
-      expect(db.TestEmbeddedClass.isInstance(testClass)).be.true;
-      expect(db.TestEmbeddedClass.isInstance(null)).be.false;
-
-      expect(db.TestClass.asInstance(testClass)).be.null;
-      expect(db.TestEmbeddedClass.asInstance(testClass)).equals(testClass);
-      expect(db.TestEmbeddedClass.asInstance(null)).be.null;
+      expect(testClass instanceof db.TestClass).be.false;
+      expect(testClass instanceof db.TestEmbeddedClass).be.true;
+      expect(null instanceof db.TestEmbeddedClass).be.false;
 
       expect("value" in testClass).be.true;
       expect(testClass.save).be.undefined;
@@ -120,7 +110,7 @@ describe("Test db", function() {
     });
 
     it('should add property constructor on proxy classes', function() {
-      var testClass = db.TestClass({
+      var testClass = new db.TestClass({
         testValue: 3,
         notEnhanced: 'testString'
       });
@@ -128,7 +118,7 @@ describe("Test db", function() {
       expect(testClass.testValue).equals(3);
       expect(testClass.notEnhanced).equals('testString');
 
-      testClass = db.TestEmbeddedClass({
+      testClass = new db.TestEmbeddedClass({
         value: 3,
         notEnhanced: 'testString'
       });
@@ -149,13 +139,13 @@ describe("Test db", function() {
     it('should add ref', function() {
       var classFactory = new DB.binding.Enhancer();
 
-      var testClass = db.TestClass();
+      var testClass = new db.TestClass();
 
       expect(classFactory.getIdentifier(testClass.constructor)).be.ok;
     });
 
     it('should add metadata object', function() {
-      var testClass = db.TestClass();
+      var testClass = new db.TestClass();
 
       expect(testClass._metadata).be.ok;
     });
@@ -170,7 +160,7 @@ describe("Test db", function() {
         };
       };
 
-      var testClass = db.TestClass();
+      var testClass = new db.TestClass();
       expect(testClass.firstName()).equal("firstName");
       expect(testClass.lastName()).equal("lastName");
       expect("testValue" in testClass).be.true;
@@ -181,7 +171,7 @@ describe("Test db", function() {
       expect(testClass.delete).be.ok;
       expect(testClass.attr).be.ok;
 
-      expect(DB.binding.Entity.isInstance(testClass)).be.true;
+      expect(testClass instanceof DB.binding.Entity).be.true;
     });
 
     it('should call custom classes constructor', function() {
@@ -191,7 +181,7 @@ describe("Test db", function() {
         this.c = c;
       };
 
-      var testClass = db.TestClass(1,2,3);
+      var testClass = new db.TestClass(1,2,3);
       expect(testClass.a).equals(1);
       expect(testClass.b).equals(2);
       expect(testClass.c).equals(3);
@@ -210,7 +200,7 @@ describe("Test db", function() {
         }
       });
 
-      var testClass = db.TestClass();
+      var testClass = new db.TestClass();
       expect(testClass.firstName()).equal("firstName");
       expect(testClass.lastName()).equal("lastName");
       expect("testValue" in testClass).be.true;
@@ -244,7 +234,7 @@ describe("Test db", function() {
       emf.connect(env.TEST_SERVER);
 
       return db.ready().then(function() {
-        var testClass = db.TestClass(1,2,3);
+        var testClass = new db.TestClass(1,2,3);
         expect(testClass.a).equals(1);
         expect(testClass.b).equals(2);
         expect(testClass.c).equals(3);
@@ -252,7 +242,7 @@ describe("Test db", function() {
     });
 
     it("enhanced objects should be enumarable", function() {
-      var obj = db.TestClass();
+      var obj = new db.TestClass();
 
       var expected = ['id', 'version', 'testValue'];
       var count = 0;
@@ -287,7 +277,7 @@ describe("Test db", function() {
         newMethod4: newMethod
       });
 
-      var testClass = TestClass();
+      var testClass = new TestClass();
 
       expect(testClass.newMethod0()).equal(returnVal);
       expect(testClass.newMethod1()).equal(returnVal);
@@ -297,7 +287,7 @@ describe("Test db", function() {
     });
 
     it('should convert to JSON', function() {
-      var testClass = db.TestClass();
+      var testClass = new db.TestClass();
       testClass.testValue = 5;
       var json = testClass.toJSON();
       expect(json).be.ok;
@@ -307,7 +297,7 @@ describe("Test db", function() {
     });
 
     it('should convert to JSON including metadata', function() {
-      var testClass = db.TestClass();
+      var testClass = new db.TestClass();
       testClass.attach(db);
 
       testClass.testValue = 5;
@@ -320,7 +310,7 @@ describe("Test db", function() {
     });
 
     it('should convert to JSON excluding metadata', function() {
-      var testClass = db.TestClass();
+      var testClass = new db.TestClass();
       testClass.attach(db);
 
       testClass.testValue = 5;
@@ -333,7 +323,7 @@ describe("Test db", function() {
     });
 
     it('should convert from JSON including metadata', function() {
-      var testClass = db.TestClass();
+      var testClass = new db.TestClass();
       testClass.attach(db);
 
       testClass.testValue = 5;
@@ -344,7 +334,7 @@ describe("Test db", function() {
     });
 
     it('should convert from JSON excluding metadata', function() {
-      var testClass = db.TestClass();
+      var testClass = new db.TestClass();
       testClass.attach(db);
 
       testClass.testValue = 5;

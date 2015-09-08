@@ -735,7 +735,7 @@ describe('Test Metamodel', function() {
         emf = new DB.EntityManagerFactory(env.TEST_SERVER);
         return emf.metamodel.init().then(function() {
           db = emf.createEntityManager(db);
-          obj = db[SchemaAclPersonName]();
+          obj = new db[SchemaAclPersonName]();
           return obj.insert();
         });
       });
@@ -807,17 +807,17 @@ describe('Test Metamodel', function() {
       });
 
       it('should allow object creation', function() {
-        return expect(db[SchemaAclPersonName]().insert()).be.fulfilled;
+        return expect(new db[SchemaAclPersonName]().insert()).be.fulfilled;
       });
 
       it('should allow object update', function() {
-        return db[SchemaAclPersonName]().insert().then(function(obj) {
+        return new db[SchemaAclPersonName]().insert().then(function(obj) {
           return expect(obj.save()).be.fulfilled;
         });
       });
 
       it('should allow object removal', function() {
-        return db[SchemaAclPersonName]().insert().then(function(obj) {
+        return new db[SchemaAclPersonName]().insert().then(function(obj) {
           return expect(obj.delete()).be.fulfilled;
         });
       });
@@ -868,7 +868,7 @@ describe('Test Metamodel', function() {
       });
 
       it('should deny object creation', function() {
-        return expect(db[SchemaAclPersonName]().insert()).be.rejected;
+        return expect(new db[SchemaAclPersonName]().insert()).be.rejected;
       });
 
       it('should deny object update', function() {
@@ -940,7 +940,7 @@ describe('Test Metamodel', function() {
       });
 
       it('should allow object creation', function() {
-        return expect(db[SchemaAclPersonName]().insert()).be.fulfilled;
+        return expect(new db[SchemaAclPersonName]().insert()).be.fulfilled;
       });
 
       it('should deny object update', function() {

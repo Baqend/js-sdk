@@ -10,8 +10,6 @@
   "homepage": "http://baqend.com",
   "main": "lib/index.js",
   "dependencies": {
-    "jahcode": "^1.1.6",
-    "lie": "^2.8.1",
     "node-uuid": "^1.4.3",
     "validator": "^3.37.0",
     "websocket": "^1.0.18"

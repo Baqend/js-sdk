@@ -44,7 +44,7 @@ describe('Test Acl', function() {
   describe('Object', function() {
 
     it('should be created with an empty rule set', function() {
-      var acl = db.AclPerson().acl;
+      var acl = new db.AclPerson().acl;
 
       expect(acl.isPublicReadAllowed()).be.true;
       expect(acl.isPublicWriteAllowed()).be.true;
@@ -55,7 +55,7 @@ describe('Test Acl', function() {
     });
 
     it('should return all refs', function() {
-      var acl = db.AclPerson().acl
+      var acl = new db.AclPerson().acl
           .allowReadAccess(db.User.me)
           .denyWriteAccess(db.User.me);
 
@@ -64,7 +64,7 @@ describe('Test Acl', function() {
     });
 
     it('should return the actual rule', function() {
-      var acl = db.AclPerson().acl
+      var acl = new db.AclPerson().acl
           .allowReadAccess(db.User.me)
           .denyWriteAccess(db.User.me);
 
@@ -79,7 +79,7 @@ describe('Test Acl', function() {
     });
 
     it('deny rule should remove allow rule', function() {
-      var acl = db.AclPerson().acl;
+      var acl = new db.AclPerson().acl;
 
       acl.allowReadAccess(db.User.me);
       acl.denyReadAccess(db.User.me);
@@ -89,7 +89,7 @@ describe('Test Acl', function() {
     });
 
     it('allow rule should remove deny rule', function() {
-      var acl = db.AclPerson().acl;
+      var acl = new db.AclPerson().acl;
 
       acl.denyReadAccess(db.User.me);
       acl.allowReadAccess(db.User.me);
@@ -99,7 +99,7 @@ describe('Test Acl', function() {
     });
 
     it('deny rule should be removable', function() {
-      var acl = db.AclPerson().acl;
+      var acl = new db.AclPerson().acl;
 
       acl.denyReadAccess(db.User.me);
       acl.deleteReadAccess(db.User.me);
@@ -109,7 +109,7 @@ describe('Test Acl', function() {
     });
 
     it('allow rule should be removable', function() {
-      var acl = db.AclPerson().acl;
+      var acl = new db.AclPerson().acl;
 
       acl.allowReadAccess(db.User.me);
       acl.deleteReadAccess(db.User.me);
@@ -119,7 +119,7 @@ describe('Test Acl', function() {
     });
 
     it('clear should remove all rules', function() {
-      var acl = db.AclPerson().acl;
+      var acl = new db.AclPerson().acl;
 
       acl.allowReadAccess(db.User.me);
       acl.denyWriteAccess(db.User.me);
@@ -132,10 +132,10 @@ describe('Test Acl', function() {
     });
 
     it('should be modifiable', function() {
-      var role = db.Role();
+      var role = new db.Role();
       role.name = 'AclRole';
       return role.save().then(function() {
-        var acl = db.AclPerson().acl
+        var acl = new db.AclPerson().acl
           .allowReadAccess(db.User.me)
           .denyReadAccess(role)
           .denyWriteAccess(db.User.me);
@@ -156,7 +156,7 @@ describe('Test Acl', function() {
     });
 
     it('modification should mark the object as dirty', function() {
-      var person = db.AclPerson();
+      var person = new db.AclPerson();
       var acl = person.acl;
 
       person._metadata.setPersistent();
@@ -191,7 +191,7 @@ describe('Test Acl', function() {
 
   describe('save and load', function() {
     it('an empty set', function() {
-      var person = db.AclPerson();
+      var person = new db.AclPerson();
       var acl = person.acl;
 
       return person.save({reload: true}).then(function() {
@@ -201,7 +201,7 @@ describe('Test Acl', function() {
     });
 
     it('a read set', function() {
-      var person = db.AclPerson();
+      var person = new db.AclPerson();
       var acl = person.acl;
       acl.allowReadAccess(db.User.me);
 
@@ -212,7 +212,7 @@ describe('Test Acl', function() {
     });
 
     it('a write set', function() {
-      var person = db.AclPerson();
+      var person = new db.AclPerson();
       var acl = person.acl;
       acl.allowWriteAccess(db.User.me);
 
@@ -223,7 +223,7 @@ describe('Test Acl', function() {
     });
 
     it('a write set', function() {
-      var person = db.AclPerson();
+      var person = new db.AclPerson();
       var acl = person.acl;
       acl.allowReadAccess(db.User.me);
       acl.allowWriteAccess(db.User.me);
@@ -242,13 +242,13 @@ describe('Test Acl', function() {
         db2 = arr[0];
         db3 = arr[1];
 
-        role23 = db.Role();
+        role23 = new db.Role();
         role23.name = "Role2_3";
         role23.addUser(db.getReference(db2.me._metadata.ref));
         role23.addUser(db.getReference(db3.me._metadata.ref));
         var promise1 = role23.save();
 
-        role13 = db.Role();
+        role13 = new db.Role();
         role13.name = "Role1_3";
         role13.addUser(db.User.me);
         role13.addUser(db.getReference(db3.me._metadata.ref));
@@ -272,7 +272,7 @@ describe('Test Acl', function() {
     });
 
     it('should allow read access by user', function() {
-      var obj = db.AclPerson();
+      var obj = new db.AclPerson();
       obj.acl.allowReadAccess(db.User.me)
         .allowReadAccess(db2.User.me);
 
@@ -290,7 +290,7 @@ describe('Test Acl', function() {
     });
 
     it('should deny read access by user', function() {
-      var obj = db.AclPerson();
+      var obj = new db.AclPerson();
       obj.acl.denyReadAccess(db2.User.me);
 
       var id;
@@ -305,7 +305,7 @@ describe('Test Acl', function() {
     });
 
     it('should allow read access by group', function() {
-      var obj = db.AclPerson();
+      var obj = new db.AclPerson();
       obj.acl.allowReadAccess(role13);
 
       var id;
@@ -320,7 +320,7 @@ describe('Test Acl', function() {
     });
 
     it('should deny read access by group', function() {
-      var obj = db.AclPerson();
+      var obj = new db.AclPerson();
       obj.acl.denyReadAccess(role23);
 
       var id;
