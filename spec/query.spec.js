@@ -582,6 +582,15 @@ describe("Test Query", function() {
       });
     });
 
+    it("should handle empty results", function() {
+      return db.QueryPerson.find()
+          .equal('name', 'test')
+          .resultList()
+          .then(function(list) {
+            expectResult([], list);
+          });
+    });
+
     it("should return age <= 40 and address.city = Hamburg matches", function() {
       return db.QueryPerson.find()
           .lessThanOrEqualTo('age', 40)
