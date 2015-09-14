@@ -1046,7 +1046,7 @@ describe('Test dao', function() {
         expect(em.containsById(sister)).be.false;
         expect(em.containsById(mother)).be.false;
         expect(em.containsById(street)).be.false;
-        return em.Child.find("name", child.name).singleResult({depth: true});
+        return em.Child.find().equal("name", child.name).singleResult({depth: true});
       }).then(function(loaded) {
         expect(loaded.father.sister._metadata.isAvailable).be.true;
         expect(loaded.father._metadata.isAvailable).be.true;
@@ -1069,7 +1069,7 @@ describe('Test dao', function() {
         expect(em.containsById(sister)).be.false;
         expect(em.containsById(mother)).be.false;
         expect(em.containsById(street)).be.false;
-        return em.Child.find("name", child.name).resultList({depth: true});
+        return em.Child.find().equal("name", child.name).resultList({depth: true});
       }).then(function(loaded) {
         loaded = loaded[0];
         expect(loaded.father.sister._metadata.isAvailable).be.true;
