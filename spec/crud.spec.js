@@ -1035,6 +1035,53 @@ describe('Test dao', function() {
         expect(loaded.father.name).equals("New Name");
       });
     });
+
+    it('should load entity by query single result and resolve depth', function() {
+      child.name = randomize("queryDepth");
+      return child.save({depth:true}).then(function(saved) {
+        child = saved;
+        return emf.createEntityManager();
+      }).then(function(em) {
+        expect(em.containsById(father)).be.false;
+        expect(em.containsById(sister)).be.false;
+        expect(em.containsById(mother)).be.false;
+        expect(em.containsById(street)).be.false;
+        return em.Child.find().equal("name", child.name).singleResult({depth: true});
+      }).then(function(loaded) {
+        expect(loaded.father.sister._metadata.isAvailable).be.true;
+        expect(loaded.father._metadata.isAvailable).be.true;
+        expect(loaded.mother._metadata.isAvailable).be.true;
+        expect(loaded.address.street._metadata.isAvailable).be.true;
+        expect(loaded.father.name).eqls(father.name);
+        expect(loaded.father.sister.name).eqls(sister.name);
+        expect(loaded.mother.name).eqls(mother.name);
+        expect(loaded.address.street.name).eqls(street.name);
+      });
+    });
+
+    it('should load entity by query result list and resolve depth', function() {
+      child.name = randomize("queryDepth");
+      return child.save({depth:true}).then(function(saved) {
+        child = saved;
+        return emf.createEntityManager();
+      }).then(function(em) {
+        expect(em.containsById(father)).be.false;
+        expect(em.containsById(sister)).be.false;
+        expect(em.containsById(mother)).be.false;
+        expect(em.containsById(street)).be.false;
+        return em.Child.find().equal("name", child.name).resultList({depth: true});
+      }).then(function(loaded) {
+        loaded = loaded[0];
+        expect(loaded.father.sister._metadata.isAvailable).be.true;
+        expect(loaded.father._metadata.isAvailable).be.true;
+        expect(loaded.mother._metadata.isAvailable).be.true;
+        expect(loaded.address.street._metadata.isAvailable).be.true;
+        expect(loaded.father.name).eqls(father.name);
+        expect(loaded.father.sister.name).eqls(sister.name);
+        expect(loaded.mother.name).eqls(mother.name);
+        expect(loaded.address.street.name).eqls(street.name);
+      });
+    });
   });
 
   describe('custom ids', function() {
