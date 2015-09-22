@@ -25,9 +25,15 @@ module.exports = function (grunt) {
           builtins: [],
           detectGlobals: false,
           //insertGlobalVars: ['global'],
-          standalone: "DB",
-          exclude: ['websocket']
+          standalone: "DB"
         },
+        transform: [
+          ['babelify', {
+            blacklist: 'regenerator',
+            loose: 'all'
+          }]
+        ],
+        exclude: ['websocket'],
         banner: longBanner
       },
 
@@ -44,9 +50,15 @@ module.exports = function (grunt) {
             //insertGlobals: false,
             //insertGlobalVars: ['global'],
             standalone: "DB",
-            debug: true,
-            exclude: ['websocket']
+            debug: true
           },
+          transform: [
+            ['babelify', {
+              blacklist: 'regenerator',
+              loose: 'all'
+            }]
+          ],
+          exclude: ['websocket'],
           banner: ''
         }
       },
