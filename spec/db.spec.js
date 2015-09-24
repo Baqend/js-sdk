@@ -47,6 +47,14 @@ describe("Test db", function() {
     });
   });
 
+  it('shoudl produce good stacktraces', function() {
+    throw new DB.error.PersistentError('Test')
+  })
+
+  it('shoudl produce good stacktraces', function() {
+    throw new DB.error.EntityExistsError({})
+  })
+
   it('should call ready method', function() {
     return db.ready(function(localDb) {
       expect(localDb).equals(db);

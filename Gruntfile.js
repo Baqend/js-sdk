@@ -29,8 +29,9 @@ module.exports = function (grunt) {
         },
         transform: [
           ['babelify', {
-            blacklist: 'regenerator',
-            loose: 'all'
+            blacklist: ['regenerator', "strict"],
+            loose: 'all',
+            optional: ["spec.protoToAssign"]
           }]
         ],
         exclude: ['websocket'],
