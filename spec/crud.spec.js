@@ -8,7 +8,7 @@ if (typeof DB == 'undefined') {
   DB = require('../lib');
 }
 
-describe('Test dao', function() {
+describe('Test crud', function() {
   var db, personType, addressType, childType, emf, metamodel, streetType;
 
   before(function() {
@@ -931,7 +931,7 @@ describe('Test dao', function() {
         child = saved;
         return emf.createEntityManager();
       }).then(function(em) {
-        return em.Child.load(child._metadata.id, {depth: 1});
+        return em.Child.load(child.id, {depth: 1});
       }).then(function(loaded) {
         expect(loaded.father.sister._metadata.isAvailable).be.false;
         expect(loaded.father._metadata.isAvailable).be.true;

@@ -47,14 +47,6 @@ describe("Test db", function() {
     });
   });
 
-  it('shoudl produce good stacktraces', function() {
-    throw new DB.error.PersistentError('Test')
-  })
-
-  it('shoudl produce good stacktraces', function() {
-    throw new DB.error.EntityExistsError({})
-  })
-
   it('should call ready method', function() {
     return db.ready(function(localDb) {
       expect(localDb).equals(db);
@@ -74,11 +66,6 @@ describe("Test db", function() {
       var TestClass = db.TestClass;
       var testClass = new TestClass();
       expect(testClass).be.ok;
-      //expect(DB.binding.Managed.isInstance(testClass)).be.true;
-
-      expect(testClass instanceof db.TestClass).be.true;
-      expect(testClass instanceof db.TestEmbeddedClass).be.false;
-      expect(null instanceof db.TestClass).be.false;
 
       expect("testValue" in testClass).be.true;
       expect(testClass.save).be.ok;
@@ -87,6 +74,15 @@ describe("Test db", function() {
       expect(testClass.load).be.ok;
       expect(testClass.delete).be.ok;
       expect(testClass.attr).be.ok;
+    });
+
+    it('should provide EntityFactory instances', function() {
+      var testClass = new db.TestClass();
+
+      expect(testClass instanceof DB.binding.Entity).be.true;
+      //expect(testClass instanceof db.TestClass).be.true;
+      //expect(testClass instanceof db.TestEmbeddedClass).be.false;
+      //expect(null instanceof db.TestClass).be.false;
     });
 
     it('should not enhance dao methods to embedded objects', function() {
