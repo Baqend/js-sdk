@@ -1,3 +1,5 @@
+var through = require('through2');
+
 module.exports = function (grunt) {
   'use strict';
 
@@ -10,6 +12,40 @@ module.exports = function (grunt) {
 
   var TEST = 'spec/{env.js,spec.helper.js,**/*.spec.js}';
 
+  var browserifyOptions = {
+    builtins: [],
+    detectGlobals: false,
+    //insertGlobalVars: ['global'],
+    standalone: "DB"
+  };
+
+  function injectBabelHelper(b, opts) {
+    if (!opts.debug) {
+      //list of helpers babel-core\lib\transformation\file\index.js
+      var helper = require("babel").buildExternalHelpers([
+        'inherits',
+        'create-class',
+        'defaults',
+        'class-call-check'
+      ], 'var');
+
+      var first = true;
+      b.pipeline.get('pack').push(through.obj(
+          function (row, enc, next) {
+            if (first) {
+              var line = 'return ';
+              this.push(row.slice(0, row.length - line.length));
+              this.push(helper);
+              this.push(line);
+              first = false;
+            } else {
+              this.push(row)
+            }
+            next()
+          }));
+    }
+  }
+
   grunt.initConfig({
     pkg: grunt.file.readJSON('package.json'),
     copyright: grunt.file.read('LICENSE.md').split(/[\r\n]/)[0],
@@ -21,19 +57,15 @@ module.exports = function (grunt) {
      */
     browserify: {
       options: {
-        browserifyOptions: {
-          builtins: [],
-          detectGlobals: false,
-          //insertGlobalVars: ['global'],
-          standalone: "DB"
-        },
+        browserifyOptions: browserifyOptions,
         transform: [
           ['babelify', {
             blacklist: ['regenerator', "strict"],
             loose: 'all',
-            optional: ["spec.protoToAssign"]
+            externalHelpers: true
           }]
         ],
+        plugin: [injectBabelHelper],
         exclude: ['websocket'],
         banner: longBanner
       },
@@ -45,21 +77,13 @@ module.exports = function (grunt) {
         options: {
           watch: true,
           keepAlive: true,
-          browserifyOptions: {
-            builtins: [],
-            detectGlobals: false,
-            //insertGlobals: false,
-            //insertGlobalVars: ['global'],
-            standalone: "DB",
-            debug: true
-          },
+          browserifyOptions: Object.assign({debug: true}, browserifyOptions),
           transform: [
             ['babelify', {
-              blacklist: 'regenerator',
+              blacklist: ['regenerator', "strict"],
               loose: 'all'
             }]
           ],
-          exclude: ['websocket'],
           banner: ''
         }
       },
