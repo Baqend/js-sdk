@@ -254,7 +254,8 @@ describe("Test db", function() {
     it("enhanced objects should be enumarable", function() {
       var obj = db.TestClass();
 
-      var expected = ['id', 'version', 'testValue'];
+      // TODO remove __metadata
+      var expected = ['id', 'version', 'testValue', '__metadata'];
       var count = 0;
       for (var prop in obj) {
         count++;
