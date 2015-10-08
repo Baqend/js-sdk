@@ -70,6 +70,6 @@ function getHeaders(node) {
   var headers = {'Content-Type': 'application/json'};
   var token = node.getAttribute('data-token');
   if (token)
-    headers['orestes-authorization-token'] = token;
+    headers['baqend-authorization-token'] = token;
   return headers;
 }
