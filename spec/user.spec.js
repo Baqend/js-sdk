@@ -39,7 +39,7 @@ describe('Test user and roles', function() {
       var login = makeLogin();
       return db.User.register(login, 'secret').then(function(user) {
         expect(user).be.ok;
-        expect(DB.binding.User.isUser(user)).be.true;
+        expect(user instanceof DB.binding.User).be.true;
         expect(user._metadata.id).be.ok;
         expect(user._metadata.version).be.ok;
         expect(user._metadata.isPersistent).be.true;
@@ -116,7 +116,7 @@ describe('Test user and roles', function() {
         user = u;
 
         expect(user).be.ok;
-        expect(DB.binding.User.isUser(user)).be.true;
+        expect(user instanceof DB.binding.User).be.true;
         expect(user._metadata.id).be.ok;
         expect(user._metadata.version).be.ok;
         expect(user._metadata.isPersistent).be.true;

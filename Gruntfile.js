@@ -22,7 +22,7 @@ module.exports = function (grunt) {
   function injectBabelHelper(b, opts) {
     if (!opts.debug) {
       //list of helpers babel-core\lib\transformation\file\index.js
-      var helper = require("babel").buildExternalHelpers([
+      var helper = require("babelify/node_modules/babel-core").buildExternalHelpers([
         'inherits',
         'create-class',
         'defaults',
@@ -208,6 +208,7 @@ module.exports = function (grunt) {
     jsdoc: {
       dist: {
         src: ['lib/**/*.js'],
+        jsdoc: 'node_modules/.bin/jsdoc.cmd',
         options: {
           destination: 'doc',
           template : "tpl/theme",
