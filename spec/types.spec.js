@@ -124,7 +124,7 @@ describe('Test entity type', function () {
   });
 
   beforeEach(function() {
-    obj = EntityClass();
+    obj = new EntityClass();
     state = DB.util.Metadata.get(obj);
   });
 
@@ -356,7 +356,7 @@ describe('Test entity type', function () {
    */
   function test(name) {
     it("should save undefined properly", function() {
-      var obj = EntityClass();
+      var obj = new EntityClass();
       obj[name] = undefined;
 
       return obj.save({reload:true}).then(function() {
@@ -365,7 +365,7 @@ describe('Test entity type', function () {
     });
 
     it("should save null properly", function() {
-      var obj = EntityClass();
+      var obj = new EntityClass();
       obj[name] = null;
 
       return obj.save({reload:true}).then(function() {

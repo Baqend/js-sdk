@@ -38,8 +38,8 @@ describe('Test validate', function() {
   });
 
   beforeEach(function() {
-    person = db.ValidatePerson();
-    person.address = db.ValidateAddress();
+    person = new db.ValidatePerson();
+    person.address = new db.ValidateAddress();
     type = DB.util.Metadata.get(person).type;
   });
 

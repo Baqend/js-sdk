@@ -536,39 +536,39 @@ describe("Test Query", function() {
     before(function() {
       db = emf.createEntityManager();
 
-      p0 = db.QueryPerson({
+      p0 = new db.QueryPerson({
         id: 'query_p0'
       });
 
-      p1 = db.QueryPerson({
+      p1 = new db.QueryPerson({
         id: 'query_p1',
         person: p0,
         name: 'QueryPerson 1',
         age: 45,
         date: new Date('1978-02-03T00:00Z'),
-        address: db.QueryAddress({city: 'Hamburg', zip: 22865}),
+        address: new db.QueryAddress({city: 'Hamburg', zip: 22865}),
         colors: new DB.List(['red', 'green']),
         birthplace: new DB.GeoPoint(35, 110)
       });
 
-      p2 = db.QueryPerson({
+      p2 = new db.QueryPerson({
         id: 'query_p2',
         person: p1,
         name: 'QueryPerson 2',
         age: 33,
         date: new Date('1966-05-01T00:00Z'),
-        address: db.QueryAddress({city: 'Hamburg', zip: 23432}),
+        address: new db.QueryAddress({city: 'Hamburg', zip: 23432}),
         colors: new DB.List(['blue', 'green', 'red']),
         birthplace: new DB.GeoPoint(32, 112)
       });
 
-      p3 = db.QueryPerson({
+      p3 = new db.QueryPerson({
         id: 'query_p3',
         person: p1,
         name: 'QueryPerson 3',
         age: 23,
         date: new Date('1989-05-01T00:00Z'),
-        address: db.QueryAddress({city: 'Munich', zip: 92438}),
+        address: new db.QueryAddress({city: 'Munich', zip: 92438}),
         colors: new DB.List(['yellow', 'blue', 'white']),
         birthplace: new DB.GeoPoint(29, 109)
       });

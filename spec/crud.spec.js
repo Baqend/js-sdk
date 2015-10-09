@@ -8,7 +8,7 @@ if (typeof DB == 'undefined') {
   DB = require('../lib');
 }
 
-describe('Test dao', function() {
+describe('Test crud', function() {
   var db, personType, addressType, childType, emf, metamodel, streetType;
 
   before(function() {
@@ -54,7 +54,7 @@ describe('Test dao', function() {
       expect(db.contains({})).be.false;
       expect(db.contains([])).be.false;
       expect(db.contains(null)).be.false;
-      expect(db.contains(addressType.typeConstructor())).be.false;
+      expect(db.contains(new addressType.typeConstructor())).be.false;
     });
 
     it('return false for unattached objects', function() {
@@ -67,7 +67,7 @@ describe('Test dao', function() {
     });
 
     it('return false for implicit attached objects', function() {
-      var obj = db.Person();
+      var obj = new db.Person();
       expect(db.contains(obj)).be.false;
     });
   });
@@ -80,7 +80,7 @@ describe('Test dao', function() {
     });
 
     it('should unattached object to db', function() {
-      var obj = db.Person();
+      var obj = new db.Person();
 
       expect(obj.id).be.null;
       expect(db.contains(obj)).be.false;
@@ -93,7 +93,7 @@ describe('Test dao', function() {
     });
 
     it('should not reattach objects to another db', function() {
-      var obj = db.Person();
+      var obj = new db.Person();
       obj.attach(db);
 
       var db2 =  emf.createEntityManager();
@@ -140,7 +140,7 @@ describe('Test dao', function() {
 
   describe('save', function() {
     it('should save new object', function() {
-      var person = db.Person();
+      var person = new db.Person();
 
       return person.save(function(result) {
         expect(person.id).be.ok;
@@ -165,7 +165,7 @@ describe('Test dao', function() {
     });
 
     it('should save and reload object', function() {
-      var person = db.Person();
+      var person = new db.Person();
       person.name = "Old Name";
       var promise = expect(person.save({reload:true})).eventually.have.property('name', 'Old Name');
       person.name = "New Name";
@@ -173,7 +173,7 @@ describe('Test dao', function() {
     });
 
     it('should save a second time', function() {
-      var person = db.Person();
+      var person = new db.Person();
       var version;
 
       return person.save(function() {
@@ -191,7 +191,7 @@ describe('Test dao', function() {
 
     it('should not save a stale object', function() {
       var db2 = emf.createEntityManager();
-      var person = db2.Person();
+      var person = new db2.Person();
 
       return expect(person.save().then(function() {
         return db.Person.load(person._metadata.id).then(function(person2) {
@@ -209,7 +209,7 @@ describe('Test dao', function() {
 
     it('should forcibly save a stale object', function() {
       var db2 = emf.createEntityManager();
-      var person = db2.Person();
+      var person = new db2.Person();
 
       return person.save().then(function() {
         return db.Person.load(person._metadata.id).then(function(person2) {
@@ -228,10 +228,10 @@ describe('Test dao', function() {
 
     it('should not override an object that exists', function() {
       var db2 = emf.createEntityManager();
-      var person = db2.Person();
+      var person = new db2.Person();
 
       return person.save().then(function() {
-        var newPerson = db.Person();
+        var newPerson = new db.Person();
         newPerson._metadata.id = person._metadata.id;
         return expect(newPerson.save()).rejected;
       });
@@ -239,10 +239,10 @@ describe('Test dao', function() {
 
     it('should forcibly override an object that exists', function() {
       var db2 = emf.createEntityManager();
-      var person = db2.Person();
+      var person = new db2.Person();
 
       return person.save().then(function() {
-        var newPerson = db.Person();
+        var newPerson = new db.Person();
         newPerson.name = 'Peter Parker';
         newPerson._metadata.id = person._metadata.id;
         return newPerson.save({force:true});
@@ -254,7 +254,7 @@ describe('Test dao', function() {
     });
 
     it('should not save an deleted object', function() {
-      var person = db.Person();
+      var person = new db.Person();
       return person.save().then(function() {
         var db2 = emf.createEntityManager();
 
@@ -268,7 +268,7 @@ describe('Test dao', function() {
     });
 
     it('should forcibly save an deleted object', function() {
-      var person = db.Person();
+      var person = new db.Person();
       return person.save().then(function() {
         var db2 = emf.createEntityManager();
 
@@ -286,13 +286,13 @@ describe('Test dao', function() {
     });
 
     it('should not be allowed to call save twice', function() {
-      var person = db.Person();
+      var person = new db.Person();
       person.save();
       expect(person.save.bind(person)).to.throw(Error);
     });
 
     it('should not save and overwrite afterward changed values', function() {
-      var person = db.Person();
+      var person = new db.Person();
       person.name = 'Old Name';
       var promise = person.save();
       person.name = 'New Name';
@@ -303,7 +303,7 @@ describe('Test dao', function() {
     });
 
     it('should not save afterward changed values but refrehs it', function() {
-      var person = db.Person();
+      var person = new db.Person();
       person.name = 'Old Name';
       var promise = person.save({reload:true});
       person.name = 'New Name';
@@ -318,7 +318,7 @@ describe('Test dao', function() {
 
       it('should retry if the object is out of date', function() {
         var db2 = emf.createEntityManager();
-        var person = db2.Person();
+        var person = new db2.Person();
         var newPerson;
 
         var i = 0;
@@ -342,7 +342,7 @@ describe('Test dao', function() {
 
       it('should be allowed to abort the process', function() {
         var db2 = emf.createEntityManager();
-        var person = db2.Person();
+        var person = new db2.Person();
         var newPerson;
 
         var i = 0;
@@ -370,10 +370,10 @@ describe('Test dao', function() {
 
       it('should be allowed to return a promise', function() {
         var db2 = emf.createEntityManager();
-        var person = db2.Person();
+        var person = new db2.Person();
         var newPerson;
 
-        var otherPerson = db2.Person();
+        var otherPerson = new db2.Person();
         otherPerson.name = "OtherName";
 
         return otherPerson.save().then(function() {
@@ -405,7 +405,7 @@ describe('Test dao', function() {
     var person;
 
     beforeEach(function() {
-      person = db.Person();
+      person = new db.Person();
       person.name = "Peter Mueller";
       person.age = 42;
       person.date = new Date("1976-11-13");
@@ -481,7 +481,7 @@ describe('Test dao', function() {
     var person;
 
     beforeEach(function() {
-      person = db.Person();
+      person = new db.Person();
       person.name = "Peter Mueller";
       person.age = 42;
       person.date = new Date("1976-11-13");
@@ -541,7 +541,7 @@ describe('Test dao', function() {
     it('should not be allowed to add deleted objects with same id', function() {
       return expect(person.delete().then(function() {
         db.attach(person);
-        var newPerson = db.Person();
+        var newPerson = new db.Person();
         newPerson._metadata.id = person._metadata.id;
         return db.attach(newPerson);
       })).be.rejectedWith(DB.error.EntityExistsError);
@@ -549,7 +549,7 @@ describe('Test dao', function() {
 
     it('should not be allowed to delete outdated object', function() {
       var db2 = emf.createEntityManager();
-      var person = db2.Person();
+      var person = new db2.Person();
 
       return expect(person.save().then(function() {
         return db.Person.load(person._metadata.id);
@@ -563,7 +563,7 @@ describe('Test dao', function() {
 
     it('should be allowed to forcibly delete outdated object', function() {
       var db2 = emf.createEntityManager();
-      var person = db2.Person();
+      var person = new db2.Person();
 
       return person.save().then(function() {
         return db.Person.load(person._metadata.id);
@@ -582,7 +582,7 @@ describe('Test dao', function() {
     var person;
 
     beforeEach(function() {
-      person = db.Person();
+      person = new db.Person();
       person.name = "Peter Mueller";
       person.age = 42;
       person.date = new Date("1976-11-13");
@@ -616,7 +616,7 @@ describe('Test dao', function() {
 
     it('should not allowed to update outdated object', function() {
       var db2 = emf.createEntityManager();
-      var person = db2.Person();
+      var person = new db2.Person();
 
       return expect(person.save().then(function() {
         return db.Person.load(person._metadata.id);
@@ -631,7 +631,7 @@ describe('Test dao', function() {
 
     it('should allowed to forcibly update outdated object', function() {
       var db2 = emf.createEntityManager();
-      var person = db2.Person();
+      var person = new db2.Person();
 
       return person.save().then(function() {
         return db.Person.load(person._metadata.id);
@@ -651,7 +651,7 @@ describe('Test dao', function() {
 
     it('should not be allowed to insert document by update', function() {
       expect(function() {
-        db.Person().update()
+        new db.Person().update()
       }).throw(Error);
     });
   });
@@ -659,7 +659,7 @@ describe('Test dao', function() {
   describe("insert", function() {
 
     it('should insert object', function() {
-      var person = db.Person();
+      var person = new db.Person();
       person.name = "Peter Insert";
       return person.insert().then(function() {
         return expect(db.Person.load(person._metadata.id)).become(person);
@@ -667,7 +667,7 @@ describe('Test dao', function() {
     });
 
     it('should insert and reload object', function() {
-      var person = db.Person();
+      var person = new db.Person();
       person.name = "Peter Insert";
       var promise = expect(person.insert({reload:true})).eventually.have.property('name', 'Peter Insert');
       person.name = "New Peter Insert";
@@ -675,7 +675,7 @@ describe('Test dao', function() {
     });
 
     it('should not be allowed to insert loaded object', function() {
-      var person = db.Person();
+      var person = new db.Person();
       person.name = "Peter Insert";
       return person.insert().then(function() {
         return db.Person.load(person._metadata.id);
@@ -689,10 +689,10 @@ describe('Test dao', function() {
 
     it('should not be allowed to insert existing object', function() {
       var db2 = emf.createEntityManager();
-      var person = db2.Person();
+      var person = new db2.Person();
 
       return person.save().then(function(saved) {
-        var newPerson = db.Person();
+        var newPerson = new db.Person();
         newPerson.name = "Blub";
         newPerson._metadata.id = saved._metadata.id;
         return expect(newPerson.insert()).rejected;
@@ -704,7 +704,7 @@ describe('Test dao', function() {
   describe('load', function() {
 
     it('should load object', function() {
-      var person = db.Person();
+      var person = new db.Person();
       person.name = "Old Name";
       return person.save(function() {
         return emf.createEntityManager();
@@ -720,7 +720,7 @@ describe('Test dao', function() {
     });
 
     it('should load object with same version', function() {
-      var person = db.Person();
+      var person = new db.Person();
       person.name = "Old Name";
       return person.save(function() {
         return emf.createEntityManager();
@@ -739,7 +739,7 @@ describe('Test dao', function() {
     });
 
     it('should load object when deleted', function() {
-      var person = db.Person();
+      var person = new db.Person();
       person.name = "Old Name";
 
       return person.save().then(function(obj) {
@@ -761,12 +761,12 @@ describe('Test dao', function() {
     var child, father, mother, sister, street, address, sibs;
 
     beforeEach(function() {
-      child = db.Child();
-      father = db.Person();
-      mother = db.Person();
-      sister = db.Person();
-      street = db.Street();
-      address = db.Address();
+      child = new db.Child();
+      father = new db.Person();
+      mother = new db.Person();
+      sister = new db.Person();
+      street = new db.Street();
+      address = new db.Address();
       sister.name = "Schwester Meier";
       sister.age = 44;
       mother.name = "Hildegard Meier";
@@ -791,7 +791,7 @@ describe('Test dao', function() {
       child.mapSiblings = new DB.Map();
       sibs = [];
       for(var i = 0; i < 6; i++) {
-        var sib = db.Person();
+        var sib = new db.Person();
         sib.name = "sib" + i;
         sibs.child = child;
         sibs.sister = mother;
@@ -931,7 +931,7 @@ describe('Test dao', function() {
         child = saved;
         return emf.createEntityManager();
       }).then(function(em) {
-        return em.Child.load(child._metadata.id, {depth: 1});
+        return em.Child.load(child.id, {depth: 1});
       }).then(function(loaded) {
         expect(loaded.father.sister._metadata.isAvailable).be.false;
         expect(loaded.father._metadata.isAvailable).be.true;
@@ -1098,7 +1098,7 @@ describe('Test dao', function() {
     });
 
     it('should create and load new object', function() {
-      var person = db.Person();
+      var person = new db.Person();
       person.id = myId;
       person.name = "Custom Person";
 
@@ -1120,12 +1120,12 @@ describe('Test dao', function() {
     });
 
     it('should useable as references', function() {
-      var person = db.Person();
+      var person = new db.Person();
       person.id = myId;
       person.name = "Custom Person";
 
       var childId = randomize('my/craßy*%unescap\\ed&id?=');
-      person.child = db.Person();
+      person.child = new db.Person();
       person.child.name = "Custom Child Person";
       person.child.id = childId;
 
