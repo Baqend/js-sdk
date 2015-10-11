@@ -129,13 +129,13 @@ describe('Test entity type', function () {
   });
 
   function testObject() {
-    var obj = new EntityType.typeConstructor();
+    var obj = EntityType.create();
     setValues(obj);
     return obj;
   }
 
   function embeddableObject() {
-    var obj = new EmbeddedType.typeConstructor();
+    var obj = EmbeddedType.create();
     setValues(obj);
     return obj;
   }
@@ -188,7 +188,7 @@ describe('Test entity type', function () {
   });
 
   describe("ref value", function() {
-    test("ref", new EntityType.typeConstructor(), testObject(), [{}, null]);
+    test("ref", EntityType.create(), testObject(), [{}, null]);
 
     it("should convert references to ids", function() {
       var ref = testObject();
@@ -196,10 +196,9 @@ describe('Test entity type', function () {
       obj.ref = ref;
 
       var json = state.getJson();
-      var refId = DB.util.Metadata.get(ref).ref;
-      expect(refId).contain('/db/');
+      expect(ref.id).contain('/db/');
       expect(json.ref).be.ok;
-      expect(json.ref).equals(refId);
+      expect(json.ref).equals(ref.id);
 
       state.setJson(json);
       expect(obj.ref).equals(ref);
@@ -207,7 +206,7 @@ describe('Test entity type', function () {
   });
 
   describe("embedded value", function() {
-    test("embedded", new EmbeddedType.typeConstructor(), embeddableObject(), [{}, null]);
+    test("embedded", EmbeddedType.create(), embeddableObject(), [{}, null]);
   });
 
   for (name in types) {

@@ -59,8 +59,8 @@ describe('Test Acl', function() {
           .allowReadAccess(db.User.me)
           .denyWriteAccess(db.User.me);
 
-      expect(acl.read.allRules()).eql([db.User.me._metadata.ref]);
-      expect(acl.write.allRules()).eql([db.User.me._metadata.ref]);
+      expect(acl.read.allRules()).eql([db.User.me.id]);
+      expect(acl.write.allRules()).eql([db.User.me.id]);
     });
 
     it('should return the actual rule', function() {
@@ -244,14 +244,14 @@ describe('Test Acl', function() {
 
         role23 = new db.Role();
         role23.name = "Role2_3";
-        role23.addUser(db.getReference(db2.me._metadata.ref));
-        role23.addUser(db.getReference(db3.me._metadata.ref));
+        role23.addUser(db.getReference(db2.me.id));
+        role23.addUser(db.getReference(db3.me.id));
         var promise1 = role23.save();
 
         role13 = new db.Role();
         role13.name = "Role1_3";
         role13.addUser(db.User.me);
-        role13.addUser(db.getReference(db3.me._metadata.ref));
+        role13.addUser(db.getReference(db3.me.id));
         var promise2 = role13.save();
 
         return Promise.all([promise1, promise2]);

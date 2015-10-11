@@ -58,7 +58,7 @@ describe('Test crud', function() {
     });
 
     it('return false for unattached objects', function() {
-      var obj = new personType.typeConstructor();
+      var obj = personType.create();
       expect(db.contains(obj)).be.false;
 
       obj._metadata.db = db;
@@ -103,7 +103,7 @@ describe('Test crud', function() {
     });
 
     it('should ignore attach object to same db', function() {
-      var obj = new personType.typeConstructor();
+      var obj = personType.create();
       expect(obj.id).be.null;
 
       obj.attach(db);
@@ -118,7 +118,7 @@ describe('Test crud', function() {
     });
 
     it('should attach implicit attached objects to same db', function() {
-      var obj = new personType.typeConstructor();
+      var obj = personType.create();
       expect(obj._metadata.db).equals(DB);
       expect(DB.contains(obj)).be.false;
 
@@ -129,7 +129,7 @@ describe('Test crud', function() {
     });
 
     it('should not reattach implicit attached objects to another db', function() {
-      var obj = new personType.typeConstructor();
+      var obj = personType.create();
       expect(obj._metadata.db).equals(DB);
 
       expect(function() { obj.attach(db); }).throw(DB.error.EntityExistsError);
@@ -420,9 +420,9 @@ describe('Test crud', function() {
     });
 
     it('should retrieved object', function() {
-      return db.Person.load(person._metadata.id).then(function(loaded) {
+      return db.Person.load(person.id).then(function(loaded) {
         expect(loaded).be.ok;
-        expect(loaded._metadata.ref).equals(person._metadata.ref);
+        expect(loaded.id).equals(person.id);
         expect(loaded.name).equals("Peter Mueller");
         expect(loaded.age).equals(42);
         expect(loaded.date).eql(new Date("1976-11-13"));
@@ -523,7 +523,7 @@ describe('Test crud', function() {
         return db.Person.load(saved._metadata.id);
       }).then(function(loaded) {
         expect(loaded).be.ok;
-        expect(loaded._metadata.ref).equals(person._metadata.ref);
+        expect(loaded.id).equals(person.id);
         expect(loaded.name).equals("Peter Mueller");
         expect(loaded.age).equals(42);
         expect(loaded.date).eql(new Date("1976-11-13"));
@@ -808,7 +808,7 @@ describe('Test crud', function() {
     it('should save and convert result to JSON', function() {
       return child.save({depth:true}).then(function(saved) {
         var json = saved.toJSON();
-        expect(json.aunt).eqls(mother._metadata.ref);
+        expect(json.aunt).eqls(mother.id);
         expect(json.name).eqls(child.name);
       });
     });
@@ -816,14 +816,14 @@ describe('Test crud', function() {
     it('should save and delete referenced objects by depth', function() {
       return child.save({depth:2}).then(function() {
         var promises = [
-          expect(db.Child.load(child._metadata.id)).not.become(null),
-          expect(db.Person.load(mother._metadata.id)).not.become(null),
-          expect(db.Person.load(father._metadata.id)).not.become(null),
-          expect(db.Street.load(street._metadata.id)).not.become(null),
-          expect(db.Person.load(sister._metadata.id)).not.become(null)
+          expect(db.Child.load(child.id)).not.become(null),
+          expect(db.Person.load(mother.id)).not.become(null),
+          expect(db.Person.load(father.id)).not.become(null),
+          expect(db.Street.load(street.id)).not.become(null),
+          expect(db.Person.load(sister.id)).not.become(null)
         ];
         sibs.forEach(function(sib) {
-          promises.push(expect(db.Person.load(sib._metadata.id)).not.become(null))
+          promises.push(expect(db.Person.load(sib.id)).not.become(null))
         });
         return Promise.all(promises);
       }).then(function() {
@@ -831,11 +831,11 @@ describe('Test crud', function() {
       }).then(function(deleted) {
         expect(deleted).equals(child);
         var promises = [
-          expect(db.Child.load(child._metadata.id)).become(null),
-          expect(db.Person.load(mother._metadata.id)).become(null),
-          expect(db.Person.load(father._metadata.id)).become(null),
-          expect(db.Street.load(street._metadata.id)).become(null),
-          expect(db.Person.load(sister._metadata.id)).become(null)
+          expect(db.Child.load(child.id)).become(null),
+          expect(db.Person.load(mother.id)).become(null),
+          expect(db.Person.load(father.id)).become(null),
+          expect(db.Street.load(street.id)).become(null),
+          expect(db.Person.load(sister.id)).become(null)
         ];
         sibs.forEach(function(sib) {
           promises.push(expect(db.Person.load(sib._metadata.id)).become(null))
@@ -847,11 +847,11 @@ describe('Test crud', function() {
     it('should save and delete referenced objects by reachability', function() {
       return child.save({depth:true}).then(function() {
         var promises = [
-          expect(db.Child.load(child._metadata.id)).not.become(null),
-          expect(db.Person.load(mother._metadata.id)).not.become(null),
-          expect(db.Person.load(father._metadata.id)).not.become(null),
-          expect(db.Street.load(street._metadata.id)).not.become(null),
-          expect(db.Person.load(sister._metadata.id)).not.become(null)
+          expect(db.Child.load(child.id)).not.become(null),
+          expect(db.Person.load(mother.id)).not.become(null),
+          expect(db.Person.load(father.id)).not.become(null),
+          expect(db.Street.load(street.id)).not.become(null),
+          expect(db.Person.load(sister.id)).not.become(null)
         ];
         sibs.forEach(function(sib) {
           promises.push(expect(db.Person.load(sib._metadata.id)).not.become(null))
@@ -862,11 +862,11 @@ describe('Test crud', function() {
       }).then(function(deleted) {
         expect(deleted).equals(child);
         var promises = [
-          expect(db.Child.load(child._metadata.id)).become(null),
-          expect(db.Person.load(mother._metadata.id)).become(null),
-          expect(db.Person.load(father._metadata.id)).become(null),
-          expect(db.Street.load(street._metadata.id)).become(null),
-          expect(db.Person.load(sister._metadata.id)).become(null)
+          expect(db.Child.load(child.id)).become(null),
+          expect(db.Person.load(mother.id)).become(null),
+          expect(db.Person.load(father.id)).become(null),
+          expect(db.Street.load(street.id)).become(null),
+          expect(db.Person.load(sister.id)).become(null)
         ];
         sibs.forEach(function(sib) {
           promises.push(expect(db.Person.load(sib._metadata.id)).become(null))
@@ -1088,7 +1088,9 @@ describe('Test crud', function() {
     var myId;
 
     beforeEach(function() {
-      myId = randomize('a/db/bucket/?param=3\\ed&g=1');
+      var person = new db.Person();
+      person.id = randomize('a/db/bucket/?param=3\\ed&g=1');
+      myId = person.id;
     });
 
     afterEach(function() {
@@ -1122,12 +1124,13 @@ describe('Test crud', function() {
     it('should useable as references', function() {
       var person = new db.Person();
       person.id = myId;
+      var id = person.id;
       person.name = "Custom Person";
 
-      var childId = randomize('my/craßy*%unescap\\ed&id?=');
       person.child = new db.Person();
       person.child.name = "Custom Child Person";
-      person.child.id = childId;
+      person.child.id = randomize('my/craßy*%unescap\\ed&id?=');
+      var childId = person.child.id;
 
       return person.save({reload:true, depth: true}, function(result) {
         expect(person.id).equals(myId);
