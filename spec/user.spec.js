@@ -240,37 +240,13 @@ describe('Test user and roles', function() {
       });
     });
 
-    it('should change password of inserted user', function() {
+    it('should not be allowed to insert user', function() {
       var name = makeLogin();
       var newUser = db.User.fromJSON({
         username: name
       });
-      var oldToken;
-      return db.User.login('root', 'root', function() {
-        oldToken = db.token;
-        return newUser.save();
-      }).then(function() {
-        return db.User.newPassword(name, "", "newPassword").then(function() {return db.User.logout();});
-      }).then(function() {
-        return expect(db.User.login(name, "newPassword")).be.fulfilled;
-      }).then(function() {
-        expect(db.me.username).eqls(name);
-        expect(db.token).not.eqls(oldToken);
-      });
-    });
 
-    it('should not be allowed to login on inserted user', function() {
-      var name = makeLogin();
-      var newUser = db.User.fromJSON({
-        username: name
-      });
-      var oldToken;
-      return db.User.login('root', 'root', function() {
-        oldToken = db.token;
-        return newUser.save().then(function() { return db.User.logout(); });
-      }).then(function() {
-        return expect(db.User.login(name, "")).be.rejected;
-      });
+      return expect(newUser.save()).be.rejected;
     });
 
     it('should not be allowed to register with an empty password', function() {
@@ -398,7 +374,15 @@ describe('Test user and roles', function() {
       user3 = new db.User();
       user3.username = makeLogin();
 
-      return Promise.all([user1.insert(), user2.insert(), user3.insert()]);
+      return db.User.register(user1, user1.username, false).then(function(usr) {
+        user1 = usr;
+        return db.User.register(user2, user2.username, false);
+      }).then(function(usr) {
+        user2 = usr;
+        return db.User.register(user3, user3.username, false);
+      }).then(function(usr) {
+        user3 = usr;
+      });
     });
 
     it('should save and load', function() {

@@ -80,4 +80,10 @@ describe('Test Push Notifications', function() {
     });
   });
 
+
+  it('should not be allowed to insert device', function() {
+    var device = new db.Device();
+    return expect(device.save()).to.rejected;
+  });
+
 });
