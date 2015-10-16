@@ -88,7 +88,8 @@ describe("Streaming Queries", function() {
     stream.off();
     //Remove excess objects
     return sleep(t).then(function() {
-      return db[bucket].find().notIn("id", [p0.id, p1.id, p2.id, p3.id]).resultList(function(result) {
+      //TODO: fix this when ids are handled correctly in queries
+      return db[bucket].find().notIn("id", [p0._metadata.key, p1._metadata.key, p2._metadata.key, p3._metadata.key]).resultList(function(result) {
         return Promise.all(result.map(function(person) {
           return person.delete();
         }));
