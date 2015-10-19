@@ -1,0 +1,520 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>Baqend JavaScript SDK 1.10.0 - Source: connector/Connector.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+
+    <link rel="shortcut icon" type="image/x-icon" href="img/favicon.ico">
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/bootstrap-baqend.min.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<nav class="navbar navbar-default navbar-fixed-top" role="navigation">
+    <div class="container">
+
+        <!-- Collapsed navigation -->
+        <div class="navbar-header">
+            <!-- Expander button -->
+            <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+
+            <!-- Main title -->
+            <a class="navbar-brand" href="/"><img src="img/baqend_logo.svg"></a>
+        </div>
+
+        <!-- Expanded navigation -->
+        <div id="nav" class="navbar-collapse collapse">
+            <!-- Main navigation -->
+            <ul class="nav navbar-nav">
+                <li>
+                    <a href="http://www.baqend.com/guide/index.html">JS Guide</a>
+                </li>
+                <li class="active">
+                    <a href="baqend.html">JS API Docs</a>
+                </li>
+                <li>
+                    <a href="http://www.baqend.com/#tutorial">Tutorial</a>
+                </li>
+                <li>
+                    <a href="http://www.baqend.com/#download">Download</a>
+                </li>
+            </ul>
+        </div>
+    </div>
+</nav>
+
+
+<div class="container">
+  <div class="row">
+    <div class="col-md-3">
+        <div class="bs-sidebar hidden-print fixed affix" role="complementary">
+            <input class="filter form-control input-sm" type="text" placeholder="FILTER"/>
+
+            <ul class="nav bs-sidenav">
+            
+            
+                <li class="">
+                    <a href="baqend.html" class="nav-name">baqend</a>
+                    <ul class="nav">
+                      
+                        <li class=""><a href="baqend.Acl.html" class="nav-name">Acl</a></li>
+                      
+                        <li class=""><a href="baqend.EntityManager.html" class="nav-name">EntityManager</a></li>
+                      
+                        <li class=""><a href="baqend.EntityManagerFactory.html" class="nav-name">EntityManagerFactory</a></li>
+                      
+                        <li class=""><a href="baqend.EntityTransaction.html" class="nav-name">EntityTransaction</a></li>
+                      
+                        <li class=""><a href="baqend.GeoPoint.html" class="nav-name">GeoPoint</a></li>
+                      
+                        <li class=""><a href="baqend.Query.html" class="nav-name">Query</a></li>
+                      
+                    </ul>
+                </li>
+            
+                <li class="">
+                    <a href="baqend.binding.html" class="nav-name">baqend.binding</a>
+                    <ul class="nav">
+                      
+                        <li class=""><a href="baqend.binding.Accessor.html" class="nav-name">Accessor</a></li>
+                      
+                        <li class=""><a href="baqend.binding.DeviceFactory.html" class="nav-name">DeviceFactory</a></li>
+                      
+                        <li class=""><a href="baqend.binding.Enhancer.html" class="nav-name">Enhancer</a></li>
+                      
+                        <li class=""><a href="baqend.binding.Entity.html" class="nav-name">Entity</a></li>
+                      
+                        <li class=""><a href="baqend.binding.EntityFactory.html" class="nav-name">EntityFactory</a></li>
+                      
+                        <li class=""><a href="baqend.binding.ManagedFactory.html" class="nav-name">ManagedFactory</a></li>
+                      
+                        <li class=""><a href="baqend.binding.Role.html" class="nav-name">Role</a></li>
+                      
+                        <li class=""><a href="baqend.binding.User.html" class="nav-name">User</a></li>
+                      
+                        <li class=""><a href="baqend.binding.UserFactory.html" class="nav-name">UserFactory</a></li>
+                      
+                    </ul>
+                </li>
+            
+                <li class="">
+                    <a href="baqend.collection.html" class="nav-name">baqend.collection</a>
+                    <ul class="nav">
+                      
+                        <li class=""><a href="baqend.collection.Collection.html" class="nav-name">Collection</a></li>
+                      
+                        <li class=""><a href="baqend.collection.IndexIterator.html" class="nav-name">IndexIterator</a></li>
+                      
+                        <li class=""><a href="baqend.collection.Iterable.html" class="nav-name">Iterable</a></li>
+                      
+                        <li class=""><a href="baqend.collection.Iterator.html" class="nav-name">Iterator</a></li>
+                      
+                        <li class=""><a href="baqend.collection.List.html" class="nav-name">List</a></li>
+                      
+                        <li class=""><a href="baqend.collection.Map.html" class="nav-name">Map</a></li>
+                      
+                        <li class=""><a href="baqend.collection.PropertyIterator.html" class="nav-name">PropertyIterator</a></li>
+                      
+                        <li class=""><a href="baqend.collection.Set.html" class="nav-name">Set</a></li>
+                      
+                    </ul>
+                </li>
+            
+                <li class="">
+                    <a href="baqend.connector.html" class="nav-name">baqend.connector</a>
+                    <ul class="nav">
+                      
+                        <li class=""><a href="baqend.connector.Connector.html" class="nav-name">Connector</a></li>
+                      
+                        <li class=""><a href="baqend.connector.IFrameConnector.html" class="nav-name">IFrameConnector</a></li>
+                      
+                        <li class=""><a href="baqend.connector.Message.html" class="nav-name">Message</a></li>
+                      
+                        <li class=""><a href="baqend.connector.NodeConnector.html" class="nav-name">NodeConnector</a></li>
+                      
+                        <li class=""><a href="baqend.connector.XMLHttpConnector.html" class="nav-name">XMLHttpConnector</a></li>
+                      
+                    </ul>
+                </li>
+            
+                <li class="">
+                    <a href="baqend.error.html" class="nav-name">baqend.error</a>
+                    <ul class="nav">
+                      
+                        <li class=""><a href="baqend.error.CommunicationError.html" class="nav-name">CommunicationError</a></li>
+                      
+                        <li class=""><a href="baqend.error.EntityExistsError.html" class="nav-name">EntityExistsError</a></li>
+                      
+                        <li class=""><a href="baqend.error.EntityNotFoundError.html" class="nav-name">EntityNotFoundError</a></li>
+                      
+                        <li class=""><a href="baqend.error.IllegalEntityError.html" class="nav-name">IllegalEntityError</a></li>
+                      
+                        <li class=""><a href="baqend.error.PersistentError.html" class="nav-name">PersistentError</a></li>
+                      
+                        <li class=""><a href="baqend.error.RollbackError.html" class="nav-name">RollbackError</a></li>
+                      
+                    </ul>
+                </li>
+            
+                <li class="">
+                    <a href="baqend.metamodel.html" class="nav-name">baqend.metamodel</a>
+                    <ul class="nav">
+                      
+                        <li class=""><a href="baqend.metamodel.Attribute.html" class="nav-name">Attribute</a></li>
+                      
+                        <li class=""><a href="baqend.metamodel.BasicType.html" class="nav-name">BasicType</a></li>
+                      
+                        <li class=""><a href="baqend.metamodel.CollectionAttribute.html" class="nav-name">CollectionAttribute</a></li>
+                      
+                        <li class=""><a href="baqend.metamodel.DbIndex.html" class="nav-name">DbIndex</a></li>
+                      
+                        <li class=""><a href="baqend.metamodel.EmbeddableType.html" class="nav-name">EmbeddableType</a></li>
+                      
+                        <li class=""><a href="baqend.metamodel.EntityType.html" class="nav-name">EntityType</a></li>
+                      
+                        <li class=""><a href="baqend.metamodel.ListAttribute.html" class="nav-name">ListAttribute</a></li>
+                      
+                        <li class=""><a href="baqend.metamodel.ManagedType.html" class="nav-name">ManagedType</a></li>
+                      
+                        <li class=""><a href="baqend.metamodel.MapAttribute.html" class="nav-name">MapAttribute</a></li>
+                      
+                        <li class=""><a href="baqend.metamodel.Metamodel.html" class="nav-name">Metamodel</a></li>
+                      
+                        <li class=""><a href="baqend.metamodel.ModelBuilder.html" class="nav-name">ModelBuilder</a></li>
+                      
+                        <li class=""><a href="baqend.metamodel.PluralAttribute.html" class="nav-name">PluralAttribute</a></li>
+                      
+                        <li class=""><a href="baqend.metamodel.SetAttribute.html" class="nav-name">SetAttribute</a></li>
+                      
+                        <li class=""><a href="baqend.metamodel.SingularAttribute.html" class="nav-name">SingularAttribute</a></li>
+                      
+                        <li class=""><a href="baqend.metamodel.Type.html" class="nav-name">Type</a></li>
+                      
+                    </ul>
+                </li>
+            
+                <li class="">
+                    <a href="baqend.util.html" class="nav-name">baqend.util</a>
+                    <ul class="nav">
+                      
+                        <li class=""><a href="baqend.util.Code.html" class="nav-name">Code</a></li>
+                      
+                        <li class=""><a href="baqend.util.Lockable.html" class="nav-name">Lockable</a></li>
+                      
+                        <li class=""><a href="baqend.util.Metadata.html" class="nav-name">Metadata</a></li>
+                      
+                        <li class=""><a href="baqend.util.Modules.html" class="nav-name">Modules</a></li>
+                      
+                        <li class=""><a href="baqend.util.Permission.html" class="nav-name">Permission</a></li>
+                      
+                        <li class=""><a href="baqend.util.PushMessage.html" class="nav-name">PushMessage</a></li>
+                      
+                        <li class=""><a href="baqend.util.ValidationResult.html" class="nav-name">ValidationResult</a></li>
+                      
+                        <li class=""><a href="baqend.util.Validator.html" class="nav-name">Validator</a></li>
+                      
+                    </ul>
+                </li>
+            
+            </ul>
+        </div>
+    </div>
+    <div class="col-md-9" id="main">
+      <h1 class="page-title">Source: connector/Connector.js</h1>
+
+      
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>var PersistentError = require('../error/PersistentError');
+
+/**
+ * @class baqend.connector.Connector
+ *
+ * @param {String} host
+ * @param {number} port
+ * @param {boolean} secure
+ */
+var Connector = Object.inherit(/** @lends baqend.connector.Connector.prototype */{
+  /** @lends baqend.connector.Connector */
+  extend: {
+    /**
+     * An array of all exposed response headers
+     * @type String[]
+     */
+    RESPONSE_HEADERS: [
+      'Baqend-Authorization-Token',
+      'Content-Type'
+    ],
+
+    /**
+     * Array of all available connector implementations
+     * @type baqend.connector.Connector[]
+     */
+    connectors: [],
+
+    /**
+     * Array of all created connections
+     * @type Object&lt;string,baqend.connector.Connector>
+     */
+    connections: {},
+
+    /**
+     * @param {String} host or location
+     * @param {number=} port
+     * @param {boolean=} secure &lt;code>true&lt;/code> for an secure connection
+     * @return {baqend.connector.Connector}
+     */
+    create: function(host, port, secure) {
+      if (!host &amp;&amp; typeof window !== 'undefined') {
+        host = window.location.hostname;
+        port = Number(window.location.port);
+        secure = window.location.protocol == 'https:';
+      }
+
+      if (host.indexOf('/') != -1) {
+        var matches = /^(https?):\/\/([^\/:]*)(:(\d*))?\/?$/.exec(host);
+        if (matches) {
+          secure = matches[1] == 'https';
+          host = matches[2];
+          port = matches[4];
+        } else {
+          throw new Error('The connection uri host ' + host + ' seems not to be valid');
+        }
+      }
+
+      if (!port)
+        port = secure ? 443 : 80;
+
+      var url = 'http' + (secure ? 's' : '') + '://' + host + ':' + port;
+      var connection = this.connections[url];
+
+      if (!connection) {
+        for (var name in this.connectors) {
+          var connector = this.connectors[name];
+          if (connector.isUsable &amp;&amp; connector.isUsable(host, port, secure)) {
+            connection = new connector(host, port, secure);
+            break;
+          }
+        }
+
+        if (!connection)
+          throw new Error('No connector is usable for the requested connection.');
+
+        this.connections[url] = connection;
+      }
+
+      return connection;
+    }
+  },
+
+  constructor: function Connector(host, port, secure) {
+    this.host = host;
+    this.port = port;
+    this.secure = secure;
+    this.socket = null;
+    this.listeners = {};
+
+    this.origin = (secure ? 'https://' : 'http://') + host;
+    this.origin += (secure &amp;&amp; port != 443 || !secure &amp;&amp; port != 80) ? ':' + port : '';
+  },
+
+  /**
+   * @param {baqend.connector.Message} message
+   * @returns {Promise&lt;baqend.connector.Message>}
+   */
+  send: function(message) {
+    if (message.request.method == 'OAUTH') {
+      message.addRedirectOrigin(this.origin);
+    }
+
+    return new Promise(function(resolve, reject) {
+      this.prepareRequestEntity(message);
+      this.doSend(message.request, this.receive.bind(this, message, resolve, reject));
+    }.bind(this)).catch(function(e) {
+      throw PersistentError.of(e);
+    });
+  },
+
+  /**
+   * @param {baqend.connector.Message} message
+   * @param {Function} resolve
+   * @param {Function} reject
+   * @param {Object} response
+   */
+  receive: function(message, resolve, reject, response) {
+    message.response = response;
+    try {
+      // IE9 returns status code 1223 instead of 204
+      message.response.status = message.response.status == 1223 ? 204 : message.response.status;
+
+      this.prepareResponseEntity(message);
+      message.doReceive();
+      resolve(message);
+    } catch (e) {
+      e = PersistentError.of(e);
+      message.response.entity = null;
+      reject(e);
+    }
+  },
+
+  /**
+   * Handle the actual message send
+   * @param {baqend.connector.Message} message
+   * @param {Function} receive
+   * @abstract
+   */
+  doSend: function(message, receive) {
+  },
+
+  /**
+   * Registers a handler for a topic.
+   * @param {String|Object} topic
+   * @param {Function} cb
+   */
+  subscribe: function(topic, cb) {
+    topic = String.isInstance(topic) ? topic : JSON.stringify(topic);
+    if (!this.listeners[topic]) {
+      this.listeners[topic] = [cb]
+    } else if (this.listeners[topic].indexOf(cb) == -1) {
+      this.listeners[topic].push(cb);
+    }
+  },
+
+  /**
+   * Deregisters a handler.
+   * @param {String|Object}  topic
+   * @param {Function} cb
+   */
+  unsubscribe: function(topic, cb) {
+    topic = String.isInstance(topic) ? topic : JSON.stringify(topic);
+    if (this.listeners[topic]) {
+      var index = this.listeners[topic].indexOf(cb)
+      if (index != -1) {
+        this.listeners[topic].splice(index, 1);
+      }
+    }
+  },
+
+  socketListener: function(event) {
+    var message = JSON.parse(event.data);
+    var topic = message.topic;
+    topic = String.isInstance(topic) ? topic : JSON.stringify(topic);
+    if(this.listeners[topic]) {
+      this.listeners[topic].forEach(function(listener) {
+        listener(message);
+      });
+    }
+  },
+
+  socketOpen: null,
+
+  /**
+   * Sends a websocket message over a lazily initialized websocket connection.
+   * @param {Object} message
+   * @param {String} message.topic
+   * @param {String} message.token
+   */
+  sendOverSocket: function(message) {
+    //Lazy socket initialization
+    if (this.socket === null) {
+      this.socket = this.createSocket();
+      this.socket.onmessage = this.socketListener.bind(this);
+
+      //Resolve Promise on connect
+      this.socketOpen = new Promise(function(resolve, reject) {
+        this.socket.onopen = resolve;
+        this.socket.onerror = reject;
+      }.bind(this));
+
+      //Reset socket on close
+      this.socket.onclose = function() {
+        this.socket = null;
+        this.socketOpen = null;
+      }.bind(this);
+    }
+
+    var jsonMessage = JSON.stringify(message);
+    this.socketOpen.then(function() {
+      this.socket.send(jsonMessage);
+    }.bind(this));
+  },
+
+  /**
+   * Handle the actual message send
+   * @param {baqend.connector.Message} message
+   * @param {Function} receive
+   * @abstract
+   */
+  createSocket: function(message, receive) {
+  },
+
+  /**
+   * @param {baqend.connector.Message} message
+   */
+  prepareRequestEntity: function(message) {
+    if (message.request.entity) {
+      if (String.isInstance(message.request.entity)) {
+        message.request.headers['Content-Type'] = 'text/plain;charset=utf-8';
+      } else {
+        message.request.headers['Content-Type'] = 'application/json;charset=utf-8';
+        message.request.entity = JSON.stringify(message.request.entity);
+      }
+    }
+  },
+
+  /**
+   * @param {baqend.connector.Message} message
+   * @param {Object} data
+   */
+  prepareResponseEntity: function(message) {
+    var entity = message.response.entity;
+    if (entity &amp;&amp; entity.length > 0) {
+      var contentType = message.response.headers['Content-Type'] || message.response.headers['content-type'];
+      if (contentType &amp;&amp; contentType.indexOf("application/json") > -1) {
+        entity = JSON.parse(entity);
+      }
+    } else {
+      entity = null;
+    }
+    message.response.entity = entity;
+  }
+});
+
+module.exports = Connector;</code></pre>
+        </article>
+    </section>
+
+
+
+
+
+      <footer>
+        Baqend JavaScript SDK 1.10.0 &copy 2015 Baqend GmbH<br>
+        Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.3.2</a> on Mon, 19 Oct 2015 15:37:57 GMT
+      </footer>
+    </div>
+  </div>
+</div>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+<script src="scripts/filter.js"> </script>
+</body>
+</html>
