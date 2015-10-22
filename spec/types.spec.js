@@ -168,7 +168,7 @@ describe('Test entity type', function () {
   });
 
   describe("date value", function() {
-    test("date", new Date(0), new Date("2013-11-22"), new Date("2013-11-22"), new Date("0000-01-01"));
+    test("date", new Date(0), new Date("2013-11-22Z"), new Date("2013-11-22Z"), new Date("0000-01-01Z"));
   });
 
   describe("dateTime value", function() {
