@@ -358,7 +358,7 @@ describe('Test entity type', function () {
       var obj = new EntityClass();
       obj[name] = undefined;
 
-      return obj.save({reload:true}).then(function() {
+      return obj.save({refresh:true}).then(function() {
         expect(obj[name]).be.null;
       });
     });
@@ -367,7 +367,7 @@ describe('Test entity type', function () {
       var obj = new EntityClass();
       obj[name] = null;
 
-      return obj.save({reload:true}).then(function() {
+      return obj.save({refresh:true}).then(function() {
         expect(obj[name]).be.null;
       });
     });
@@ -380,7 +380,7 @@ describe('Test entity type', function () {
       it(value + " should be saved and reloaded", function() {
         obj[name] = value;
 
-        return obj.save({reload:true}).then(function() {
+        return obj.save({refresh:true}).then(function() {
             expect(obj[name]).eql(expectedValue);
         });
       });

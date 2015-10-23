@@ -84,7 +84,7 @@ describe('Test code', function() {
             name: 'test'
           });
 
-          return obj.insert({reload: true});
+          return obj.insert({refresh: true});
         }).then(function(obj) {
           expect(obj.name).equals('changed test');
         });
@@ -103,7 +103,7 @@ describe('Test code', function() {
             name: 'test'
           });
 
-          return obj.save({reload:true});
+          return obj.save({refresh:true});
         }).then(function(obj) {
           expect(obj.name).equals('test');
         });
@@ -121,11 +121,11 @@ describe('Test code', function() {
             name: 'test'
           });
 
-          return obj.insert({reload: true});
+          return obj.insert({refresh: true});
         }).then(function(obj) {
           expect(obj.name).equals('test');
           obj.name = 'new name';
-          return obj.save({reload: true});
+          return obj.save({refresh: true});
         }).then(function(obj) {
           expect(obj.name).equals('updated new name');
         });
@@ -147,7 +147,7 @@ describe('Test code', function() {
           return obj.save();
         }).then(function(obj) {
           obj.name = 'new name';
-          return obj.save({reload: true});
+          return obj.save({refresh: true});
         }).then(function(obj) {
           expect(obj.name).equals('new name before test');
         });

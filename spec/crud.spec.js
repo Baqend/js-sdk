@@ -164,10 +164,10 @@ describe('Test crud', function() {
       });
     });
 
-    it('should save and reload object', function() {
+    it('should save and refresh object', function() {
       var person = new db.Person();
       person.name = "Old Name";
-      var promise = expect(person.save({reload:true})).eventually.have.property('name', 'Old Name');
+      var promise = expect(person.save({refresh:true})).eventually.have.property('name', 'Old Name');
       person.name = "New Name";
       return promise;
     });
@@ -305,7 +305,7 @@ describe('Test crud', function() {
     it('should not save afterward changed values but refrehs it', function() {
       var person = new db.Person();
       person.name = 'Old Name';
-      var promise = person.save({reload:true});
+      var promise = person.save({refresh:true});
       person.name = 'New Name';
       return promise.then(function() {
         expect(person._metadata.isDirty).be.false;
@@ -606,9 +606,9 @@ describe('Test crud', function() {
       });
     });
 
-    it('should update and reload object', function() {
+    it('should update and refresh object', function() {
       person.name = 'New Name';
-      var promise = expect(person.update({reload:true})).eventually.have.property('name', 'New Name');
+      var promise = expect(person.update({refresh:true})).eventually.have.property('name', 'New Name');
       person.name = 'Newer Name';
 
       return promise;
@@ -666,10 +666,10 @@ describe('Test crud', function() {
       });
     });
 
-    it('should insert and reload object', function() {
+    it('should insert and refresh object', function() {
       var person = new db.Person();
       person.name = "Peter Insert";
-      var promise = expect(person.insert({reload:true})).eventually.have.property('name', 'Peter Insert');
+      var promise = expect(person.insert({refresh:true})).eventually.have.property('name', 'Peter Insert');
       person.name = "New Peter Insert";
       return promise;
     });
@@ -719,6 +719,25 @@ describe('Test crud', function() {
       });
     });
 
+    it('should load and refresh object with same version', function() {
+      var person = new db.Person();
+      person.name = "Old Name";
+      return person.save(function() {
+        return emf.createEntityManager();
+      }).then(function(db2) {
+        return db2.Person.load(person._metadata.id, { refresh: true });
+      }).then(function(loaded) {
+        loaded.name = "New Name";
+        return loaded.save();
+      }).then(function() {
+        person._metadata.version = 2;
+        expect(person).have.property('name', 'Old Name');
+        return expect(db.Person.load(person._metadata.id, { refresh: true })).eventually.have.property('name', 'New Name');
+      }).then(function() {
+        return expect(person.load({ refresh: true })).eventually.have.property('name', 'New Name');
+      });
+    });
+
     it('should load object with same version', function() {
       var person = new db.Person();
       person.name = "Old Name";
@@ -734,7 +753,7 @@ describe('Test crud', function() {
         expect(person).have.property('name', 'Old Name');
         return expect(db.Person.load(person._metadata.id)).eventually.have.property('name', 'Old Name');
       }).then(function() {
-        return expect(person.load()).eventually.have.property('name', 'New Name');
+        return expect(person.load()).eventually.have.property('name', 'Old Name');
       });
     });
 
@@ -942,7 +961,7 @@ describe('Test crud', function() {
 
     it('should load all referenced objects by reachability', function() {
       return child.save({depth:true}).then(function(saved) {
-        var promise = saved.load({depth:true});
+        var promise = saved.load({depth:true, refresh: true});
         saved.father.sister.name = "New Name";
         saved.father.name = "New Name";
         return promise;
@@ -954,7 +973,7 @@ describe('Test crud', function() {
 
     it('should load all referenced objects by depth', function() {
       return child.save({depth:2}).then(function(saved) {
-        var promise = saved.load({depth:true});
+        var promise = saved.load({depth:true, refresh: true});
         saved.father.sister.name = "New Name";
         saved.father.name = "New Name";
         return promise;
@@ -966,7 +985,7 @@ describe('Test crud', function() {
 
     it('should not load all referenced objects', function() {
       return child.save({depth:true}).then(function(saved) {
-        var promise = saved.load({depth:1});
+        var promise = saved.load({depth:1, refresh: true});
         saved.father.sister.name = "New Name";
         saved.father.name = "New Name";
         return promise;
@@ -1022,11 +1041,11 @@ describe('Test crud', function() {
       });
     });
 
-    it('should update and reload all referenced objects by reachability', function() {
+    it('should update and refresh all referenced objects by reachability', function() {
       return child.save({depth:true}).then(function(saved) {
         saved.father.sister.name = "New Name";
         saved.father.name = "New Name";
-        var promise = saved.update({reload:true, force:true, depth: true});
+        var promise = saved.update({refresh:true, force:true, depth: true});
         saved.father.sister.name = "Newer Name";
         saved.father.name = "Newer Name";
         return promise;
@@ -1132,7 +1151,7 @@ describe('Test crud', function() {
       person.child.id = randomize('my/craßy*%unescap\\ed&id?=');
       var childId = person.child.id;
 
-      return person.save({reload:true, depth: true}, function(result) {
+      return person.save({refresh:true, depth: true}, function(result) {
         expect(person.id).equals(myId);
         expect(person.name).equals("Custom Person");
         expect(person.child.id).equals(childId);

@@ -194,7 +194,7 @@ describe('Test Acl', function() {
       var person = new db.AclPerson();
       var acl = person.acl;
 
-      return person.save({reload: true}).then(function() {
+      return person.save({refresh: true}).then(function() {
         expect(person.acl.read.allRules().length).equals(0);
         expect(person.acl.write.allRules().length).equals(0);
       });
@@ -205,7 +205,7 @@ describe('Test Acl', function() {
       var acl = person.acl;
       acl.allowReadAccess(db.User.me);
 
-      return person.save({reload: true}).then(function() {
+      return person.save({refresh: true}).then(function() {
         expect(person.acl.isReadAllowed(db.User.me)).be.true;
         expect(person.acl.isWriteAllowed(db.User.me)).be.false;
       });
@@ -216,7 +216,7 @@ describe('Test Acl', function() {
       var acl = person.acl;
       acl.allowWriteAccess(db.User.me);
 
-      return person.save({reload: true}).then(function() {
+      return person.save({refresh: true}).then(function() {
         expect(person.acl.isReadAllowed(db.User.me)).be.false;
         expect(person.acl.isWriteAllowed(db.User.me)).be.true;
       });
@@ -228,7 +228,7 @@ describe('Test Acl', function() {
       acl.allowReadAccess(db.User.me);
       acl.allowWriteAccess(db.User.me);
 
-      return person.save({reload: true}).then(function() {
+      return person.save({refresh: true}).then(function() {
         expect(person.acl.isReadAllowed(db.User.me)).be.true;
         expect(person.acl.isWriteAllowed(db.User.me)).be.true;
       });
