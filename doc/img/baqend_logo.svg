@@ -1,0 +1,4218 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:xlink="http://www.w3.org/1999/xlink"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   width="250"
+   height="132.67"
+   viewBox="0 0 250.00001 132.66999"
+   id="svg2"
+   version="1.1"
+   inkscape:version="0.48.5 r10040"
+   sodipodi:docname="baqend_logo.svg">
+  <metadata
+     id="metadata1992">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title></dc:title>
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <sodipodi:namedview
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1"
+     objecttolerance="10"
+     gridtolerance="10"
+     guidetolerance="10"
+     inkscape:pageopacity="0"
+     inkscape:pageshadow="2"
+     inkscape:window-width="640"
+     inkscape:window-height="480"
+     id="namedview1990"
+     showgrid="false"
+     inkscape:zoom="0.93624067"
+     inkscape:cx="160.28749"
+     inkscape:cy="51.236955"
+     inkscape:window-x="0"
+     inkscape:window-y="0"
+     inkscape:window-maximized="0"
+     inkscape:current-layer="svg2" />
+  <defs
+     id="defs4">
+    <path
+       id="a"
+       d="m 134.827,63.427 -23.6,72.188 -37.395,-10.878 23.6,-72.188 z"
+       inkscape:connector-curvature="0" />
+  </defs>
+  <clipPath
+     id="b">
+    <use
+       xlink:href="#a"
+       overflow="visible"
+       id="use8"
+       style="overflow:visible"
+       x="0"
+       y="0"
+       width="368.495"
+       height="132.66701" />
+  </clipPath>
+  <g
+     clip-path="url(#b)"
+     id="g10"
+     style="opacity:0.75"
+     transform="translate(0,0.0030017)">
+    <defs
+       id="defs12">
+      <path
+         id="c"
+         d="m 91.421,82.593 20.15,5.862 7.79,-23.828"
+         inkscape:connector-curvature="0" />
+    </defs>
+    <defs
+       id="defs15">
+      <path
+         id="e"
+         d="M 99.211,58.765"
+         inkscape:connector-curvature="0" />
+    </defs>
+    <clipPath
+       id="d">
+      <use
+         xlink:href="#c"
+         overflow="visible"
+         id="use19"
+         style="overflow:visible"
+         x="0"
+         y="0"
+         width="368.495"
+         height="132.66701" />
+    </clipPath>
+    <clipPath
+       id="f"
+       clip-path="url(#d)">
+      <use
+         xlink:href="#e"
+         overflow="visible"
+         id="use22"
+         style="overflow:visible"
+         x="0"
+         y="0"
+         width="368.495"
+         height="132.66701" />
+    </clipPath>
+    <g
+       clip-path="url(#f)"
+       id="g24">
+      <defs
+         id="defs26">
+        <path
+           id="g"
+           d="m 91.421,82.593 20.15,5.862 7.789,-23.828"
+           inkscape:connector-curvature="0" />
+      </defs>
+      <defs
+         id="defs29">
+        <path
+           id="i"
+           d="M 99.211,58.765"
+           inkscape:connector-curvature="0" />
+      </defs>
+      <clipPath
+         id="h">
+        <use
+           xlink:href="#g"
+           overflow="visible"
+           id="use33"
+           style="overflow:visible"
+           x="0"
+           y="0"
+           width="368.495"
+           height="132.66701" />
+      </clipPath>
+      <clipPath
+         clip-path="url(#h)"
+         id="clipPath35">
+        <use
+           xlink:href="#i"
+           overflow="visible"
+           id="use37"
+           style="overflow:visible"
+           x="0"
+           y="0"
+           width="368.495"
+           height="132.66701" />
+      </clipPath>
+    </g>
+  </g>
+  <defs
+     id="defs39">
+    <path
+       id="j"
+       d="m 115.735,74.425 c 0.197,-1.277 0.129,-2.549 -0.026,-3.774 -0.023,-0.171 -0.077,-0.33 -0.142,-0.482 l -0.016,0.129 c -0.11,0.553 0.03,1.066 0.059,1.598 0.067,0.953 -0.067,1.93 -0.218,2.903 -0.134,0.813 -0.373,1.626 -0.719,2.387 -0.151,0.326 -0.326,0.675 -0.603,0.902 l -0.44,-0.405 -0.156,-0.035 0.202,0.408 0.118,0.178 0.065,-0.063 0.346,0.665 0.205,-0.248 c 0.181,-0.204 0.275,-0.464 0.366,-0.715 0.105,-0.293 0.207,-0.587 0.303,-0.882 0.275,-0.843 0.509,-1.698 0.656,-2.566"
+       inkscape:connector-curvature="0" />
+  </defs>
+  <clipPath
+     id="k">
+    <use
+       xlink:href="#j"
+       overflow="visible"
+       id="use43"
+       style="overflow:visible"
+       x="0"
+       y="0"
+       width="368.495"
+       height="132.66701" />
+  </clipPath>
+  <g
+     clip-path="url(#k)"
+     id="g45"
+     transform="translate(0,0.0030017)">
+    <defs
+       id="defs47">
+      <path
+         id="l"
+         d="m 117.139,70.619 -2.705,8.276 -1.584,-0.461 2.705,-8.276 z"
+         inkscape:connector-curvature="0" />
+    </defs>
+    <clipPath
+       id="m">
+      <use
+         xlink:href="#l"
+         overflow="visible"
+         id="use51"
+         style="overflow:visible"
+         x="0"
+         y="0"
+         width="368.495"
+         height="132.66701" />
+    </clipPath>
+    <linearGradient
+       id="n"
+       gradientUnits="userSpaceOnUse"
+       x1="-388.17099"
+       y1="-144.33299"
+       x2="-387.17099"
+       y2="-144.33299"
+       gradientTransform="matrix(-2.705,8.275,7.103,2.066,91.004,3582.089)">
+      <stop
+         offset="0"
+         stop-color="#ff0"
+         id="stop54" />
+      <stop
+         offset="1"
+         stop-color="#F7931E"
+         id="stop56" />
+    </linearGradient>
+    <path
+       clip-path="url(#m)"
+       d="m 117.139,70.619 -2.705,8.276 -1.584,-0.461 2.705,-8.276 z"
+       id="path58"
+       inkscape:connector-curvature="0"
+       style="fill:url(#n)" />
+  </g>
+  <defs
+     id="defs60">
+    <path
+       id="o"
+       d="m 114.205,78.834 -0.346,-0.665 0.185,0.485 -0.003,0.358 0.109,-0.225 0.068,0.276 0.192,-0.478 -0.205,0.249"
+       inkscape:connector-curvature="0" />
+  </defs>
+  <clipPath
+     id="p">
+    <use
+       xlink:href="#o"
+       overflow="visible"
+       id="use64"
+       style="overflow:visible"
+       x="0"
+       y="0"
+       width="368.495"
+       height="132.66701" />
+  </clipPath>
+  <g
+     clip-path="url(#p)"
+     id="g66"
+     transform="translate(0,0.0030017)">
+    <defs
+       id="defs68">
+      <path
+         id="q"
+         d="m 114.477,78.332 -0.707,2.165 -1.859,-0.541 0.707,-2.165 z"
+         inkscape:connector-curvature="0" />
+    </defs>
+    <clipPath
+       id="r">
+      <use
+         xlink:href="#q"
+         overflow="visible"
+         id="use72"
+         style="overflow:visible"
+         x="0"
+         y="0"
+         width="368.495"
+         height="132.66701" />
+    </clipPath>
+    <linearGradient
+       id="s"
+       gradientUnits="userSpaceOnUse"
+       x1="-388.17099"
+       y1="-144.33299"
+       x2="-387.17099"
+       y2="-144.33299"
+       gradientTransform="matrix(-0.236,0.722,0.619,0.18,111.987,384.36)">
+      <stop
+         offset="0"
+         stop-color="#ff0"
+         id="stop75" />
+      <stop
+         offset="1"
+         stop-color="#F7931E"
+         id="stop77" />
+    </linearGradient>
+    <path
+       clip-path="url(#r)"
+       d="m 114.477,78.332 -0.707,2.165 -1.859,-0.541 0.707,-2.165 z"
+       id="path79"
+       inkscape:connector-curvature="0"
+       style="fill:url(#s)" />
+  </g>
+  <defs
+     id="defs81">
+    <path
+       id="t"
+       d="m 114.15,78.787 -0.109,0.225 -0.101,0.227 -0.421,0.965 c 0.278,-0.34 0.497,-0.738 0.699,-1.141 l -0.068,-0.276"
+       inkscape:connector-curvature="0" />
+  </defs>
+  <clipPath
+     id="u">
+    <use
+       xlink:href="#t"
+       overflow="visible"
+       id="use85"
+       style="overflow:visible"
+       x="0"
+       y="0"
+       width="368.495"
+       height="132.66701" />
+  </clipPath>
+  <g
+     clip-path="url(#u)"
+     id="g87"
+     transform="translate(0,0.0030017)">
+    <defs
+       id="defs89">
+      <path
+         id="v"
+         d="m 114.296,78.829 -2.082,6.37 -5.469,-1.591 2.082,-6.369 z"
+         inkscape:connector-curvature="0" />
+    </defs>
+    <clipPath
+       id="w">
+      <use
+         xlink:href="#v"
+         overflow="visible"
+         id="use93"
+         style="overflow:visible"
+         x="0"
+         y="0"
+         width="368.495"
+         height="132.66701" />
+    </clipPath>
+    <linearGradient
+       id="x"
+       gradientUnits="userSpaceOnUse"
+       x1="-388.17099"
+       y1="-144.33299"
+       x2="-387.17099"
+       y2="-144.33299"
+       gradientTransform="matrix(-0.694,2.123,1.822,0.53,107.975,978.727)">
+      <stop
+         offset="0"
+         stop-color="#ff0"
+         id="stop96" />
+      <stop
+         offset="1"
+         stop-color="#F7931E"
+         id="stop98" />
+    </linearGradient>
+    <path
+       clip-path="url(#w)"
+       d="m 114.296,78.829 -2.082,6.37 -5.469,-1.591 2.082,-6.369 z"
+       id="path100"
+       inkscape:connector-curvature="0"
+       style="fill:url(#x)" />
+  </g>
+  <defs
+     id="defs102">
+    <path
+       id="y"
+       d="m 115.393,74.797 c 0.151,-0.972 0.285,-1.949 0.218,-2.903 -0.029,-0.532 -0.169,-1.045 -0.059,-1.598 -0.283,-0.319 -0.494,-0.698 -0.552,-1.166 l -0.402,-0.199 c 0.181,0.443 0.326,0.916 0.345,1.424 l 0.239,-0.002 c -0.003,0.522 0.031,1.035 0.077,1.541 0.083,0.958 -0.086,1.935 -0.253,2.903 -0.176,0.78 -0.427,1.549 -0.723,2.294 -0.104,0.319 -0.377,0.506 -0.651,0.591 l 0.44,0.405 c 0.277,-0.227 0.453,-0.576 0.603,-0.902 0.14,-0.308 0.262,-0.624 0.368,-0.946 0.153,-0.473 0.27,-0.958 0.35,-1.442"
+       inkscape:connector-curvature="0" />
+  </defs>
+  <clipPath
+     id="z">
+    <use
+       xlink:href="#y"
+       overflow="visible"
+       id="use106"
+       style="overflow:visible"
+       x="0"
+       y="0"
+       width="368.495"
+       height="132.66701" />
+  </clipPath>
+  <g
+     clip-path="url(#z)"
+     id="g108"
+     transform="translate(0,0.0030017)">
+    <defs
+       id="defs110">
+      <path
+         id="A"
+         d="m 117.154,69.65 -2.778,8.5 -2.591,-0.753 2.779,-8.5 z"
+         inkscape:connector-curvature="0" />
+    </defs>
+    <clipPath
+       id="B">
+      <use
+         xlink:href="#A"
+         overflow="visible"
+         id="use114"
+         style="overflow:visible"
+         x="0"
+         y="0"
+         width="368.495"
+         height="132.66701" />
+    </clipPath>
+    <linearGradient
+       id="C"
+       gradientUnits="userSpaceOnUse"
+       x1="-388.17099"
+       y1="-144.33299"
+       x2="-387.17099"
+       y2="-144.33299"
+       gradientTransform="matrix(-2.779,8.5,7.296,2.123,90.237,3675.178)">
+      <stop
+         offset="0"
+         stop-color="#ff0"
+         id="stop117" />
+      <stop
+         offset="1"
+         stop-color="#ddd"
+         id="stop119" />
+    </linearGradient>
+    <path
+       clip-path="url(#B)"
+       d="m 117.154,69.65 -2.778,8.5 -2.591,-0.753 2.779,-8.5 z"
+       id="path121"
+       inkscape:connector-curvature="0"
+       style="fill:url(#C)" />
+  </g>
+  <defs
+     id="defs123">
+    <path
+       id="D"
+       d="m 114.044,78.654 c -0.55,0.415 -0.924,1.076 -1.51,1.439 -0.966,0.745 -2.08,1.458 -3.217,1.271 l -0.091,-0.314 c -0.724,0.22 -1.324,-0.262 -2.005,-0.306 -0.178,-0.021 -0.377,-0.007 -0.547,-0.077 -0.234,-0.201 -0.385,-0.492 -0.583,-0.724 -0.395,-0.464 -0.806,-0.902 -1.247,-1.307 -0.185,-0.187 -0.398,-0.372 -0.474,-0.651 -0.078,-0.3 -0.112,-0.628 -0.223,-0.907 -0.096,-0.244 -0.182,-0.494 -0.199,-0.766 -0.146,0.204 -0.279,0.422 -0.42,0.637 l -0.21,0.401 c 0.279,0.574 0.57,1.141 0.857,1.717 0.239,0.48 0.777,0.668 0.933,1.216 0.259,0.178 0.521,0.347 0.769,0.531 0.453,0.337 0.988,0.534 1.476,0.819 0.195,-0.056 0.407,-0.138 0.61,-0.141 0.234,0.037 0.421,0.194 0.631,0.307 l 0.338,-0.415 0.063,0.48 c 0.741,0.185 1.536,-0.118 2.242,-0.497 0.67,-0.298 1.329,-0.67 1.863,-1.254 0.274,-0.3 0.535,-0.614 0.841,-0.874 l 0.101,-0.227 0.002,-0.358"
+       inkscape:connector-curvature="0" />
+  </defs>
+  <clipPath
+     id="E">
+    <use
+       xlink:href="#D"
+       overflow="visible"
+       id="use127"
+       style="overflow:visible"
+       x="0"
+       y="0"
+       width="368.495"
+       height="132.66701" />
+  </clipPath>
+  <g
+     clip-path="url(#E)"
+     id="g129"
+     transform="translate(0,0.0030017)">
+    <defs
+       id="defs131">
+      <path
+         id="F"
+         d="M 106.363,72.116 123.912,86.963 108.484,108.576 90.935,93.728 z"
+         inkscape:connector-curvature="0" />
+    </defs>
+    <clipPath
+       id="G">
+      <use
+         xlink:href="#F"
+         overflow="visible"
+         id="use135"
+         style="overflow:visible"
+         x="0"
+         y="0"
+         width="368.495"
+         height="132.66701" />
+    </clipPath>
+    <linearGradient
+       id="H"
+       gradientUnits="userSpaceOnUse"
+       x1="-388.17099"
+       y1="-144.33299"
+       x2="-387.17099"
+       y2="-144.33299"
+       gradientTransform="matrix(5.85,4.949,5.143,-7.204,3119.848,958.53)">
+      <stop
+         offset="0"
+         stop-color="#ff0"
+         id="stop138" />
+      <stop
+         offset=".012"
+         stop-color="#ff0"
+         id="stop140" />
+      <stop
+         offset=".485"
+         stop-color="#E2E15C"
+         id="stop142" />
+      <stop
+         offset="1"
+         stop-color="#F7931E"
+         id="stop144" />
+    </linearGradient>
+    <path
+       clip-path="url(#G)"
+       d="M 106.363,72.116 123.912,86.963 108.484,108.576 90.935,93.728 z"
+       id="path146"
+       inkscape:connector-curvature="0"
+       style="fill:url(#H)" />
+  </g>
+  <defs
+     id="defs148">
+    <path
+       id="I"
+       d="m 113.1,80.114 c -0.534,0.584 -1.194,0.956 -1.863,1.254 -0.706,0.38 -1.5,0.682 -2.242,0.497 l -0.063,-0.48 -0.338,0.415 c -0.21,-0.112 -0.396,-0.269 -0.631,-0.307 -0.203,0.002 -0.415,0.084 -0.61,0.141 -0.488,-0.286 -1.023,-0.482 -1.476,-0.819 -0.248,-0.185 -0.51,-0.354 -0.769,-0.531 -0.155,-0.548 -0.693,-0.736 -0.933,-1.216 -0.287,-0.576 -0.578,-1.143 -0.857,-1.717 l -0.307,0.455 -0.113,0.614 c 0.173,0.091 0.374,0.15 0.492,0.328 0.39,0.668 0.675,1.438 1.18,1.996 0.644,0.454 1.273,0.955 2.028,1.206 0.48,0.15 0.926,0.454 1.458,0.444 0.177,-0.031 0.266,0.129 0.364,0.26 0.481,0.037 0.992,0.011 1.488,-0.132 0.807,-0.206 1.565,-0.745 2.394,-0.802 l 0.046,-0.007 c 0.424,-0.462 0.867,-0.928 1.171,-1.507 l 0.421,-0.965 c -0.305,0.259 -0.566,0.573 -0.84,0.873"
+       inkscape:connector-curvature="0" />
+  </defs>
+  <clipPath
+     id="J">
+    <use
+       xlink:href="#I"
+       overflow="visible"
+       id="use152"
+       style="overflow:visible"
+       x="0"
+       y="0"
+       width="368.495"
+       height="132.66701" />
+  </clipPath>
+  <g
+     clip-path="url(#J)"
+     id="g154"
+     transform="translate(0,0.0030017)">
+    <defs
+       id="defs156">
+      <path
+         id="K"
+         d="m 111.346,71.886 4.425,12.587 -11.828,6.509 -4.424,-12.587 z"
+         inkscape:connector-curvature="0" />
+    </defs>
+    <clipPath
+       id="L">
+      <use
+         xlink:href="#K"
+         overflow="visible"
+         id="use160"
+         style="overflow:visible"
+         x="0"
+         y="0"
+         width="368.495"
+         height="132.66701" />
+    </clipPath>
+    <linearGradient
+       id="M"
+       gradientUnits="userSpaceOnUse"
+       x1="-388.17099"
+       y1="-144.33299"
+       x2="-387.17099"
+       y2="-144.33299"
+       gradientTransform="matrix(1.475,4.196,3.942,-2.17,1249.881,1394.122)">
+      <stop
+         offset="0"
+         stop-color="#ff0"
+         id="stop163" />
+      <stop
+         offset=".012"
+         stop-color="#ff0"
+         id="stop165" />
+      <stop
+         offset=".485"
+         stop-color="#E2E15C"
+         id="stop167" />
+      <stop
+         offset="1"
+         stop-color="#F7931E"
+         id="stop169" />
+    </linearGradient>
+    <path
+       clip-path="url(#L)"
+       d="m 111.346,71.886 4.425,12.587 -11.828,6.509 -4.424,-12.587 z"
+       id="path171"
+       inkscape:connector-curvature="0"
+       style="fill:url(#M)" />
+  </g>
+  <defs
+     id="defs173">
+    <path
+       id="N"
+       d="m 113.859,78.169 -0.065,0.063 c -0.366,0.366 -0.67,0.811 -1.066,1.158 -0.392,0.338 -0.809,0.668 -1.268,0.832 -0.593,0.197 -1.15,0.661 -1.768,0.584 l 0.004,-0.471 -0.409,0.199 c -0.881,-0.297 -1.766,-0.606 -2.534,-1.168 -0.42,-0.307 -0.674,-0.822 -1.053,-1.199 -0.195,-0.211 -0.446,-0.386 -0.585,-0.663 l -0.109,-0.771 c -0.215,-0.124 -0.464,-0.145 -0.7,-0.204 l -0.089,-0.241 -0.14,-0.164 -0.132,0.188 c 0.017,0.272 0.102,0.522 0.199,0.766 0.112,0.279 0.145,0.607 0.223,0.907 0.076,0.279 0.289,0.464 0.474,0.651 0.44,0.405 0.852,0.843 1.247,1.307 0.197,0.232 0.349,0.522 0.583,0.724 0.171,0.07 0.369,0.056 0.547,0.077 0.681,0.044 1.281,0.527 2.005,0.306 l 0.091,0.314 c 1.137,0.187 2.251,-0.526 3.217,-1.271 0.586,-0.363 0.96,-1.024 1.51,-1.439 -0.047,-0.169 -0.12,-0.323 -0.182,-0.485"
+       inkscape:connector-curvature="0" />
+  </defs>
+  <clipPath
+     id="O">
+    <use
+       xlink:href="#N"
+       overflow="visible"
+       id="use177"
+       style="overflow:visible"
+       x="0"
+       y="0"
+       width="368.495"
+       height="132.66701" />
+  </clipPath>
+  <g
+     clip-path="url(#O)"
+     id="g179"
+     transform="translate(0,0.0030017)">
+    <defs
+       id="defs181">
+      <path
+         id="P"
+         d="m 109.099,70.911 6.644,9.644 -9.452,8.664 -6.643,-9.644 z"
+         inkscape:connector-curvature="0" />
+    </defs>
+    <clipPath
+       id="Q">
+      <use
+         xlink:href="#P"
+         overflow="visible"
+         id="use185"
+         style="overflow:visible"
+         x="0"
+         y="0"
+         width="368.495"
+         height="132.66701" />
+    </clipPath>
+    <linearGradient
+       id="R"
+       gradientUnits="userSpaceOnUse"
+       x1="-388.17099"
+       y1="-144.33299"
+       x2="-387.17099"
+       y2="-144.33299"
+       gradientTransform="matrix(2.215,3.215,3.15,-2.888,1423.725,909.573)">
+      <stop
+         offset="0"
+         stop-color="#ff0"
+         id="stop188" />
+      <stop
+         offset="1"
+         stop-color="#F7931E"
+         id="stop190" />
+    </linearGradient>
+    <path
+       clip-path="url(#Q)"
+       d="m 109.099,70.911 6.644,9.644 -9.452,8.664 -6.643,-9.644 z"
+       id="path192"
+       inkscape:connector-curvature="0"
+       style="fill:url(#R)" />
+  </g>
+  <defs
+     id="defs194">
+    <path
+       id="S"
+       d="m 115.005,74.798 c 0.167,-0.968 0.336,-1.945 0.253,-2.903 -0.046,-0.506 -0.081,-1.019 -0.077,-1.541 l -0.239,0.002 c -0.019,-0.508 -0.164,-0.982 -0.345,-1.424 l 0.402,0.199 -0.108,-0.37 c -0.126,-0.047 -0.308,-0.028 -0.373,-0.18"
+       inkscape:connector-curvature="0" />
+  </defs>
+  <clipPath
+     id="clipPath197">
+    <use
+       xlink:href="#S"
+       overflow="visible"
+       id="use199"
+       style="overflow:visible"
+       x="0"
+       y="0"
+       width="368.495"
+       height="132.66701" />
+  </clipPath>
+  <defs
+     id="defs201">
+    <path
+       id="T"
+       d="m 103.896,75.527 c 0.105,0.297 0.34,0.468 0.57,0.628 l -0.246,0.134 0.089,0.241 c 0.236,0.059 0.485,0.08 0.7,0.204 l 0.109,0.771 c 0.139,0.276 0.39,0.452 0.585,0.663 0.379,0.377 0.633,0.892 1.053,1.199 0.768,0.562 1.653,0.871 2.534,1.168 l 0.409,-0.199 -0.004,0.471 c 0.618,0.077 1.175,-0.387 1.768,-0.584 0.459,-0.164 0.875,-0.495 1.268,-0.832 0.395,-0.347 0.699,-0.792 1.066,-1.158 l -0.118,-0.178"
+       inkscape:connector-curvature="0" />
+  </defs>
+  <defs
+     id="defs204">
+    <path
+       id="V"
+       d="m 113.676,78.054 c -0.558,0.361 -1.123,0.741 -1.672,1.125 -0.658,0.424 -1.371,0.689 -2.037,1.111 -0.039,-0.391 -0.247,-0.698 -0.539,-0.885 -0.313,0.042 -0.639,0.04 -0.904,-0.119 -0.701,-0.389 -1.407,-0.789 -2.013,-1.335 -0.307,-0.274 -0.365,-0.743 -0.431,-1.162 -0.476,-0.107 -0.981,-0.152 -1.408,-0.409 l -0.015,-0.117 c -0.035,-0.298 0.303,-0.199 0.325,0.002 0.253,0.063 0.534,0.063 0.777,-0.113 0.112,-0.101 0.297,-0.047 0.296,0.117 l 0.235,-0.045 c 0.014,-0.232 0.344,-0.218 0.306,0.007 l 0.248,-0.113 0.086,-0.129 c -0.504,-0.075 -1.01,-0.171 -1.533,-0.189 -0.076,-0.361 -0.133,-0.726 -0.25,-1.068 -0.129,-0.386 -0.322,-0.74 -0.418,-1.148 -0.115,-0.537 -0.118,-1.122 -0.02,-1.689 0.069,-0.401 0.033,-0.801 0.021,-1.195 -0.009,-0.485 0.278,-0.904 0.495,-1.324"
+       inkscape:connector-curvature="0" />
+  </defs>
+  <clipPath
+     id="U">
+    <use
+       xlink:href="#T"
+       overflow="visible"
+       id="use208"
+       style="overflow:visible"
+       x="0"
+       y="0"
+       width="368.495"
+       height="132.66701" />
+  </clipPath>
+  <clipPath
+     clip-path="url(#U)"
+     id="clipPath210">
+    <use
+       xlink:href="#V"
+       overflow="visible"
+       id="use212"
+       style="overflow:visible"
+       x="0"
+       y="0"
+       width="368.495"
+       height="132.66701" />
+  </clipPath>
+  <defs
+     id="defs214">
+    <path
+       id="W"
+       d="m 134.827,63.427 -23.6,72.188 -37.395,-10.878 23.6,-72.188 z"
+       inkscape:connector-curvature="0" />
+  </defs>
+  <clipPath
+     id="X">
+    <use
+       xlink:href="#W"
+       overflow="visible"
+       id="use218"
+       style="overflow:visible"
+       x="0"
+       y="0"
+       width="368.495"
+       height="132.66701" />
+  </clipPath>
+  <path
+     clip-path="url(#X)"
+     d="m 113.971,69.149 c 0.295,0.445 0.344,1.024 0.478,1.555 0.099,0.398 0.036,0.832 -0.004,1.251 l 0.445,-0.743 c -0.032,0.34 -0.08,0.675 -0.139,1.017 -0.096,0.537 0,1.078 -0.166,1.614"
+     id="path220"
+     inkscape:connector-curvature="0"
+     style="fill:#f4f4f4"
+     transform="translate(0,0.0030017)" />
+  <defs
+     id="defs222">
+    <path
+       id="Y"
+       d="m 109.908,82.521 c -0.496,0.143 -1.007,0.169 -1.488,0.132 -0.098,-0.131 -0.187,-0.29 -0.364,-0.26 l 0.041,0.494 -0.282,-0.082 c 0.135,0.152 0.232,0.447 0.474,0.354 0.323,-0.071 0.635,-0.164 0.962,-0.193 0.608,-0.028 1.186,-0.476 1.8,-0.441 l -0.027,0.433 c 0.456,-0.37 0.894,-0.766 1.277,-1.24 -0.828,0.057 -1.585,0.596 -2.393,0.803"
+       inkscape:connector-curvature="0" />
+  </defs>
+  <clipPath
+     id="Z">
+    <use
+       xlink:href="#Y"
+       overflow="visible"
+       id="use226"
+       style="overflow:visible"
+       x="0"
+       y="0"
+       width="368.495"
+       height="132.66701" />
+  </clipPath>
+  <g
+     clip-path="url(#Z)"
+     id="g228"
+     transform="translate(0,0.0030017)">
+    <defs
+       id="defs230">
+      <path
+         id="aa"
+         d="m 108.689,80.329 3.801,1.458 -1.097,2.781 -3.801,-1.457 z"
+         inkscape:connector-curvature="0" />
+    </defs>
+    <clipPath
+       id="ab">
+      <use
+         xlink:href="#aa"
+         overflow="visible"
+         id="use234"
+         style="overflow:visible"
+         x="0"
+         y="0"
+         width="368.495"
+         height="132.66701" />
+    </clipPath>
+    <linearGradient
+       id="ac"
+       gradientUnits="userSpaceOnUse"
+       x1="-388.17099"
+       y1="-144.33299"
+       x2="-387.17099"
+       y2="-144.33299"
+       gradientTransform="matrix(3.778,1.449,1.753,-4.444,1827.199,2.516)">
+      <stop
+         offset="0"
+         stop-color="#ff0"
+         id="stop237" />
+      <stop
+         offset="1"
+         stop-color="#F7931E"
+         id="stop239" />
+    </linearGradient>
+    <path
+       clip-path="url(#ab)"
+       d="m 108.689,80.329 3.801,1.458 -1.097,2.781 -3.801,-1.457 z"
+       id="path241"
+       inkscape:connector-curvature="0"
+       style="fill:url(#ac)" />
+  </g>
+  <defs
+     id="defs243">
+    <path
+       id="ad"
+       d="m 134.827,63.427 -23.6,72.188 -37.395,-10.878 23.6,-72.188 z"
+       inkscape:connector-curvature="0" />
+  </defs>
+  <clipPath
+     id="ae">
+    <use
+       xlink:href="#ad"
+       overflow="visible"
+       id="use247"
+       style="overflow:visible"
+       x="0"
+       y="0"
+       width="368.495"
+       height="132.66701" />
+  </clipPath>
+  <path
+     clip-path="url(#ae)"
+     d="m 115.569,70.056 m -0.57,-0.926 -0.108,-0.37 m 0.678,1.296 -0.001,0.112 -0.016,0.129"
+     id="path249"
+     inkscape:connector-curvature="0"
+     style="fill:#252525"
+     transform="translate(0,0.0030017)" />
+  <defs
+     id="defs251">
+    <path
+       id="af"
+       d="m 111.052,82.525 c -0.614,-0.035 -1.192,0.413 -1.8,0.441 -0.326,0.028 -0.639,0.122 -0.962,0.193 -0.242,0.094 -0.339,-0.201 -0.474,-0.354 l -0.137,-0.04 -0.225,0.284 c 0.066,0.204 0.131,0.408 0.216,0.607 0.349,-0.042 0.699,-0.145 1.045,-0.26 0.418,-0.145 0.847,-0.164 1.258,-0.157 l -0.021,0.497 c 0.367,-0.232 0.726,-0.497 1.073,-0.776 l 0.027,-0.435"
+       inkscape:connector-curvature="0" />
+  </defs>
+  <clipPath
+     id="ag">
+    <use
+       xlink:href="#af"
+       overflow="visible"
+       id="use255"
+       style="overflow:visible"
+       x="0"
+       y="0"
+       width="368.495"
+       height="132.66701" />
+  </clipPath>
+  <g
+     clip-path="url(#ag)"
+     id="g257"
+     transform="translate(0,0.0030017)">
+    <defs
+       id="defs259">
+      <path
+         id="ah"
+         d="m 111.137,82.542 -0.631,1.931 -3.231,-0.94 0.632,-1.931 z"
+         inkscape:connector-curvature="0" />
+    </defs>
+    <clipPath
+       id="ai">
+      <use
+         xlink:href="#ah"
+         overflow="visible"
+         id="use263"
+         style="overflow:visible"
+         x="0"
+         y="0"
+         width="368.495"
+         height="132.66701" />
+    </clipPath>
+    <linearGradient
+       id="aj"
+       gradientUnits="userSpaceOnUse"
+       x1="-388.17099"
+       y1="-144.33299"
+       x2="-387.17099"
+       y2="-144.33299"
+       gradientTransform="matrix(-1.525,4.664,4.003,1.165,96.315,2057.908)">
+      <stop
+         offset="0"
+         stop-color="#ff0"
+         id="stop266" />
+      <stop
+         offset="1"
+         stop-color="#F7931E"
+         id="stop268" />
+    </linearGradient>
+    <path
+       clip-path="url(#ai)"
+       d="m 111.137,82.542 -0.631,1.931 -3.231,-0.94 0.632,-1.931 z"
+       id="path270"
+       inkscape:connector-curvature="0"
+       style="fill:url(#aj)" />
+  </g>
+  <defs
+     id="defs272">
+    <path
+       id="ak"
+       d="m 134.827,63.427 -23.6,72.188 -37.395,-10.878 23.6,-72.188 z"
+       inkscape:connector-curvature="0" />
+  </defs>
+  <clipPath
+     id="al">
+    <use
+       xlink:href="#ak"
+       overflow="visible"
+       id="use276"
+       style="overflow:visible"
+       x="0"
+       y="0"
+       width="368.495"
+       height="132.66701" />
+  </clipPath>
+  <path
+     clip-path="url(#al)"
+     d="m 114.891,68.76 c -0.126,-0.047 -0.308,-0.028 -0.373,-0.18"
+     id="path278"
+     inkscape:connector-curvature="0"
+     style="fill:#dcdcdc"
+     transform="translate(0,0.0030017)" />
+  <defs
+     id="defs280">
+    <path
+       id="am"
+       d="m 109.973,83.238 c -0.412,-0.007 -0.841,0.012 -1.258,0.157 -0.346,0.115 -0.697,0.218 -1.045,0.26 0.216,0.309 0.432,0.618 0.507,1.01 0.618,-0.22 1.201,-0.574 1.775,-0.931 l 0.021,-0.496"
+       inkscape:connector-curvature="0" />
+  </defs>
+  <clipPath
+     id="an">
+    <use
+       xlink:href="#am"
+       overflow="visible"
+       id="use284"
+       style="overflow:visible"
+       x="0"
+       y="0"
+       width="368.495"
+       height="132.66701" />
+  </clipPath>
+  <g
+     clip-path="url(#an)"
+     id="g286"
+     transform="translate(0,0.0030017)">
+    <defs
+       id="defs288">
+      <path
+         id="ao"
+         d="m 110.106,83.282 -1.747,5.342 -4.585,-1.333 1.747,-5.342 z"
+         inkscape:connector-curvature="0" />
+    </defs>
+    <clipPath
+       id="ap">
+      <use
+         xlink:href="#ao"
+         overflow="visible"
+         id="use292"
+         style="overflow:visible"
+         x="0"
+         y="0"
+         width="368.495"
+         height="132.66701" />
+    </clipPath>
+    <linearGradient
+       id="aq"
+       gradientUnits="userSpaceOnUse"
+       x1="-388.17099"
+       y1="-144.33299"
+       x2="-387.17099"
+       y2="-144.33299"
+       gradientTransform="matrix(-0.582,1.781,1.528,0.445,103.863,837.796)">
+      <stop
+         offset="0"
+         stop-color="#ff0"
+         id="stop295" />
+      <stop
+         offset="1"
+         stop-color="#F7931E"
+         id="stop297" />
+    </linearGradient>
+    <path
+       clip-path="url(#ap)"
+       d="m 110.106,83.282 -1.747,5.342 -4.585,-1.333 1.747,-5.342 z"
+       id="path299"
+       inkscape:connector-curvature="0"
+       style="fill:url(#aq)" />
+  </g>
+  <defs
+     id="defs301">
+    <path
+       id="ar"
+       d="m 134.827,63.427 -23.6,72.188 -37.395,-10.878 23.6,-72.188 z"
+       inkscape:connector-curvature="0" />
+  </defs>
+  <clipPath
+     id="clipPath304">
+    <use
+       xlink:href="#ar"
+       overflow="visible"
+       id="use306"
+       style="overflow:visible"
+       x="0"
+       y="0"
+       width="368.495"
+       height="132.66701" />
+  </clipPath>
+  <defs
+     id="defs308">
+    <path
+       id="as"
+       d="m 107.67,83.655 c -0.085,-0.199 -0.15,-0.403 -0.216,-0.607 -0.419,0.258 -0.872,0.27 -1.318,0.366 l -0.301,0.087 c 0.5,0.115 1.049,0.079 1.528,-0.254 0.12,0.281 0.245,0.543 0.376,0.817 l 0.209,0.492 c -0.722,0.159 -1.432,0.446 -2.154,0.553 -0.877,0.176 -1.744,0.108 -2.598,0.024 -0.643,-0.053 -1.243,-0.32 -1.902,-0.245 l -0.141,-0.215 c -0.188,0.037 -0.374,0.066 -0.564,0.082 0.704,0.297 1.417,0.597 2.186,0.697 1.767,0.227 3.639,-0.029 5.402,-0.789 -0.075,-0.389 -0.291,-0.698 -0.507,-1.008"
+       inkscape:connector-curvature="0" />
+  </defs>
+  <clipPath
+     id="at">
+    <use
+       xlink:href="#as"
+       overflow="visible"
+       id="use312"
+       style="overflow:visible"
+       x="0"
+       y="0"
+       width="368.495"
+       height="132.66701" />
+  </clipPath>
+  <g
+     clip-path="url(#at)"
+     id="g314"
+     transform="translate(0,0.0030017)">
+    <defs
+       id="defs316">
+      <path
+         id="au"
+         d="m 108.59,83.368 -3.427,10.481 -8.996,-2.617 3.427,-10.481 z"
+         inkscape:connector-curvature="0" />
+    </defs>
+    <clipPath
+       id="av">
+      <use
+         xlink:href="#au"
+         overflow="visible"
+         id="use320"
+         style="overflow:visible"
+         x="0"
+         y="0"
+         width="368.495"
+         height="132.66701" />
+    </clipPath>
+    <linearGradient
+       id="aw"
+       gradientUnits="userSpaceOnUse"
+       x1="-388.17099"
+       y1="-144.33299"
+       x2="-387.17099"
+       y2="-144.33299"
+       gradientTransform="matrix(-1.142,3.494,2.999,0.872,93.986,1566.303)">
+      <stop
+         offset="0"
+         stop-color="#808080"
+         id="stop323" />
+      <stop
+         offset=".012"
+         stop-color="#808080"
+         id="stop325" />
+      <stop
+         offset=".08"
+         stop-color="#88837C"
+         id="stop327" />
+      <stop
+         offset=".184"
+         stop-color="#9D8B70"
+         id="stop329" />
+      <stop
+         offset=".312"
+         stop-color="#C0995C"
+         id="stop331" />
+      <stop
+         offset=".457"
+         stop-color="#F1AC41"
+         id="stop333" />
+      <stop
+         offset=".485"
+         stop-color="#FBB03B"
+         id="stop335" />
+      <stop
+         offset="1"
+         stop-color="#F7931E"
+         id="stop337" />
+    </linearGradient>
+    <path
+       clip-path="url(#av)"
+       d="m 108.59,83.368 -3.427,10.481 -8.996,-2.617 3.427,-10.481 z"
+       id="path339"
+       inkscape:connector-curvature="0"
+       style="fill:url(#aw)" />
+  </g>
+  <defs
+     id="defs341">
+    <path
+       id="ax"
+       d="m 134.827,63.427 -23.6,72.188 -37.395,-10.878 23.6,-72.188 z"
+       inkscape:connector-curvature="0" />
+  </defs>
+  <clipPath
+     id="clipPath344">
+    <use
+       xlink:href="#ax"
+       overflow="visible"
+       id="use346"
+       style="overflow:visible"
+       x="0"
+       y="0"
+       width="368.495"
+       height="132.66701" />
+  </clipPath>
+  <defs
+     id="defs348">
+    <path
+       id="ay"
+       d="m 107.738,84.065 c -0.107,0.41 -0.509,0.478 -0.815,0.553 -1.574,0.394 -3.235,0.383 -4.603,-0.364 l -0.065,-0.286 c -0.207,0.176 -0.424,0.328 -0.649,0.478 l -0.291,0.162 -0.163,0.066 0.141,0.215 c 0.659,-0.075 1.259,0.192 1.902,0.245 0.854,0.084 1.721,0.152 2.598,-0.024 0.722,-0.108 1.433,-0.394 2.154,-0.553 l -0.209,-0.492"
+       inkscape:connector-curvature="0" />
+  </defs>
+  <clipPath
+     id="az">
+    <use
+       xlink:href="#ay"
+       overflow="visible"
+       id="use352"
+       style="overflow:visible"
+       x="0"
+       y="0"
+       width="368.495"
+       height="132.66701" />
+  </clipPath>
+  <g
+     clip-path="url(#az)"
+     id="g354"
+     transform="translate(0,0.0030017)">
+    <defs
+       id="defs356">
+      <path
+         id="aA"
+         d="m 108.074,84.162 -2.417,7.394 -6.347,-1.847 2.418,-7.394 z"
+         inkscape:connector-curvature="0" />
+    </defs>
+    <clipPath
+       id="aB">
+      <use
+         xlink:href="#aA"
+         overflow="visible"
+         id="use360"
+         style="overflow:visible"
+         x="0"
+         y="0"
+         width="368.495"
+         height="132.66701" />
+    </clipPath>
+    <linearGradient
+       id="aC"
+       gradientUnits="userSpaceOnUse"
+       x1="-388.17099"
+       y1="-144.33299"
+       x2="-387.17099"
+       y2="-144.33299"
+       gradientTransform="matrix(-0.806,2.465,2.116,0.615,97.358,1129.44)">
+      <stop
+         offset="0"
+         stop-color="#808080"
+         id="stop363" />
+      <stop
+         offset=".012"
+         stop-color="#808080"
+         id="stop365" />
+      <stop
+         offset=".154"
+         stop-color="#88837C"
+         id="stop367" />
+      <stop
+         offset=".372"
+         stop-color="#9D8B70"
+         id="stop369" />
+      <stop
+         offset=".638"
+         stop-color="#C0995C"
+         id="stop371" />
+      <stop
+         offset=".941"
+         stop-color="#F1AC41"
+         id="stop373" />
+      <stop
+         offset="1"
+         stop-color="#FBB03B"
+         id="stop375" />
+      <stop
+         offset="1"
+         stop-color="#F7931E"
+         id="stop377" />
+    </linearGradient>
+    <path
+       clip-path="url(#aB)"
+       d="m 108.074,84.162 -2.417,7.394 -6.347,-1.847 2.418,-7.394 z"
+       id="path379"
+       inkscape:connector-curvature="0"
+       style="fill:url(#aC)" />
+  </g>
+  <defs
+     id="defs381">
+    <path
+       id="aD"
+       d="m 134.827,63.427 -23.6,72.188 -37.395,-10.878 23.6,-72.188 z"
+       inkscape:connector-curvature="0" />
+  </defs>
+  <clipPath
+     id="clipPath384">
+    <use
+       xlink:href="#aD"
+       overflow="visible"
+       id="use386"
+       style="overflow:visible"
+       x="0"
+       y="0"
+       width="368.495"
+       height="132.66701" />
+  </clipPath>
+  <defs
+     id="defs388">
+    <path
+       id="aE"
+       d="m 107.738,84.065 c -0.131,-0.274 -0.256,-0.536 -0.376,-0.817 -0.479,0.333 -1.028,0.368 -1.528,0.254 l -0.13,-0.007 -0.61,0.007 c -0.631,-0.009 -1.269,0 -1.855,-0.201 -0.271,-0.089 -0.465,-0.33 -0.624,-0.571 -0.267,-0.396 -0.514,-0.827 -0.675,-1.305 l -0.125,-0.344 c -0.127,-0.232 -0.284,-0.452 -0.433,-0.67 0.176,0.513 0.376,1.033 0.601,1.53 0.251,0.525 0.614,0.979 0.784,1.562 -0.166,0.157 -0.335,0.323 -0.514,0.466 l 0.065,0.286 c 1.368,0.747 3.029,0.758 4.603,0.364 0.296,-0.072 0.681,-0.138 0.803,-0.513 l 0.014,-0.041"
+       inkscape:connector-curvature="0" />
+  </defs>
+  <clipPath
+     id="aF">
+    <use
+       xlink:href="#aE"
+       overflow="visible"
+       id="use392"
+       style="overflow:visible"
+       x="0"
+       y="0"
+       width="368.495"
+       height="132.66701" />
+  </clipPath>
+  <g
+     clip-path="url(#aF)"
+     id="g394"
+     transform="translate(0,0.0030017)">
+    <defs
+       id="defs396">
+      <path
+         id="aG"
+         d="m 108.266,82.389 -3.303,10.102 -8.671,-2.522 3.303,-10.102 z"
+         inkscape:connector-curvature="0" />
+    </defs>
+    <clipPath
+       id="aH">
+      <use
+         xlink:href="#aG"
+         overflow="visible"
+         id="use400"
+         style="overflow:visible"
+         x="0"
+         y="0"
+         width="368.495"
+         height="132.66701" />
+    </clipPath>
+    <linearGradient
+       id="aI"
+       gradientUnits="userSpaceOnUse"
+       x1="-388.17099"
+       y1="-144.33299"
+       x2="-387.17099"
+       y2="-144.33299"
+       gradientTransform="matrix(-1.101,3.367,2.89,0.841,93.979,1511.926)">
+      <stop
+         offset="0"
+         stop-color="#808080"
+         id="stop403" />
+      <stop
+         offset=".012"
+         stop-color="#808080"
+         id="stop405" />
+      <stop
+         offset=".08"
+         stop-color="#88837C"
+         id="stop407" />
+      <stop
+         offset=".184"
+         stop-color="#9D8B70"
+         id="stop409" />
+      <stop
+         offset=".312"
+         stop-color="#C0995C"
+         id="stop411" />
+      <stop
+         offset=".457"
+         stop-color="#F1AC41"
+         id="stop413" />
+      <stop
+         offset=".485"
+         stop-color="#FBB03B"
+         id="stop415" />
+      <stop
+         offset="1"
+         stop-color="#F7931E"
+         id="stop417" />
+    </linearGradient>
+    <path
+       clip-path="url(#aH)"
+       d="m 108.266,82.389 -3.303,10.102 -8.671,-2.522 3.303,-10.102 z"
+       id="path419"
+       inkscape:connector-curvature="0"
+       style="fill:url(#aI)" />
+  </g>
+  <defs
+     id="defs421">
+    <path
+       id="aJ"
+       d="m 108.056,82.392 c -0.532,0.009 -0.979,-0.295 -1.458,-0.444 -0.755,-0.251 -1.384,-0.752 -2.028,-1.206 -0.505,-0.557 -0.79,-1.328 -1.18,-1.996 -0.118,-0.178 -0.319,-0.236 -0.492,-0.328 l 0.113,-0.614 c -0.138,0.206 -0.276,0.412 -0.409,0.63 -0.014,0.232 -0.079,0.511 0.089,0.672 0.251,0.309 0.525,0.604 0.711,0.977 0.241,0.501 0.751,0.721 1.014,1.208 0.251,0.473 0.757,0.621 1.162,0.892 0.624,0.408 1.398,0.386 2.101,0.58 l 0.137,0.04 0.282,0.082 -0.042,-0.493"
+       inkscape:connector-curvature="0" />
+  </defs>
+  <clipPath
+     id="aK">
+    <use
+       xlink:href="#aJ"
+       overflow="visible"
+       id="use425"
+       style="overflow:visible"
+       x="0"
+       y="0"
+       width="368.495"
+       height="132.66701" />
+  </clipPath>
+  <g
+     clip-path="url(#aK)"
+     id="g427"
+     transform="translate(0,0.0030017)">
+    <defs
+       id="defs429">
+      <path
+         id="aL"
+         d="m 109.166,79.585 -3.339,10.213 -8.766,-2.55 3.339,-10.213 z"
+         inkscape:connector-curvature="0" />
+    </defs>
+    <clipPath
+       id="aM">
+      <use
+         xlink:href="#aL"
+         overflow="visible"
+         id="use433"
+         style="overflow:visible"
+         x="0"
+         y="0"
+         width="368.495"
+         height="132.66701" />
+    </clipPath>
+    <linearGradient
+       id="aN"
+       gradientUnits="userSpaceOnUse"
+       x1="-388.17099"
+       y1="-144.33299"
+       x2="-387.17099"
+       y2="-144.33299"
+       gradientTransform="matrix(-1.113,3.404,2.922,0.85,95.434,1523.719)">
+      <stop
+         offset="0"
+         stop-color="#ff0"
+         id="stop436" />
+      <stop
+         offset=".012"
+         stop-color="#ff0"
+         id="stop438" />
+      <stop
+         offset=".485"
+         stop-color="#E2E15C"
+         id="stop440" />
+      <stop
+         offset="1"
+         stop-color="#F7931E"
+         id="stop442" />
+    </linearGradient>
+    <path
+       clip-path="url(#aM)"
+       d="m 109.166,79.585 -3.339,10.213 -8.766,-2.55 3.339,-10.213 z"
+       id="path444"
+       inkscape:connector-curvature="0"
+       style="fill:url(#aN)" />
+  </g>
+  <defs
+     id="defs446">
+    <path
+       id="aO"
+       d="m 105.578,82.185 c -0.404,-0.272 -0.911,-0.419 -1.162,-0.892 -0.264,-0.487 -0.773,-0.707 -1.014,-1.208 -0.187,-0.372 -0.46,-0.668 -0.711,-0.977 -0.168,-0.162 -0.103,-0.44 -0.089,-0.672 -0.175,0.267 -0.369,0.508 -0.557,0.762 0.239,0.48 0.676,0.761 0.955,1.202 l 0.942,0.972 c 0.141,0.216 0.271,0.438 0.454,0.604 0.419,0.389 0.977,0.541 1.434,0.869 0.191,0.117 0.241,0.368 0.306,0.571 0.445,-0.096 0.899,-0.108 1.318,-0.366 l 0.225,-0.284 c -0.703,-0.195 -1.477,-0.174 -2.101,-0.581"
+       inkscape:connector-curvature="0" />
+  </defs>
+  <clipPath
+     id="aP">
+    <use
+       xlink:href="#aO"
+       overflow="visible"
+       id="use450"
+       style="overflow:visible"
+       x="0"
+       y="0"
+       width="368.495"
+       height="132.66701" />
+  </clipPath>
+  <g
+     clip-path="url(#aP)"
+     id="g452"
+     transform="translate(0,0.0030017)">
+    <defs
+       id="defs454">
+      <path
+         id="aQ"
+         d="m 108.544,80.189 -1.18,3.608 -6.209,-1.806 1.179,-3.608 z"
+         inkscape:connector-curvature="0" />
+    </defs>
+    <clipPath
+       id="aR">
+      <use
+         xlink:href="#aQ"
+         overflow="visible"
+         id="use458"
+         style="overflow:visible"
+         x="0"
+         y="0"
+         width="368.495"
+         height="132.66701" />
+    </clipPath>
+    <linearGradient
+       id="aS"
+       gradientUnits="userSpaceOnUse"
+       x1="-388.17099"
+       y1="-144.33299"
+       x2="-387.17099"
+       y2="-144.33299"
+       gradientTransform="matrix(-1.18,3.608,3.097,0.901,94.56,1609.872)">
+      <stop
+         offset="0"
+         stop-color="#ff0"
+         id="stop461" />
+      <stop
+         offset=".012"
+         stop-color="#ff0"
+         id="stop463" />
+      <stop
+         offset=".485"
+         stop-color="#E2E15C"
+         id="stop465" />
+      <stop
+         offset="1"
+         stop-color="#F7931E"
+         id="stop467" />
+    </linearGradient>
+    <path
+       clip-path="url(#aR)"
+       d="m 108.544,80.189 -1.18,3.608 -6.209,-1.806 1.179,-3.608 z"
+       id="path469"
+       inkscape:connector-curvature="0"
+       style="fill:url(#aS)" />
+  </g>
+  <defs
+     id="defs471">
+    <path
+       id="aT"
+       d="m 134.827,63.427 -23.6,72.188 -37.395,-10.878 23.6,-72.188 z"
+       inkscape:connector-curvature="0" />
+  </defs>
+  <clipPath
+     id="clipPath474">
+    <use
+       xlink:href="#aT"
+       overflow="visible"
+       id="use476"
+       style="overflow:visible"
+       x="0"
+       y="0"
+       width="368.495"
+       height="132.66701" />
+  </clipPath>
+  <defs
+     id="defs478">
+    <path
+       id="aU"
+       d="m 105.83,82.843 c -0.457,-0.328 -1.015,-0.48 -1.434,-0.869 -0.183,-0.166 -0.313,-0.389 -0.454,-0.604 L 103,80.398 c -0.279,-0.44 -0.716,-0.721 -0.955,-1.202 -0.199,0.26 -0.274,0.649 -0.091,0.897 0.277,0.286 0.619,0.478 0.867,0.796 0.635,0.78 1.363,1.464 2.223,1.93 0.29,0.136 0.484,0.408 0.66,0.674 l 0.13,0.007 0.301,-0.087 c -0.064,-0.202 -0.114,-0.453 -0.305,-0.57"
+       inkscape:connector-curvature="0" />
+  </defs>
+  <clipPath
+     id="aV">
+    <use
+       xlink:href="#aU"
+       overflow="visible"
+       id="use482"
+       style="overflow:visible"
+       x="0"
+       y="0"
+       width="368.495"
+       height="132.66701" />
+  </clipPath>
+  <g
+     clip-path="url(#aV)"
+     id="g484"
+     transform="translate(0,0.0030017)">
+    <defs
+       id="defs486">
+      <path
+         id="aW"
+         d="m 107.048,80.665 -2.896,8.856 -7.601,-2.211 2.895,-8.856 z"
+         inkscape:connector-curvature="0" />
+    </defs>
+    <clipPath
+       id="aX">
+      <use
+         xlink:href="#aW"
+         overflow="visible"
+         id="use490"
+         style="overflow:visible"
+         x="0"
+         y="0"
+         width="368.495"
+         height="132.66701" />
+    </clipPath>
+    <linearGradient
+       id="aY"
+       gradientUnits="userSpaceOnUse"
+       x1="-388.17099"
+       y1="-144.33299"
+       x2="-387.17099"
+       y2="-144.33299"
+       gradientTransform="matrix(-0.965,2.952,2.534,0.737,95.728,1331.919)">
+      <stop
+         offset="0"
+         stop-color="#ff0"
+         id="stop493" />
+      <stop
+         offset=".012"
+         stop-color="#ff0"
+         id="stop495" />
+      <stop
+         offset=".485"
+         stop-color="#E2E15C"
+         id="stop497" />
+      <stop
+         offset="1"
+         stop-color="#F7931E"
+         id="stop499" />
+    </linearGradient>
+    <path
+       clip-path="url(#aX)"
+       d="m 107.048,80.665 -2.896,8.856 -7.601,-2.211 2.895,-8.856 z"
+       id="path501"
+       inkscape:connector-curvature="0"
+       style="fill:url(#aY)" />
+  </g>
+  <defs
+     id="defs503">
+    <path
+       id="aZ"
+       d="m 105.044,82.82 c -0.861,-0.466 -1.588,-1.15 -2.223,-1.93 -0.248,-0.318 -0.591,-0.511 -0.867,-0.796 -0.183,-0.248 -0.109,-0.637 0.091,-0.897 0.188,-0.253 0.382,-0.494 0.557,-0.762 0.133,-0.218 0.271,-0.424 0.409,-0.63 l 0.307,-0.455 0.21,-0.401 c -0.607,0.726 -1.134,1.528 -1.739,2.275 -0.108,0.277 -0.263,0.59 -0.201,0.886 0.061,0.326 0.149,0.649 0.229,0.97 l 0.125,0.344 c 0.23,0.159 0.414,0.377 0.627,0.562 0.228,0.138 0.513,0.129 0.718,0.311 0.545,0.487 1.133,0.925 1.809,1.204 l 0.61,-0.007 c -0.178,-0.267 -0.371,-0.538 -0.662,-0.674"
+       inkscape:connector-curvature="0" />
+  </defs>
+  <clipPath
+     id="ba">
+    <use
+       xlink:href="#aZ"
+       overflow="visible"
+       id="use507"
+       style="overflow:visible"
+       x="0"
+       y="0"
+       width="368.495"
+       height="132.66701" />
+  </clipPath>
+  <g
+     clip-path="url(#ba)"
+     id="g509"
+     transform="translate(0,0.0030017)">
+    <defs
+       id="defs511">
+      <path
+         id="bb"
+         d="m 107.459,78.087 -5.46,16.701 -14.335,-4.17 5.46,-16.701 z"
+         inkscape:connector-curvature="0" />
+    </defs>
+    <clipPath
+       id="bc">
+      <use
+         xlink:href="#bb"
+         overflow="visible"
+         id="use515"
+         style="overflow:visible"
+         x="0"
+         y="0"
+         width="368.495"
+         height="132.66701" />
+    </clipPath>
+    <linearGradient
+       id="bd"
+       gradientUnits="userSpaceOnUse"
+       x1="-388.17099"
+       y1="-144.33299"
+       x2="-387.17099"
+       y2="-144.33299"
+       gradientTransform="matrix(-1.82,5.567,4.778,1.39,87.863,2440.029)">
+      <stop
+         offset="0"
+         stop-color="#ff0"
+         id="stop518" />
+      <stop
+         offset=".012"
+         stop-color="#ff0"
+         id="stop520" />
+      <stop
+         offset=".485"
+         stop-color="#E2E15C"
+         id="stop522" />
+      <stop
+         offset="1"
+         stop-color="#F7931E"
+         id="stop524" />
+    </linearGradient>
+    <path
+       clip-path="url(#bc)"
+       d="m 107.459,78.087 -5.46,16.701 -14.335,-4.17 5.46,-16.701 z"
+       id="path526"
+       inkscape:connector-curvature="0"
+       style="fill:url(#bd)" />
+  </g>
+  <defs
+     id="defs528">
+    <path
+       id="be"
+       d="m 103.286,82.298 c -0.205,-0.183 -0.49,-0.173 -0.718,-0.311 -0.213,-0.185 -0.397,-0.403 -0.627,-0.562 0.161,0.478 0.408,0.909 0.675,1.305 0.159,0.241 0.353,0.482 0.624,0.571 0.586,0.201 1.223,0.192 1.855,0.201 -0.676,-0.279 -1.264,-0.717 -1.809,-1.204"
+       inkscape:connector-curvature="0" />
+  </defs>
+  <clipPath
+     id="bf">
+    <use
+       xlink:href="#be"
+       overflow="visible"
+       id="use532"
+       style="overflow:visible"
+       x="0"
+       y="0"
+       width="368.495"
+       height="132.66701" />
+  </clipPath>
+  <g
+     clip-path="url(#bf)"
+     id="g534"
+     transform="translate(0,0.0030017)">
+    <defs
+       id="defs536">
+      <path
+         id="bg"
+         d="m 105.435,82.43 -1.345,4.113 -3.531,-1.027 1.345,-4.114 z"
+         inkscape:connector-curvature="0" />
+    </defs>
+    <clipPath
+       id="bh">
+      <use
+         xlink:href="#bg"
+         overflow="visible"
+         id="use540"
+         style="overflow:visible"
+         x="0"
+         y="0"
+         width="368.495"
+         height="132.66701" />
+    </clipPath>
+    <linearGradient
+       id="bi"
+       gradientUnits="userSpaceOnUse"
+       x1="-388.17099"
+       y1="-144.33299"
+       x2="-387.17099"
+       y2="-144.33299"
+       gradientTransform="matrix(-0.448,1.371,1.177,0.342,99.552,663.554)">
+      <stop
+         offset="0"
+         stop-color="#ff0"
+         id="stop543" />
+      <stop
+         offset=".012"
+         stop-color="#ff0"
+         id="stop545" />
+      <stop
+         offset=".485"
+         stop-color="#E2E15C"
+         id="stop547" />
+      <stop
+         offset="1"
+         stop-color="#F7931E"
+         id="stop549" />
+    </linearGradient>
+    <path
+       clip-path="url(#bh)"
+       d="m 105.435,82.43 -1.345,4.113 -3.531,-1.027 1.345,-4.114 z"
+       id="path551"
+       inkscape:connector-curvature="0"
+       style="fill:url(#bi)" />
+  </g>
+  <defs
+     id="defs553">
+    <path
+       id="bj"
+       d="m 134.827,63.427 -23.6,72.188 -37.395,-10.878 23.6,-72.188 z"
+       inkscape:connector-curvature="0" />
+  </defs>
+  <clipPath
+     id="bk">
+    <use
+       xlink:href="#bj"
+       overflow="visible"
+       id="use557"
+       style="overflow:visible"
+       x="0"
+       y="0"
+       width="368.495"
+       height="132.66701" />
+  </clipPath>
+  <path
+     clip-path="url(#bk)"
+     d="m 106.293,76.225 c 0.014,-0.232 0.344,-0.218 0.306,0.007 -0.105,0.051 -0.21,0.051 -0.306,-0.007"
+     id="path559"
+     inkscape:connector-curvature="0"
+     style="fill:#a4a4a2"
+     transform="translate(0,0.0030017)" />
+  <path
+     clip-path="url(#bk)"
+     d="m 105.762,76.152 c 0.112,-0.101 0.297,-0.047 0.296,0.117 -0.109,0.04 -0.286,0.04 -0.296,-0.117"
+     id="path561"
+     inkscape:connector-curvature="0"
+     style="fill:#8c8c8b"
+     transform="translate(0,0.0030017)" />
+  <path
+     clip-path="url(#bk)"
+     d="m 105.4,76.18 c -0.059,0.126 -0.113,0.131 -0.182,0.019 0.059,-0.126 0.117,-0.14 0.182,-0.019"
+     id="path563"
+     inkscape:connector-curvature="0"
+     style="fill:#838480"
+     transform="translate(0,0.0030017)" />
+  <defs
+     id="defs565">
+    <path
+       id="bl"
+       d="m 101.985,81.94 c -0.225,-0.497 -0.425,-1.017 -0.601,-1.53 -0.097,-0.244 -0.152,-0.506 -0.271,-0.736 -0.244,-0.009 -0.474,-0.087 -0.687,-0.19 l -0.285,-0.124 0.018,0.241 0.491,0.276 0.256,0.187 c 0.116,0.157 0.21,0.328 0.296,0.496 0.218,0.464 0.412,0.951 0.588,1.434 0.317,0.513 0.637,1.017 0.979,1.506 -0.171,-0.581 -0.533,-1.035 -0.784,-1.56"
+       inkscape:connector-curvature="0" />
+  </defs>
+  <clipPath
+     id="bm">
+    <use
+       xlink:href="#bl"
+       overflow="visible"
+       id="use569"
+       style="overflow:visible"
+       x="0"
+       y="0"
+       width="368.495"
+       height="132.66701" />
+  </clipPath>
+  <g
+     clip-path="url(#bm)"
+     id="g571"
+     transform="translate(0,0.0030017)">
+    <defs
+       id="defs573">
+      <path
+         id="bn"
+         d="m 103.532,78.417 0.537,4.71 -4.731,1.29 -0.537,-4.71 z"
+         inkscape:connector-curvature="0" />
+    </defs>
+    <clipPath
+       id="bo">
+      <use
+         xlink:href="#bn"
+         overflow="visible"
+         id="use577"
+         style="overflow:visible"
+         x="0"
+         y="0"
+         width="368.495"
+         height="132.66701" />
+    </clipPath>
+    <linearGradient
+       id="bp"
+       gradientUnits="userSpaceOnUse"
+       x1="-388.17099"
+       y1="-144.33299"
+       x2="-387.17099"
+       y2="-144.33299"
+       gradientTransform="matrix(0.585,5.131,4.675,-1.275,1002.652,1884.796)">
+      <stop
+         offset="0"
+         stop-color="#ff0"
+         id="stop580" />
+      <stop
+         offset=".012"
+         stop-color="#ff0"
+         id="stop582" />
+      <stop
+         offset=".485"
+         stop-color="#E2E15C"
+         id="stop584" />
+      <stop
+         offset="1"
+         stop-color="#F7931E"
+         id="stop586" />
+    </linearGradient>
+    <path
+       clip-path="url(#bo)"
+       d="m 103.532,78.417 0.537,4.71 -4.731,1.29 -0.537,-4.71 z"
+       id="path588"
+       inkscape:connector-curvature="0"
+       style="fill:url(#bp)" />
+  </g>
+  <defs
+     id="defs590">
+    <path
+       id="bq"
+       d="m 134.827,63.427 -23.6,72.188 -37.395,-10.878 23.6,-72.188 z"
+       inkscape:connector-curvature="0" />
+  </defs>
+  <clipPath
+     id="br">
+    <use
+       xlink:href="#bq"
+       overflow="visible"
+       id="use594"
+       style="overflow:visible"
+       x="0"
+       y="0"
+       width="368.495"
+       height="132.66701" />
+  </clipPath>
+  <path
+     clip-path="url(#br)"
+     d="m 104.66,76.263 c -0.035,-0.298 0.303,-0.199 0.325,0.002 l -0.325,-0.002"
+     id="path596"
+     inkscape:connector-curvature="0"
+     style="fill:#8d8d8d"
+     transform="translate(0,0.0030017)" />
+  <path
+     clip-path="url(#br)"
+     d="m 104.08,76.125 0.14,0.164 0.246,-0.134 m 0,0 c -0.23,-0.159 -0.465,-0.33 -0.57,-0.628"
+     id="path598"
+     inkscape:connector-curvature="0"
+     style="fill:#6c6c6c"
+     transform="translate(0,0.0030017)" />
+  <defs
+     id="defs600">
+    <path
+       id="bs"
+       d="m 99.999,83.569 c -0.628,-0.665 -1.264,-1.415 -1.421,-2.446 -0.16,-0.642 0.039,-1.333 0.124,-1.996 0.277,0.122 0.572,0.218 0.884,0.288 -0.232,-0.18 -0.449,-0.377 -0.695,-0.541 -0.377,-0.14 -0.731,-0.325 -1.078,-0.529 -0.049,0.663 -0.121,1.34 0.045,1.963 0.13,0.869 0.425,1.663 0.838,2.368 0.412,0.705 1.109,1.082 1.655,1.621 l -0.442,0.138 c 0.215,0.124 0.432,0.269 0.679,0.321 0.19,-0.017 0.376,-0.045 0.564,-0.082 l 0.163,-0.066 c -0.422,-0.379 -0.926,-0.618 -1.316,-1.039"
+       inkscape:connector-curvature="0" />
+  </defs>
+  <clipPath
+     id="bt">
+    <use
+       xlink:href="#bs"
+       overflow="visible"
+       id="use604"
+       style="overflow:visible"
+       x="0"
+       y="0"
+       width="368.495"
+       height="132.66701" />
+  </clipPath>
+  <g
+     clip-path="url(#bt)"
+     id="g606"
+     transform="translate(0,0.0030017)">
+    <defs
+       id="defs608">
+      <path
+         id="bu"
+         d="M 102.878,79.804 90.665,117.16 58.59,107.829 70.803,70.473 z"
+         inkscape:connector-curvature="0" />
+    </defs>
+    <clipPath
+       id="bv">
+      <use
+         xlink:href="#bu"
+         overflow="visible"
+         id="use612"
+         style="overflow:visible"
+         x="0"
+         y="0"
+         width="368.495"
+         height="132.66701" />
+    </clipPath>
+    <linearGradient
+       id="bw"
+       gradientUnits="userSpaceOnUse"
+       x1="-388.17099"
+       y1="-144.33299"
+       x2="-387.17099"
+       y2="-144.33299"
+       gradientTransform="matrix(-4.071,12.452,10.688,3.109,64.53,5356.006)">
+      <stop
+         offset="0"
+         stop-color="#ff0"
+         id="stop615" />
+      <stop
+         offset=".012"
+         stop-color="#ff0"
+         id="stop617" />
+      <stop
+         offset=".485"
+         stop-color="#E2E15C"
+         id="stop619" />
+      <stop
+         offset="1"
+         stop-color="#F7931E"
+         id="stop621" />
+    </linearGradient>
+    <path
+       clip-path="url(#bv)"
+       d="M 102.878,79.804 90.665,117.16 58.59,107.829 70.803,70.473 z"
+       id="path623"
+       inkscape:connector-curvature="0"
+       style="fill:url(#bw)" />
+  </g>
+  <defs
+     id="defs625">
+    <path
+       id="bx"
+       d="m 134.827,63.427 -23.6,72.188 -37.395,-10.878 23.6,-72.188 z"
+       inkscape:connector-curvature="0" />
+  </defs>
+  <clipPath
+     id="by">
+    <use
+       xlink:href="#bx"
+       overflow="visible"
+       id="use629"
+       style="overflow:visible"
+       x="0"
+       y="0"
+       width="368.495"
+       height="132.66701" />
+  </clipPath>
+  <path
+     clip-path="url(#by)"
+     d="m 103.261,74.911 c 0.241,0.368 0.431,0.782 0.531,1.232 -0.32,-0.287 -0.465,-0.761 -0.531,-1.232"
+     id="path631"
+     inkscape:connector-curvature="0"
+     style="fill:#676767"
+     transform="translate(0,0.0030017)" />
+  <defs
+     id="defs633">
+    <path
+       id="bz"
+       d="m 101.587,80.11 c -0.062,-0.295 0.094,-0.609 0.201,-0.886 l -0.308,0.321 -0.021,-0.071 c -0.065,0.12 -0.224,0.167 -0.318,0.265 0.098,0.214 0.154,0.449 0.242,0.671 0.149,0.218 0.306,0.438 0.433,0.67 -0.08,-0.321 -0.168,-0.644 -0.229,-0.97"
+       inkscape:connector-curvature="0" />
+  </defs>
+  <clipPath
+     id="bA">
+    <use
+       xlink:href="#bz"
+       overflow="visible"
+       id="use637"
+       style="overflow:visible"
+       x="0"
+       y="0"
+       width="368.495"
+       height="132.66701" />
+  </clipPath>
+  <g
+     clip-path="url(#bA)"
+     id="g639"
+     transform="translate(0,0.0030017)">
+    <defs
+       id="defs641">
+      <path
+         id="bB"
+         d="m 102.375,79.406 -3.248,9.936 -8.525,-2.48 3.248,-9.936 z"
+         inkscape:connector-curvature="0" />
+    </defs>
+    <clipPath
+       id="bC">
+      <use
+         xlink:href="#bB"
+         overflow="visible"
+         id="use645"
+         style="overflow:visible"
+         x="0"
+         y="0"
+         width="368.495"
+         height="132.66701" />
+    </clipPath>
+    <linearGradient
+       id="bD"
+       gradientUnits="userSpaceOnUse"
+       x1="-388.17099"
+       y1="-144.33299"
+       x2="-387.17099"
+       y2="-144.33299"
+       gradientTransform="matrix(-1.082,3.311,2.842,0.827,92.696,1481.22)">
+      <stop
+         offset="0"
+         stop-color="#ff0"
+         id="stop648" />
+      <stop
+         offset=".012"
+         stop-color="#ff0"
+         id="stop650" />
+      <stop
+         offset=".485"
+         stop-color="#E2E15C"
+         id="stop652" />
+      <stop
+         offset="1"
+         stop-color="#F7931E"
+         id="stop654" />
+    </linearGradient>
+    <path
+       clip-path="url(#bC)"
+       d="m 102.375,79.406 -3.248,9.936 -8.525,-2.48 3.248,-9.936 z"
+       id="path656"
+       inkscape:connector-curvature="0"
+       style="fill:url(#bD)" />
+  </g>
+  <defs
+     id="defs658">
+    <path
+       id="bE"
+       d="m 98.696,82.677 c -0.413,-0.705 -0.708,-1.499 -0.838,-2.368 -0.166,-0.623 -0.095,-1.3 -0.045,-1.963 0.347,0.204 0.701,0.389 1.078,0.529 l 0.401,0.014 C 98.847,78.606 98.429,78.268 98.036,77.908 L 97.75,77.784 c -0.178,0.328 -0.414,0.619 -0.599,0.944 -0.161,0.251 -0.061,0.536 -0.019,0.785 0.146,0.576 0.21,1.19 0.428,1.736 0.186,0.454 0.328,0.937 0.42,1.436 l -0.451,-0.265 -0.216,0.04 c 0.733,0.829 1.624,1.499 2.596,1.976 l 0.442,-0.138 c -0.547,-0.539 -1.243,-0.916 -1.655,-1.621"
+       inkscape:connector-curvature="0" />
+  </defs>
+  <clipPath
+     id="bF">
+    <use
+       xlink:href="#bE"
+       overflow="visible"
+       id="use662"
+       style="overflow:visible"
+       x="0"
+       y="0"
+       width="368.495"
+       height="132.66701" />
+  </clipPath>
+  <g
+     clip-path="url(#bF)"
+     id="g664"
+     transform="translate(0,0.0030017)">
+    <defs
+       id="defs666">
+      <path
+         id="bG"
+         d="M 102.069,79.052 96.672,95.56 82.506,91.44 87.903,74.931 z"
+         inkscape:connector-curvature="0" />
+    </defs>
+    <clipPath
+       id="bH">
+      <use
+         xlink:href="#bG"
+         overflow="visible"
+         id="use670"
+         style="overflow:visible"
+         x="0"
+         y="0"
+         width="368.495"
+         height="132.66701" />
+    </clipPath>
+    <linearGradient
+       id="bI"
+       gradientUnits="userSpaceOnUse"
+       x1="-388.17099"
+       y1="-144.33299"
+       x2="-387.17099"
+       y2="-144.33299"
+       gradientTransform="matrix(-1.798,5.501,4.722,1.374,83.176,2412.03)">
+      <stop
+         offset="0"
+         stop-color="#ff0"
+         id="stop673" />
+      <stop
+         offset=".012"
+         stop-color="#ff0"
+         id="stop675" />
+      <stop
+         offset=".485"
+         stop-color="#E2E15C"
+         id="stop677" />
+      <stop
+         offset="1"
+         stop-color="#F7931E"
+         id="stop679" />
+    </linearGradient>
+    <path
+       clip-path="url(#bH)"
+       d="M 102.069,79.052 96.672,95.56 82.506,91.44 87.903,74.931 z"
+       id="path681"
+       inkscape:connector-curvature="0"
+       style="fill:url(#bI)" />
+  </g>
+  <defs
+     id="defs683">
+    <path
+       id="bJ"
+       d="m 100.274,83.238 c -0.233,-0.283 -0.475,-0.569 -0.779,-0.771 l -0.296,-0.117 0.149,-0.429 0.136,0.019 c 0.129,0.24 0.245,0.477 0.549,0.566 -0.145,-0.208 -0.165,-0.447 -0.145,-0.74 l -0.068,0.221 0.231,-0.733 -0.099,0.305 0.196,0.057 c 0.142,-0.164 0.153,-0.469 0.134,-0.679 0.33,0 0.384,0.369 0.588,0.474 l 0.109,-0.462 c -0.316,-0.112 -0.629,-0.203 -0.96,-0.269 l 0.021,-0.065 c -0.11,-0.309 -0.079,-0.649 0.032,-0.986 l -0.485,-0.213 c -0.312,-0.07 -0.606,-0.166 -0.884,-0.288 -0.085,0.663 -0.284,1.354 -0.124,1.996 0.156,1.031 0.792,1.78 1.421,2.446 0.391,0.422 0.894,0.66 1.316,1.04 l 0.291,-0.162 c -0.47,-0.373 -0.953,-0.729 -1.333,-1.21"
+       inkscape:connector-curvature="0" />
+  </defs>
+  <clipPath
+     id="bK">
+    <use
+       xlink:href="#bJ"
+       overflow="visible"
+       id="use687"
+       style="overflow:visible"
+       x="0"
+       y="0"
+       width="368.495"
+       height="132.66701" />
+  </clipPath>
+  <g
+     clip-path="url(#bK)"
+     id="g689"
+     transform="translate(0,0.0030017)">
+    <defs
+       id="defs691">
+      <path
+         id="bL"
+         d="M 102.923,80.32 89.166,122.399 53.047,111.892 66.804,69.813 z"
+         inkscape:connector-curvature="0" />
+    </defs>
+    <clipPath
+       id="bM">
+      <use
+         xlink:href="#bL"
+         overflow="visible"
+         id="use695"
+         style="overflow:visible"
+         x="0"
+         y="0"
+         width="368.495"
+         height="132.66701" />
+    </clipPath>
+    <linearGradient
+       id="bN"
+       gradientUnits="userSpaceOnUse"
+       x1="-388.17099"
+       y1="-144.33299"
+       x2="-387.17099"
+       y2="-144.33299"
+       gradientTransform="matrix(-4.586,14.027,12.04,3.502,61.537,6020.668)">
+      <stop
+         offset="0"
+         stop-color="#ff0"
+         id="stop698" />
+      <stop
+         offset=".012"
+         stop-color="#ff0"
+         id="stop700" />
+      <stop
+         offset=".485"
+         stop-color="#E2E15C"
+         id="stop702" />
+      <stop
+         offset="1"
+         stop-color="#F7931E"
+         id="stop704" />
+    </linearGradient>
+    <path
+       clip-path="url(#bM)"
+       d="M 102.923,80.32 89.166,122.399 53.047,111.892 66.804,69.813 z"
+       id="path706"
+       inkscape:connector-curvature="0"
+       style="fill:url(#bN)" />
+  </g>
+  <defs
+     id="defs708">
+    <path
+       id="bO"
+       d="m 101.79,81.996 c -0.246,-0.297 -0.47,-0.609 -0.663,-0.963 l -0.262,0.396 0.005,-0.019 c -0.204,-0.105 -0.258,-0.474 -0.588,-0.474 0.019,0.211 0.008,0.515 -0.134,0.679 l -0.196,-0.057 -0.064,0.207 c -0.02,0.293 0,0.532 0.145,0.74 -0.304,-0.088 -0.42,-0.326 -0.549,-0.566 l -0.136,-0.019 -0.149,0.429 0.296,0.117 c 0.304,0.201 0.546,0.487 0.779,0.771 0.38,0.48 0.863,0.836 1.332,1.208 0.225,-0.15 0.442,-0.302 0.649,-0.478 0.179,-0.143 0.348,-0.309 0.514,-0.466 -0.342,-0.488 -0.662,-0.992 -0.979,-1.505"
+       inkscape:connector-curvature="0" />
+  </defs>
+  <clipPath
+     id="bP">
+    <use
+       xlink:href="#bO"
+       overflow="visible"
+       id="use712"
+       style="overflow:visible"
+       x="0"
+       y="0"
+       width="368.495"
+       height="132.66701" />
+  </clipPath>
+  <g
+     clip-path="url(#bP)"
+     id="g714"
+     transform="translate(0,0.0030017)">
+    <defs
+       id="defs716">
+      <path
+         id="bQ"
+         d="m 103.365,81.689 -0.978,2.991 -3.611,-1.05 0.978,-2.991 z"
+         inkscape:connector-curvature="0" />
+    </defs>
+    <clipPath
+       id="bR">
+      <use
+         xlink:href="#bQ"
+         overflow="visible"
+         id="use720"
+         style="overflow:visible"
+         x="0"
+         y="0"
+         width="368.495"
+         height="132.66701" />
+    </clipPath>
+    <linearGradient
+       id="bS"
+       gradientUnits="userSpaceOnUse"
+       x1="-388.17099"
+       y1="-144.33299"
+       x2="-387.17099"
+       y2="-144.33299"
+       gradientTransform="matrix(-2.269,6.941,5.958,1.733,81.816,3021.926)">
+      <stop
+         offset="0"
+         stop-color="#ff0"
+         id="stop723" />
+      <stop
+         offset=".012"
+         stop-color="#ff0"
+         id="stop725" />
+      <stop
+         offset=".485"
+         stop-color="#E2E15C"
+         id="stop727" />
+      <stop
+         offset="1"
+         stop-color="#F7931E"
+         id="stop729" />
+    </linearGradient>
+    <path
+       clip-path="url(#bR)"
+       d="m 103.365,81.689 -0.978,2.991 -3.611,-1.05 0.978,-2.991 z"
+       id="path731"
+       inkscape:connector-curvature="0"
+       style="fill:url(#bS)" />
+  </g>
+  <defs
+     id="defs733">
+    <path
+       id="bT"
+       d="m 134.827,63.427 -23.6,72.188 -37.395,-10.878 23.6,-72.188 z"
+       inkscape:connector-curvature="0" />
+  </defs>
+  <clipPath
+     id="bU">
+    <use
+       xlink:href="#bT"
+       overflow="visible"
+       id="use737"
+       style="overflow:visible"
+       x="0"
+       y="0"
+       width="368.495"
+       height="132.66701" />
+  </clipPath>
+  <path
+     clip-path="url(#bU)"
+     d="m 100.816,79.342 c 0.131,0.059 0.215,0.206 0.297,0.333 -0.244,-0.009 -0.474,-0.087 -0.687,-0.19 0.124,-0.056 0.256,-0.11 0.39,-0.143"
+     id="path739"
+     inkscape:connector-curvature="0"
+     style="fill:#1a1a1a"
+     transform="translate(0,0.0030017)" />
+  <defs
+     id="defs741">
+    <path
+       id="bV"
+       d="m 101.413,79.314 -10e-4,-10e-4 10e-4,10e-4 m -3.548,-5.09 c -0.133,0.946 -0.242,1.9 -0.278,2.844 0.036,0.349 0.243,0.604 0.448,0.838 0.393,0.361 0.811,0.698 1.256,0.981 0.284,0.154 0.568,0.309 0.85,0.473 l 0.285,0.124 c 0.124,-0.056 0.256,-0.11 0.39,-0.143 0.131,0.059 0.215,0.206 0.297,0.333 l 0.029,0.065 c 0.094,-0.098 0.253,-0.144 0.318,-0.265 l -0.013,-0.045 0.034,0.116 0.308,-0.321 c 0.606,-0.747 1.132,-1.549 1.739,-2.275 0.141,-0.216 0.274,-0.433 0.42,-0.637 l 0.132,-0.188"
+       inkscape:connector-curvature="0" />
+  </defs>
+  <clipPath
+     id="clipPath744">
+    <use
+       xlink:href="#bV"
+       overflow="visible"
+       id="use746"
+       style="overflow:visible"
+       x="0"
+       y="0"
+       width="368.495"
+       height="132.66701" />
+  </clipPath>
+  <defs
+     id="defs748">
+    <path
+       id="bW"
+       d="m 101.202,80.563 c -0.086,-0.169 -0.18,-0.34 -0.296,-0.496 l -0.256,-0.187 -0.491,-0.276 -0.018,-0.241 C 99.86,79.199 99.576,79.044 99.291,78.89 L 98.89,78.876 c 0.246,0.164 0.464,0.361 0.695,0.541 l 0.485,0.213 c -0.11,0.337 -0.142,0.677 -0.032,0.986 l -0.021,0.065 c 0.331,0.066 0.645,0.157 0.96,0.269 l -0.113,0.48 0.262,-0.396 c 0.193,0.354 0.417,0.665 0.663,0.963 -0.176,-0.483 -0.369,-0.97 -0.587,-1.434"
+       inkscape:connector-curvature="0" />
+  </defs>
+  <clipPath
+     id="bX">
+    <use
+       xlink:href="#bW"
+       overflow="visible"
+       id="use752"
+       style="overflow:visible"
+       x="0"
+       y="0"
+       width="368.495"
+       height="132.66701" />
+  </clipPath>
+  <g
+     clip-path="url(#bX)"
+     id="g754"
+     transform="translate(0,0.0030017)">
+    <defs
+       id="defs756">
+      <path
+         id="bY"
+         d="M 102.513,79.843 95.866,100.175 78.415,95.098 85.061,74.766 z"
+         inkscape:connector-curvature="0" />
+    </defs>
+    <clipPath
+       id="bZ">
+      <use
+         xlink:href="#bY"
+         overflow="visible"
+         id="use760"
+         style="overflow:visible"
+         x="0"
+         y="0"
+         width="368.495"
+         height="132.66701" />
+    </clipPath>
+    <linearGradient
+       id="ca"
+       gradientUnits="userSpaceOnUse"
+       x1="-388.17099"
+       y1="-144.33299"
+       x2="-387.17099"
+       y2="-144.33299"
+       gradientTransform="matrix(-2.216,6.777,5.817,1.692,81.39,2950.914)">
+      <stop
+         offset="0"
+         stop-color="#ff0"
+         id="stop763" />
+      <stop
+         offset=".012"
+         stop-color="#ff0"
+         id="stop765" />
+      <stop
+         offset=".485"
+         stop-color="#E2E15C"
+         id="stop767" />
+      <stop
+         offset="1"
+         stop-color="#F7931E"
+         id="stop769" />
+    </linearGradient>
+    <path
+       clip-path="url(#bZ)"
+       d="M 102.513,79.843 95.866,100.175 78.415,95.098 85.061,74.766 z"
+       id="path771"
+       inkscape:connector-curvature="0"
+       style="fill:url(#ca)" />
+  </g>
+  <defs
+     id="defs773">
+    <path
+       id="cb"
+       d="m 134.827,63.427 -23.6,72.188 -37.395,-10.878 23.6,-72.188 z"
+       inkscape:connector-curvature="0" />
+  </defs>
+  <clipPath
+     id="clipPath776">
+    <use
+       xlink:href="#cb"
+       overflow="visible"
+       id="use778"
+       style="overflow:visible"
+       x="0"
+       y="0"
+       width="368.495"
+       height="132.66701" />
+  </clipPath>
+  <defs
+     id="defs780">
+    <path
+       id="cc"
+       d="m 97.559,81.248 c -0.218,-0.546 -0.282,-1.16 -0.428,-1.736 -0.042,-0.248 -0.143,-0.534 0.019,-0.785 0.186,-0.326 0.422,-0.616 0.599,-0.944 -0.542,0.366 -0.995,0.86 -1.514,1.263 0.312,-0.443 0.671,-0.841 1.015,-1.244 0.181,-0.204 0.294,-0.469 0.337,-0.733 0.036,-0.944 0.145,-1.898 0.278,-2.844 -0.137,-0.173 -0.26,-0.363 -0.372,-0.56 -0.11,0.122 -0.25,0.225 -0.305,0.394 -0.203,0.567 -0.361,1.157 -0.421,1.745 -0.062,0.701 -0.264,1.401 -0.236,2.097 0.018,0.457 -0.263,0.857 -0.616,1.104 l 0.202,0.192 c 0.037,0.452 0.113,0.895 0.29,1.295 0.302,0.694 0.6,1.427 1.123,1.928 l 0.451,0.265 c -0.093,-0.5 -0.235,-0.983 -0.422,-1.437"
+       inkscape:connector-curvature="0" />
+  </defs>
+  <clipPath
+     id="cd">
+    <use
+       xlink:href="#cc"
+       overflow="visible"
+       id="use784"
+       style="overflow:visible"
+       x="0"
+       y="0"
+       width="368.495"
+       height="132.66701" />
+  </clipPath>
+  <g
+     clip-path="url(#cd)"
+     id="g786"
+     transform="translate(0,0.0030017)">
+    <defs
+       id="defs788">
+      <path
+         id="ce"
+         d="M 100.63,74.577 93.121,97.545 73.406,91.81 80.915,68.842 z"
+         inkscape:connector-curvature="0" />
+    </defs>
+    <clipPath
+       id="cf">
+      <use
+         xlink:href="#ce"
+         overflow="visible"
+         id="use792"
+         style="overflow:visible"
+         x="0"
+         y="0"
+         width="368.495"
+         height="132.66701" />
+    </clipPath>
+    <linearGradient
+       id="cg"
+       gradientUnits="userSpaceOnUse"
+       x1="-388.17099"
+       y1="-144.33299"
+       x2="-387.17099"
+       y2="-144.33299"
+       gradientTransform="matrix(-2.503,7.656,6.572,1.912,75.671,3322.529)">
+      <stop
+         offset="0"
+         stop-color="#746827"
+         id="stop795" />
+      <stop
+         offset=".012"
+         stop-color="#746827"
+         id="stop797" />
+      <stop
+         offset=".485"
+         stop-color="#E2E15C"
+         id="stop799" />
+      <stop
+         offset="1"
+         stop-color="#F7931E"
+         id="stop801" />
+    </linearGradient>
+    <path
+       clip-path="url(#cf)"
+       d="M 100.63,74.577 93.121,97.545 73.406,91.81 80.915,68.842 z"
+       id="path803"
+       inkscape:connector-curvature="0"
+       style="fill:url(#cg)" />
+  </g>
+  <defs
+     id="defs805">
+    <path
+       id="ch"
+       d="m 134.827,63.427 -23.6,72.188 -37.395,-10.878 23.6,-72.188 z"
+       inkscape:connector-curvature="0" />
+  </defs>
+  <clipPath
+     id="clipPath808">
+    <use
+       xlink:href="#ch"
+       overflow="visible"
+       id="use810"
+       style="overflow:visible"
+       x="0"
+       y="0"
+       width="368.495"
+       height="132.66701" />
+  </clipPath>
+  <defs
+     id="defs812">
+    <path
+       id="ci"
+       d="m 96.406,80.492 c -0.177,-0.4 -0.253,-0.843 -0.29,-1.295 l -0.202,-0.192 -0.222,-0.29 c -0.245,-0.328 -0.389,-0.75 -0.609,-1.101 0.37,1.832 1.097,3.542 2.23,4.846 l 0.216,-0.04 c -0.523,-0.502 -0.821,-1.235 -1.123,-1.928"
+       inkscape:connector-curvature="0" />
+  </defs>
+  <clipPath
+     id="cj">
+    <use
+       xlink:href="#ci"
+       overflow="visible"
+       id="use816"
+       style="overflow:visible"
+       x="0"
+       y="0"
+       width="368.495"
+       height="132.66701" />
+  </clipPath>
+  <g
+     clip-path="url(#cj)"
+     id="g818"
+     transform="translate(0,0.0030017)">
+    <defs
+       id="defs820">
+      <path
+         id="ck"
+         d="m 98.748,78.67 -1.253,3.833 -3.669,-1.067 1.253,-3.833 z"
+         inkscape:connector-curvature="0" />
+    </defs>
+    <clipPath
+       id="cl">
+      <use
+         xlink:href="#ck"
+         overflow="visible"
+         id="use824"
+         style="overflow:visible"
+         x="0"
+         y="0"
+         width="368.495"
+         height="132.66701" />
+    </clipPath>
+    <linearGradient
+       id="cm"
+       gradientUnits="userSpaceOnUse"
+       x1="-388.17099"
+       y1="-144.33299"
+       x2="-387.17099"
+       y2="-144.33299"
+       gradientTransform="matrix(-1.253,3.833,3.29,0.957,85.355,1704.219)">
+      <stop
+         offset="0"
+         stop-color="#ff0"
+         id="stop827" />
+      <stop
+         offset=".012"
+         stop-color="#ff0"
+         id="stop829" />
+      <stop
+         offset=".485"
+         stop-color="#E2E15C"
+         id="stop831" />
+      <stop
+         offset="1"
+         stop-color="#F7931E"
+         id="stop833" />
+    </linearGradient>
+    <path
+       clip-path="url(#cl)"
+       d="m 98.748,78.67 -1.253,3.833 -3.669,-1.067 1.253,-3.833 z"
+       id="path835"
+       inkscape:connector-curvature="0"
+       style="fill:url(#cm)" />
+  </g>
+  <defs
+     id="defs837">
+    <path
+       id="cn"
+       d="m 134.827,63.427 -23.6,72.188 -37.395,-10.878 23.6,-72.188 z"
+       inkscape:connector-curvature="0" />
+  </defs>
+  <clipPath
+     id="clipPath840">
+    <use
+       xlink:href="#cn"
+       overflow="visible"
+       id="use842"
+       style="overflow:visible"
+       x="0"
+       y="0"
+       width="368.495"
+       height="132.66701" />
+  </clipPath>
+  <defs
+     id="defs844">
+    <path
+       id="co"
+       d="m 97.587,77.069 c -0.043,0.265 -0.155,0.529 -0.337,0.733 -0.343,0.403 -0.702,0.801 -1.015,1.244 0.519,-0.403 0.972,-0.898 1.514,-1.263 l 0.286,0.124 C 97.83,77.673 97.623,77.418 97.587,77.069"
+       inkscape:connector-curvature="0" />
+  </defs>
+  <clipPath
+     id="cp">
+    <use
+       xlink:href="#co"
+       overflow="visible"
+       id="use848"
+       style="overflow:visible"
+       x="0"
+       y="0"
+       width="368.495"
+       height="132.66701" />
+  </clipPath>
+  <g
+     clip-path="url(#cp)"
+     id="g850"
+     transform="translate(0,0.0030017)">
+    <defs
+       id="defs852">
+      <path
+         id="cq"
+         d="m 98.24,77.246 -2.123,6.494 -5.575,-1.621 2.124,-6.495 z"
+         inkscape:connector-curvature="0" />
+    </defs>
+    <clipPath
+       id="cr">
+      <use
+         xlink:href="#cq"
+         overflow="visible"
+         id="use856"
+         style="overflow:visible"
+         x="0"
+         y="0"
+         width="368.495"
+         height="132.66701" />
+    </clipPath>
+    <linearGradient
+       id="cs"
+       gradientUnits="userSpaceOnUse"
+       x1="-388.17099"
+       y1="-144.33299"
+       x2="-387.17099"
+       y2="-144.33299"
+       gradientTransform="matrix(-0.708,2.165,1.858,0.54,91.062,995.372)">
+      <stop
+         offset="0"
+         stop-color="#ff0"
+         id="stop859" />
+      <stop
+         offset="1"
+         stop-color="#D9D9D9"
+         id="stop861" />
+    </linearGradient>
+    <path
+       clip-path="url(#cr)"
+       d="m 98.24,77.246 -2.123,6.494 -5.575,-1.621 2.124,-6.495 z"
+       id="path863"
+       inkscape:connector-curvature="0"
+       style="fill:url(#cs)" />
+  </g>
+  <defs
+     id="defs865">
+    <path
+       id="ct"
+       d="m 134.827,63.427 -23.6,72.188 -37.395,-10.878 23.6,-72.188 z"
+       inkscape:connector-curvature="0" />
+  </defs>
+  <clipPath
+     id="clipPath868">
+    <use
+       xlink:href="#ct"
+       overflow="visible"
+       id="use870"
+       style="overflow:visible"
+       x="0"
+       y="0"
+       width="368.495"
+       height="132.66701" />
+  </clipPath>
+  <defs
+     id="defs872">
+    <path
+       id="cu"
+       d="m 96.96,72.937 c -0.061,0.255 -0.121,0.509 -0.257,0.745 -0.276,0.494 -0.338,1.061 -0.399,1.598 -0.089,0.918 -0.221,1.834 -0.472,2.737 l 0.178,0.103 -0.198,0.281 0.03,0.368 -0.15,-0.054 0.222,0.29 c 0.354,-0.246 0.634,-0.647 0.616,-1.104 -0.028,-0.696 0.175,-1.396 0.236,-2.097 0.06,-0.588 0.218,-1.179 0.421,-1.745 0.055,-0.169 0.195,-0.272 0.305,-0.394 0.112,0.197 0.235,0.386 0.372,0.56"
+       inkscape:connector-curvature="0" />
+  </defs>
+  <clipPath
+     id="clipPath875">
+    <use
+       xlink:href="#cu"
+       overflow="visible"
+       id="use877"
+       style="overflow:visible"
+       x="0"
+       y="0"
+       width="368.495"
+       height="132.66701" />
+  </clipPath>
+  <defs
+     id="defs879">
+    <path
+       id="cv"
+       d="m 94.91,76.608 c 0.047,0.342 0.033,0.708 0.174,1.005 0.22,0.351 0.364,0.773 0.609,1.101 l 0.15,0.054 -0.03,-0.368"
+       inkscape:connector-curvature="0" />
+  </defs>
+  <defs
+     id="defs882">
+    <path
+       id="cx"
+       d="m 96.335,72.948 c -0.099,0.546 -0.314,1.068 -0.592,1.542 l 0.078,0.166 c -0.162,0.415 -0.348,0.822 -0.627,1.162 -0.067,-0.44 -0.119,-0.876 -0.094,-1.331"
+       inkscape:connector-curvature="0" />
+  </defs>
+  <defs
+     id="defs885">
+    <path
+       id="cz"
+       d="m 95.813,78.4 0.198,-0.281 -0.178,-0.103 c 0.251,-0.902 0.383,-1.818 0.472,-2.737 0.061,-0.536 0.123,-1.103 0.399,-1.598 0.136,-0.236 0.196,-0.49 0.257,-0.745"
+       inkscape:connector-curvature="0" />
+  </defs>
+  <clipPath
+     id="cw">
+    <use
+       xlink:href="#cv"
+       overflow="visible"
+       id="use889"
+       style="overflow:visible"
+       x="0"
+       y="0"
+       width="368.495"
+       height="132.66701" />
+  </clipPath>
+  <clipPath
+     id="cy"
+     clip-path="url(#cw)">
+    <use
+       xlink:href="#cx"
+       overflow="visible"
+       id="use892"
+       style="overflow:visible"
+       x="0"
+       y="0"
+       width="368.495"
+       height="132.66701" />
+  </clipPath>
+  <clipPath
+     clip-path="url(#cy)"
+     id="clipPath894">
+    <use
+       xlink:href="#cz"
+       overflow="visible"
+       id="use896"
+       style="overflow:visible"
+       x="0"
+       y="0"
+       width="368.495"
+       height="132.66701" />
+  </clipPath>
+  <defs
+     id="defs898">
+    <path
+       id="cA"
+       d="m 134.827,63.427 -23.6,72.188 -37.395,-10.878 23.6,-72.188 z"
+       inkscape:connector-curvature="0" />
+  </defs>
+  <clipPath
+     id="cB">
+    <use
+       xlink:href="#cA"
+       overflow="visible"
+       id="use902"
+       style="overflow:visible"
+       x="0"
+       y="0"
+       width="368.495"
+       height="132.66701" />
+  </clipPath>
+  <path
+     clip-path="url(#cB)"
+     d="m 96.335,72.948 c -0.099,0.546 -0.314,1.068 -0.592,1.542 l 0.078,0.166 m 0,0 c -0.162,0.415 -0.348,0.822 -0.627,1.162 -0.067,-0.44 -0.119,-0.876 -0.093,-1.331"
+     id="path904"
+     inkscape:connector-curvature="0"
+     style="fill:#a09f9d"
+     transform="translate(0,0.0030017)" />
+  <g
+     clip-path="url(#cB)"
+     id="g906"
+     style="opacity:0.75"
+     transform="translate(0,0.0030017)">
+    <defs
+       id="defs908">
+      <path
+         id="cC"
+         d="m 79.093,121.313 31.708,9.224 19.06,-58.301"
+         inkscape:connector-curvature="0" />
+    </defs>
+    <defs
+       id="defs911">
+      <path
+         id="cE"
+         d="M 98.153,63.013"
+         inkscape:connector-curvature="0" />
+    </defs>
+    <clipPath
+       id="cD">
+      <use
+         xlink:href="#cC"
+         overflow="visible"
+         id="use915"
+         style="overflow:visible"
+         x="0"
+         y="0"
+         width="368.495"
+         height="132.66701" />
+    </clipPath>
+    <clipPath
+       id="cF"
+       clip-path="url(#cD)">
+      <use
+         xlink:href="#cE"
+         overflow="visible"
+         id="use918"
+         style="overflow:visible"
+         x="0"
+         y="0"
+         width="368.495"
+         height="132.66701" />
+    </clipPath>
+    <g
+       clip-path="url(#cF)"
+       id="g920">
+      <defs
+         id="defs922">
+        <path
+           id="cG"
+           d="m 79.093,121.313 31.708,9.224 19.06,-58.301"
+           inkscape:connector-curvature="0" />
+      </defs>
+      <defs
+         id="defs925">
+        <path
+           id="cI"
+           d="M 98.153,63.013"
+           inkscape:connector-curvature="0" />
+      </defs>
+      <clipPath
+         id="cH">
+        <use
+           xlink:href="#cG"
+           overflow="visible"
+           id="use929"
+           style="overflow:visible"
+           x="0"
+           y="0"
+           width="368.495"
+           height="132.66701" />
+      </clipPath>
+      <clipPath
+         clip-path="url(#cH)"
+         id="clipPath931">
+        <use
+           xlink:href="#cI"
+           overflow="visible"
+           id="use933"
+           style="overflow:visible"
+           x="0"
+           y="0"
+           width="368.495"
+           height="132.66701" />
+      </clipPath>
+    </g>
+  </g>
+  <defs
+     id="defs935">
+    <path
+       id="cJ"
+       d="m 109.323,118.2 c 0.279,-0.83 0.571,-1.697 0.846,-2.604 1.786,-5.893 -1.079,-8.901 -2.855,-11.938 -1.98,-3.385 3.028,-7.337 2.442,-1.165 -0.658,6.919 3.397,8.922 3.397,8.922 -4.887,-6.228 -0.577,-9.12 -1.151,-13.222 -0.312,-2.232 -2.235,-2.359 -3.281,-3.075 -0.305,-0.248 -0.598,-0.627 -0.61,-1.186 -0.017,-0.814 0.814,-1.925 0.912,-2.043 0.098,-0.117 0.637,-0.503 0.73,0.264 0.084,0.688 0.303,0.909 0.348,0.947 0.087,0.103 0.193,0.196 0.325,0.275 1.669,0.995 3.716,1.978 2.809,7.607 -1.037,6.434 1.568,7.02 1.568,7.02 0,0 -1.649,-2.085 -0.65,-5.584 0.999,-3.499 0.722,-6.466 -1.228,-9.079 -1.951,-2.613 4.529,-5.945 2.895,0.145 -1.728,6.442 0.902,6.254 0.902,6.254 0,0 -1.902,-0.387 -0.03,-5.189 2.938,-7.539 -3.277,-6.852 -2.607,-9.54 0.579,-2.323 3.048,-0.599 3.431,1.614 0.437,-5.639 -4.655,-2.723 -2.787,-8.214 2.389,-7.022 -0.521,-9.58 -0.521,-9.58 1.404,3.829 -0.299,9.381 -1.933,11.414 -1.031,1.283 -2.547,3.11 -4.588,2.222 -4.398,-1.913 -1.981,-5.395 -1.981,-5.395 l -1.757,-0.757 c -1.362,1.928 -0.465,2.089 0.407,6.203 0.63,2.973 -3.639,1.391 -5.238,0.216 -3.654,-2.685 -3.391,-8.403 -3.391,-8.403 -0.609,2.45 -0.12,7.624 3.25,10.476 2.243,1.897 1.205,4.445 0.157,7.026 -0.827,2.036 -1.661,4.093 -0.896,5.867 0.187,-3.583 1.999,-6.057 3.132,-6.452 0.82,-0.286 1.284,0.516 0.52,2.773 -2.708,7.988 2.674,9.222 2.674,9.222 -1.532,-1.038 -2.528,-2.509 -1.879,-6.065 0.677,-3.066 1.304,-4.239 1.822,-4.272 1.439,-0.092 -0.209,3.606 -0.209,3.606 0,0 2.531,-2.429 1.125,-5.553 -0.449,-0.999 -0.223,-1.959 0.45,-2.231 0.568,-0.23 1.224,0.345 1.396,1.108 0.35,1.549 -0.65,4.216 -1.853,5.86 -2.901,3.648 -1.258,5.306 -0.84,5.639 0.854,1.175 0.768,2.826 0.522,4.064 -2.418,5.589 1.942,7.027 1.942,7.027 -2.786,-1.399 -2.487,-7.093 0.15,-4.272 1.895,2.027 1.361,5.799 0.91,7.762 l -0.127,0.371 c -3.961,11.322 2.523,12.883 2.523,12.883 -3.877,-2.964 -2.707,-6.409 -1.173,-10.968"
+       inkscape:connector-curvature="0" />
+  </defs>
+  <clipPath
+     id="cK">
+    <use
+       xlink:href="#cJ"
+       overflow="visible"
+       id="use939"
+       style="overflow:visible"
+       x="0"
+       y="0"
+       width="368.495"
+       height="132.66701" />
+  </clipPath>
+  <g
+     clip-path="url(#cK)"
+     id="g941"
+     transform="translate(0,0.0030017)">
+    <defs
+       id="defs943">
+      <path
+         id="cL"
+         d="M 127.977,56.824 136.643,227.589 -17.658,257.84 -26.324,87.075 z"
+         inkscape:connector-curvature="0" />
+    </defs>
+    <clipPath
+       id="cM">
+      <use
+         xlink:href="#cL"
+         overflow="visible"
+         id="use947"
+         style="overflow:visible"
+         x="0"
+         y="0"
+         width="368.495"
+         height="132.66701" />
+    </clipPath>
+    <linearGradient
+       id="cN"
+       gradientUnits="userSpaceOnUse"
+       x1="-388.17099"
+       y1="-144.33299"
+       x2="-387.17099"
+       y2="-144.33299"
+       gradientTransform="matrix(2.889,56.922,51.434,-10.084,8649.795,20690.232)">
+      <stop
+         offset="0"
+         stop-color="#ff0"
+         id="stop950" />
+      <stop
+         offset="1"
+         stop-color="#F15A24"
+         id="stop952" />
+    </linearGradient>
+    <path
+       clip-path="url(#cM)"
+       d="m 127.977,56.824 8.666,170.765 -154.301,30.25 -8.666,-170.764 z"
+       id="path954"
+       inkscape:connector-curvature="0"
+       style="fill:url(#cN)" />
+  </g>
+  <defs
+     id="defs956">
+    <path
+       id="cO"
+       d="m 113.719,84.901 c 0.629,-2.344 3.336,-0.817 3.482,0.245 0.102,-1.579 -2.133,-1.745 -3.105,-3.39 -1.06,-1.795 2.403,-6.679 0.847,-10.876 0.711,3.085 -1.473,12.098 -6.167,12.412 -3.994,0.267 -4.229,-5.497 -3.954,-6.979 -0.564,0.738 -0.361,2.269 -0.171,3.84 0.254,2.098 0.485,4.266 -1.166,4.709 -1.789,0.324 -6.069,-1.523 -7.592,-6.273 0.327,5.911 6.863,6.257 4.399,10.699 -0.312,0.562 -0.912,2.288 -1.143,3.498 0,0 2.321,-6.248 3.077,-3.106 0.756,3.142 7.216,-7.417 5.912,-0.607 0.352,-0.706 2.392,-3.954 2.392,-0.95 0,2.681 1.264,3.9 1.264,3.9 0.139,-4.726 3.391,-3.539 4.176,-2.828 -0.011,-1.089 -3.003,-1.491 -2.251,-4.294"
+       inkscape:connector-curvature="0" />
+  </defs>
+  <clipPath
+     id="cP">
+    <use
+       xlink:href="#cO"
+       overflow="visible"
+       id="use960"
+       style="overflow:visible"
+       x="0"
+       y="0"
+       width="368.495"
+       height="132.66701" />
+  </clipPath>
+  <g
+     clip-path="url(#cP)"
+     id="g962"
+     transform="translate(0,0.0030017)">
+    <defs
+       id="defs964">
+      <path
+         id="cQ"
+         d="m 121.351,72.758 -7.912,24.201 -21.506,-6.257 7.912,-24.2 z"
+         inkscape:connector-curvature="0" />
+    </defs>
+    <clipPath
+       id="cR">
+      <use
+         xlink:href="#cQ"
+         overflow="visible"
+         id="use968"
+         style="overflow:visible"
+         x="0"
+         y="0"
+         width="368.495"
+         height="132.66701" />
+    </clipPath>
+    <linearGradient
+       id="cS"
+       gradientUnits="userSpaceOnUse"
+       x1="-388.17099"
+       y1="-144.33299"
+       x2="-387.17099"
+       y2="-144.33299"
+       gradientTransform="matrix(-8.471,25.911,22.24,6.47,30.776,11066.393)">
+      <stop
+         offset="0"
+         stop-color="#ff0"
+         id="stop971" />
+      <stop
+         offset=".469"
+         stop-color="#F8AB12"
+         id="stop973" />
+      <stop
+         offset=".829"
+         stop-color="#F3711F"
+         id="stop975" />
+      <stop
+         offset="1"
+         stop-color="#F15A24"
+         id="stop977" />
+    </linearGradient>
+    <path
+       clip-path="url(#cR)"
+       d="m 121.351,72.758 -7.912,24.201 -21.506,-6.257 7.912,-24.2 z"
+       id="path979"
+       inkscape:connector-curvature="0"
+       style="fill:url(#cS)" />
+  </g>
+  <path
+     d="m 5.801,18.064003 c 4,-0.9 9.2,-1.3 14.9,-1.3 6.301,0 12.4,0.8 17.102,4.8 3.6,3 5.1,7.5 5.1,12.201 0,6 -3.1,11.801 -9.801,14.701 v 0.4 c 7.801,2.2 12.001,8.7 12.001,16.101 0,5.6 -1.8,9.9 -5,13.2 -4,4.4 -10.801,6.801 -22.102,6.801 -5,0 -9.2,-0.3 -12.2,-0.7 v -66.204 z m 13.1,26.701 h 2.8 c 4.7,0 8.301,-4 8.301,-9.5 0,-4.9 -2.3,-8.7 -7.7,-8.7 -1.4,0 -2.601,0.1 -3.4,0.4 v 17.8 z m 0,29.902 c 0.8,0.2 1.7,0.2 2.9,0.2 5.3,0 9.7,-3.2 9.7,-10.101 0,-6.701 -4.601,-10.201 -9.801,-10.301 h -2.8 v 20.202 z m 50.9,9.801 -0.7,-4.801 h -0.2 c -2.7,3.801 -6.5,5.601 -10.801,5.601 -7.4,0 -12.9,-6.2 -12.9,-14.901 0,-12.801 11.301,-18.101 22.401,-18.2 v -1.1 c 0,-3.8 -2.301,-6.601 -6.9,-6.601 -3.9,0 -7.101,1 -10.001,2.8 l -2.4,-8.801 c 2.7,-1.6 8.4,-3.7 15.201,-3.7 14.901,0 17.301,10.401 17.301,20.301 v 18.201 c 0,3.9 0.2,7.9 0.801,11.201 H 69.801 z M 68,60.666003 c -4.4,0.1 -10.4,1.5 -10.4,8.301 0,4.9 2.7,6.7 4.7,6.7 2.101,0 4.5,-1.3 5.4,-4.2 0.2,-0.7 0.3,-1.5 0.3,-2.3 v -8.501 z"
+     id="path981"
+     inkscape:connector-curvature="0"
+     style="fill:#272223" />
+  <path
+     d="m 129.009,95.468003 c -6.381,-2.399 -13.53,-5.8 -19.03,-8.8 -1.65,-0.801 -2.86,-1.4 -3.521,-1.4 -14.411,0 -22.13,-13.001 -22.13,-35.002 0,-18.102 17.461,-33.502 23.487,-46.5960014 5.659,13.0940014 21.346,30.4980014 21.346,45.8990014 0,16.701 -2.683,27.098 -9.614,30.499 v 0.5 c 4.73,1.9 9.9,3.4 14.521,5 l -5.059,9.9 z m -13.421,-45.303 c 0,-12.601 -2.09,-20.501 -8.47,-20.501 -5.94,0 -8.91,8.101 -8.91,20.801 -0.109,13.7 2.53,23.401 8.91,23.401 6.05,10e-4 8.47,-9.7 8.47,-23.701 z"
+     id="path983"
+     inkscape:connector-curvature="0"
+     style="fill:#600c0c" />
+  <path
+     d="m 143.409,64.666003 c 0.2,7.601 4.601,10.401 10.4,10.401 3.7,0 7.001,-0.801 9.301,-1.601 l 1.8,9.4 c -3.4,1.301 -8.5,2.2 -13.501,2.2 -13.301,0 -20.601,-8.801 -20.601,-24.102 0,-16.4 8.5,-26.201 19.601,-26.201 10.501,0 16.602,8.301 16.602,23.102 0,3.5 -0.101,5.4 -0.4,6.8 h -23.202 z m 11.7,-9.2 c 0,-6.3 -1.6,-11.201 -5.5,-11.201 -4.3,0 -6,6.301 -6.101,11.201 h 11.601 z m 14.298,-5.201 c 0,-5.4 -0.301,-10.101 -0.4,-14.701 h 11.301 l 0.6,5.6 h 0.2 c 2.601,-3.9 6.801,-6.4 11.901,-6.4 9.3,0 13,7.4 13,18.301 v 31.402 h -13.101 v -30.602 c 0,-4.2 -1,-8.1 -4.8,-8.1 -2.2,0 -4.001,1.5 -4.9,4.4 -0.4,1 -0.7,2.6 -0.7,4.5 v 29.802 h -13.101 v -34.202 z m 76.301,-35.002 v 54.703 c 0,4.7 0.2,10 0.4,14.501 h -11.301 l -0.7,-5.501 h -0.2 c -1.8,3.4 -5.7,6.301 -10.2,6.301 -10.401,0 -15.201,-11.501 -15.201,-25.201 0,-17.001 7.4,-25.302 15.701,-25.302 4.3,0 7,2.1 8.2,4.9 h 0.2 v -24.401 h 13.101 z m -13.1,39.102 c 0,-0.9 0,-1.9 -0.101,-2.9 -0.5,-3 -2.1,-5.7 -4.7,-5.7 -4.601,0 -6.3,6.7 -6.3,14.601 0,9.301 2.5,14.201 6.2,14.201 1.6,0 3.5,-0.9 4.5,-4.301 0.3,-0.7 0.4,-1.8 0.4,-3 v -12.901 z"
+     id="path985"
+     inkscape:connector-curvature="0"
+     style="fill:#272223" />
+  <path
+     d="m 117.497,13.972003 m -14.793,0.864 m 56.458,-124.833013"
+     id="path993"
+     inkscape:connector-curvature="0"
+     style="fill:#600c0c" />
+  <path
+     d="m 99.279,81.160003 0.338,0.207 v 0.239 c -2.092,0.907 -4.379,1.623 -6.422,2.386 l 2.238,4.726 c 2.822,-1.146 5.984,-2.769 8.417,-4.2 0.73,-0.382 1.265,-0.668 1.557,-0.668 2.489,0 4.593,-0.936 6.241,-2.689 H 99.279 z"
+     id="path995"
+     inkscape:connector-curvature="0"
+     style="fill:#600c0c" />
+  <defs
+     id="defs997">
+    <path
+       id="cT"
+       d="m 134.827,270.427 -23.6,72.188 -37.395,-10.878 23.6,-72.188 z"
+       inkscape:connector-curvature="0" />
+  </defs>
+  <clipPath
+     id="cU">
+    <use
+       xlink:href="#cT"
+       overflow="visible"
+       id="use1001"
+       style="overflow:visible"
+       x="0"
+       y="0"
+       width="368.495"
+       height="132.66701" />
+  </clipPath>
+  <g
+     clip-path="url(#cU)"
+     id="g1003"
+     style="opacity:0.75"
+     transform="translate(0,0.0030017)">
+    <defs
+       id="defs1005">
+      <path
+         id="cV"
+         d="m 91.421,289.593 20.15,5.862 7.79,-23.828"
+         inkscape:connector-curvature="0" />
+    </defs>
+    <defs
+       id="defs1008">
+      <path
+         id="cX"
+         d="M 99.211,265.765"
+         inkscape:connector-curvature="0" />
+    </defs>
+    <clipPath
+       id="cW">
+      <use
+         xlink:href="#cV"
+         overflow="visible"
+         id="use1012"
+         style="overflow:visible"
+         x="0"
+         y="0"
+         width="368.495"
+         height="132.66701" />
+    </clipPath>
+    <clipPath
+       id="cY"
+       clip-path="url(#cW)">
+      <use
+         xlink:href="#cX"
+         overflow="visible"
+         id="use1015"
+         style="overflow:visible"
+         x="0"
+         y="0"
+         width="368.495"
+         height="132.66701" />
+    </clipPath>
+    <g
+       clip-path="url(#cY)"
+       id="g1017">
+      <defs
+         id="defs1019">
+        <path
+           id="cZ"
+           d="m 91.421,289.593 20.15,5.862 7.789,-23.828"
+           inkscape:connector-curvature="0" />
+      </defs>
+      <defs
+         id="defs1022">
+        <path
+           id="db"
+           d="M 99.211,265.765"
+           inkscape:connector-curvature="0" />
+      </defs>
+      <clipPath
+         id="da">
+        <use
+           xlink:href="#cZ"
+           overflow="visible"
+           id="use1026"
+           style="overflow:visible"
+           x="0"
+           y="0"
+           width="368.495"
+           height="132.66701" />
+      </clipPath>
+      <clipPath
+         clip-path="url(#da)"
+         id="clipPath1028">
+        <use
+           xlink:href="#db"
+           overflow="visible"
+           id="use1030"
+           style="overflow:visible"
+           x="0"
+           y="0"
+           width="368.495"
+           height="132.66701" />
+      </clipPath>
+    </g>
+  </g>
+  <defs
+     id="defs1032">
+    <path
+       id="dc"
+       d="m 115.735,281.425 c 0.197,-1.277 0.129,-2.549 -0.026,-3.774 -0.023,-0.171 -0.077,-0.33 -0.142,-0.483 l -0.016,0.129 c -0.11,0.553 0.03,1.066 0.059,1.598 0.067,0.953 -0.067,1.93 -0.218,2.903 -0.134,0.813 -0.373,1.626 -0.719,2.387 -0.151,0.326 -0.326,0.675 -0.603,0.902 l -0.44,-0.405 -0.156,-0.035 0.202,0.408 0.118,0.178 0.065,-0.063 0.346,0.665 0.205,-0.248 c 0.181,-0.204 0.275,-0.464 0.366,-0.715 0.105,-0.293 0.207,-0.587 0.303,-0.882 0.275,-0.842 0.509,-1.697 0.656,-2.565"
+       inkscape:connector-curvature="0" />
+  </defs>
+  <clipPath
+     id="dd">
+    <use
+       xlink:href="#dc"
+       overflow="visible"
+       id="use1036"
+       style="overflow:visible"
+       x="0"
+       y="0"
+       width="368.495"
+       height="132.66701" />
+  </clipPath>
+  <defs
+     id="defs1053">
+    <path
+       id="dh"
+       d="m 114.205,285.834 -0.346,-0.665 0.185,0.485 -0.003,0.358 0.109,-0.225 0.068,0.276 0.192,-0.478 -0.205,0.249"
+       inkscape:connector-curvature="0" />
+  </defs>
+  <clipPath
+     id="di">
+    <use
+       xlink:href="#dh"
+       overflow="visible"
+       id="use1057"
+       style="overflow:visible"
+       x="0"
+       y="0"
+       width="368.495"
+       height="132.66701" />
+  </clipPath>
+  <defs
+     id="defs1074">
+    <path
+       id="dm"
+       d="m 114.15,285.787 -0.109,0.225 -0.101,0.227 -0.421,0.965 c 0.278,-0.34 0.497,-0.738 0.699,-1.141 l -0.068,-0.276"
+       inkscape:connector-curvature="0" />
+  </defs>
+  <clipPath
+     id="dn">
+    <use
+       xlink:href="#dm"
+       overflow="visible"
+       id="use1078"
+       style="overflow:visible"
+       x="0"
+       y="0"
+       width="368.495"
+       height="132.66701" />
+  </clipPath>
+  <defs
+     id="defs1095">
+    <path
+       id="dr"
+       d="m 115.393,281.797 c 0.151,-0.972 0.285,-1.949 0.218,-2.903 -0.029,-0.532 -0.169,-1.045 -0.059,-1.598 -0.283,-0.319 -0.494,-0.698 -0.552,-1.167 l -0.402,-0.199 c 0.181,0.443 0.326,0.916 0.345,1.424 l 0.239,-0.002 c -0.003,0.522 0.031,1.035 0.077,1.541 0.083,0.958 -0.086,1.935 -0.253,2.903 -0.176,0.78 -0.427,1.549 -0.723,2.294 -0.104,0.319 -0.377,0.506 -0.651,0.591 l 0.44,0.405 c 0.277,-0.227 0.453,-0.576 0.603,-0.902 0.14,-0.308 0.262,-0.624 0.368,-0.946 0.153,-0.472 0.27,-0.957 0.35,-1.441"
+       inkscape:connector-curvature="0" />
+  </defs>
+  <clipPath
+     id="ds">
+    <use
+       xlink:href="#dr"
+       overflow="visible"
+       id="use1099"
+       style="overflow:visible"
+       x="0"
+       y="0"
+       width="368.495"
+       height="132.66701" />
+  </clipPath>
+  <defs
+     id="defs1116">
+    <path
+       id="dw"
+       d="m 114.044,285.654 c -0.55,0.415 -0.924,1.076 -1.51,1.439 -0.966,0.745 -2.08,1.458 -3.217,1.271 l -0.091,-0.314 c -0.724,0.22 -1.324,-0.262 -2.005,-0.306 -0.178,-0.021 -0.377,-0.007 -0.547,-0.077 -0.234,-0.201 -0.385,-0.492 -0.583,-0.724 -0.395,-0.464 -0.806,-0.902 -1.247,-1.307 -0.185,-0.187 -0.398,-0.372 -0.474,-0.651 -0.078,-0.3 -0.112,-0.628 -0.223,-0.907 -0.096,-0.244 -0.182,-0.494 -0.199,-0.766 -0.146,0.204 -0.279,0.422 -0.42,0.637 l -0.21,0.401 c 0.279,0.574 0.57,1.141 0.857,1.717 0.239,0.48 0.777,0.668 0.933,1.216 0.259,0.178 0.521,0.347 0.769,0.531 0.453,0.337 0.988,0.534 1.476,0.819 0.195,-0.056 0.407,-0.138 0.61,-0.141 0.234,0.037 0.421,0.194 0.631,0.307 l 0.338,-0.415 0.063,0.48 c 0.741,0.185 1.536,-0.118 2.242,-0.497 0.67,-0.298 1.329,-0.67 1.863,-1.254 0.274,-0.3 0.535,-0.614 0.841,-0.874 l 0.101,-0.227 0.002,-0.358"
+       inkscape:connector-curvature="0" />
+  </defs>
+  <clipPath
+     id="dx">
+    <use
+       xlink:href="#dw"
+       overflow="visible"
+       id="use1120"
+       style="overflow:visible"
+       x="0"
+       y="0"
+       width="368.495"
+       height="132.66701" />
+  </clipPath>
+  <defs
+     id="defs1141">
+    <path
+       id="dB"
+       d="m 113.1,287.114 c -0.534,0.584 -1.194,0.956 -1.863,1.254 -0.706,0.38 -1.5,0.682 -2.242,0.497 l -0.063,-0.48 -0.338,0.415 c -0.21,-0.112 -0.396,-0.269 -0.631,-0.307 -0.203,0.002 -0.415,0.084 -0.61,0.141 -0.488,-0.286 -1.023,-0.482 -1.476,-0.819 -0.248,-0.185 -0.51,-0.354 -0.769,-0.531 -0.155,-0.548 -0.693,-0.736 -0.933,-1.216 -0.287,-0.576 -0.578,-1.143 -0.857,-1.717 l -0.307,0.455 -0.113,0.614 c 0.173,0.091 0.374,0.15 0.492,0.328 0.39,0.668 0.675,1.438 1.18,1.996 0.644,0.454 1.273,0.955 2.028,1.206 0.48,0.15 0.926,0.454 1.458,0.444 0.177,-0.031 0.266,0.129 0.364,0.26 0.481,0.037 0.992,0.011 1.488,-0.132 0.807,-0.206 1.565,-0.745 2.394,-0.802 l 0.046,-0.007 c 0.424,-0.462 0.867,-0.928 1.171,-1.507 l 0.421,-0.965 c -0.305,0.259 -0.566,0.573 -0.84,0.873"
+       inkscape:connector-curvature="0" />
+  </defs>
+  <clipPath
+     id="dC">
+    <use
+       xlink:href="#dB"
+       overflow="visible"
+       id="use1145"
+       style="overflow:visible"
+       x="0"
+       y="0"
+       width="368.495"
+       height="132.66701" />
+  </clipPath>
+  <defs
+     id="defs1166">
+    <path
+       id="dG"
+       d="m 113.859,285.169 -0.065,0.063 c -0.366,0.366 -0.67,0.811 -1.066,1.158 -0.392,0.338 -0.809,0.668 -1.268,0.832 -0.593,0.197 -1.15,0.661 -1.768,0.584 l 0.004,-0.471 -0.409,0.199 c -0.881,-0.297 -1.766,-0.606 -2.534,-1.168 -0.42,-0.307 -0.674,-0.822 -1.053,-1.199 -0.195,-0.211 -0.446,-0.386 -0.585,-0.663 l -0.109,-0.771 c -0.215,-0.124 -0.464,-0.145 -0.7,-0.204 l -0.089,-0.241 -0.14,-0.164 -0.132,0.188 c 0.017,0.272 0.102,0.522 0.199,0.766 0.112,0.279 0.145,0.607 0.223,0.907 0.076,0.279 0.289,0.464 0.474,0.651 0.44,0.405 0.852,0.843 1.247,1.307 0.197,0.232 0.349,0.522 0.583,0.724 0.171,0.07 0.369,0.056 0.547,0.077 0.681,0.044 1.281,0.527 2.005,0.306 l 0.091,0.314 c 1.137,0.187 2.251,-0.526 3.217,-1.271 0.586,-0.363 0.96,-1.024 1.51,-1.439 -0.047,-0.169 -0.12,-0.323 -0.182,-0.485"
+       inkscape:connector-curvature="0" />
+  </defs>
+  <clipPath
+     id="dH">
+    <use
+       xlink:href="#dG"
+       overflow="visible"
+       id="use1170"
+       style="overflow:visible"
+       x="0"
+       y="0"
+       width="368.495"
+       height="132.66701" />
+  </clipPath>
+  <defs
+     id="defs1187">
+    <path
+       id="dL"
+       d="m 115.005,281.798 c 0.167,-0.968 0.336,-1.945 0.253,-2.903 -0.046,-0.506 -0.081,-1.019 -0.077,-1.541 l -0.239,0.002 c -0.019,-0.508 -0.164,-0.982 -0.345,-1.424 l 0.402,0.199 -0.108,-0.37 c -0.126,-0.047 -0.308,-0.028 -0.373,-0.18"
+       inkscape:connector-curvature="0" />
+  </defs>
+  <clipPath
+     id="clipPath1190">
+    <use
+       xlink:href="#dL"
+       overflow="visible"
+       id="use1192"
+       style="overflow:visible"
+       x="0"
+       y="0"
+       width="368.495"
+       height="132.66701" />
+  </clipPath>
+  <defs
+     id="defs1194">
+    <path
+       id="dM"
+       d="m 103.896,282.527 c 0.105,0.297 0.34,0.468 0.57,0.628 l -0.246,0.134 0.089,0.241 c 0.236,0.059 0.485,0.08 0.7,0.204 l 0.109,0.771 c 0.139,0.276 0.39,0.452 0.585,0.663 0.379,0.377 0.633,0.892 1.053,1.199 0.768,0.562 1.653,0.871 2.534,1.168 l 0.409,-0.199 -0.004,0.471 c 0.618,0.077 1.175,-0.387 1.768,-0.584 0.459,-0.164 0.875,-0.495 1.268,-0.832 0.395,-0.347 0.699,-0.792 1.066,-1.158 l -0.118,-0.178"
+       inkscape:connector-curvature="0" />
+  </defs>
+  <defs
+     id="defs1197">
+    <path
+       id="dO"
+       d="m 113.676,285.054 c -0.558,0.361 -1.123,0.741 -1.672,1.125 -0.658,0.424 -1.371,0.689 -2.037,1.111 -0.039,-0.391 -0.247,-0.698 -0.539,-0.885 -0.313,0.042 -0.639,0.04 -0.904,-0.119 -0.701,-0.389 -1.407,-0.789 -2.013,-1.335 -0.307,-0.274 -0.365,-0.743 -0.431,-1.162 -0.476,-0.107 -0.981,-0.152 -1.408,-0.41 l -0.015,-0.117 c -0.035,-0.298 0.303,-0.199 0.325,0.002 0.253,0.063 0.534,0.063 0.777,-0.113 0.112,-0.101 0.297,-0.047 0.296,0.117 l 0.235,-0.045 c 0.014,-0.232 0.344,-0.218 0.306,0.007 l 0.248,-0.113 0.086,-0.129 c -0.504,-0.075 -1.01,-0.171 -1.533,-0.189 -0.076,-0.361 -0.133,-0.726 -0.25,-1.068 -0.129,-0.386 -0.322,-0.74 -0.418,-1.148 -0.115,-0.537 -0.118,-1.122 -0.02,-1.689 0.069,-0.401 0.033,-0.801 0.021,-1.195 -0.009,-0.485 0.278,-0.904 0.495,-1.324"
+       inkscape:connector-curvature="0" />
+  </defs>
+  <clipPath
+     id="dN">
+    <use
+       xlink:href="#dM"
+       overflow="visible"
+       id="use1201"
+       style="overflow:visible"
+       x="0"
+       y="0"
+       width="368.495"
+       height="132.66701" />
+  </clipPath>
+  <clipPath
+     clip-path="url(#dN)"
+     id="clipPath1203">
+    <use
+       xlink:href="#dO"
+       overflow="visible"
+       id="use1205"
+       style="overflow:visible"
+       x="0"
+       y="0"
+       width="368.495"
+       height="132.66701" />
+  </clipPath>
+  <defs
+     id="defs1207">
+    <path
+       id="dP"
+       d="m 134.827,270.427 -23.6,72.188 -37.395,-10.878 23.6,-72.188 z"
+       inkscape:connector-curvature="0" />
+  </defs>
+  <clipPath
+     id="dQ">
+    <use
+       xlink:href="#dP"
+       overflow="visible"
+       id="use1211"
+       style="overflow:visible"
+       x="0"
+       y="0"
+       width="368.495"
+       height="132.66701" />
+  </clipPath>
+  <defs
+     id="defs1215">
+    <path
+       id="dR"
+       d="m 109.908,289.521 c -0.496,0.143 -1.007,0.169 -1.488,0.132 -0.098,-0.131 -0.187,-0.29 -0.364,-0.26 l 0.041,0.494 -0.282,-0.082 c 0.135,0.152 0.232,0.447 0.474,0.354 0.323,-0.071 0.635,-0.164 0.962,-0.193 0.608,-0.028 1.186,-0.476 1.8,-0.441 l -0.027,0.433 c 0.456,-0.37 0.894,-0.766 1.277,-1.24 -0.828,0.057 -1.585,0.596 -2.393,0.803"
+       inkscape:connector-curvature="0" />
+  </defs>
+  <clipPath
+     id="dS">
+    <use
+       xlink:href="#dR"
+       overflow="visible"
+       id="use1219"
+       style="overflow:visible"
+       x="0"
+       y="0"
+       width="368.495"
+       height="132.66701" />
+  </clipPath>
+  <defs
+     id="defs1236">
+    <path
+       id="dW"
+       d="m 134.827,270.427 -23.6,72.188 -37.395,-10.878 23.6,-72.188 z"
+       inkscape:connector-curvature="0" />
+  </defs>
+  <clipPath
+     id="dX">
+    <use
+       xlink:href="#dW"
+       overflow="visible"
+       id="use1240"
+       style="overflow:visible"
+       x="0"
+       y="0"
+       width="368.495"
+       height="132.66701" />
+  </clipPath>
+  <defs
+     id="defs1244">
+    <path
+       id="dY"
+       d="m 111.052,289.525 c -0.614,-0.035 -1.192,0.413 -1.8,0.441 -0.326,0.028 -0.639,0.122 -0.962,0.193 -0.242,0.094 -0.339,-0.201 -0.474,-0.354 l -0.137,-0.04 -0.225,0.284 c 0.066,0.204 0.131,0.408 0.216,0.607 0.349,-0.042 0.699,-0.145 1.045,-0.26 0.418,-0.145 0.847,-0.164 1.258,-0.157 l -0.021,0.497 c 0.367,-0.232 0.726,-0.497 1.073,-0.776 l 0.027,-0.435"
+       inkscape:connector-curvature="0" />
+  </defs>
+  <clipPath
+     id="dZ">
+    <use
+       xlink:href="#dY"
+       overflow="visible"
+       id="use1248"
+       style="overflow:visible"
+       x="0"
+       y="0"
+       width="368.495"
+       height="132.66701" />
+  </clipPath>
+  <defs
+     id="defs1265">
+    <path
+       id="ed"
+       d="m 134.827,270.427 -23.6,72.188 -37.395,-10.878 23.6,-72.188 z"
+       inkscape:connector-curvature="0" />
+  </defs>
+  <clipPath
+     id="ee">
+    <use
+       xlink:href="#ed"
+       overflow="visible"
+       id="use1269"
+       style="overflow:visible"
+       x="0"
+       y="0"
+       width="368.495"
+       height="132.66701" />
+  </clipPath>
+  <defs
+     id="defs1273">
+    <path
+       id="ef"
+       d="m 109.973,290.238 c -0.412,-0.007 -0.841,0.012 -1.258,0.157 -0.346,0.115 -0.697,0.218 -1.045,0.26 0.216,0.309 0.432,0.618 0.507,1.01 0.618,-0.22 1.201,-0.574 1.775,-0.931 l 0.021,-0.496"
+       inkscape:connector-curvature="0" />
+  </defs>
+  <clipPath
+     id="eg">
+    <use
+       xlink:href="#ef"
+       overflow="visible"
+       id="use1277"
+       style="overflow:visible"
+       x="0"
+       y="0"
+       width="368.495"
+       height="132.66701" />
+  </clipPath>
+  <defs
+     id="defs1294">
+    <path
+       id="ek"
+       d="m 134.827,270.427 -23.6,72.188 -37.395,-10.878 23.6,-72.188 z"
+       inkscape:connector-curvature="0" />
+  </defs>
+  <clipPath
+     id="clipPath1297">
+    <use
+       xlink:href="#ek"
+       overflow="visible"
+       id="use1299"
+       style="overflow:visible"
+       x="0"
+       y="0"
+       width="368.495"
+       height="132.66701" />
+  </clipPath>
+  <defs
+     id="defs1301">
+    <path
+       id="el"
+       d="m 107.67,290.655 c -0.085,-0.199 -0.15,-0.403 -0.216,-0.607 -0.419,0.258 -0.872,0.27 -1.318,0.366 l -0.301,0.087 c 0.5,0.115 1.049,0.079 1.528,-0.254 0.12,0.281 0.245,0.543 0.376,0.817 l 0.209,0.492 c -0.722,0.159 -1.432,0.446 -2.154,0.553 -0.877,0.176 -1.744,0.108 -2.598,0.024 -0.643,-0.053 -1.243,-0.32 -1.902,-0.245 l -0.141,-0.215 c -0.188,0.037 -0.374,0.066 -0.564,0.082 0.704,0.297 1.417,0.597 2.186,0.697 1.767,0.227 3.639,-0.029 5.402,-0.789 -0.075,-0.389 -0.291,-0.698 -0.507,-1.008"
+       inkscape:connector-curvature="0" />
+  </defs>
+  <clipPath
+     id="em">
+    <use
+       xlink:href="#el"
+       overflow="visible"
+       id="use1305"
+       style="overflow:visible"
+       x="0"
+       y="0"
+       width="368.495"
+       height="132.66701" />
+  </clipPath>
+  <defs
+     id="defs1334">
+    <path
+       id="eq"
+       d="m 134.827,270.427 -23.6,72.188 -37.395,-10.878 23.6,-72.188 z"
+       inkscape:connector-curvature="0" />
+  </defs>
+  <clipPath
+     id="clipPath1337">
+    <use
+       xlink:href="#eq"
+       overflow="visible"
+       id="use1339"
+       style="overflow:visible"
+       x="0"
+       y="0"
+       width="368.495"
+       height="132.66701" />
+  </clipPath>
+  <defs
+     id="defs1341">
+    <path
+       id="er"
+       d="m 107.738,291.065 c -0.107,0.41 -0.509,0.478 -0.815,0.553 -1.574,0.394 -3.235,0.383 -4.603,-0.364 l -0.065,-0.286 c -0.207,0.176 -0.424,0.328 -0.649,0.478 l -0.291,0.162 -0.163,0.066 0.141,0.215 c 0.659,-0.075 1.259,0.192 1.902,0.245 0.854,0.084 1.721,0.152 2.598,-0.024 0.722,-0.108 1.433,-0.394 2.154,-0.553 l -0.209,-0.492"
+       inkscape:connector-curvature="0" />
+  </defs>
+  <clipPath
+     id="es">
+    <use
+       xlink:href="#er"
+       overflow="visible"
+       id="use1345"
+       style="overflow:visible"
+       x="0"
+       y="0"
+       width="368.495"
+       height="132.66701" />
+  </clipPath>
+  <defs
+     id="defs1374">
+    <path
+       id="ew"
+       d="m 134.827,270.427 -23.6,72.188 -37.395,-10.878 23.6,-72.188 z"
+       inkscape:connector-curvature="0" />
+  </defs>
+  <clipPath
+     id="clipPath1377">
+    <use
+       xlink:href="#ew"
+       overflow="visible"
+       id="use1379"
+       style="overflow:visible"
+       x="0"
+       y="0"
+       width="368.495"
+       height="132.66701" />
+  </clipPath>
+  <defs
+     id="defs1381">
+    <path
+       id="ex"
+       d="m 107.738,291.065 c -0.131,-0.274 -0.256,-0.536 -0.376,-0.817 -0.479,0.333 -1.028,0.368 -1.528,0.254 l -0.13,-0.007 -0.61,0.007 c -0.631,-0.009 -1.269,0 -1.855,-0.201 -0.271,-0.089 -0.465,-0.33 -0.624,-0.571 -0.267,-0.396 -0.514,-0.827 -0.675,-1.305 l -0.125,-0.344 c -0.127,-0.232 -0.284,-0.452 -0.433,-0.67 0.176,0.513 0.376,1.033 0.601,1.53 0.251,0.525 0.614,0.979 0.784,1.562 -0.166,0.157 -0.335,0.323 -0.514,0.466 l 0.065,0.286 c 1.368,0.747 3.029,0.758 4.603,0.364 0.296,-0.072 0.681,-0.138 0.803,-0.513 l 0.014,-0.041"
+       inkscape:connector-curvature="0" />
+  </defs>
+  <clipPath
+     id="ey">
+    <use
+       xlink:href="#ex"
+       overflow="visible"
+       id="use1385"
+       style="overflow:visible"
+       x="0"
+       y="0"
+       width="368.495"
+       height="132.66701" />
+  </clipPath>
+  <defs
+     id="defs1414">
+    <path
+       id="eC"
+       d="m 108.056,289.392 c -0.532,0.009 -0.979,-0.295 -1.458,-0.444 -0.755,-0.251 -1.384,-0.752 -2.028,-1.206 -0.505,-0.557 -0.79,-1.328 -1.18,-1.996 -0.118,-0.178 -0.319,-0.236 -0.492,-0.328 l 0.113,-0.614 c -0.138,0.206 -0.276,0.412 -0.409,0.63 -0.014,0.232 -0.079,0.511 0.089,0.672 0.251,0.309 0.525,0.604 0.711,0.977 0.241,0.501 0.751,0.721 1.014,1.208 0.251,0.473 0.757,0.621 1.162,0.892 0.624,0.408 1.398,0.386 2.101,0.58 l 0.137,0.04 0.282,0.082 -0.042,-0.493"
+       inkscape:connector-curvature="0" />
+  </defs>
+  <clipPath
+     id="eD">
+    <use
+       xlink:href="#eC"
+       overflow="visible"
+       id="use1418"
+       style="overflow:visible"
+       x="0"
+       y="0"
+       width="368.495"
+       height="132.66701" />
+  </clipPath>
+  <defs
+     id="defs1439">
+    <path
+       id="eH"
+       d="m 105.578,289.185 c -0.404,-0.272 -0.911,-0.419 -1.162,-0.892 -0.264,-0.487 -0.773,-0.707 -1.014,-1.208 -0.187,-0.372 -0.46,-0.668 -0.711,-0.977 -0.168,-0.162 -0.103,-0.44 -0.089,-0.672 -0.175,0.267 -0.369,0.508 -0.557,0.762 0.239,0.48 0.676,0.761 0.955,1.202 l 0.942,0.972 c 0.141,0.216 0.271,0.438 0.454,0.604 0.419,0.389 0.977,0.541 1.434,0.869 0.191,0.117 0.241,0.368 0.306,0.571 0.445,-0.096 0.899,-0.108 1.318,-0.366 l 0.225,-0.284 c -0.703,-0.195 -1.477,-0.174 -2.101,-0.581"
+       inkscape:connector-curvature="0" />
+  </defs>
+  <clipPath
+     id="eI">
+    <use
+       xlink:href="#eH"
+       overflow="visible"
+       id="use1443"
+       style="overflow:visible"
+       x="0"
+       y="0"
+       width="368.495"
+       height="132.66701" />
+  </clipPath>
+  <defs
+     id="defs1464">
+    <path
+       id="eM"
+       d="m 134.827,270.427 -23.6,72.188 -37.395,-10.878 23.6,-72.188 z"
+       inkscape:connector-curvature="0" />
+  </defs>
+  <clipPath
+     id="clipPath1467">
+    <use
+       xlink:href="#eM"
+       overflow="visible"
+       id="use1469"
+       style="overflow:visible"
+       x="0"
+       y="0"
+       width="368.495"
+       height="132.66701" />
+  </clipPath>
+  <defs
+     id="defs1471">
+    <path
+       id="eN"
+       d="m 105.83,289.843 c -0.457,-0.328 -1.015,-0.48 -1.434,-0.869 -0.183,-0.166 -0.313,-0.389 -0.454,-0.604 L 103,287.398 c -0.279,-0.44 -0.716,-0.721 -0.955,-1.202 -0.199,0.26 -0.274,0.649 -0.091,0.897 0.277,0.286 0.619,0.478 0.867,0.796 0.635,0.78 1.363,1.464 2.223,1.93 0.29,0.136 0.484,0.408 0.66,0.674 l 0.13,0.007 0.301,-0.087 c -0.064,-0.202 -0.114,-0.453 -0.305,-0.57"
+       inkscape:connector-curvature="0" />
+  </defs>
+  <clipPath
+     id="eO">
+    <use
+       xlink:href="#eN"
+       overflow="visible"
+       id="use1475"
+       style="overflow:visible"
+       x="0"
+       y="0"
+       width="368.495"
+       height="132.66701" />
+  </clipPath>
+  <defs
+     id="defs1496">
+    <path
+       id="eS"
+       d="m 105.044,289.82 c -0.861,-0.466 -1.588,-1.15 -2.223,-1.93 -0.248,-0.318 -0.591,-0.511 -0.867,-0.796 -0.183,-0.248 -0.109,-0.637 0.091,-0.897 0.188,-0.253 0.382,-0.494 0.557,-0.762 0.133,-0.218 0.271,-0.424 0.409,-0.63 l 0.307,-0.455 0.21,-0.401 c -0.607,0.726 -1.134,1.528 -1.739,2.275 -0.108,0.277 -0.263,0.591 -0.201,0.886 0.061,0.326 0.149,0.649 0.229,0.97 l 0.125,0.344 c 0.23,0.159 0.414,0.377 0.627,0.562 0.228,0.138 0.513,0.129 0.718,0.311 0.545,0.487 1.133,0.925 1.809,1.204 l 0.61,-0.007 c -0.178,-0.267 -0.371,-0.538 -0.662,-0.674"
+       inkscape:connector-curvature="0" />
+  </defs>
+  <clipPath
+     id="eT">
+    <use
+       xlink:href="#eS"
+       overflow="visible"
+       id="use1500"
+       style="overflow:visible"
+       x="0"
+       y="0"
+       width="368.495"
+       height="132.66701" />
+  </clipPath>
+  <defs
+     id="defs1521">
+    <path
+       id="eX"
+       d="m 103.286,289.298 c -0.205,-0.182 -0.49,-0.173 -0.718,-0.311 -0.213,-0.185 -0.397,-0.403 -0.627,-0.562 0.161,0.478 0.408,0.909 0.675,1.305 0.159,0.241 0.353,0.482 0.624,0.571 0.586,0.201 1.223,0.192 1.855,0.201 -0.676,-0.279 -1.264,-0.717 -1.809,-1.204"
+       inkscape:connector-curvature="0" />
+  </defs>
+  <clipPath
+     id="eY">
+    <use
+       xlink:href="#eX"
+       overflow="visible"
+       id="use1525"
+       style="overflow:visible"
+       x="0"
+       y="0"
+       width="368.495"
+       height="132.66701" />
+  </clipPath>
+  <defs
+     id="defs1546">
+    <path
+       id="fc"
+       d="m 134.827,270.427 -23.6,72.188 -37.395,-10.878 23.6,-72.188 z"
+       inkscape:connector-curvature="0" />
+  </defs>
+  <clipPath
+     id="fd">
+    <use
+       xlink:href="#fc"
+       overflow="visible"
+       id="use1550"
+       style="overflow:visible"
+       x="0"
+       y="0"
+       width="368.495"
+       height="132.66701" />
+  </clipPath>
+  <defs
+     id="defs1558">
+    <path
+       id="fe"
+       d="m 101.985,288.94 c -0.225,-0.497 -0.425,-1.017 -0.601,-1.53 -0.097,-0.244 -0.152,-0.506 -0.271,-0.736 -0.244,-0.009 -0.474,-0.087 -0.687,-0.19 l -0.285,-0.124 0.018,0.241 0.491,0.276 0.256,0.187 c 0.116,0.157 0.21,0.328 0.296,0.496 0.218,0.464 0.412,0.951 0.588,1.434 0.317,0.513 0.637,1.017 0.979,1.506 -0.171,-0.581 -0.533,-1.035 -0.784,-1.56"
+       inkscape:connector-curvature="0" />
+  </defs>
+  <clipPath
+     id="ff">
+    <use
+       xlink:href="#fe"
+       overflow="visible"
+       id="use1562"
+       style="overflow:visible"
+       x="0"
+       y="0"
+       width="368.495"
+       height="132.66701" />
+  </clipPath>
+  <defs
+     id="defs1583">
+    <path
+       id="fj"
+       d="m 134.827,270.427 -23.6,72.188 -37.395,-10.878 23.6,-72.188 z"
+       inkscape:connector-curvature="0" />
+  </defs>
+  <clipPath
+     id="fk">
+    <use
+       xlink:href="#fj"
+       overflow="visible"
+       id="use1587"
+       style="overflow:visible"
+       x="0"
+       y="0"
+       width="368.495"
+       height="132.66701" />
+  </clipPath>
+  <defs
+     id="defs1593">
+    <path
+       id="fl"
+       d="m 99.999,290.569 c -0.628,-0.665 -1.264,-1.415 -1.421,-2.445 -0.16,-0.642 0.039,-1.333 0.124,-1.996 0.277,0.122 0.572,0.218 0.884,0.288 -0.232,-0.18 -0.449,-0.377 -0.695,-0.541 -0.377,-0.14 -0.731,-0.325 -1.078,-0.529 -0.049,0.663 -0.121,1.34 0.045,1.963 0.13,0.869 0.425,1.663 0.838,2.368 0.412,0.705 1.109,1.082 1.655,1.621 l -0.442,0.138 c 0.215,0.124 0.432,0.269 0.679,0.321 0.19,-0.017 0.376,-0.045 0.564,-0.082 l 0.163,-0.066 c -0.422,-0.38 -0.926,-0.619 -1.316,-1.04"
+       inkscape:connector-curvature="0" />
+  </defs>
+  <clipPath
+     id="fm">
+    <use
+       xlink:href="#fl"
+       overflow="visible"
+       id="use1597"
+       style="overflow:visible"
+       x="0"
+       y="0"
+       width="368.495"
+       height="132.66701" />
+  </clipPath>
+  <defs
+     id="defs1618">
+    <path
+       id="fq"
+       d="m 134.827,270.427 -23.6,72.188 -37.395,-10.878 23.6,-72.188 z"
+       inkscape:connector-curvature="0" />
+  </defs>
+  <clipPath
+     id="fr">
+    <use
+       xlink:href="#fq"
+       overflow="visible"
+       id="use1622"
+       style="overflow:visible"
+       x="0"
+       y="0"
+       width="368.495"
+       height="132.66701" />
+  </clipPath>
+  <defs
+     id="defs1626">
+    <path
+       id="fs"
+       d="m 101.587,287.11 c -0.062,-0.295 0.094,-0.609 0.201,-0.886 l -0.308,0.321 -0.021,-0.071 c -0.065,0.12 -0.224,0.167 -0.318,0.265 0.098,0.214 0.154,0.449 0.242,0.671 0.149,0.218 0.306,0.438 0.433,0.67 -0.08,-0.321 -0.168,-0.644 -0.229,-0.97"
+       inkscape:connector-curvature="0" />
+  </defs>
+  <clipPath
+     id="ft">
+    <use
+       xlink:href="#fs"
+       overflow="visible"
+       id="use1630"
+       style="overflow:visible"
+       x="0"
+       y="0"
+       width="368.495"
+       height="132.66701" />
+  </clipPath>
+  <defs
+     id="defs1651">
+    <path
+       id="fx"
+       d="m 98.696,289.677 c -0.413,-0.705 -0.708,-1.499 -0.838,-2.368 -0.166,-0.623 -0.095,-1.3 -0.045,-1.963 0.347,0.204 0.701,0.389 1.078,0.529 l 0.401,0.014 c -0.445,-0.283 -0.863,-0.621 -1.256,-0.981 l -0.286,-0.124 c -0.178,0.328 -0.414,0.619 -0.599,0.944 -0.161,0.251 -0.061,0.536 -0.019,0.785 0.146,0.576 0.21,1.19 0.428,1.736 0.186,0.454 0.328,0.937 0.42,1.436 l -0.451,-0.265 -0.216,0.04 c 0.733,0.829 1.624,1.499 2.596,1.976 l 0.442,-0.138 c -0.547,-0.539 -1.243,-0.916 -1.655,-1.621"
+       inkscape:connector-curvature="0" />
+  </defs>
+  <clipPath
+     id="fy">
+    <use
+       xlink:href="#fx"
+       overflow="visible"
+       id="use1655"
+       style="overflow:visible"
+       x="0"
+       y="0"
+       width="368.495"
+       height="132.66701" />
+  </clipPath>
+  <defs
+     id="defs1676">
+    <path
+       id="fC"
+       d="m 100.274,290.238 c -0.233,-0.283 -0.475,-0.569 -0.779,-0.771 l -0.296,-0.117 0.149,-0.429 0.136,0.019 c 0.129,0.24 0.245,0.477 0.549,0.566 -0.145,-0.208 -0.165,-0.447 -0.145,-0.74 l -0.068,0.221 0.231,-0.733 -0.099,0.305 0.196,0.057 c 0.142,-0.164 0.153,-0.469 0.134,-0.679 0.33,0 0.384,0.369 0.588,0.474 l 0.109,-0.462 c -0.316,-0.112 -0.629,-0.203 -0.96,-0.269 l 0.021,-0.065 c -0.11,-0.309 -0.079,-0.649 0.032,-0.986 l -0.485,-0.213 c -0.312,-0.07 -0.606,-0.166 -0.884,-0.288 -0.085,0.663 -0.284,1.354 -0.124,1.996 0.156,1.031 0.792,1.78 1.421,2.445 0.391,0.422 0.894,0.66 1.316,1.04 l 0.291,-0.162 c -0.47,-0.373 -0.953,-0.728 -1.333,-1.209"
+       inkscape:connector-curvature="0" />
+  </defs>
+  <clipPath
+     id="fD">
+    <use
+       xlink:href="#fC"
+       overflow="visible"
+       id="use1680"
+       style="overflow:visible"
+       x="0"
+       y="0"
+       width="368.495"
+       height="132.66701" />
+  </clipPath>
+  <defs
+     id="defs1701">
+    <path
+       id="fH"
+       d="m 101.79,288.996 c -0.246,-0.297 -0.47,-0.609 -0.663,-0.963 l -0.262,0.396 0.005,-0.019 c -0.204,-0.105 -0.258,-0.474 -0.588,-0.474 0.019,0.211 0.008,0.515 -0.134,0.679 l -0.196,-0.057 -0.064,0.207 c -0.02,0.293 0,0.532 0.145,0.74 -0.304,-0.089 -0.42,-0.326 -0.549,-0.566 l -0.136,-0.019 -0.149,0.429 0.296,0.117 c 0.304,0.201 0.546,0.487 0.779,0.771 0.38,0.48 0.863,0.836 1.332,1.208 0.225,-0.15 0.442,-0.302 0.649,-0.478 0.179,-0.143 0.348,-0.309 0.514,-0.466 -0.342,-0.488 -0.662,-0.992 -0.979,-1.505"
+       inkscape:connector-curvature="0" />
+  </defs>
+  <clipPath
+     id="fI">
+    <use
+       xlink:href="#fH"
+       overflow="visible"
+       id="use1705"
+       style="overflow:visible"
+       x="0"
+       y="0"
+       width="368.495"
+       height="132.66701" />
+  </clipPath>
+  <defs
+     id="defs1726">
+    <path
+       id="fM"
+       d="m 134.827,270.427 -23.6,72.188 -37.395,-10.878 23.6,-72.188 z"
+       inkscape:connector-curvature="0" />
+  </defs>
+  <clipPath
+     id="fN">
+    <use
+       xlink:href="#fM"
+       overflow="visible"
+       id="use1730"
+       style="overflow:visible"
+       x="0"
+       y="0"
+       width="368.495"
+       height="132.66701" />
+  </clipPath>
+  <defs
+     id="defs1734">
+    <path
+       id="fO"
+       d="m 101.413,286.314 -10e-4,-0.001 10e-4,0.001 m -3.548,-5.09 c -0.133,0.946 -0.242,1.9 -0.278,2.844 0.036,0.349 0.243,0.604 0.448,0.838 0.393,0.361 0.811,0.698 1.256,0.981 0.284,0.154 0.568,0.309 0.85,0.473 l 0.285,0.124 c 0.124,-0.056 0.256,-0.11 0.39,-0.143 0.131,0.059 0.215,0.206 0.297,0.333 l 0.029,0.065 c 0.094,-0.098 0.253,-0.144 0.318,-0.265 l -0.013,-0.045 0.034,0.116 0.308,-0.321 c 0.606,-0.747 1.132,-1.549 1.739,-2.275 0.141,-0.216 0.274,-0.433 0.42,-0.637 l 0.132,-0.188"
+       inkscape:connector-curvature="0" />
+  </defs>
+  <clipPath
+     id="clipPath1737">
+    <use
+       xlink:href="#fO"
+       overflow="visible"
+       id="use1739"
+       style="overflow:visible"
+       x="0"
+       y="0"
+       width="368.495"
+       height="132.66701" />
+  </clipPath>
+  <defs
+     id="defs1741">
+    <path
+       id="fP"
+       d="m 101.202,287.563 c -0.086,-0.169 -0.18,-0.34 -0.296,-0.496 l -0.256,-0.187 -0.491,-0.276 -0.018,-0.241 c -0.281,-0.164 -0.565,-0.319 -0.85,-0.473 l -0.401,-0.014 c 0.246,0.164 0.464,0.361 0.695,0.541 l 0.485,0.213 c -0.11,0.337 -0.142,0.677 -0.032,0.986 l -0.021,0.065 c 0.331,0.066 0.645,0.157 0.96,0.269 l -0.113,0.48 0.262,-0.396 c 0.193,0.354 0.417,0.665 0.663,0.963 -0.176,-0.483 -0.369,-0.97 -0.587,-1.434"
+       inkscape:connector-curvature="0" />
+  </defs>
+  <clipPath
+     id="fQ">
+    <use
+       xlink:href="#fP"
+       overflow="visible"
+       id="use1745"
+       style="overflow:visible"
+       x="0"
+       y="0"
+       width="368.495"
+       height="132.66701" />
+  </clipPath>
+  <defs
+     id="defs1766">
+    <path
+       id="fU"
+       d="m 134.827,270.427 -23.6,72.188 -37.395,-10.878 23.6,-72.188 z"
+       inkscape:connector-curvature="0" />
+  </defs>
+  <clipPath
+     id="clipPath1769">
+    <use
+       xlink:href="#fU"
+       overflow="visible"
+       id="use1771"
+       style="overflow:visible"
+       x="0"
+       y="0"
+       width="368.495"
+       height="132.66701" />
+  </clipPath>
+  <defs
+     id="defs1773">
+    <path
+       id="fV"
+       d="m 97.559,288.248 c -0.218,-0.546 -0.282,-1.16 -0.428,-1.736 -0.042,-0.248 -0.143,-0.534 0.019,-0.785 0.186,-0.326 0.422,-0.616 0.599,-0.944 -0.542,0.366 -0.995,0.86 -1.514,1.263 0.312,-0.443 0.671,-0.841 1.015,-1.244 0.181,-0.204 0.294,-0.469 0.337,-0.733 0.036,-0.944 0.145,-1.898 0.278,-2.844 -0.137,-0.173 -0.26,-0.363 -0.372,-0.56 -0.11,0.122 -0.25,0.225 -0.305,0.394 -0.203,0.567 -0.361,1.157 -0.421,1.745 -0.062,0.701 -0.264,1.401 -0.236,2.097 0.018,0.457 -0.263,0.857 -0.616,1.104 l 0.202,0.192 c 0.037,0.452 0.113,0.895 0.29,1.295 0.302,0.694 0.6,1.427 1.123,1.928 l 0.451,0.265 c -0.093,-0.5 -0.235,-0.983 -0.422,-1.437"
+       inkscape:connector-curvature="0" />
+  </defs>
+  <clipPath
+     id="fW">
+    <use
+       xlink:href="#fV"
+       overflow="visible"
+       id="use1777"
+       style="overflow:visible"
+       x="0"
+       y="0"
+       width="368.495"
+       height="132.66701" />
+  </clipPath>
+  <defs
+     id="defs1798">
+    <path
+       id="ga"
+       d="m 134.827,270.427 -23.6,72.188 -37.395,-10.878 23.6,-72.188 z"
+       inkscape:connector-curvature="0" />
+  </defs>
+  <clipPath
+     id="clipPath1801">
+    <use
+       xlink:href="#ga"
+       overflow="visible"
+       id="use1803"
+       style="overflow:visible"
+       x="0"
+       y="0"
+       width="368.495"
+       height="132.66701" />
+  </clipPath>
+  <defs
+     id="defs1805">
+    <path
+       id="gb"
+       d="m 96.406,287.492 c -0.177,-0.4 -0.253,-0.843 -0.29,-1.295 l -0.202,-0.192 -0.222,-0.29 c -0.245,-0.328 -0.389,-0.75 -0.609,-1.101 0.37,1.832 1.097,3.542 2.23,4.846 l 0.216,-0.04 c -0.523,-0.502 -0.821,-1.235 -1.123,-1.928"
+       inkscape:connector-curvature="0" />
+  </defs>
+  <clipPath
+     id="gc">
+    <use
+       xlink:href="#gb"
+       overflow="visible"
+       id="use1809"
+       style="overflow:visible"
+       x="0"
+       y="0"
+       width="368.495"
+       height="132.66701" />
+  </clipPath>
+  <defs
+     id="defs1830">
+    <path
+       id="gg"
+       d="m 134.827,270.427 -23.6,72.188 -37.395,-10.878 23.6,-72.188 z"
+       inkscape:connector-curvature="0" />
+  </defs>
+  <clipPath
+     id="clipPath1833">
+    <use
+       xlink:href="#gg"
+       overflow="visible"
+       id="use1835"
+       style="overflow:visible"
+       x="0"
+       y="0"
+       width="368.495"
+       height="132.66701" />
+  </clipPath>
+  <defs
+     id="defs1837">
+    <path
+       id="gh"
+       d="m 97.587,284.069 c -0.043,0.265 -0.155,0.529 -0.337,0.733 -0.343,0.403 -0.702,0.801 -1.015,1.244 0.519,-0.403 0.972,-0.898 1.514,-1.263 l 0.286,0.124 c -0.205,-0.234 -0.412,-0.489 -0.448,-0.838"
+       inkscape:connector-curvature="0" />
+  </defs>
+  <clipPath
+     id="gi">
+    <use
+       xlink:href="#gh"
+       overflow="visible"
+       id="use1841"
+       style="overflow:visible"
+       x="0"
+       y="0"
+       width="368.495"
+       height="132.66701" />
+  </clipPath>
+  <defs
+     id="defs1858">
+    <path
+       id="gm"
+       d="m 134.827,270.427 -23.6,72.188 -37.395,-10.878 23.6,-72.188 z"
+       inkscape:connector-curvature="0" />
+  </defs>
+  <clipPath
+     id="clipPath1861">
+    <use
+       xlink:href="#gm"
+       overflow="visible"
+       id="use1863"
+       style="overflow:visible"
+       x="0"
+       y="0"
+       width="368.495"
+       height="132.66701" />
+  </clipPath>
+  <defs
+     id="defs1865">
+    <path
+       id="gn"
+       d="m 96.96,279.937 c -0.061,0.255 -0.121,0.509 -0.257,0.745 -0.276,0.494 -0.338,1.061 -0.399,1.598 -0.089,0.918 -0.221,1.834 -0.472,2.737 l 0.178,0.103 -0.198,0.281 0.03,0.368 -0.15,-0.054 0.222,0.29 c 0.354,-0.246 0.634,-0.647 0.616,-1.104 -0.028,-0.696 0.175,-1.396 0.236,-2.097 0.06,-0.588 0.218,-1.179 0.421,-1.745 0.055,-0.169 0.195,-0.272 0.305,-0.394 0.112,0.197 0.235,0.386 0.372,0.56"
+       inkscape:connector-curvature="0" />
+  </defs>
+  <clipPath
+     id="clipPath1868">
+    <use
+       xlink:href="#gn"
+       overflow="visible"
+       id="use1870"
+       style="overflow:visible"
+       x="0"
+       y="0"
+       width="368.495"
+       height="132.66701" />
+  </clipPath>
+  <defs
+     id="defs1872">
+    <path
+       id="go"
+       d="m 94.91,283.608 c 0.047,0.342 0.033,0.707 0.174,1.005 0.22,0.351 0.364,0.773 0.609,1.101 l 0.15,0.054 -0.03,-0.368"
+       inkscape:connector-curvature="0" />
+  </defs>
+  <defs
+     id="defs1875">
+    <path
+       id="gq"
+       d="m 96.335,279.948 c -0.099,0.546 -0.314,1.068 -0.592,1.542 l 0.078,0.166 c -0.162,0.415 -0.348,0.822 -0.627,1.162 -0.067,-0.44 -0.119,-0.876 -0.094,-1.331"
+       inkscape:connector-curvature="0" />
+  </defs>
+  <defs
+     id="defs1878">
+    <path
+       id="gs"
+       d="m 95.813,285.4 0.198,-0.281 -0.178,-0.103 c 0.251,-0.902 0.383,-1.818 0.472,-2.737 0.061,-0.536 0.123,-1.103 0.399,-1.598 0.136,-0.236 0.196,-0.49 0.257,-0.745"
+       inkscape:connector-curvature="0" />
+  </defs>
+  <clipPath
+     id="gp">
+    <use
+       xlink:href="#go"
+       overflow="visible"
+       id="use1882"
+       style="overflow:visible"
+       x="0"
+       y="0"
+       width="368.495"
+       height="132.66701" />
+  </clipPath>
+  <clipPath
+     id="gr"
+     clip-path="url(#gp)">
+    <use
+       xlink:href="#gq"
+       overflow="visible"
+       id="use1885"
+       style="overflow:visible"
+       x="0"
+       y="0"
+       width="368.495"
+       height="132.66701" />
+  </clipPath>
+  <clipPath
+     clip-path="url(#gr)"
+     id="clipPath1887">
+    <use
+       xlink:href="#gs"
+       overflow="visible"
+       id="use1889"
+       style="overflow:visible"
+       x="0"
+       y="0"
+       width="368.495"
+       height="132.66701" />
+  </clipPath>
+  <defs
+     id="defs1891">
+    <path
+       id="gt"
+       d="m 134.827,270.427 -23.6,72.188 -37.395,-10.878 23.6,-72.188 z"
+       inkscape:connector-curvature="0" />
+  </defs>
+  <clipPath
+     id="gu">
+    <use
+       xlink:href="#gt"
+       overflow="visible"
+       id="use1895"
+       style="overflow:visible"
+       x="0"
+       y="0"
+       width="368.495"
+       height="132.66701" />
+  </clipPath>
+  <g
+     clip-path="url(#gu)"
+     id="g1899"
+     style="opacity:0.75"
+     transform="translate(0,0.0030017)">
+    <defs
+       id="defs1901">
+      <path
+         id="gv"
+         d="m 79.093,328.313 31.708,9.224 19.06,-58.301"
+         inkscape:connector-curvature="0" />
+    </defs>
+    <defs
+       id="defs1904">
+      <path
+         id="gx"
+         d="M 98.153,270.013"
+         inkscape:connector-curvature="0" />
+    </defs>
+    <clipPath
+       id="gw">
+      <use
+         xlink:href="#gv"
+         overflow="visible"
+         id="use1908"
+         style="overflow:visible"
+         x="0"
+         y="0"
+         width="368.495"
+         height="132.66701" />
+    </clipPath>
+    <clipPath
+       id="gy"
+       clip-path="url(#gw)">
+      <use
+         xlink:href="#gx"
+         overflow="visible"
+         id="use1911"
+         style="overflow:visible"
+         x="0"
+         y="0"
+         width="368.495"
+         height="132.66701" />
+    </clipPath>
+    <g
+       clip-path="url(#gy)"
+       id="g1913">
+      <defs
+         id="defs1915">
+        <path
+           id="gz"
+           d="m 79.093,328.313 31.708,9.224 19.06,-58.301"
+           inkscape:connector-curvature="0" />
+      </defs>
+      <defs
+         id="defs1918">
+        <path
+           id="gB"
+           d="M 98.153,270.013"
+           inkscape:connector-curvature="0" />
+      </defs>
+      <clipPath
+         id="gA">
+        <use
+           xlink:href="#gz"
+           overflow="visible"
+           id="use1922"
+           style="overflow:visible"
+           x="0"
+           y="0"
+           width="368.495"
+           height="132.66701" />
+      </clipPath>
+      <clipPath
+         clip-path="url(#gA)"
+         id="clipPath1924">
+        <use
+           xlink:href="#gB"
+           overflow="visible"
+           id="use1926"
+           style="overflow:visible"
+           x="0"
+           y="0"
+           width="368.495"
+           height="132.66701" />
+      </clipPath>
+    </g>
+  </g>
+  <defs
+     id="defs1928">
+    <path
+       id="gC"
+       d="m 109.323,325.2 c 0.279,-0.83 0.571,-1.697 0.846,-2.604 1.786,-5.893 -1.079,-8.901 -2.855,-11.938 -1.98,-3.385 3.028,-7.337 2.442,-1.165 -0.658,6.919 3.397,8.922 3.397,8.922 -4.887,-6.228 -0.577,-9.12 -1.151,-13.222 -0.312,-2.232 -2.235,-2.359 -3.281,-3.075 -0.305,-0.248 -0.598,-0.627 -0.61,-1.186 -0.017,-0.814 0.814,-1.925 0.912,-2.043 0.098,-0.117 0.637,-0.503 0.73,0.264 0.084,0.688 0.303,0.909 0.348,0.947 0.087,0.103 0.193,0.196 0.325,0.275 1.669,0.995 3.716,1.978 2.809,7.607 -1.037,6.434 1.568,7.02 1.568,7.02 0,0 -1.649,-2.085 -0.65,-5.584 0.999,-3.499 0.722,-6.466 -1.228,-9.079 -1.951,-2.613 4.529,-5.945 2.895,0.145 -1.728,6.442 0.902,6.254 0.902,6.254 0,0 -1.902,-0.387 -0.03,-5.189 2.938,-7.539 -3.277,-6.852 -2.607,-9.54 0.579,-2.323 3.048,-0.599 3.431,1.614 0.437,-5.639 -4.655,-2.723 -2.787,-8.214 2.389,-7.022 -0.521,-9.58 -0.521,-9.58 1.404,3.829 -0.299,9.381 -1.933,11.414 -1.031,1.283 -2.547,3.11 -4.588,2.222 -4.398,-1.913 -1.635,-11.38 -1.635,-11.38 -1.362,1.928 -2.567,7.317 -1.696,11.432 0.63,2.973 -3.639,1.391 -5.238,0.216 -3.654,-2.685 -3.391,-8.403 -3.391,-8.403 -0.609,2.45 -0.12,7.624 3.25,10.476 2.243,1.897 1.205,4.445 0.157,7.026 -0.827,2.036 -1.661,4.093 -0.896,5.867 0.187,-3.583 1.999,-6.057 3.132,-6.452 0.82,-0.286 1.284,0.516 0.52,2.773 -2.708,7.988 2.674,9.222 2.674,9.222 -1.532,-1.038 -2.528,-2.509 -1.879,-6.065 0.677,-3.066 1.304,-4.239 1.822,-4.272 1.439,-0.092 -0.209,3.606 -0.209,3.606 0,0 2.531,-2.429 1.125,-5.553 -0.449,-0.999 -0.223,-1.959 0.45,-2.231 0.568,-0.23 1.224,0.345 1.396,1.108 0.35,1.549 -0.65,4.216 -1.853,5.86 -2.901,3.648 -1.258,5.306 -0.84,5.639 0.854,1.175 0.768,2.826 0.522,4.064 -2.418,5.589 1.942,7.027 1.942,7.027 -2.786,-1.399 -2.487,-7.094 0.15,-4.272 1.895,2.027 1.361,5.799 0.91,7.762 l -0.127,0.371 c -3.961,11.322 2.523,12.883 2.523,12.883 -3.877,-2.965 -2.707,-6.41 -1.173,-10.969"
+       inkscape:connector-curvature="0" />
+  </defs>
+  <clipPath
+     id="gD">
+    <use
+       xlink:href="#gC"
+       overflow="visible"
+       id="use1932"
+       style="overflow:visible"
+       x="0"
+       y="0"
+       width="368.495"
+       height="132.66701" />
+  </clipPath>
+  <defs
+     id="defs1949">
+    <path
+       id="gH"
+       d="m 113.719,291.901 c 0.629,-2.344 3.336,-0.817 3.482,0.245 0.102,-1.579 -2.133,-1.745 -3.105,-3.39 -1.06,-1.795 2.403,-6.679 0.847,-10.876 0.711,3.085 -1.473,12.098 -6.167,12.412 -3.994,0.267 -4.229,-5.497 -3.954,-6.979 -0.564,0.738 -0.361,2.269 -0.171,3.84 0.254,2.098 0.485,4.266 -1.166,4.709 -1.789,0.324 -6.069,-1.523 -7.592,-6.273 0.327,5.911 6.863,6.257 4.399,10.699 -0.312,0.562 -0.912,2.288 -1.143,3.498 0,0 2.321,-6.248 3.077,-3.106 0.756,3.142 7.216,-7.417 5.912,-0.607 0.352,-0.706 2.392,-3.954 2.392,-0.95 0,2.681 1.264,3.9 1.264,3.9 0.139,-4.726 3.391,-3.539 4.176,-2.828 -0.011,-1.089 -3.003,-1.491 -2.251,-4.294"
+       inkscape:connector-curvature="0" />
+  </defs>
+  <clipPath
+     id="gI">
+    <use
+       xlink:href="#gH"
+       overflow="visible"
+       id="use1953"
+       style="overflow:visible"
+       x="0"
+       y="0"
+       width="368.495"
+       height="132.66701" />
+  </clipPath>
+</svg>
