@@ -212,7 +212,7 @@ describe('Test crud', function() {
       var person = new db2.Person();
 
       return person.save().then(function() {
-        return db.Person.load(person._metadata.id).then(function(person2) {
+        return db.Person.load(person.id).then(function(person2) {
           person2.name = 'Peter Parker';
           return person2.save();
         });
@@ -220,7 +220,7 @@ describe('Test crud', function() {
         person.name = 'Alice Ford';
         return person.save({force:true});
       }).then(function() {
-        return db.Person.load(person._metadata.id).then(function(person2) {
+        return db.Person.load(person.id).then(function(person2) {
           expect(person2.name).equals('Alice Ford');
         });
       });
@@ -232,7 +232,7 @@ describe('Test crud', function() {
 
       return person.save().then(function() {
         var newPerson = new db.Person();
-        newPerson._metadata.id = person._metadata.id;
+        newPerson.id = person.id;
         return expect(newPerson.save()).rejected;
       });
     });
@@ -244,10 +244,10 @@ describe('Test crud', function() {
       return person.save().then(function() {
         var newPerson = new db.Person();
         newPerson.name = 'Peter Parker';
-        newPerson._metadata.id = person._metadata.id;
+        newPerson.id = person.id;
         return newPerson.save({force:true});
       }).then(function() {
-        return db.Person.load(person._metadata.id).then(function(person2) {
+        return db.Person.load(person.id).then(function(person2) {
           expect(person2.name).equals('Peter Parker');
         });
       });
@@ -258,7 +258,7 @@ describe('Test crud', function() {
       return person.save().then(function() {
         var db2 = emf.createEntityManager();
 
-        return db2.Person.load(person._metadata.id).then(function(person2) {
+        return db2.Person.load(person.id).then(function(person2) {
           return person2.delete();
         });
       }).then(function() {
@@ -272,14 +272,14 @@ describe('Test crud', function() {
       return person.save().then(function() {
         var db2 = emf.createEntityManager();
 
-        return db2.Person.load(person._metadata.id).then(function(person2) {
+        return db2.Person.load(person.id).then(function(person2) {
           return person2.delete();
         });
       }).then(function() {
         person.name = 'Peter Parker';
         return person.save({force:true});
       }).then(function() {
-        return db.Person.load(person._metadata.id).then(function(person2) {
+        return db.Person.load(person.id).then(function(person2) {
           expect(person2.name).equals('Peter Parker');
         });
       });
@@ -324,7 +324,7 @@ describe('Test crud', function() {
         var i = 0;
 
         return person.save().then(function() {
-          return db.Person.load(person._metadata.id);
+          return db.Person.load(person.id);
         }).then(function(per) {
           newPerson = per;
           newPerson.name = 'Peter Parker';
@@ -348,7 +348,7 @@ describe('Test crud', function() {
         var i = 0;
 
         return person.save().then(function() {
-          return db.Person.load(person._metadata.id);
+          return db.Person.load(person.id);
         }).then(function(per) {
           newPerson = per;
           newPerson.name = 'Peter Parker';
@@ -379,7 +379,7 @@ describe('Test crud', function() {
         return otherPerson.save().then(function() {
           return person.save();
         }).then(function() {
-          return db.Person.load(person._metadata.id);
+          return db.Person.load(person.id);
         }).then(function(per) {
           newPerson = per;
           newPerson.name = 'Peter Parker';
@@ -451,7 +451,7 @@ describe('Test crud', function() {
         return db.Person.load(person.id).then(function(person3) {
           expect(person3).equals(person);
           expect(person3.name).equals('Alice Ford');
-          expect(person3._metadata.version).equals(person2._metadata.version);
+          expect(person3.version).equals(person2.version);
         });
       });
     });
@@ -510,17 +510,17 @@ describe('Test crud', function() {
 
     it('should delete version', function() {
       return person.delete().then(function(deleted) {
-        expect(deleted._metadata.version).be.null;
+        expect(deleted.version).be.null;
       });
     });
 
     it('should be allowed to save after delete', function() {
       return person.delete().then(function(per) { return per.save(); }).then(function(saved) {
-        expect(saved._metadata.id).be.ok;
-        expect(saved._metadata.version).be.ok;
+        expect(saved.id).be.ok;
+        expect(saved.version).be.ok;
         expect(saved._metadata.isPersistent).be.true;
         expect(saved._metadata.isDirty).be.false;
-        return db.Person.load(saved._metadata.id);
+        return db.Person.load(saved.id);
       }).then(function(loaded) {
         expect(loaded).be.ok;
         expect(loaded.id).equals(person.id);
@@ -542,7 +542,7 @@ describe('Test crud', function() {
       return expect(person.delete().then(function() {
         db.attach(person);
         var newPerson = new db.Person();
-        newPerson._metadata.id = person._metadata.id;
+        newPerson.id = person.id;
         return db.attach(newPerson);
       })).be.rejectedWith(DB.error.EntityExistsError);
     });
@@ -552,7 +552,7 @@ describe('Test crud', function() {
       var person = new db2.Person();
 
       return expect(person.save().then(function() {
-        return db.Person.load(person._metadata.id);
+        return db.Person.load(person.id);
       }).then(function(person2) {
         person2.name = "Foo Bar";
         return person2.save();
@@ -566,14 +566,14 @@ describe('Test crud', function() {
       var person = new db2.Person();
 
       return person.save().then(function() {
-        return db.Person.load(person._metadata.id);
+        return db.Person.load(person.id);
       }).then(function(person2) {
         person2.name = "Foo Bar";
         return person2.save();
       }).then(function() {
         return person.delete({force:true});
       }).then(function() {
-        return expect(db.Person.load(person._metadata.id)).become(null);
+        return expect(db.Person.load(person.id)).become(null);
       });
     });
   });
@@ -589,8 +589,8 @@ describe('Test crud', function() {
 
       return person.save(function(saved) {
         expect(saved).equals(person);
-        expect(saved._metadata.id).be.ok;
-        expect(saved._metadata.version).be.ok;
+        expect(saved.id).be.ok;
+        expect(saved.version).be.ok;
         expect(saved._metadata.isPersistent).be.true;
         expect(saved._metadata.isDirty).be.false;
       });
@@ -598,11 +598,11 @@ describe('Test crud', function() {
 
     it('should update object', function() {
       person.name = 'New Name';
-      expect(person._metadata.version).equals(1);
+      expect(person.version).equals(1);
       return person.update().then(function() {
         expect(person.name).equals('New Name');
-        expect(person._metadata.version).equals(2);
-        return expect(db.Person.load(person._metadata.id)).eventually.have.property('name', 'New Name');
+        expect(person.version).equals(2);
+        return expect(db.Person.load(person.id)).eventually.have.property('name', 'New Name');
       });
     });
 
@@ -619,7 +619,7 @@ describe('Test crud', function() {
       var person = new db2.Person();
 
       return expect(person.save().then(function() {
-        return db.Person.load(person._metadata.id);
+        return db.Person.load(person.id);
       }).then(function(person2) {
         person2.name = "Foo Bar";
         return person2.save();
@@ -634,7 +634,7 @@ describe('Test crud', function() {
       var person = new db2.Person();
 
       return person.save().then(function() {
-        return db.Person.load(person._metadata.id);
+        return db.Person.load(person.id);
       }).then(function(person2) {
         person2.name = "Foo Bar";
         return person2.save();
@@ -642,10 +642,10 @@ describe('Test crud', function() {
         person.name = "New Name";
         return person.update({force:true});
       }).then(function() {
-        return db.Person.load(person._metadata.id);
+        return db.Person.load(person.id);
       }).then(function(loaded) {
         expect(loaded.name).equals("New Name");
-        expect(loaded._metadata.version).equals(3);
+        expect(loaded.version).equals(3);
       });
     });
 
@@ -662,7 +662,7 @@ describe('Test crud', function() {
       var person = new db.Person();
       person.name = "Peter Insert";
       return person.insert().then(function() {
-        return expect(db.Person.load(person._metadata.id)).become(person);
+        return expect(db.Person.load(person.id)).become(person);
       });
     });
 
@@ -678,7 +678,7 @@ describe('Test crud', function() {
       var person = new db.Person();
       person.name = "Peter Insert";
       return person.insert().then(function() {
-        return db.Person.load(person._metadata.id);
+        return db.Person.load(person.id);
       }).then(function(loaded) {
         loaded.name = "Peter Inserted";
         expect(function() {
@@ -694,7 +694,7 @@ describe('Test crud', function() {
       return person.save().then(function(saved) {
         var newPerson = new db.Person();
         newPerson.name = "Blub";
-        newPerson._metadata.id = saved._metadata.id;
+        newPerson.id = saved.id;
         return expect(newPerson.insert()).rejected;
       });
     });
@@ -709,7 +709,7 @@ describe('Test crud', function() {
       return person.save(function() {
         return emf.createEntityManager();
       }).then(function(db2) {
-        return db2.Person.load(person._metadata.id);
+        return db2.Person.load(person.id);
       }).then(function(loaded) {
         loaded.name = "New Name";
         return loaded.save();
@@ -725,14 +725,14 @@ describe('Test crud', function() {
       return person.save(function() {
         return emf.createEntityManager();
       }).then(function(db2) {
-        return db2.Person.load(person._metadata.id, { refresh: true });
+        return db2.Person.load(person.id, { refresh: true });
       }).then(function(loaded) {
         loaded.name = "New Name";
         return loaded.save();
       }).then(function() {
         person._metadata.version = 2;
         expect(person).have.property('name', 'Old Name');
-        return expect(db.Person.load(person._metadata.id, { refresh: true })).eventually.have.property('name', 'New Name');
+        return expect(db.Person.load(person.id, { refresh: true })).eventually.have.property('name', 'New Name');
       }).then(function() {
         return expect(person.load({ refresh: true })).eventually.have.property('name', 'New Name');
       });
@@ -744,14 +744,14 @@ describe('Test crud', function() {
       return person.save(function() {
         return emf.createEntityManager();
       }).then(function(db2) {
-        return db2.Person.load(person._metadata.id);
+        return db2.Person.load(person.id);
       }).then(function(loaded) {
         loaded.name = "New Name";
         return loaded.save();
       }).then(function() {
         person._metadata.version = 2;
         expect(person).have.property('name', 'Old Name');
-        return expect(db.Person.load(person._metadata.id)).eventually.have.property('name', 'Old Name');
+        return expect(db.Person.load(person.id)).eventually.have.property('name', 'Old Name');
       }).then(function() {
         return expect(person.load()).eventually.have.property('name', 'Old Name');
       });
@@ -857,7 +857,7 @@ describe('Test crud', function() {
           expect(db.Person.load(sister.id)).become(null)
         ];
         sibs.forEach(function(sib) {
-          promises.push(expect(db.Person.load(sib._metadata.id)).become(null))
+          promises.push(expect(db.Person.load(sib.id)).become(null))
         });
         return Promise.all(promises);
       });
@@ -873,7 +873,7 @@ describe('Test crud', function() {
           expect(db.Person.load(sister.id)).not.become(null)
         ];
         sibs.forEach(function(sib) {
-          promises.push(expect(db.Person.load(sib._metadata.id)).not.become(null))
+          promises.push(expect(db.Person.load(sib.id)).not.become(null))
         });
         return Promise.all(promises);
       }).then(function() {
@@ -888,7 +888,7 @@ describe('Test crud', function() {
           expect(db.Person.load(sister.id)).become(null)
         ];
         sibs.forEach(function(sib) {
-          promises.push(expect(db.Person.load(sib._metadata.id)).become(null))
+          promises.push(expect(db.Person.load(sib.id)).become(null))
         });
         return Promise.all(promises);
       });
@@ -908,7 +908,7 @@ describe('Test crud', function() {
         expect(db2.containsById(sister)).be.false;
         expect(db2.containsById(mother)).be.false;
         expect(db2.containsById(street)).be.false;
-        return em.Child.load(child._metadata.id, {depth: 2});
+        return em.Child.load(child.id, {depth: 2});
       }).then(function(loaded) {
         expect(loaded.father.sister._metadata.isAvailable).be.true;
         expect(loaded.father._metadata.isAvailable).be.true;
@@ -932,7 +932,7 @@ describe('Test crud', function() {
         expect(db2.containsById(sister)).be.false;
         expect(db2.containsById(mother)).be.false;
         expect(db2.containsById(street)).be.false;
-        return em.Child.load(child._metadata.id, {depth: true});
+        return em.Child.load(child.id, {depth: true});
       }).then(function(loaded) {
         expect(loaded.father.sister._metadata.isAvailable).be.true;
         expect(loaded.father._metadata.isAvailable).be.true;
@@ -998,11 +998,11 @@ describe('Test crud', function() {
     it('should insert referenced objects by depth', function() {
       return child.insert({depth:2}).then(function() {
         return Promise.all([
-          expect(db.Child.load(child._metadata.id)).not.become(null),
-          expect(db.Person.load(mother._metadata.id)).not.become(null),
-          expect(db.Person.load(father._metadata.id)).not.become(null),
-          expect(db.Street.load(street._metadata.id)).not.become(null),
-          expect(db.Person.load(sister._metadata.id)).not.become(null)
+          expect(db.Child.load(child.id)).not.become(null),
+          expect(db.Person.load(mother.id)).not.become(null),
+          expect(db.Person.load(father.id)).not.become(null),
+          expect(db.Street.load(street.id)).not.become(null),
+          expect(db.Person.load(sister.id)).not.become(null)
         ]);
       });
     });
@@ -1010,11 +1010,11 @@ describe('Test crud', function() {
     it('should insert referenced objects by reachability', function() {
       return child.insert({depth:true}).then(function() {
         return Promise.all([
-          expect(db.Child.load(child._metadata.id)).not.become(null),
-          expect(db.Person.load(mother._metadata.id)).not.become(null),
-          expect(db.Person.load(father._metadata.id)).not.become(null),
-          expect(db.Street.load(street._metadata.id)).not.become(null),
-          expect(db.Person.load(sister._metadata.id)).not.become(null)
+          expect(db.Child.load(child.id)).not.become(null),
+          expect(db.Person.load(mother.id)).not.become(null),
+          expect(db.Person.load(father.id)).not.become(null),
+          expect(db.Street.load(street.id)).not.become(null),
+          expect(db.Person.load(sister.id)).not.become(null)
         ]);
       });
     });

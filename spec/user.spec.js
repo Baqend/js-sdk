@@ -40,8 +40,8 @@ describe('Test user and roles', function() {
       return db.User.register(login, 'secret').then(function(user) {
         expect(user).be.ok;
         expect(DB.binding.User.isInstance(user)).be.true;
-        expect(user._metadata.id).be.ok;
-        expect(user._metadata.version).be.ok;
+        expect(user.id).be.ok;
+        expect(user.version).be.ok;
         expect(user._metadata.isPersistent).be.true;
         expect(user._metadata.isDirty).be.false;
         expect(user.username).equals(login);
@@ -117,8 +117,8 @@ describe('Test user and roles', function() {
 
         expect(user).be.ok;
         expect(DB.binding.User.isInstance(user)).be.true;
-        expect(user._metadata.id).be.ok;
-        expect(user._metadata.version).be.ok;
+        expect(user.id).be.ok;
+        expect(user.version).be.ok;
         expect(user._metadata.isPersistent).be.true;
         expect(user._metadata.isDirty).be.false;
         expect(user.username).equals(login);
