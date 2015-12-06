@@ -726,7 +726,6 @@ describe('Test Metamodel', function() {
         type.schemaAddPermission.allowAccess(user1);
         type.schemaReplacePermission.allowAccess(user1);
 
-        embeddedType.loadPermission.allowAccess(user1);
         embeddedType.schemaAddPermission.allowAccess(user1);
         embeddedType.schemaReplacePermission.allowAccess(user1);
 
@@ -755,11 +754,8 @@ describe('Test Metamodel', function() {
         expect(AclPerson.schemaReplacePermission.isAllowed(user1)).be.true;
 
         var EmbeddableType = metamodel.embeddable(SchemaAclEmbeddedPersonName);
-        for (var name in EmbeddableType) {
-          if (name.indexOf('Permission') != -1) {
-            expect(EmbeddableType[name].isAllowed(user1)).be.true;
-          }
-        }
+        expect(EmbeddableType.schemaAddPermission.isAllowed(user1)).be.true;
+        expect(EmbeddableType.schemaReplacePermission.isAllowed(user1)).be.true;
       });
     });
 
