@@ -194,13 +194,13 @@ describe('Test logging', function() {
 
 
   function findLogByMessage(msg) {
-    return sleep(150).then(function() {
+    return sleep(300).then(function() {
       return rootDb['logs.AppLog'].find().equal('message', msg).singleResult();
     });
   }
 
   function findLogsByMessage(msg) {
-    return sleep(150).then(function() {
+    return sleep(300).then(function() {
       return rootDb['logs.AppLog'].find().equal('message', msg).resultList();
     });
   }
