@@ -8,7 +8,9 @@ if (typeof DB == 'undefined') {
 }
 
 describe('Test logging', function() {
-  this.timeout(1000);
+  this.timeout(2000);
+
+  var sleepTime = 600;
 
   var db, emf, rootDb;
 
@@ -153,7 +155,7 @@ describe('Test logging', function() {
     var msg = randomize('my string ');
     db.log('warn', msg);
 
-    return expect(sleep(150).then(function() {
+    return expect(sleep(sleepTime).then(function() {
       return db['logs.AppLog'].find().equal('message', msg).singleResult();
     })).rejectedWith(Error);
   });
@@ -194,13 +196,13 @@ describe('Test logging', function() {
 
 
   function findLogByMessage(msg) {
-    return sleep(300).then(function() {
+    return sleep(sleepTime).then(function() {
       return rootDb['logs.AppLog'].find().equal('message', msg).singleResult();
     });
   }
 
   function findLogsByMessage(msg) {
-    return sleep(300).then(function() {
+    return sleep(sleepTime).then(function() {
       return rootDb['logs.AppLog'].find().equal('message', msg).resultList();
     });
   }
