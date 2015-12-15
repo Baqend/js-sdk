@@ -8,9 +8,9 @@ if (typeof DB == 'undefined') {
 }
 
 describe('Test logging', function() {
-  this.timeout(2000);
+  this.timeout(4000);
 
-  var sleepTime = 600;
+  var sleepTime = 1000;
 
   var db, emf, rootDb;
 
