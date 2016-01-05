@@ -1,4 +1,5 @@
 window.addEventListener('message', send, false);
+var basePath = location.pathname.substring(0, location.pathname.lastIndexOf('/'));
 function send(event) {
   var msg = JSON.parse(event.data);
 
@@ -34,7 +35,7 @@ function send(event) {
       }
     };
 
-    xhr.open(msg.method, msg.path, true);
+    xhr.open(msg.method, basePath + msg.path, true);
     for (var name in msg.headers)
       xhr.setRequestHeader(name, msg.headers[name]);
 
