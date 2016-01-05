@@ -134,7 +134,7 @@ module.exports = function (grunt) {
         reporters: ['junit'],
         singleRun: true,
         junitReporter: {
-          outputFile: 'build/test-results/karma.xml'
+          outputDir: 'build/test-results/'
         }
       }
     },
