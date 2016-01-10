@@ -107,6 +107,7 @@ describe('Test entity type', function () {
     type.addAttribute(new DB.metamodel.MapAttribute("refSimpleMap", EntityType, metamodel.baseType('String')));
     type.addAttribute(new DB.metamodel.MapAttribute("refMap", EntityType, EntityType));
     type.addAttribute(new DB.metamodel.MapAttribute("simpleEmbeddedMap", metamodel.baseType('String'), EmbeddedType));
+    type.addAttribute(new DB.metamodel.MapAttribute("dateTimeEmbeddedMap", metamodel.baseType('DateTime'), EmbeddedType));
   }
 
   metamodel.addType(EntityType);
@@ -250,14 +251,14 @@ describe('Test entity type', function () {
   describe("simpleMap value", function() {
     var map = new DB.Map([
       ["Test", true],
-      ["String", false],
-      ["123", null]
+      ["String", false]
     ]);
 
     test("simplebooleanMap", new DB.Map(), new DB.Map(map));
 
     it("should add key", function() {
       obj.simplebooleanMap = new DB.Map(map);
+      obj.simplebooleanMap.set("123", null);
 
       var json = state.getJson();
       json.simplebooleanMap['add'] = true;
@@ -309,44 +310,127 @@ describe('Test entity type', function () {
   }
 
   describe("simpleRefMap value", function() {
-    var map = new DB.Map([
+    var map1 = new DB.Map([
       ["Test", testObject()],
       ["String", testObject()],
-      ["123", testObject()],
-      ["null", null]
+      ["123", testObject()]
     ]);
 
-    test("simpleRefMap", new DB.Map(), map);
+    //null values should be removed
+    test("simpleRefMap", new DB.Map(), map1);
+
+    it("should remove null values", function() {
+      var map2 = new DB.Map(map1);
+      map2.set("null", null);
+
+      obj["simpleRefMap"] = map2;
+      return obj.save({refresh:true}).then(function() {
+        expect(obj["simpleRefMap"].size).eqls(3);
+        expect(obj["simpleRefMap"].has("null")).be.false;
+      });
+    });
   });
 
   describe("refSimpleMap value", function() {
-    var map = new DB.Map([
-      [testObject(), true],
-      [testObject(), false],
-      [testObject(), null]
+    var map1 = new DB.Map([
+      [testObject(), "value1"],
+      [testObject(), "value2"]
     ]);
 
-    test("refSimpleMap", new DB.Map(), map);
+    test("refSimpleMap", new DB.Map(), map1);
+
+    it("should remove null values", function() {
+      var nullKey = testObject();
+      var map2 = new DB.Map(map1);
+      map2.set(nullKey, null);
+
+      obj["refSimpleMap"] = map2;
+      return obj.save({refresh:true}).then(function() {
+        expect(obj["refSimpleMap"].size).eqls(2);
+        expect(obj["refSimpleMap"].has(nullKey)).be.false;
+      });
+    });
   });
 
   describe("refMap value", function() {
-    var map = new DB.Map([
+    var map1 = new DB.Map([
       [testObject(), testObject()],
-      [testObject(), testObject()],
-      [testObject(), null]
+      [testObject(), testObject()]
     ]);
 
-    test("refMap", new DB.Map(), map);
+    test("refMap", new DB.Map(), map1);
+
+    it("should remove null values", function() {
+      var nullKey = testObject();
+      var map2 = new DB.Map(map1);
+      map2.set(nullKey, null);
+
+      obj["refMap"] = map2;
+      return obj.save({refresh:true}).then(function() {
+        expect(obj["refMap"].size).eqls(2);
+        expect(obj["refMap"].has(nullKey)).be.false;
+      });
+    });
   });
 
   describe("simpleEmbeddedMap value", function() {
-    var map = new DB.Map([
+    var map1 = new DB.Map([
       ["Test", embeddableObject()],
-      ["String", embeddableObject()],
-      ["123", null]
+      ["String", embeddableObject()]
     ]);
 
-    test("simpleEmbeddedMap", new DB.Map(), map);
+    test("simpleEmbeddedMap", new DB.Map(), map1);
+
+    it("should keep embedded identity", function() {
+      obj["simpleEmbeddedMap"] = new DB.Map(map1);
+      return obj.save({refresh:true}).then(function() {
+        var mapValue = obj["simpleEmbeddedMap"];
+        expect(mapValue.get("Test")).equal(map1.get("Test"));
+        expect(mapValue.get("String")).equal(map1.get("String"));
+      });
+    });
+
+    it("should remove null values", function() {
+      var nullKey = "123";
+      var map2 = new DB.Map(map1);
+      map2.set(nullKey, null);
+
+      obj["simpleEmbeddedMap"] = map2;
+      return obj.save({refresh:true}).then(function() {
+        expect(obj["simpleEmbeddedMap"].size).eqls(2);
+        expect(obj["simpleEmbeddedMap"].has(nullKey)).be.false;
+      });
+    });
+  });
+
+  describe("dateTimeEmbeddedMap value", function() {
+    var map1 = new DB.Map([
+      [new Date("1970-01-01T00:00Z"), embeddableObject()],
+      [new Date(), embeddableObject()]
+    ]);
+
+    test("dateTimeEmbeddedMap", new DB.Map(), map1);
+
+    it("should keep embedded identity", function() {
+      obj["dateTimeEmbeddedMap"] = new DB.Map(map1);
+      return obj.save({refresh:true}).then(function() {
+        var mapValue = obj["dateTimeEmbeddedMap"];
+        expect(mapValue.get("Test")).equal(map1.get("Test"));
+        expect(mapValue.get("String")).equal(map1.get("String"));
+      });
+    });
+
+    it("should remove null values", function() {
+      var nullKey = new Date("2015-01-01T00:00Z");
+      var map2 = new DB.Map(map1);
+      map2.set(nullKey, null);
+
+      obj["dateTimeEmbeddedMap"] = map2;
+      return obj.save({refresh:true}).then(function() {
+        expect(obj["dateTimeEmbeddedMap"].size).eqls(2);
+        expect(obj["dateTimeEmbeddedMap"].has(nullKey)).be.false;
+      });
+    });
   });
 
   /**
@@ -354,7 +438,7 @@ describe('Test entity type', function () {
    * @param {Object[]|Object...} values values to test for
    */
   function test(name) {
-    it("should save undefined properly", function() {
+    it("should save undefined as null", function() {
       var obj = new EntityClass();
       obj[name] = undefined;
 
@@ -374,14 +458,37 @@ describe('Test entity type', function () {
 
     var args = Array.prototype.slice.call(arguments, 1);
     args.forEach(function(arg) {
-      var value = Array.isInstance(arg)? arg[0]: arg;
-      var expectedValue = Array.isInstance(arg)? arg[1]: arg;
+      var expectedValue, value;
+      if (Array.isInstance(arg)) {
+        value = arg[0];
+        expectedValue = arg[1];
+      } else {
+        value = arg;
+
+        if (value instanceof DB.List) {
+          expectedValue = new DB.List(value);
+        } else if (value instanceof DB.Set) {
+          expectedValue = new DB.Set(value);
+        } else if (value instanceof DB.Map) {
+          expectedValue = new DB.Map(value);
+        } else {
+          expectedValue = value;
+        }
+      }
 
       it(value + " should be saved and reloaded", function() {
         obj[name] = value;
 
         return obj.save({refresh:true}).then(function() {
+          if (expectedValue instanceof DB.Map) {
+            var map = obj[name];
+            expect(map.size).eql(expectedValue.size);
+            for (var iter = expectedValue.entries(), item; !(item = iter.next()).done; ) {
+              expect(map.get(item.value[0])).eqls(item.value[1]);
+            }
+          } else {
             expect(obj[name]).eql(expectedValue);
+          }
         });
       });
     });
