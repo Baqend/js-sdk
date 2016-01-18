@@ -10,6 +10,7 @@ if (typeof DB == 'undefined') {
 
 describe('Test user and roles', function() {
   var emf, db;
+  var RENEW_TIMEOUT = 2000;
 
   before(function() {
     emf = new DB.EntityManagerFactory(env.TEST_SERVER);
@@ -184,7 +185,7 @@ describe('Test user and roles', function() {
       var oldToken;
       return db.User.register(login, 'secret').then(function() {
         return new Promise(function(resolve) {
-          setTimeout(resolve, 1500);
+          setTimeout(resolve, RENEW_TIMEOUT);
         });
       }).then(function() {
         expect(db.token).be.ok;
@@ -201,7 +202,7 @@ describe('Test user and roles', function() {
       return db.User.register(oldLogin, "secret").then(function() {
         oldToken = db.token;
         return new Promise(function(resolve) {
-          setTimeout(resolve, 1100);
+          setTimeout(resolve, RENEW_TIMEOUT);
         });
       }).then(function() {
         return db.me.newPassword("secret", "newSecret");
@@ -223,7 +224,7 @@ describe('Test user and roles', function() {
       return db.User.register(oldLogin, "secret").then(function() {
         oldToken = db.token;
         return new Promise(function(resolve) {
-          setTimeout(resolve, 1100);
+          setTimeout(resolve, RENEW_TIMEOUT);
         }).then(function() { return db.User.logout() });
       }).then(function() {
         return db.User.login("root", "root");
@@ -275,7 +276,7 @@ describe('Test user and roles', function() {
           return new Promise(function(resolve) {
             setTimeout(function() {
               resolve();
-            }, 1100);
+            }, RENEW_TIMEOUT);
           });
         }).then(function() {
           return db.User.login(login, 'secret');
@@ -414,7 +415,7 @@ describe('Test user and roles', function() {
       var oldToken;
       return db.User.register(login, 'secret').then(function() {
         return new Promise(function(resolve) {
-          setTimeout(resolve, 1100);
+          setTimeout(resolve, RENEW_TIMEOUT);
         });
       }).then(function() {
         oldToken = db.token;
