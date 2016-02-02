@@ -12,6 +12,8 @@ describe('Test user and roles', function() {
   var emf, db;
   var RENEW_TIMEOUT = 2000;
 
+  this.timeout(RENEW_TIMEOUT * 2);
+
   before(function() {
     emf = new DB.EntityManagerFactory(env.TEST_SERVER);
     return emf.metamodel.init().then(function(metamodel) {
