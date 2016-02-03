@@ -17,8 +17,8 @@ describe('Test Push Notifications', function() {
   before(function() {
     emf = new DB.EntityManagerFactory(env.TEST_SERVER);
 
-    return emf.metamodel.init().then(function() {
-      db = emf.createEntityManager();
+    db = emf.createEntityManager();
+    return db.ready().then(function() {
       return db.login("root", "root");
     }).then(function() {
       var msg = new DB.message.GCMAKey(TEST_GCM_APIKEY);
@@ -28,6 +28,9 @@ describe('Test Push Notifications', function() {
 
   beforeEach(function() {
     db = emf.createEntityManager();
+    return db.ready(function() {
+      return db.logout();
+    });
   });
 
   it('should register device', function() {
@@ -36,7 +39,7 @@ describe('Test Push Notifications', function() {
 
   it('should save registration in cookie', function() {
     return db.Device.register("Android", TEST_GCM_DEVICE).then(function() {
-      return emf.createEntityManager(true).ready();
+      return new DB.EntityManagerFactory(env.TEST_SERVER).createEntityManager(true).ready();
     }).then(function(newDB) {
       expect(newDB.isDeviceRegistered).be.true;
       expect(newDB.Device.isRegistered).be.true;
@@ -89,7 +92,9 @@ describe('Test Push Notifications', function() {
   if(typeof global != "undefined") {
     it('should remove cookie if device cannot be found', function() {
       return db.Device.register("Android", TEST_GCM_DEVICE).then(function() {
-        return emf.createEntityManager(true).ready();
+        return emf._loadConnect();
+      }).then(function() {
+        return emf.createEntityManager(true).ready()
       }).then(function(newDB) {
         expect(newDB.isDeviceRegistered).be.true;
         expect(newDB.Device.isRegistered).be.true;
@@ -100,6 +105,8 @@ describe('Test Push Notifications', function() {
         return Promise.all(result.map(function(device) {
           return device.delete({ force: true });
         }));
+      }).then(function() {
+        return emf._loadConnect();
       }).then(function() {
         return emf.createEntityManager(true).ready();
       }).then(function(newDB) {

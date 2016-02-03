@@ -11,6 +11,7 @@ if (typeof DB == 'undefined') {
 describe('Test user and roles', function() {
   var emf, db;
   var RENEW_TIMEOUT = 2000;
+  this.timeout(RENEW_TIMEOUT * 2);
 
   this.timeout(RENEW_TIMEOUT * 2);
 
@@ -347,7 +348,7 @@ describe('Test user and roles', function() {
     it('should autologin on global instances', function() {
       var login = makeLogin();
       return DB.User.register(login, 'secret').then(function() {
-        var db = DB.entityManagerFactory.createEntityManager(true);
+        var db = new DB.EntityManagerFactory(env.TEST_SERVER).createEntityManager(true);
         return db.ready().then(function() {
           expect(db.me).be.ok;
           expect(db.token).be.ok;
@@ -356,7 +357,7 @@ describe('Test user and roles', function() {
     });
 
     it('should not autologin on global instances', function() {
-      var db = DB.entityManagerFactory.createEntityManager(true);
+      var db = new DB.EntityManagerFactory(env.TEST_SERVER).createEntityManager(true);
       return db.ready().then(function() {
         expect(db.me).be.not.ok;
         expect(db.token).be.not.ok;

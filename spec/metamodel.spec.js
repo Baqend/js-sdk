@@ -461,11 +461,11 @@ describe('Test Metamodel', function() {
     expect(emf.createEntityManager().isReady).be.false;
   });
 
-  it("should not block the entityManager when is ready", function() {
-    var emf = new DB.EntityManagerFactory(env.TEST_SERVER);
-    emf.metamodel.init({});
-    expect(emf.createEntityManager().isReady).be.true;
-  });
+  //it("should not block the entityManager when is ready", function() {
+  //  var emf = new DB.EntityManagerFactory(env.TEST_SERVER);
+  //  emf.metamodel.init({});
+  //  expect(emf.createEntityManager().isReady).be.true;
+  //});
 
   it("should not be allowed to save without initialization", function() {
     var emf = new DB.EntityManagerFactory(env.TEST_SERVER);
@@ -696,6 +696,10 @@ describe('Test Metamodel', function() {
       });
     }
 
+    function createMetamodel() {
+
+    }
+
     before(function() {
       var staticEmf = new DB.EntityManagerFactory(env.TEST_SERVER);
 
@@ -708,7 +712,7 @@ describe('Test Metamodel', function() {
         user2 = users[1];
         user3 = users[2];
 
-        var metamodel = staticEmf.createMetamodel();
+        var metamodel = staticEmf.createConnectedMetamodel();
         metamodel.init({});
 
         var type, embeddedType;
@@ -741,7 +745,7 @@ describe('Test Metamodel', function() {
     });
 
     it('should convert acls', function() {
-      var metamodel = emf.createMetamodel();
+      var metamodel = emf.createConnectedMetamodel();
       return metamodel.load().then(function() {
         var AclPerson = metamodel.entity(SchemaAclPersonName);
 
@@ -770,7 +774,7 @@ describe('Test Metamodel', function() {
       });
 
       beforeEach(function() {
-        metamodel = emf.createMetamodel();
+        metamodel = emf.createConnectedMetamodel();
       });
 
       it('should allow schema load', function() {
@@ -830,7 +834,7 @@ describe('Test Metamodel', function() {
       });
 
       beforeEach(function() {
-        metamodel = emf.createMetamodel();
+        metamodel = emf.createConnectedMetamodel();
       });
 
       it('should allow schema load', function() {
@@ -892,7 +896,7 @@ describe('Test Metamodel', function() {
       });
 
       beforeEach(function() {
-        metamodel = emf.createMetamodel();
+        metamodel = emf.createConnectedMetamodel();
       });
 
       it('should allow schema load', function() {
