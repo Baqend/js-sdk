@@ -17,17 +17,18 @@ describe('Test user and roles', function() {
 
   before(function() {
     emf = new DB.EntityManagerFactory(env.TEST_SERVER);
-    return emf.metamodel.init().then(function(metamodel) {
-      var userEntity = metamodel.entity("User");
+    return emf.createEntityManager().ready().then(function(metamodel) {
+      var userEntity = emf.metamodel.entity("User");
       if(!userEntity.getAttribute("email")) {
         userEntity.addAttribute(new DB.metamodel.SingularAttribute("email", metamodel.baseType(String)));
-        return saveMetamodel(metamodel);
+        return saveMetamodel(emf.metamodel);
       }
     });
   });
 
   beforeEach(function() {
     db = emf.createEntityManager();
+    return db.ready();
   });
 
   describe('user factory', function() {

@@ -461,11 +461,10 @@ describe('Test Metamodel', function() {
     expect(emf.createEntityManager().isReady).be.false;
   });
 
-  //it("should not block the entityManager when is ready", function() {
-  //  var emf = new DB.EntityManagerFactory(env.TEST_SERVER);
-  //  emf.metamodel.init({});
-  //  expect(emf.createEntityManager().isReady).be.true;
-  //});
+  it("should not block the entityManager when is ready", function() {
+    var emf = new DB.EntityManagerFactory({ host: env.TEST_SERVER, schema: {} });
+    expect(emf.createEntityManager().isReady).be.true;
+  });
 
   it("should not be allowed to save without initialization", function() {
     var emf = new DB.EntityManagerFactory(env.TEST_SERVER);
