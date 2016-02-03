@@ -13,10 +13,9 @@ describe("Test Query", function() {
   before(function() {
     var personType, addressType;
 
-    emf = new DB.EntityManagerFactory(env.TEST_SERVER);
+    emf = new DB.EntityManagerFactory({ host: env.TEST_SERVER, schema: {} });
     metamodel = emf.metamodel;
 
-    metamodel.init({});
     metamodel.addType(personType = new DB.metamodel.EntityType("QueryPerson", metamodel.entity(Object)));
     metamodel.addType(addressType = new DB.metamodel.EmbeddableType("QueryAddress"));
 

@@ -736,8 +736,8 @@ describe('Test Metamodel', function() {
         return saveMetamodel(metamodel);
       }).then(function() {
         emf = new DB.EntityManagerFactory(env.TEST_SERVER);
-        return emf.metamodel.init().then(function() {
-          db = emf.createEntityManager(db);
+        db = emf.createEntityManager(true);
+        return db.ready().then(function() {
           obj = new db[SchemaAclPersonName]();
           return obj.insert();
         });

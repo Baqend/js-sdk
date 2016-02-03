@@ -12,10 +12,9 @@ describe('Test crud', function() {
   var db, personType, addressType, childType, emf, metamodel, streetType;
 
   before(function() {
-    emf = new DB.EntityManagerFactory(env.TEST_SERVER);
+    emf = new DB.EntityManagerFactory({ host: env.TEST_SERVER, schema: {} });
     metamodel = emf.metamodel;
 
-    metamodel.init({});
     metamodel.addType(personType = new DB.metamodel.EntityType("Person", metamodel.entity(Object)));
     metamodel.addType(childType = new DB.metamodel.EntityType("Child", personType));
     metamodel.addType(addressType = new DB.metamodel.EmbeddableType("Address"));

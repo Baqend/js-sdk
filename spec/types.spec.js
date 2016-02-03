@@ -52,9 +52,8 @@ describe('Test GeoPoint', function() {
 describe('Test entity type', function () {
   var em, emf, EntityClass, EmbeddedClass, obj, state;
 
-  emf = new DB.EntityManagerFactory(env.TEST_SERVER);
+  emf = new DB.EntityManagerFactory({ host: env.TEST_SERVER, schema: {} });
   var metamodel = emf.metamodel;
-  metamodel.init({});
 
   var EntityType = new DB.metamodel.EntityType('jstest.Type', metamodel.entity(Object));
   var EmbeddedType = new DB.metamodel.EmbeddableType('jstest.Embedded');
