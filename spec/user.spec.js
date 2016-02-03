@@ -17,10 +17,10 @@ describe('Test user and roles', function() {
 
   before(function() {
     emf = new DB.EntityManagerFactory(env.TEST_SERVER);
-    return emf.createEntityManager().ready().then(function(metamodel) {
+    return emf.createEntityManager().ready().then(function() {
       var userEntity = emf.metamodel.entity("User");
       if(!userEntity.getAttribute("email")) {
-        userEntity.addAttribute(new DB.metamodel.SingularAttribute("email", metamodel.baseType(String)));
+        userEntity.addAttribute(new DB.metamodel.SingularAttribute("email", emf.metamodel.baseType(String)));
         return saveMetamodel(emf.metamodel);
       }
     });
