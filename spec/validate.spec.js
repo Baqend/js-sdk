@@ -12,10 +12,9 @@ describe('Test validate', function() {
   var db, type, person;
 
   before(function() {
-    var emf = new DB.EntityManagerFactory(env.TEST_SERVER);
+    var emf = new DB.EntityManagerFactory({ host: env.TEST_SERVER, schema: {} });
     var metamodel = emf.metamodel;
 
-    metamodel.init({});
     var personType = new DB.metamodel.EntityType("ValidatePerson", metamodel.entity(Object));
     var addressType = new DB.metamodel.EmbeddableType("ValidateAddress");
     metamodel.addType(addressType);

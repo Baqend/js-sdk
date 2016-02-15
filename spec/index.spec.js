@@ -19,17 +19,16 @@ describe("Test Index", function() {
   var db, personType, meta;
 
   before(function() {
-    var emf = new DB.EntityManagerFactory(env.TEST_SERVER);
+    var emf = new DB.EntityManagerFactory({ host: env.TEST_SERVER, schema: {} });
+    meta = emf.metamodel;
 
-    meta = emf.createMetamodel();
-    meta.init({});
     meta.addType(personType = new DB.metamodel.EntityType(randomize("IndexPerson"), meta.entity(Object)));
     personType.addAttribute(new DB.metamodel.SingularAttribute("name", meta.baseType(String)));
     
     return saveMetamodel(meta).then(function() {
-      return emf.metamodel.init();
-    }).then(function(em) {
-      db = emf.createEntityManager();
+      db = new DB.EntityManagerFactory(env.TEST_SERVER).createEntityManager();
+      return db.ready();
+    }).then(function(db) {
       return db.User.login('root', 'root');
     });
   });

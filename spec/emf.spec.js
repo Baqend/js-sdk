@@ -185,4 +185,11 @@ describe("Test EntityManagerFactory", function() {
     return Promise.all([ready1, ready2]);
   });
 
+  it('should set gzip flag', function() {
+    var emf = new DB.EntityManagerFactory(env.TEST_SERVER);
+    return emf.createEntityManager(true).ready().then(function(db) {
+      expect(emf._connector.gzip).eql(typeof global == "undefined");
+    });
+  })
+
 });

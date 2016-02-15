@@ -17,8 +17,8 @@ describe('Test Push Notifications', function() {
   before(function() {
     emf = new DB.EntityManagerFactory(env.TEST_SERVER);
 
-    return emf.metamodel.init().then(function() {
-      db = emf.createEntityManager();
+    db = emf.createEntityManager();
+    return db.ready().then(function() {
       return db.login("root", "root");
     }).then(function() {
       var msg = new DB.message.GCMAKey(TEST_GCM_APIKEY);
@@ -28,6 +28,9 @@ describe('Test Push Notifications', function() {
 
   beforeEach(function() {
     db = emf.createEntityManager();
+    return db.ready(function() {
+      return db.logout();
+    });
   });
 
   it('should register device', function() {
@@ -36,7 +39,7 @@ describe('Test Push Notifications', function() {
 
   it('should save registration in cookie', function() {
     return db.Device.register("Android", TEST_GCM_DEVICE).then(function() {
-      return emf.createEntityManager(true).ready();
+      return new DB.EntityManagerFactory(env.TEST_SERVER).createEntityManager(true).ready();
     }).then(function(newDB) {
       expect(newDB.isDeviceRegistered).be.true;
       expect(newDB.Device.isRegistered).be.true;
@@ -79,5 +82,37 @@ describe('Test Push Notifications', function() {
       expect(msg2.toJSON()).eql(msg1.toJSON());
     });
   });
+
+
+  it('should not be allowed to insert device', function() {
+    var device = new db.Device();
+    return expect(device.save()).to.rejected;
+  });
+
+  if(typeof global != "undefined") {
+    it('should remove cookie if device cannot be found', function() {
+      return db.Device.register("Android", TEST_GCM_DEVICE).then(function() {
+        return emf._loadConnect();
+      }).then(function() {
+        return emf.createEntityManager(true).ready()
+      }).then(function(newDB) {
+        expect(newDB.isDeviceRegistered).be.true;
+        expect(newDB.Device.isRegistered).be.true;
+        expect(newDB._connector.cookie).not.null;
+        return db.Device.find().resultList();
+      }).then(function(result) {
+        expect(result).not.empty;
+        return Promise.all(result.map(function(device) {
+          return device.delete({ force: true });
+        }));
+      }).then(function() {
+        return emf._loadConnect();
+      }).then(function() {
+        return emf.createEntityManager(true).ready();
+      }).then(function(newDB) {
+        expect(newDB._connector.cookie).be.null;
+      });
+    });
+  }
 
 });

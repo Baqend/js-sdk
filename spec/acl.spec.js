@@ -59,8 +59,8 @@ describe('Test Acl', function() {
           .allowReadAccess(db.User.me)
           .denyWriteAccess(db.User.me);
 
-      expect(acl.read.allRules()).eql([db.User.me._metadata.ref]);
-      expect(acl.write.allRules()).eql([db.User.me._metadata.ref]);
+      expect(acl.read.allRules()).eql([db.User.me.id]);
+      expect(acl.write.allRules()).eql([db.User.me.id]);
     });
 
     it('should return the actual rule', function() {
@@ -194,7 +194,7 @@ describe('Test Acl', function() {
       var person = new db.AclPerson();
       var acl = person.acl;
 
-      return person.save({reload: true}).then(function() {
+      return person.save({refresh: true}).then(function() {
         expect(person.acl.read.allRules().length).equals(0);
         expect(person.acl.write.allRules().length).equals(0);
       });
@@ -205,7 +205,7 @@ describe('Test Acl', function() {
       var acl = person.acl;
       acl.allowReadAccess(db.User.me);
 
-      return person.save({reload: true}).then(function() {
+      return person.save({refresh: true}).then(function() {
         expect(person.acl.isReadAllowed(db.User.me)).be.true;
         expect(person.acl.isWriteAllowed(db.User.me)).be.false;
       });
@@ -216,7 +216,7 @@ describe('Test Acl', function() {
       var acl = person.acl;
       acl.allowWriteAccess(db.User.me);
 
-      return person.save({reload: true}).then(function() {
+      return person.save({refresh: true}).then(function() {
         expect(person.acl.isReadAllowed(db.User.me)).be.false;
         expect(person.acl.isWriteAllowed(db.User.me)).be.true;
       });
@@ -228,7 +228,7 @@ describe('Test Acl', function() {
       acl.allowReadAccess(db.User.me);
       acl.allowWriteAccess(db.User.me);
 
-      return person.save({reload: true}).then(function() {
+      return person.save({refresh: true}).then(function() {
         expect(person.acl.isReadAllowed(db.User.me)).be.true;
         expect(person.acl.isWriteAllowed(db.User.me)).be.true;
       });
@@ -244,14 +244,14 @@ describe('Test Acl', function() {
 
         role23 = new db.Role();
         role23.name = "Role2_3";
-        role23.addUser(db.getReference(db2.me._metadata.ref));
-        role23.addUser(db.getReference(db3.me._metadata.ref));
+        role23.addUser(db.getReference(db2.me.id));
+        role23.addUser(db.getReference(db3.me.id));
         var promise1 = role23.save();
 
         role13 = new db.Role();
         role13.name = "Role1_3";
         role13.addUser(db.User.me);
-        role13.addUser(db.getReference(db3.me._metadata.ref));
+        role13.addUser(db.getReference(db3.me.id));
         var promise2 = role13.save();
 
         return Promise.all([promise1, promise2]);

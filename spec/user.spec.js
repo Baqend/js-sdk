@@ -10,20 +10,25 @@ if (typeof DB == 'undefined') {
 
 describe('Test user and roles', function() {
   var emf, db;
+  var RENEW_TIMEOUT = 2000;
+  this.timeout(RENEW_TIMEOUT * 2);
+
+  this.timeout(RENEW_TIMEOUT * 2);
 
   before(function() {
     emf = new DB.EntityManagerFactory(env.TEST_SERVER);
-    return emf.metamodel.init().then(function(metamodel) {
-      var userEntity = metamodel.entity("User");
+    return emf.createEntityManager().ready().then(function() {
+      var userEntity = emf.metamodel.entity("User");
       if(!userEntity.getAttribute("email")) {
-        userEntity.addAttribute(new DB.metamodel.SingularAttribute("email", metamodel.baseType(String)));
-        return saveMetamodel(metamodel);
+        userEntity.addAttribute(new DB.metamodel.SingularAttribute("email", emf.metamodel.baseType(String)));
+        return saveMetamodel(emf.metamodel);
       }
     });
   });
 
   beforeEach(function() {
     db = emf.createEntityManager();
+    return db.ready();
   });
 
   describe('user factory', function() {
@@ -39,9 +44,9 @@ describe('Test user and roles', function() {
       var login = makeLogin();
       return db.User.register(login, 'secret').then(function(user) {
         expect(user).be.ok;
-        expect(user instanceof DB.binding.User).be.true;
-        expect(user._metadata.id).be.ok;
-        expect(user._metadata.version).be.ok;
+        expect(DB.binding.User.isInstance(user)).be.true;
+        expect(user.id).be.ok;
+        expect(user.version).be.ok;
         expect(user._metadata.isPersistent).be.true;
         expect(user._metadata.isDirty).be.false;
         expect(user.username).equals(login);
@@ -116,9 +121,9 @@ describe('Test user and roles', function() {
         user = u;
 
         expect(user).be.ok;
-        expect(user instanceof DB.binding.User).be.true;
-        expect(user._metadata.id).be.ok;
-        expect(user._metadata.version).be.ok;
+        expect(DB.binding.User.isInstance(user)).be.true;
+        expect(user.id).be.ok;
+        expect(user.version).be.ok;
         expect(user._metadata.isPersistent).be.true;
         expect(user._metadata.isDirty).be.false;
         expect(user.username).equals(login);
@@ -184,7 +189,7 @@ describe('Test user and roles', function() {
       var oldToken;
       return db.User.register(login, 'secret').then(function() {
         return new Promise(function(resolve) {
-          setTimeout(resolve, 1500);
+          setTimeout(resolve, RENEW_TIMEOUT);
         });
       }).then(function() {
         expect(db.token).be.ok;
@@ -201,7 +206,7 @@ describe('Test user and roles', function() {
       return db.User.register(oldLogin, "secret").then(function() {
         oldToken = db.token;
         return new Promise(function(resolve) {
-          setTimeout(resolve, 1100);
+          setTimeout(resolve, RENEW_TIMEOUT);
         });
       }).then(function() {
         return db.me.newPassword("secret", "newSecret");
@@ -223,7 +228,7 @@ describe('Test user and roles', function() {
       return db.User.register(oldLogin, "secret").then(function() {
         oldToken = db.token;
         return new Promise(function(resolve) {
-          setTimeout(resolve, 1100);
+          setTimeout(resolve, RENEW_TIMEOUT);
         }).then(function() { return db.User.logout() });
       }).then(function() {
         return db.User.login("root", "root");
@@ -240,37 +245,13 @@ describe('Test user and roles', function() {
       });
     });
 
-    it('should change password of inserted user', function() {
+    it('should not be allowed to insert user', function() {
       var name = makeLogin();
       var newUser = db.User.fromJSON({
         username: name
       });
-      var oldToken;
-      return db.User.login('root', 'root', function() {
-        oldToken = db.token;
-        return newUser.save();
-      }).then(function() {
-        return db.User.newPassword(name, "", "newPassword").then(function() {return db.User.logout();});
-      }).then(function() {
-        return expect(db.User.login(name, "newPassword")).be.fulfilled;
-      }).then(function() {
-        expect(db.me.username).eqls(name);
-        expect(db.token).not.eqls(oldToken);
-      });
-    });
 
-    it('should not be allowed to login on inserted user', function() {
-      var name = makeLogin();
-      var newUser = db.User.fromJSON({
-        username: name
-      });
-      var oldToken;
-      return db.User.login('root', 'root', function() {
-        oldToken = db.token;
-        return newUser.save().then(function() { return db.User.logout(); });
-      }).then(function() {
-        return expect(db.User.login(name, "")).be.rejected;
-      });
+      return expect(newUser.save()).be.rejected;
     });
 
     it('should not be allowed to register with an empty password', function() {
@@ -299,7 +280,7 @@ describe('Test user and roles', function() {
           return new Promise(function(resolve) {
             setTimeout(function() {
               resolve();
-            }, 1100);
+            }, RENEW_TIMEOUT);
           });
         }).then(function() {
           return db.User.login(login, 'secret');
@@ -368,7 +349,7 @@ describe('Test user and roles', function() {
     it('should autologin on global instances', function() {
       var login = makeLogin();
       return DB.User.register(login, 'secret').then(function() {
-        var db = DB.entityManagerFactory.createEntityManager(true);
+        var db = new DB.EntityManagerFactory(env.TEST_SERVER).createEntityManager(true);
         return db.ready().then(function() {
           expect(db.me).be.ok;
           expect(db.token).be.ok;
@@ -377,7 +358,7 @@ describe('Test user and roles', function() {
     });
 
     it('should not autologin on global instances', function() {
-      var db = DB.entityManagerFactory.createEntityManager(true);
+      var db = new DB.EntityManagerFactory(env.TEST_SERVER).createEntityManager(true);
       return db.ready().then(function() {
         expect(db.me).be.not.ok;
         expect(db.token).be.not.ok;
@@ -398,7 +379,15 @@ describe('Test user and roles', function() {
       user3 = new db.User();
       user3.username = makeLogin();
 
-      return Promise.all([user1.insert(), user2.insert(), user3.insert()]);
+      return db.User.register(user1, user1.username, false).then(function(usr) {
+        user1 = usr;
+        return db.User.register(user2, user2.username, false);
+      }).then(function(usr) {
+        user2 = usr;
+        return db.User.register(user3, user3.username, false);
+      }).then(function(usr) {
+        user3 = usr;
+      });
     });
 
     it('should save and load', function() {
@@ -430,7 +419,7 @@ describe('Test user and roles', function() {
       var oldToken;
       return db.User.register(login, 'secret').then(function() {
         return new Promise(function(resolve) {
-          setTimeout(resolve, 1100);
+          setTimeout(resolve, RENEW_TIMEOUT);
         });
       }).then(function() {
         oldToken = db.token;

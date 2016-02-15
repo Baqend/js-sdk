@@ -1,4 +1,5 @@
 window.addEventListener('message', send, false);
+var basePath = location.pathname.substring(0, location.pathname.lastIndexOf('/'));
 function send(event) {
   var msg = JSON.parse(event.data);
 
@@ -34,7 +35,7 @@ function send(event) {
       }
     };
 
-    xhr.open(msg.method, msg.path, true);
+    xhr.open(msg.method, basePath + msg.path, true);
     for (var name in msg.headers)
       xhr.setRequestHeader(name, msg.headers[name]);
 
@@ -70,6 +71,6 @@ function getHeaders(node) {
   var headers = {'Content-Type': 'application/json'};
   var token = node.getAttribute('data-token');
   if (token)
-    headers['orestes-authorization-token'] = token;
+    headers['baqend-authorization-token'] = token;
   return headers;
 }

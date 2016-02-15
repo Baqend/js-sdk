@@ -462,8 +462,7 @@ describe('Test Metamodel', function() {
   });
 
   it("should not block the entityManager when is ready", function() {
-    var emf = new DB.EntityManagerFactory(env.TEST_SERVER);
-    emf.metamodel.init({});
+    var emf = new DB.EntityManagerFactory({ host: env.TEST_SERVER, schema: {} });
     expect(emf.createEntityManager().isReady).be.true;
   });
 
@@ -696,6 +695,10 @@ describe('Test Metamodel', function() {
       });
     }
 
+    function createMetamodel() {
+
+    }
+
     before(function() {
       var staticEmf = new DB.EntityManagerFactory(env.TEST_SERVER);
 
@@ -708,7 +711,7 @@ describe('Test Metamodel', function() {
         user2 = users[1];
         user3 = users[2];
 
-        var metamodel = staticEmf.createMetamodel();
+        var metamodel = staticEmf.createConnectedMetamodel();
         metamodel.init({});
 
         var type, embeddedType;
@@ -726,15 +729,14 @@ describe('Test Metamodel', function() {
         type.schemaAddPermission.allowAccess(user1);
         type.schemaReplacePermission.allowAccess(user1);
 
-        embeddedType.loadPermission.allowAccess(user1);
         embeddedType.schemaAddPermission.allowAccess(user1);
         embeddedType.schemaReplacePermission.allowAccess(user1);
 
         return saveMetamodel(metamodel);
       }).then(function() {
         emf = new DB.EntityManagerFactory(env.TEST_SERVER);
-        return emf.metamodel.init().then(function() {
-          db = emf.createEntityManager(db);
+        db = emf.createEntityManager(true);
+        return db.ready().then(function() {
           obj = new db[SchemaAclPersonName]();
           return obj.insert();
         });
@@ -742,7 +744,7 @@ describe('Test Metamodel', function() {
     });
 
     it('should convert acls', function() {
-      var metamodel = emf.createMetamodel();
+      var metamodel = emf.createConnectedMetamodel();
       return metamodel.load().then(function() {
         var AclPerson = metamodel.entity(SchemaAclPersonName);
 
@@ -755,11 +757,8 @@ describe('Test Metamodel', function() {
         expect(AclPerson.schemaReplacePermission.isAllowed(user1)).be.true;
 
         var EmbeddableType = metamodel.embeddable(SchemaAclEmbeddedPersonName);
-        for (var name in EmbeddableType) {
-          if (name.indexOf('Permission') != -1) {
-            expect(EmbeddableType[name].isAllowed(user1)).be.true;
-          }
-        }
+        expect(EmbeddableType.schemaAddPermission.isAllowed(user1)).be.true;
+        expect(EmbeddableType.schemaReplacePermission.isAllowed(user1)).be.true;
       });
     });
 
@@ -774,7 +773,7 @@ describe('Test Metamodel', function() {
       });
 
       beforeEach(function() {
-        metamodel = emf.createMetamodel();
+        metamodel = emf.createConnectedMetamodel();
       });
 
       it('should allow schema load', function() {
@@ -834,7 +833,7 @@ describe('Test Metamodel', function() {
       });
 
       beforeEach(function() {
-        metamodel = emf.createMetamodel();
+        metamodel = emf.createConnectedMetamodel();
       });
 
       it('should allow schema load', function() {
@@ -896,7 +895,7 @@ describe('Test Metamodel', function() {
       });
 
       beforeEach(function() {
-        metamodel = emf.createMetamodel();
+        metamodel = emf.createConnectedMetamodel();
       });
 
       it('should allow schema load', function() {

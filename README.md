@@ -21,7 +21,7 @@ Initialize
 ----------
 
 Before you can actually use the Baqend SDK, you must link the Baqend SDK to your Baqend Account.
-Just call `DB.connect(<your Baqend URI>)` after including the Baqend SDK.
+Just call `DB.connect(<your Baqend APP>)` after including the Baqend SDK.
 
 The Baqend SDK connects to your Baqend and initialize the SDK. If the connection was successfully established
 the ready callback will be called and the DB can be used to load, query and save objects.
@@ -30,8 +30,14 @@ the ready callback will be called and the DB can be used to load, query and save
 <script type="text/javascript" src="baqend.js"></script>
 <script type="text/javascript">
 
-// connects to your Baqend Account
-DB.connect('https://example.baqend.com');
+// connects to your Baqend Accounts example app
+DB.connect('example');
+
+// Or pass true as a second parameter for an encrypted connection
+DB.connect('example', true);
+
+// For custom deployments i.e. the community edition use:
+DB.connect('https://baqend.example.com/v1');
 
 // waits while the SDK connects to your Baqend
 DB.ready(function() {
@@ -51,8 +57,8 @@ The Baqend SDK can also be used in Node.js. Just do an `npm install --save baqen
 ```javascript
 var DB = require('baqend');
 
-// connects to your Baqend Account
-DB.connect('https://example.baqend.com');
+// connects to your Baqend Accounts example app
+DB.connect('example');
 
 // waits while the SDK connects to your Baqend
 DB.ready(function() {
@@ -71,8 +77,8 @@ and build the Baqend SDK + your code with browserify.
 ```javascript
 var DB = require('baqend');
 
-// connects to your Baqend Account
-DB.connect('https://example.baqend.com');
+// connects to your Baqend Accounts example app
+DB.connect('example');
 
 // waits while the SDK connects to your Baqend
 DB.ready(function() {
@@ -94,7 +100,7 @@ Add the Baqend SDK as a dependency of your script and use the required Baqend SD
 ```javascript
 require(["scripts/baqend.js"], function(DB) {
     // connects to your Baqend Account
-    DB.connect('https://example.baqend.com');
+    DB.connect('example');
 
     // waits while the SDK connects to your Baqend
     DB.ready(function() {

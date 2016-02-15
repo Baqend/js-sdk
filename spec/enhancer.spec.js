@@ -55,6 +55,7 @@ describe("Test enhancer", function() {
     expect(db.TestClass.addMethods).be.ok;
     expect(db.TestClass.addMethod).be.ok;
     expect(db.TestClass.partialUpdate).be.ok;
+    expect(db.TestClass.fromJSON).be.ok;
 
     var TestClass = db.TestClass;
     var testClass = new TestClass();
@@ -87,12 +88,14 @@ describe("Test enhancer", function() {
     expect(db.TestEmbeddedClass.addMethods).be.ok;
     expect(db.TestEmbeddedClass.addMethod).be.ok;
     expect(db.TestEmbeddedClass.partialUpdate).be.undefined;
+    expect(db.TestEmbeddedClass.fromJSON).be.ok;
 
     var TestEmbeddedClass = db.TestEmbeddedClass;
     var testClass = new TestEmbeddedClass();
     expect(testClass).be.ok;
 
     expect("value" in testClass).be.true;
+    expect(testClass.toJSON).be.ok;
     expect(testClass.save).be.undefined;
     expect(testClass.insert).be.undefined;
     expect(testClass.update).be.undefined;
@@ -154,6 +157,7 @@ describe("Test enhancer", function() {
 
   it('should enhance custom classes', function() {
     var myClass = function() {
+      DB.binding.Entity.call(this);
       this.test = 'hallo';
     };
 
@@ -190,6 +194,7 @@ describe("Test enhancer", function() {
 
   it('should call custom classes constructor', function() {
     db.TestClass = DB.binding.Entity.extend(function(a,b,c) {
+      DB.binding.Entity.call(this);
       this.a = a;
       this.b = b;
       this.c = c;
@@ -244,6 +249,7 @@ describe("Test enhancer", function() {
 
     var db = emf.createEntityManager();
     db.TestClass = DB.binding.Entity.extend(function(a,b,c) {
+      DB.binding.Entity.call(this);
       this.a = a;
       this.b = b;
       this.c = c;
@@ -316,9 +322,17 @@ describe("Test enhancer", function() {
     testClass.testValue = 5;
     var json = testClass.toJSON();
     expect(json).be.ok;
-    expect(json.testValue).eqls(testClass.testValue);
+    expect(json.testValue).eqls(5);
     expect(json._metadata).be.undefined;
-    expect(json._objectInfo).be.undefined;
+  });
+
+  it('should convert embedded to JSON', function() {
+    var testClass = new db.TestEmbeddedClass();
+    testClass.value = 5;
+    var json = testClass.toJSON();
+    expect(json).be.ok;
+    expect(json.value).eqls(5);
+    expect(json._metadata).be.undefined;
   });
 
   it('should convert to JSON including metadata', function() {
@@ -367,6 +381,11 @@ describe("Test enhancer", function() {
     expect(newTestClass).not.equal(testClass);
     expect(newTestClass.id).not.equal(testClass.id);
     expect(newTestClass.testValue).eql(testClass.testValue);
+  });
+
+  it('should convert embedded from JSON', function() {
+    var newTestClass = db.TestEmbeddedClass.fromJSON({value: 5});
+    expect(newTestClass.value).eql(5);
   });
 
 
