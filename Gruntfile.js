@@ -22,11 +22,12 @@ module.exports = function (grunt) {
   function injectBabelHelper(b, opts) {
     if (!opts.debug) {
       //list of helpers babel-core\lib\transformation\file\index.js
-      var helper = require("babelify/node_modules/babel-core").buildExternalHelpers([
+      var helper = require("babel-core").buildExternalHelpers([
         'inherits',
-        'create-class',
+        'createClass',
         'defaults',
-        'class-call-check'
+        'classCallCheck',
+        'possibleConstructorReturn'
       ], 'var');
 
       var first = true;
@@ -60,9 +61,8 @@ module.exports = function (grunt) {
         browserifyOptions: browserifyOptions,
         transform: [
           ['babelify', {
-            blacklist: ['regenerator', "strict"],
-            loose: 'all',
-            externalHelpers: true
+            presets: 'es2015-loose',
+            plugins: ['external-helpers']
           }]
         ],
         plugin: [injectBabelHelper],
@@ -80,8 +80,8 @@ module.exports = function (grunt) {
           browserifyOptions: Object.assign({debug: true}, browserifyOptions),
           transform: [
             ['babelify', {
-              blacklist: ['regenerator', "strict"],
-              loose: 'all'
+              presets: 'es2015-loose',
+              plugins: ['external-helpers']
             }]
           ],
           banner: ''
@@ -208,7 +208,6 @@ module.exports = function (grunt) {
     jsdoc: {
       dist: {
         src: ['lib/**/*.js'],
-        jsdoc: 'node_modules/.bin/jsdoc.cmd',
         options: {
           destination: 'doc',
           template : "tpl/theme",

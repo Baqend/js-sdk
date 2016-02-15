@@ -8,7 +8,8 @@
     "cleverLinks": true,
     "monospaceLinks": true,
     "default": {
-      "outputSourceFiles" : true
+      "outputSourceFiles" : true,
+      "useLongnameInNav": true
     },
     "applicationName": "Baqend JavaScript SDK Copyright © 2015 Baqend GmbH.",
     "disqus": "",
