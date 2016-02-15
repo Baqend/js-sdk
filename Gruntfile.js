@@ -10,6 +10,13 @@ module.exports = function (grunt) {
 
   var TEST = 'spec/{env.js,spec.helper.js,**/*.spec.js}';
 
+  var browserifyOptions = {
+    builtins: [],
+    detectGlobals: false,
+    //insertGlobalVars: ['global'],
+    standalone: "DB"
+  };
+
   grunt.initConfig({
     pkg: grunt.file.readJSON('package.json'),
     copyright: grunt.file.read('LICENSE.md').split(/[\r\n]/)[0],
@@ -21,14 +28,9 @@ module.exports = function (grunt) {
      */
     browserify: {
       options: {
-        browserifyOptions: {
-          builtins: [],
-          detectGlobals: false,
-          //insertGlobalVars: ['global'],
-          standalone: "DB",
-          exclude: ['websocket']
-        },
-        banner: longBanner
+        browserifyOptions: browserifyOptions,
+        banner: longBanner,
+        exclude: ['websocket']
       },
 
       debug: {
@@ -38,15 +40,7 @@ module.exports = function (grunt) {
         options: {
           watch: true,
           keepAlive: true,
-          browserifyOptions: {
-            builtins: [],
-            detectGlobals: false,
-            //insertGlobals: false,
-            //insertGlobalVars: ['global'],
-            standalone: "DB",
-            debug: true,
-            exclude: ['websocket']
-          },
+          browserifyOptions: Object.assign({debug: true}, browserifyOptions),
           banner: ''
         }
       },
