@@ -536,11 +536,11 @@ describe("Test Query", function() {
       db = emf.createEntityManager();
 
       p0 = new db.QueryPerson({
-        id: 'query_p0'
+        key: 'query_p0'
       });
 
       p1 = new db.QueryPerson({
-        id: 'query_p1',
+        key: 'query_p1',
         person: p0,
         name: 'QueryPerson 1',
         age: 45,
@@ -551,7 +551,7 @@ describe("Test Query", function() {
       });
 
       p2 = new db.QueryPerson({
-        id: 'query_p2',
+        key: 'query_p2',
         person: p1,
         name: 'QueryPerson 2',
         age: 33,
@@ -562,7 +562,7 @@ describe("Test Query", function() {
       });
 
       p3 = new db.QueryPerson({
-        id: 'query_p3',
+        key: 'query_p3',
         person: p1,
         name: 'QueryPerson 3',
         age: 23,

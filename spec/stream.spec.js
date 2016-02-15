@@ -39,11 +39,11 @@ describe("Streaming Queries", function() {
       db = emf.createEntityManager();
 
       p0 = new db[bucket]({
-        id: 'query_p0'
+        key: 'query_p0'
       });
 
       p1 = new db[bucket]({
-        id: 'query_p1',
+        key: 'query_p1',
         name: 'QueryPerson 1',
         age: 45,
         date: new Date('1978-02-03T00:00Z'),
@@ -53,7 +53,7 @@ describe("Streaming Queries", function() {
       });
 
       p2 = new db[bucket]({
-        id: 'query_p2',
+        key: 'query_p2',
         name: 'QueryPerson 2',
         age: 33,
         date: new Date('1966-05-01T00:00Z'),
@@ -63,7 +63,7 @@ describe("Streaming Queries", function() {
       });
 
       p3 = new db[bucket]({
-        id: 'query_p3',
+        key: 'query_p3',
         name: 'QueryPerson 3',
         age: 23,
         date: new Date('1989-05-01T00:00Z'),

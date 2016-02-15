@@ -1103,18 +1103,27 @@ describe('Test crud', function() {
   });
 
   describe('custom ids', function() {
-    var myId;
+    var myId, myKey;
 
     beforeEach(function() {
+      myKey = randomize('a/db/bucket/?param=3\\ed&g=1');
       var person = new db.Person();
-      person.id = randomize('a/db/bucket/?param=3\\ed&g=1');
+      person.key = myKey;
       myId = person.id;
     });
 
     afterEach(function() {
       return db.Person.load(myId).then(function(obj) {
-        return obj.delete();
+        if (obj)
+          return obj.delete();
       });
+    });
+
+    it('should reject invalid id', function() {
+      var person = new db.Person();
+      expect(function() {
+        person.id = myKey;
+      }).throws('The id format is invalid');
     });
 
     it('should create and load new object', function() {
@@ -1124,11 +1133,13 @@ describe('Test crud', function() {
 
       return person.save(function(result) {
         expect(person.id).equals(myId);
+        expect(person.key).equals(myKey);
         expect(person.name).equals("Custom Person");
         expect(person).equals(result);
-        return db.Person.load(myId);
+        return db.Person.load(myKey);
       }).then(function(person) {
         expect(person.id).equals(myId);
+        expect(person.key).equals(myKey);
         expect(person.name).equals("Custom Person");
         return emf.createEntityManager();
       }).then(function(db2) {
@@ -1147,7 +1158,7 @@ describe('Test crud', function() {
 
       person.child = new db.Person();
       person.child.name = "Custom Child Person";
-      person.child.id = randomize('my/craßy*%unescap\\ed&id?=');
+      person.child.key = randomize('my/craßy*%unescap\\ed&id?=');
       var childId = person.child.id;
 
       return person.save({refresh:true, depth: true}, function(result) {

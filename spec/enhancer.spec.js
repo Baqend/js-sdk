@@ -275,7 +275,7 @@ describe("Test enhancer", function() {
   it("enhanced objects should be enumarable", function() {
     var obj = new db.TestClass();
 
-    var expected = ['id', 'version', 'acl', 'testValue'];
+    var expected = ['id', 'version', 'acl', 'key', 'testValue'];
     var count = 0;
     for (var prop in obj) {
       if (!(obj[prop] instanceof Function)) {
