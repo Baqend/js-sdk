@@ -1119,11 +1119,18 @@ describe('Test crud', function() {
       });
     });
 
-    it('should reject invalid id', function() {
+    it('should handle key as ids', function() {
       var person = new db.Person();
-      expect(function() {
-        person.id = myKey;
-      }).throws('The id format is invalid');
+      person.id = myKey;
+      expect(person.id).equal('/db/Person/' + encodeURIComponent(myKey));
+      expect(person.key).equal(myKey);
+    });
+
+    it('should handle ids as ids', function() {
+      var person = new db.Person();
+      person.id = '/db/Person/' + encodeURIComponent(myKey);
+      expect(person.id).equal('/db/Person/' + encodeURIComponent(myKey));
+      expect(person.key).equal(myKey);
     });
 
     it('should create and load new object', function() {
