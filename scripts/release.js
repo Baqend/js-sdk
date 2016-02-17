@@ -79,7 +79,7 @@ if (buildResult) {
 
 console.log('Release:');
 //release
-exec('git push').code ||
+exec('git push origin ' + requiredBranch).code ||
 exec('git push --tags').code;
 
 if (pushNPM)
@@ -90,6 +90,6 @@ var devVersion = exec('npm version --no-git-tag-version prerelease').output.trim
 (gitAdd && exec('git rm --cached -r ' + gitAdd, {silent: true}).code) ||
 exec('git add package.json').code ||
 exec('git commit -m "[ci skip] new development version ' + devVersion + '"').code ||
-exec('git push').code;
+exec('git push origin ' + requiredBranch).code;
 
 
