@@ -15,6 +15,14 @@ Alternatively you can install the Baqend SDK with npm. Just type `npm install --
 <script type="text/javascript" src="dist/baqend.min.js"></script>
 ```
 
+You can also include it from our CDN-Provider `fastly`.
+```html
+<!-- for development -->
+<script type="text/javascript" src="//baqend.global.ssl.fastly.net/js-sdk/latest/baqend.js"></script>
+<!-- for production -->
+<script type="text/javascript" src="//baqend.global.ssl.fastly.net/js-sdk/latest/baqend.min.js"></script>
+```
+
 The Baqend SDK provides a global `DB` variable by default.
 
 Initialize
