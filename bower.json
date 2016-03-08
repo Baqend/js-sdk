@@ -1,0 +1,28 @@
+{
+  "name": "baqend",
+  "description": "Baqend JavaScript SDK",
+  "main": "dist/baqend.js",
+  "authors": [
+    "Baqend.com <info@baqend.com>"
+  ],
+  "license": "MIT",
+  "keywords": [
+    "backend",
+    "baqend",
+    "mongodb",
+    "sdk",
+    "backend-as-a-service"
+  ],
+  "moduleType": [
+    "amd",
+    "globals",
+    "node"
+  ],
+  "homepage": "http://www.baqend.com",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "spec",
+    "scripts"
+  ]
+}
