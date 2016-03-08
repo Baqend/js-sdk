@@ -80,7 +80,7 @@ if (buildResult) {
 console.log('Release:');
 //release
 exec('git push origin ' + requiredBranch).code ||
-exec('git push --tags').code;
+exec('git push origin ' + version).code;
 
 if (pushNPM)
 exec('npm publish');
