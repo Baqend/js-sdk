@@ -21,8 +21,10 @@
   "homepage": "http://www.baqend.com",
   "ignore": [
     "**/.*",
+    "*.iml",
     "node_modules",
     "spec",
-    "scripts"
+    "scripts",
+    "tpl"
   ]
 }
