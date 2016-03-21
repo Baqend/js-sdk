@@ -12,7 +12,7 @@ describe('Test validate', function() {
   var db, type, person;
 
   before(function() {
-    var emf = new DB.EntityManagerFactory({ host: env.TEST_SERVER, schema: {} });
+    var emf = new DB.EntityManagerFactory({ host: env.TEST_SERVER, schema: {}, tokenStorage: rootTokenStorage });
     var metamodel = emf.metamodel;
 
     var personType = new DB.metamodel.EntityType("ValidatePerson", metamodel.entity(Object));
@@ -31,7 +31,7 @@ describe('Test validate', function() {
 
     personType.validationCode = "email.isEmail();";
 
-    return saveMetamodel(metamodel).then(function() {
+    return metamodel.save().then(function() {
       db = emf.createEntityManager();
     });
   });

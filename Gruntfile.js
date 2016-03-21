@@ -29,8 +29,7 @@ module.exports = function (grunt) {
     browserify: {
       options: {
         browserifyOptions: browserifyOptions,
-        banner: longBanner,
-        exclude: ['websocket']
+        banner: longBanner
       },
 
       debug: {

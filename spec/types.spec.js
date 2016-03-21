@@ -7,57 +7,14 @@ if (typeof DB == 'undefined') {
   DB = require('../lib');
 }
 
-describe('Test GeoPoint', function() {
-  it("should construct with an latitude and longitude argument", function() {
-    var point = new DB.GeoPoint(56.5, 165.2);
-
-    expect(point.latitude).equals(56.5);
-    expect(point.longitude).equals(165.2);
-  });
-
-  it("should construct with an array argument", function() {
-    var point = new DB.GeoPoint([-36.5, -92.3]);
-
-    expect(point.latitude).equals(-36.5);
-    expect(point.longitude).equals(-92.3);
-  });
-
-  it("should construct with an geolike object argument", function() {
-    var point = new DB.GeoPoint({"latitude": 90, "longitude": -180.0});
-
-    expect(point.latitude).equals(90);
-    expect(point.longitude).equals(-180.0);
-  });
-
-  it("should construct from json argument", function() {
-    var point1 = new DB.GeoPoint({"latitude": -90, "longitude": 180.0});
-    var point2 = new DB.GeoPoint(point1.toJSON());
-
-    expect(point1).eql(point2);
-  });
-
-  it("should compute distance", function() {
-    var point1 = new DB.GeoPoint(53.5753, 10.0153); // Hamburg
-    var point2 = new DB.GeoPoint(40.7143, -74.006); // New York
-    var point3 = new DB.GeoPoint(-33.8679, 151.207); // Sydney
-    var point4 = new DB.GeoPoint(51.5085, -0.1257); // London
-
-    expect(point1.kilometersTo(point2)).within(6147 * 0.97, 6147 * 1.03);
-    expect(point1.milesTo(point2)).within(3819 * 0.97, 3819 * 1.03);
-    expect(point3.kilometersTo(point4)).within(16989 * 0.97, 16989 * 1.03);
-    expect(point3.milesTo(point4)).within(10556 * 0.97, 10556 * 1.03);
-  });
-});
-
 describe('Test entity type', function () {
-  var em, emf, EntityClass, EmbeddedClass, obj, state;
+  var em, emf, EntityClass, EmbeddedClass, obj, state, metamodel, EntityType, EmbeddedType, types;
+  emf = new DB.EntityManagerFactory({ schema: {} });
+  metamodel = emf.metamodel;
 
-  emf = new DB.EntityManagerFactory({ host: env.TEST_SERVER, schema: {} });
-  var metamodel = emf.metamodel;
-
-  var EntityType = new DB.metamodel.EntityType('jstest.Type', metamodel.entity(Object));
-  var EmbeddedType = new DB.metamodel.EmbeddableType('jstest.Embedded');
-  var types = {
+  EntityType = new DB.metamodel.EntityType('jstest.Type', metamodel.entity(Object));
+  EmbeddedType = new DB.metamodel.EmbeddableType('jstest.Embedded');
+  types = {
     // values used for collection tests
     "boolean": {type: metamodel.baseType('Boolean'), simple:true, values: [true, false] },
     "float": {type: metamodel.baseType('Double'), simple:true, values: [-2.3, 4] },
@@ -113,7 +70,11 @@ describe('Test entity type', function () {
   metamodel.addType(EmbeddedType);
 
   before(function() {
-    return saveMetamodel(metamodel).then(function() {
+    emf.tokenStorage = rootTokenStorage;
+
+    return emf.connect(env.TEST_SERVER).then(function() {
+      return metamodel.save();
+    }).then(function() {
       return emf.createEntityManager();
     }).then(function(entityManager) {
       em = entityManager;
@@ -209,7 +170,7 @@ describe('Test entity type', function () {
     test("embedded", EmbeddedType.create(), embeddableObject(), [{}, null]);
   });
 
-  for (name in types) {
+  Object.keys(types).forEach(function(name) {
     describe(name + "List value", function() {
       var list = new DB.List();
       var vals = types[name].values;
@@ -219,7 +180,7 @@ describe('Test entity type', function () {
 
       test(name + "List", list);
     });
-  }
+  });
 
   describe("refList value", function() {
     test("refList", new DB.List(), new DB.List([testObject(), testObject(), null, testObject()]));
@@ -284,7 +245,7 @@ describe('Test entity type', function () {
     });
   });
 
-  for (name in types) {
+  Object.keys(types).forEach(function(name) {
     describe("simple" + name + "Map value", function() {
       var map = new DB.Map();
       var vals = types[name].values;
@@ -306,7 +267,7 @@ describe('Test entity type', function () {
         test(name + "simpleMap", map);
       });
     }
-  }
+  });
 
   describe("simpleRefMap value", function() {
     var map1 = new DB.Map([

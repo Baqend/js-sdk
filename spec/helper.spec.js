@@ -15,26 +15,15 @@ glob.randomize = function(name) {
   return name + "_random_" + rnd;
 };
 
-var token = null;
-glob.loadRootToken = function() {
-  if (token) {
-    return Promise.resolve(token);
-  } else {
-    var emf = new DB.EntityManagerFactory(env.TEST_SERVER);
-    return emf.createEntityManager().ready().then(function(em) {
-      return em.User.login('root', 'root').then(function() {
-        token = em.token;
-        return em.token;
-      });
+glob.rootTokenStorage = null;
+before(function() {
+  var emf = new DB.EntityManagerFactory(env.TEST_SERVER);
+  return emf.createEntityManager().ready().then(function(em) {
+    return em.User.login('root', 'root').then(function() {
+      glob.rootTokenStorage = em.tokenStorage;
     });
-  }
-};
-
-glob.saveMetamodel = function(metamodel) {
-  return loadRootToken().then(function(token) {
-    return metamodel.save(token);
   });
-};
+});
 
 glob.sleep = function(time, value) {
   return new Promise(function(success) {

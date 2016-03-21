@@ -10,6 +10,7 @@
   "homepage": "http://baqend.com",
   "main": "lib/index.js",
   "dependencies": {
+    "crypto-js": "^3.1.6",
     "jahcode": "^1.1.6",
     "lie": "^3.0.1",
     "node-uuid": "^1.4.3",
@@ -70,5 +71,9 @@
   },
   "engines": {
     "node": ">=0.2.0"
+  },
+  "browser": {
+    "./lib/util/hmac.js": "./lib/util/hmac-browser.js",
+    "websocket": ""
   }
 }

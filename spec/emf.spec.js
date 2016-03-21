@@ -34,19 +34,36 @@ describe("Test EntityManagerFactory", function() {
     });
   });
 
-  xit('should not connect to destination', function() {
-    this.timeout(70 * 1000);
+  it('should reject connect to invalid destination', function() {
+    this.timeout(15000);
 
     expect(emf.isReady).be.false;
-    emf.connect("http://test/");
 
+    var connectPromise = emf.connect("http://example.test/");
     var em = emf.createEntityManager();
-    return em.ready().then(function() {
-      expect(true).be.false;
-    }, function(e) {
-      expect(e).instanceOf(Error);
-      expect(em.isReady).be.false;
-    });
+
+    return Promise.all([
+      connectPromise.then(function() {
+        expect(true).be.false;
+      }, function(e) {
+        expect(e).instanceOf(Error);
+        expect(emf.isReady).be.false;
+      }),
+
+      emf.ready().then(function() {
+        expect(true).be.false;
+      }, function(e) {
+        expect(e).instanceOf(Error);
+        expect(emf.isReady).be.false;
+      }),
+
+      em.ready().then(function() {
+        expect(true).be.false;
+      }, function(e) {
+        expect(e).instanceOf(Error);
+        expect(em.isReady).be.false;
+      })
+    ]);
   });
 
   it('should create ems before and after connect', function() {
@@ -107,6 +124,9 @@ describe("Test EntityManagerFactory", function() {
     emf.connect(env.TEST_SERVER);
 
     var ready = false;
+    emf.ready().then(function() {
+      ready = true;
+    });
 
     var em1 = emf.createEntityManager();
     expect(em1.isReady).be.false;
@@ -117,15 +137,8 @@ describe("Test EntityManagerFactory", function() {
 
     var ready2 = emf.ready().then(function() {
       var em2 = emf.createEntityManager();
-      expect(em2.isReady).be.false;
-      return em2.ready().then(function() {
-        expect(em2.isReady).be.true;
-        expect(ready).be.true;
-      });
-    });
-
-    emf.ready().then(function() {
-      ready = true;
+      expect(em2.isReady).be.true;
+      expect(ready).be.true;
     });
 
     return Promise.all([ready1, ready2]);
@@ -161,6 +174,9 @@ describe("Test EntityManagerFactory", function() {
     var emf = new DB.EntityManagerFactory(env.TEST_SERVER);
 
     var ready = false;
+    emf.ready().then(function() {
+      ready = true;
+    });
 
     var em1 = emf.createEntityManager();
     expect(em1.isReady).be.false;
@@ -171,25 +187,11 @@ describe("Test EntityManagerFactory", function() {
 
     var ready2 = emf.ready().then(function() {
       var em2 = emf.createEntityManager();
-      expect(em2.isReady).be.false;
-      return em2.ready().then(function() {
-        expect(em2.isReady).be.true;
-        expect(ready).be.true;
-      });
-    });
-
-    emf.ready().then(function() {
-      ready = true;
+      expect(em2.isReady).be.true;
+      expect(ready).be.true;
     });
 
     return Promise.all([ready1, ready2]);
   });
-
-  it('should set gzip flag', function() {
-    var emf = new DB.EntityManagerFactory(env.TEST_SERVER);
-    return emf.createEntityManager(true).ready().then(function(db) {
-      expect(emf._connector.gzip).eql(typeof global == "undefined");
-    });
-  })
 
 });

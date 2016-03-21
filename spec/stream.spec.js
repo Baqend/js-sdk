@@ -19,7 +19,7 @@ describe("Streaming Queries", function() {
     }
 
     var personType, addressType;
-    emf = new DB.EntityManagerFactory({ host: env.TEST_SERVER, schema: {} });
+    emf = new DB.EntityManagerFactory({ host: env.TEST_SERVER, schema: {}, tokenStorage: rootTokenStorage });
     metamodel = emf.metamodel;
 
     metamodel.addType(personType = new DB.metamodel.EntityType(bucket, metamodel.entity(Object)));
@@ -35,7 +35,7 @@ describe("Streaming Queries", function() {
     addressType.addAttribute(new DB.metamodel.SingularAttribute("zip", metamodel.baseType(Number)));
     addressType.addAttribute(new DB.metamodel.SingularAttribute("city", metamodel.baseType(String)));
 
-    return saveMetamodel(metamodel).then(function() {
+    return metamodel.save().then(function() {
       db = emf.createEntityManager();
 
       p0 = new db[bucket]({

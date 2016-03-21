@@ -9,15 +9,13 @@ if (typeof DB == 'undefined') {
 }
 
 describe('Test code', function() {
-  var db, code, entityType, personType, emf, rootToken;
-
+  var db, code, entityType, personType, emf;
 
   before(function() {
-    emf = new DB.EntityManagerFactory(env.TEST_SERVER);
+    emf = new DB.EntityManagerFactory({host: env.TEST_SERVER, tokenStorage: rootTokenStorage});
 
-    var metamodel = emf.metamodel;
-
-    return metamodel.load().then(function() {
+    return emf.ready().then(function() {
+      var metamodel = emf.metamodel;
       personType = new DB.metamodel.EntityType(randomize("CodePerson"), metamodel.entity(Object));
       metamodel.addType(personType);
 
@@ -26,10 +24,7 @@ describe('Test code', function() {
       personType.addAttribute(new DB.metamodel.SingularAttribute("date", metamodel.baseType(Date)));
       personType.addAttribute(new DB.metamodel.SingularAttribute("email", metamodel.baseType(String)));
 
-      return loadRootToken().then(function(token) {
-        rootToken = token;
-        return metamodel.save(token);
-      });
+      return metamodel.save();
     });
   });
 
@@ -44,7 +39,7 @@ describe('Test code', function() {
 
     afterEach(function() {
       return Promise.all(handlers.map(function(type) {
-        return code.deleteCode(entityType, type, rootToken);
+        return code.deleteCode(entityType, type);
       }));
     });
 
@@ -54,8 +49,8 @@ describe('Test code', function() {
       describe(signature, function() {
         it('should set and get code', function() {
           var fn = "exports." + signature + " = function(db, obj) { return '"+type+Math.random().toString()+"'; }";
-          return code.saveCode(entityType, type, fn, rootToken).then(function() {
-            return code.loadCode(entityType, type, rootToken);
+          return code.saveCode(entityType, type, fn).then(function() {
+            return code.loadCode(entityType, type);
           }).then(function(code) {
             expect(code).equals(fn);
           });
@@ -63,11 +58,11 @@ describe('Test code', function() {
 
         it('should delete code', function() {
           var fn = "exports." + signature + " = function(db, obj) { return '"+type+Math.random().toString()+"'; }";
-          return code.saveCode(entityType, type, fn, rootToken).then(function() {
-            return code.deleteCode(entityType, type, rootToken);
+          return code.saveCode(entityType, type, fn).then(function() {
+            return code.deleteCode(entityType, type);
           }).then(function(fn) {
             expect(fn).be.null;
-            return expect(code.loadCode(entityType, type, rootToken)).become(null);
+            return expect(code.loadCode(entityType, type)).become(null);
           });
         });
       });
@@ -79,7 +74,7 @@ describe('Test code', function() {
           exports.onInsert = function(db, obj) {
             obj.name = 'changed ' + obj.name;
           }
-        }, rootToken).then(function() {
+        }).then(function() {
           var obj = new db[personType.name]({
             name: 'test'
           });
@@ -98,7 +93,7 @@ describe('Test code', function() {
                 throw new Abort('A object was found!');
             });
           }
-        }, rootToken).then(function() {
+        }).then(function() {
           var obj = new db[personType.name]({
             name: 'test'
           });
@@ -116,7 +111,7 @@ describe('Test code', function() {
           exports.onUpdate = function(db, obj) {
             obj.name = 'updated ' + obj.name;
           }
-        }, rootToken).then(function() {
+        }).then(function() {
           var obj = new db[personType.name]({
             name: 'test'
           });
@@ -139,7 +134,7 @@ describe('Test code', function() {
               return obj;
             });
           }
-        }, rootToken).then(function() {
+        }).then(function() {
           var obj = new db[personType.name]({
             name: 'test'
           });
@@ -160,7 +155,7 @@ describe('Test code', function() {
           exports.onDelete = function(db, obj) {
             throw new Abort('Delete not accepted.');
           }
-        }, rootToken).then(function() {
+        }).then(function() {
           var obj = new db[personType.name]({
             name: 'test'
           });
@@ -180,7 +175,7 @@ describe('Test code', function() {
                 throw new Abort('name was ' + obj.name + ' not test');
             });
           }
-        }, rootToken).then(function() {
+        }).then(function() {
           var obj = new db[personType.name]({
             name: 'test'
           });
@@ -196,7 +191,7 @@ describe('Test code', function() {
           exports.onDelete = function(db, obj) {
             throw new Abort('delete not permitted');
           }
-        }, rootToken).then(function() {
+        }).then(function() {
           var obj = new db[personType.name]({
             name: 'test'
           });
@@ -212,7 +207,7 @@ describe('Test code', function() {
       it('should call handler', function() {
         return code.saveCode(entityType, 'validate', function(name) {
           name.equals('String is not valid', 'test');
-        }, rootToken).then(function() {
+        }).then(function() {
           var obj = new db[personType.name]({
             name: 'test'
           });
@@ -235,7 +230,7 @@ describe('Test code', function() {
           setTimeout(function() {
             val++;
           }, 300)
-        }, rootToken).then(function() {
+        }).then(function() {
           var obj = new db[personType.name]({
             name: 'test'
           });
@@ -269,7 +264,7 @@ describe('Test code', function() {
     });
 
     beforeEach(function() {
-      return code.saveCode(bucket, 'module', fn, rootToken).then(function(saved) {
+      return code.saveCode(bucket, 'module', fn).then(function(saved) {
         var module = {exports: {}};
         saved(module, module.exports);
         expect(module.exports.call).be.a('function');
@@ -277,11 +272,11 @@ describe('Test code', function() {
     });
 
     afterEach(function() {
-      return code.deleteCode(bucket, 'module', rootToken);
+      return code.deleteCode(bucket, 'module');
     });
 
     it('should load code', function() {
-      return code.loadCode(bucket, 'module', rootToken, true).then(function(loaded) {
+      return code.loadCode(bucket, 'module', true).then(function(loaded) {
         var module = {exports: {}};
         loaded(module, module.exports);
         expect(module.exports.call).be.a('function');
@@ -295,7 +290,7 @@ describe('Test code', function() {
         }
       };
 
-      return code.saveCode(bucket, 'module', fn, rootToken).then(function() {
+      return code.saveCode(bucket, 'module', fn).then(function() {
         return db.modules.get(bucket);
       }).then(function(returned) {
         expect(returned).equals("test");
@@ -309,7 +304,7 @@ describe('Test code', function() {
         }
       };
 
-      return code.saveCode(bucket, 'module', fn, rootToken).then(function() {
+      return code.saveCode(bucket, 'module', fn).then(function() {
         return db.modules.get(bucket);
       }).then(function(returned) {
         expect(returned).eqls(["test"]);
@@ -324,25 +319,25 @@ describe('Test code', function() {
     });
 
     it('should delete code', function() {
-      return code.deleteCode(bucket, 'module', rootToken).then(function() {
-        return expect(code.loadCode(bucket, 'module', rootToken)).become(null);
+      return code.deleteCode(bucket, 'module').then(function() {
+        return expect(code.loadCode(bucket, 'module')).become(null);
       });
     });
 
     it('should load list of code resources', function() {
       return code.saveCode(bucket, 'module', function(module, exports) {
         exports.call = function() { return "yeah" };
-      }, rootToken).then(function() {
-        return expect(code.loadModules(rootToken)).to.eventually.include('/code/' + bucket + '/module');
       }).then(function() {
-        return code.deleteCode(bucket, 'module', rootToken);
+        return expect(code.loadModules()).to.eventually.include('/code/' + bucket + '/module');
+      }).then(function() {
+        return code.deleteCode(bucket, 'module');
       });
     });
 
     it('should run code by get request', function() {
       return code.saveCode(bucket, 'module', function(module, exports) {
         exports.call = function() { return "yeah" };
-      }, rootToken).then(function() {
+      }).then(function() {
         return db.modules.get(bucket);
       }).then(function(result) {
         expect(result).eqls("yeah");
@@ -354,7 +349,7 @@ describe('Test code', function() {
         var http = require('http');
 
         exports.call = function() { return {ready: !!http.get} };
-      }, rootToken).then(function() {
+      }).then(function() {
         return db.modules.get(bucket);
       }).then(function(result) {
         expect(result.ready).be.true;
@@ -364,7 +359,7 @@ describe('Test code', function() {
     it('should accept string parameter', function() {
       return code.saveCode(bucket, 'module', function(module, exports) {
         exports.call = function(db, data) { return data };
-      }, rootToken).then(function() {
+      }).then(function() {
         return db.modules.post(bucket, "yeah");
       }).then(function(result) {
         expect(result).eqls("yeah");
@@ -374,7 +369,7 @@ describe('Test code', function() {
     it('should accept array parameter', function() {
       return code.saveCode(bucket, 'module', function(module, exports) {
         exports.call = function(db, data) { return data };
-      }, rootToken).then(function() {
+      }).then(function() {
         return db.modules.post(bucket, ["yeah"]);
       }).then(function(result) {
         expect(result).eqls(["yeah"]);
@@ -384,7 +379,7 @@ describe('Test code', function() {
     it('should accept query object', function() {
       return code.saveCode(bucket, 'module', function(module, exports) {
         exports.call = function(db, data) { return data.first + ' ' + data.last };
-      }, rootToken).then(function() {
+      }).then(function() {
         return db.modules.get(bucket, { first: 'firstName', last: 'lastName' });
       }).then(function(result) {
         expect(result).eqls("firstName lastName");

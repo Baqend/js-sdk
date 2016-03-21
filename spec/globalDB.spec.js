@@ -30,7 +30,7 @@ describe('Test Global DB', function() {
     });
   });
 
-  it('should only create one instance', function() {
+  it('should only allow one connect call', function() {
     expect(function() {
       DB.connect(env.TEST_SERVER);
     }).throw(Error);

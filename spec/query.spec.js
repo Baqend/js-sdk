@@ -13,7 +13,7 @@ describe("Test Query", function() {
   before(function() {
     var personType, addressType;
 
-    emf = new DB.EntityManagerFactory({ host: env.TEST_SERVER, schema: {} });
+    emf = new DB.EntityManagerFactory({ host: env.TEST_SERVER, schema: {}, tokenStorage: rootTokenStorage });
     metamodel = emf.metamodel;
 
     metamodel.addType(personType = new DB.metamodel.EntityType("QueryPerson", metamodel.entity(Object)));
@@ -30,7 +30,7 @@ describe("Test Query", function() {
     addressType.addAttribute(new DB.metamodel.SingularAttribute("zip", metamodel.baseType(Number)));
     addressType.addAttribute(new DB.metamodel.SingularAttribute("city", metamodel.baseType(String)));
 
-    return saveMetamodel(metamodel);
+    return metamodel.save();
   });
 
   describe("Builder", function() {

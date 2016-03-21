@@ -12,7 +12,7 @@ describe('Test crud', function() {
   var db, personType, addressType, childType, emf, metamodel, streetType;
 
   before(function() {
-    emf = new DB.EntityManagerFactory({ host: env.TEST_SERVER, schema: {} });
+    emf = new DB.EntityManagerFactory({ host: env.TEST_SERVER, schema: {}, tokenStorage: rootTokenStorage });
     metamodel = emf.metamodel;
 
     metamodel.addType(personType = new DB.metamodel.EntityType("Person", metamodel.entity(Object)));
@@ -41,7 +41,7 @@ describe('Test crud', function() {
     streetType.addAttribute(new DB.metamodel.SingularAttribute("number", metamodel.baseType(Number)));
     streetType.addAttribute(new DB.metamodel.SingularAttribute("neighbor", personType));
 
-    return saveMetamodel(metamodel);
+    return metamodel.save();
   });
 
   beforeEach(function() {

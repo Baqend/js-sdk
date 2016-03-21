@@ -19,22 +19,20 @@ describe("Test Index", function() {
   var db, personType, meta;
 
   before(function() {
-    var emf = new DB.EntityManagerFactory({ host: env.TEST_SERVER, schema: {} });
+    var emf = new DB.EntityManagerFactory({ host: env.TEST_SERVER, schema: {}, tokenStorage: rootTokenStorage });
     meta = emf.metamodel;
 
     meta.addType(personType = new DB.metamodel.EntityType(randomize("IndexPerson"), meta.entity(Object)));
     personType.addAttribute(new DB.metamodel.SingularAttribute("name", meta.baseType(String)));
     
-    return saveMetamodel(meta).then(function() {
+    return meta.save().then(function() {
       db = new DB.EntityManagerFactory(env.TEST_SERVER).createEntityManager();
       return db.ready();
-    }).then(function(db) {
-      return db.User.login('root', 'root');
     });
   });
 
   afterEach(function() {
-    return meta.dropAllIndexes(personType.name, db.token).then(function() {
+    return meta.dropAllIndexes(personType.name).then(function() {
       return sleep(sleepTime);
     });
   });
@@ -43,10 +41,10 @@ describe("Test Index", function() {
     var index = new DB.metamodel.DbIndex("name");
     expect(index.isCompound).be.false;
 
-    return meta.createIndex(personType.name, index, db.token).then(function() {
+    return meta.createIndex(personType.name, index).then(function() {
       return sleep(sleepTime);
     }).then(function() {
-      return meta.getIndexes(personType.name, db.token);
+      return meta.getIndexes(personType.name);
     }).then(function(indexes) {
       expect(indexes).have.length(2);
       var index = indexes.filter(function(el) { return el.keys[0].name })[0];
@@ -59,10 +57,10 @@ describe("Test Index", function() {
     var index1 = new DB.metamodel.DbIndex("name");
     var index2 = new DB.metamodel.DbIndex("address");
 
-    return Promise.all([meta.createIndex(personType.name, index1, db.token), meta.createIndex(personType.name, index2, db.token)]).then(function() {
+    return Promise.all([meta.createIndex(personType.name, index1), meta.createIndex(personType.name, index2)]).then(function() {
       return sleep(sleepTime);
     }).then(function() {
-      return meta.getIndexes(personType.name, db.token);
+      return meta.getIndexes(personType.name);
     }).then(function(indexes) {
       expect(indexes).have.length(3);
     });
@@ -72,44 +70,44 @@ describe("Test Index", function() {
     var index1 = new DB.metamodel.DbIndex("name");
     var index2 = new DB.metamodel.DbIndex("address");
 
-    return Promise.all([meta.createIndex(personType.name, index1, db.token), meta.createIndex(personType.name, index2, db.token)]).then(function() {
+    return Promise.all([meta.createIndex(personType.name, index1), meta.createIndex(personType.name, index2)]).then(function() {
       return sleep(sleepTime);
     }).then(function() {
-      return meta.getIndexes(personType.name, db.token);
+      return meta.getIndexes(personType.name);
     }).then(function(indexes) {
       expect(indexes).have.length(3);
-      return meta.dropAllIndexes(personType.name, db.token);
+      return meta.dropAllIndexes(personType.name);
     }).then(function() {
       return sleep(sleepTime);
     }).then(function() {
-      return expect(meta.getIndexes(personType.name, db.token)).eventually.have.length(1);
+      return expect(meta.getIndexes(personType.name)).eventually.have.length(1);
     });
   });
 
   it('should drop index', function() {
     var index = new DB.metamodel.DbIndex("name");
 
-    return meta.createIndex(personType.name, index, db.token).then(function() {
+    return meta.createIndex(personType.name, index).then(function() {
       return sleep(sleepTime);
     }).then(function() {
-      return meta.dropIndex(personType.name, index, db.token);
+      return meta.dropIndex(personType.name, index);
     }).then(function() {
       return sleep(sleepTime);
     }).then(function() {
-      return expect(meta.getIndexes(personType.name, db.token)).eventually.have.length(1);
+      return expect(meta.getIndexes(personType.name)).eventually.have.length(1);
     });
   });
 
   it('should create index', function() {
     var index = new DB.metamodel.DbIndex("name");
 
-    return meta.getIndexes(personType.name, db.token).then(function(indexes) {
+    return meta.getIndexes(personType.name).then(function(indexes) {
       expect(indexes).have.length(1);
-      return meta.createIndex(personType.name, index, db.token);
+      return meta.createIndex(personType.name, index);
     }).then(function() {
       return sleep(sleepTime);
     }).then(function() {
-      return meta.getIndexes(personType.name, db.token);
+      return meta.getIndexes(personType.name);
     }).then(function(indexes) {
       expect(indexes).have.length(2);
     });
@@ -125,10 +123,10 @@ describe("Test Index", function() {
     expect(index.hasKey("name")).be.true;
     expect(index.hasKey("age")).be.true;
 
-    return meta.createIndex(personType.name, index, db.token).then(function() {
+    return meta.createIndex(personType.name, index).then(function() {
       return sleep(sleepTime);
     }).then(function() {
-      return meta.getIndexes(personType.name, db.token);
+      return meta.getIndexes(personType.name);
     }).then(function(indexes) {
       expect(indexes).have.length(2);
       var index = indexes.filter(function(el) { return el.keys[0].name })[0];
@@ -143,7 +141,7 @@ describe("Test Index", function() {
       {name: "text"}
     ]);
 
-    return expect(meta.createIndex(personType.name, index, db.token)).be.rejected;
+    return expect(meta.createIndex(personType.name, index)).be.rejected;
   });
 
   it('should not allowed to use illegal arguments', function() {
@@ -154,16 +152,16 @@ describe("Test Index", function() {
       }
     ]);
 
-    return expect(meta.createIndex(personType.name, index, db.token)).be.rejected.then(function() {
+    return expect(meta.createIndex(personType.name, index)).be.rejected.then(function() {
       index = new DB.metamodel.DbIndex([]);
       expect(index.hasKey("test")).be.false;
-      return expect(meta.createIndex(personType.name, index, db.token)).be.rejected;
+      return expect(meta.createIndex(personType.name, index)).be.rejected;
     });
   });
 
   it('should create unique index', function() {
     var index = new DB.metamodel.DbIndex("name", true);
-    return meta.createIndex(personType.name, index, db.token).then(function() {
+    return meta.createIndex(personType.name, index).then(function() {
       return sleep(sleepTime);
     }).then(function() {
       var person1 = new db[personType.name]();
