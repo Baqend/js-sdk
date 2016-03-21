@@ -377,20 +377,18 @@ describe('Test user and roles', function() {
 
     if (typeof localStorage !== "undefined") {
       it('should save token in session storage when register loginOption is false', function() {
-        var user = new DB.User({ username: makeLogin(), email: "test@mail.de" });
+        var user = new DB.User({ username: makeLogin()});
         return DB.User.register(user, 'secret', false).then(function(u) {
           expect(u.username).eqls(user.username);
-          expect(u.email).eqls("test@mail.de");
           expect(localStorage.getItem('BAT:' + db._connector.origin)).be.not.ok;
           expect(sessionStorage.getItem('BAT:' + db._connector.origin)).be.ok;
         });
       });
 
       it('should save token in local storage when register loginOption is true', function() {
-        var user = new DB.User({ username: makeLogin(), email: "test@mail.de" });
+        var user = new DB.User({ username: makeLogin()});
         return DB.User.register(user, 'secret', true).then(function(u) {
           expect(u.username).eqls(user.username);
-          expect(u.email).eqls("test@mail.de");
           expect(localStorage.getItem('BAT:' + db._connector.origin)).be.ok;
           expect(sessionStorage.getItem('BAT:' + db._connector.origin)).be.not.ok;
         });
@@ -398,12 +396,11 @@ describe('Test user and roles', function() {
 
       it('should save token in session storage when login loginOption is false', function() {
         var username =  makeLogin();
-        var user = new DB.User({ username: username, email: "test@mail.de" });
+        var user = new DB.User({ username: username});
         return DB.User.register(user, 'secret', db.User.LoginOption.NO_LOGIN).then(function() {
           return DB.User.login(username, 'secret', false);
         }).then(function(u) {
           expect(u.username).eqls(user.username);
-          expect(u.email).eqls("test@mail.de");
           expect(localStorage.getItem('BAT:' + db._connector.origin)).be.not.ok;
           expect(sessionStorage.getItem('BAT:' + db._connector.origin)).be.ok;
         });
@@ -411,12 +408,11 @@ describe('Test user and roles', function() {
 
       it('should save token in local storage when login loginOption is true', function() {
         var username =  makeLogin();
-        var user = new DB.User({ username: username, email: "test@mail.de" });
+        var user = new DB.User({ username: username});
         return DB.User.register(user, 'secret', db.User.LoginOption.NO_LOGIN).then(function() {
           return DB.User.login(username, 'secret', true);
         }).then(function(u) {
           expect(u.username).eqls(user.username);
-          expect(u.email).eqls("test@mail.de");
           expect(localStorage.getItem('BAT:' + db._connector.origin)).be.ok;
           expect(sessionStorage.getItem('BAT:' + db._connector.origin)).be.not.ok;
         });
