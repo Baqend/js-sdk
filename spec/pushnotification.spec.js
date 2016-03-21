@@ -9,28 +9,46 @@ if (typeof DB == 'undefined') {
 }
 
 describe('Test Push Notifications', function() {
-  var emf, db;
+  var emf, db, lock;
 
   var TEST_GCM_DEVICE = "APA91bFBRJGMI2OkQxhV3peP4ncZOIxGJBJ8s0tkKyWvzQErpZmuSzMzm6ugz3rOauMQ1CRui0bBsEQvuN0W8X1wTP547C6MSNcErnNYXyvc1F5eKZCs-GAtE_NcESolea2AM6_cRe9R";
   var TEST_GCM_APIKEY = "AIzaSyAQvWS3mtqnTfLAA3LjepyQRrqDisVRnE0";
 
   before(function() {
-    emf = new DB.EntityManagerFactory(env.TEST_SERVER);
+    this.timeout(40000);
 
-    db = emf.createEntityManager();
-    return db.ready().then(function() {
-      return db.login("root", "root");
+    var retires = 0;
+    emf = new DB.EntityManagerFactory({ host: env.TEST_SERVER, tokenStorage: rootTokenStorage });
+    return emf.ready().then(function() {
+      if (!emf.metamodel.entity("Lock")) {
+        emf.metamodel.addType(new DB.metamodel.EntityType("Lock", emf.metamodel.entity(Object)));
+        return emf.metamodel.save();
+      }
+    }).then(function() {
+      db = emf.createEntityManager();
+      lock = new db.Lock({id: "push"});
+      return createLock();
     }).then(function() {
       var msg = new DB.message.GCMAKey(TEST_GCM_APIKEY);
-      return db._send(msg);
+      return emf.send(msg);
     });
+
+    function createLock() {
+      return lock.insert().catch(function(e) {
+        if (retires++ > 60)
+          throw e;
+        return sleep(500).then(createLock);
+      });
+    }
+  });
+
+  after(function() {
+    return lock.delete();
   });
 
   beforeEach(function() {
     db = emf.createEntityManager();
-    return db.ready(function() {
-      return db.logout();
-    });
+    return db.ready();
   });
 
   it('should register device', function() {
