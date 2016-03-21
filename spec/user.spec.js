@@ -323,7 +323,7 @@ describe('Test user and roles', function() {
       }).then(function() {
         expect(DB.token).be.ok;
         oldToken = DB.token;
-        db.token = db.token.replace(/.{1}$/, db.token.substr(0, db.token.length) == '0'? '1': '0');
+        db.token = db.token.replace(/.{1}$/, db.token.substr(db.token.length - 1, db.token.length) == '0'? '1': '0');
         return db.renew();
       }).then(function(user) {
         expect(user).be.null;
