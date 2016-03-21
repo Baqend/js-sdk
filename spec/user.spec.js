@@ -13,8 +13,6 @@ describe('Test user and roles', function() {
   var RENEW_TIMEOUT = 2000;
   this.timeout(RENEW_TIMEOUT * 2);
 
-  this.timeout(RENEW_TIMEOUT * 2);
-
   before(function() {
     emf = new DB.EntityManagerFactory({host: env.TEST_SERVER, tokenStorage: rootTokenStorage});
     return emf.createEntityManager().ready().then(function() {
@@ -300,12 +298,12 @@ describe('Test user and roles', function() {
       });
     });
 
-    it('should remove cookie if token is invalid', function() {
+    it('should remove token if token is invalid', function() {
       var login = makeLogin();
       return DB.User.register(login, 'secret').then(function() {
         var token = DB.tokenStorage.get(DB._connector.origin);
         expect(token).be.ok;
-        DB.tokenStorage.update(DB._connector.origin, token.replace(/.{1}$/, token.substr(0, token.length) == '0'? '1': '0'));
+        DB.tokenStorage.update(DB._connector.origin, token.replace(/.{1}$/, token.substr(token.length - 1, token.length) == '0'? '1': '0'));
         return DB.renew();
       }).then(function(user) {
         expect(user).be.null;
