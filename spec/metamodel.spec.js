@@ -1,9 +1,5 @@
 if (typeof DB == 'undefined') {
-  env = require('./env');
-  var chai = require("chai");
-  var chaiAsPromised = require("chai-as-promised");
-  chai.use(chaiAsPromised);
-  expect = chai.expect;
+  require('./node');
   DB = require('../lib');
 }
 
@@ -434,7 +430,7 @@ describe('Test Metamodel', function() {
   var metamodel;
 
   beforeEach(function() {
-    var emf = new DB.EntityManagerFactory({host: env.TEST_SERVER, tokenStorage: rootTokenStorage});
+    var emf = new DB.EntityManagerFactory({host: env.TEST_SERVER, tokenStorage: helper.rootTokenStorage});
     metamodel = emf.createMetamodel();
   });
 
@@ -475,7 +471,7 @@ describe('Test Metamodel', function() {
   });
 
   it("should allow modification when used by an EntityManager", function() {
-    var emf = new DB.EntityManagerFactory({host: env.TEST_SERVER, tokenStorage: rootTokenStorage });
+    var emf = new DB.EntityManagerFactory({host: env.TEST_SERVER, tokenStorage: helper.rootTokenStorage });
     var em = emf.createEntityManager();
 
     return emf.ready().then(function() {
@@ -487,7 +483,7 @@ describe('Test Metamodel', function() {
     var emf = new DB.EntityManagerFactory({host: env.TEST_SERVER, tokenStorage: new DB.util.TokenStorage()});
     var db = emf.createEntityManager(true);
     var metamodel = db.metamodel;
-    var SchemaUpdatePerson = randomize('SchemaUpdatePerson');
+    var SchemaUpdatePerson = helper.randomize('SchemaUpdatePerson');
     var initialType;
 
     return  db.ready().then(function() {
@@ -539,7 +535,7 @@ describe('Test Metamodel', function() {
     var type, childType, embeddedType, metamodel;
 
     before(function() {
-      var emf = new DB.EntityManagerFactory({host: env.TEST_SERVER, tokenStorage: rootTokenStorage});
+      var emf = new DB.EntityManagerFactory({host: env.TEST_SERVER, tokenStorage: helper.rootTokenStorage});
       metamodel = emf.metamodel;
       metamodel.init({});
       metamodel.addType(type = new DB.metamodel.EntityType("jstest.Person", metamodel.entity(Object)));
@@ -686,8 +682,8 @@ describe('Test Metamodel', function() {
   describe('Acl', function() {
     var db, emf, obj, user1, user2, user3, initialType, initialEmbeddedType;
 
-    var SchemaAclPersonName = randomize('SchemaAclPerson');
-    var SchemaAclEmbeddedPersonName = randomize('SchemaAclEmbeddedPerson');
+    var SchemaAclPersonName = helper.randomize('SchemaAclPerson');
+    var SchemaAclEmbeddedPersonName = helper.randomize('SchemaAclEmbeddedPerson');
 
     function createUser(emf, username) {
       return emf.createEntityManager().ready().then(function(db) {
@@ -698,12 +694,12 @@ describe('Test Metamodel', function() {
     }
 
     before(function() {
-      var staticEmf = new DB.EntityManagerFactory({host: env.TEST_SERVER, tokenStorage: rootTokenStorage});
+      var staticEmf = new DB.EntityManagerFactory({host: env.TEST_SERVER, tokenStorage: helper.rootTokenStorage});
 
       return Promise.all([
-        createUser(staticEmf, makeLogin()),
-        createUser(staticEmf, makeLogin()),
-        createUser(staticEmf, makeLogin())
+        createUser(staticEmf, helper.makeLogin()),
+        createUser(staticEmf, helper.makeLogin()),
+        createUser(staticEmf, helper.makeLogin())
       ]).then(function(users) {
         user1 = users[0];
         user2 = users[1];
@@ -792,7 +788,7 @@ describe('Test Metamodel', function() {
         return metamodel.load().then(function() {
           var AclPerson = metamodel.entity(SchemaAclPersonName);
 
-          var child = new DB.metamodel.EntityType(randomize("SchemaAclChildPerson"), AclPerson);
+          var child = new DB.metamodel.EntityType(helper.randomize("SchemaAclChildPerson"), AclPerson);
           child.schemaReplacePermission.allowAccess(db.User.me);
           metamodel.addType(child);
 

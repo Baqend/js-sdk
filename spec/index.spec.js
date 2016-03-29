@@ -1,13 +1,5 @@
-/**
- * Created by hannes on 27.01.15.
- */
-
 if (typeof DB == 'undefined') {
-  env = require('./env');
-  var chai = require("chai");
-  var chaiAsPromised = require("chai-as-promised");
-  chai.use(chaiAsPromised);
-  expect = chai.expect;
+  require('./node');
   DB = require('../lib');
 }
 
@@ -19,10 +11,10 @@ describe("Test Index", function() {
   var db, personType, meta;
 
   before(function() {
-    var emf = new DB.EntityManagerFactory({ host: env.TEST_SERVER, schema: {}, tokenStorage: rootTokenStorage });
+    var emf = new DB.EntityManagerFactory({ host: env.TEST_SERVER, schema: {}, tokenStorage: helper.rootTokenStorage });
     meta = emf.metamodel;
 
-    meta.addType(personType = new DB.metamodel.EntityType(randomize("IndexPerson"), meta.entity(Object)));
+    meta.addType(personType = new DB.metamodel.EntityType(helper.randomize("IndexPerson"), meta.entity(Object)));
     personType.addAttribute(new DB.metamodel.SingularAttribute("name", meta.baseType(String)));
     
     return meta.save().then(function() {
@@ -33,7 +25,7 @@ describe("Test Index", function() {
 
   afterEach(function() {
     return meta.dropAllIndexes(personType.name).then(function() {
-      return sleep(sleepTime);
+      return helper.sleep(sleepTime);
     });
   });
 
@@ -42,7 +34,7 @@ describe("Test Index", function() {
     expect(index.isCompound).be.false;
 
     return meta.createIndex(personType.name, index).then(function() {
-      return sleep(sleepTime);
+      return helper.sleep(sleepTime);
     }).then(function() {
       return meta.getIndexes(personType.name);
     }).then(function(indexes) {
@@ -58,7 +50,7 @@ describe("Test Index", function() {
     var index2 = new DB.metamodel.DbIndex("address");
 
     return Promise.all([meta.createIndex(personType.name, index1), meta.createIndex(personType.name, index2)]).then(function() {
-      return sleep(sleepTime);
+      return helper.sleep(sleepTime);
     }).then(function() {
       return meta.getIndexes(personType.name);
     }).then(function(indexes) {
@@ -71,14 +63,14 @@ describe("Test Index", function() {
     var index2 = new DB.metamodel.DbIndex("address");
 
     return Promise.all([meta.createIndex(personType.name, index1), meta.createIndex(personType.name, index2)]).then(function() {
-      return sleep(sleepTime);
+      return helper.sleep(sleepTime);
     }).then(function() {
       return meta.getIndexes(personType.name);
     }).then(function(indexes) {
       expect(indexes).have.length(3);
       return meta.dropAllIndexes(personType.name);
     }).then(function() {
-      return sleep(sleepTime);
+      return helper.sleep(sleepTime);
     }).then(function() {
       return expect(meta.getIndexes(personType.name)).eventually.have.length(1);
     });
@@ -88,11 +80,11 @@ describe("Test Index", function() {
     var index = new DB.metamodel.DbIndex("name");
 
     return meta.createIndex(personType.name, index).then(function() {
-      return sleep(sleepTime);
+      return helper.sleep(sleepTime);
     }).then(function() {
       return meta.dropIndex(personType.name, index);
     }).then(function() {
-      return sleep(sleepTime);
+      return helper.sleep(sleepTime);
     }).then(function() {
       return expect(meta.getIndexes(personType.name)).eventually.have.length(1);
     });
@@ -105,7 +97,7 @@ describe("Test Index", function() {
       expect(indexes).have.length(1);
       return meta.createIndex(personType.name, index);
     }).then(function() {
-      return sleep(sleepTime);
+      return helper.sleep(sleepTime);
     }).then(function() {
       return meta.getIndexes(personType.name);
     }).then(function(indexes) {
@@ -124,7 +116,7 @@ describe("Test Index", function() {
     expect(index.hasKey("age")).be.true;
 
     return meta.createIndex(personType.name, index).then(function() {
-      return sleep(sleepTime);
+      return helper.sleep(sleepTime);
     }).then(function() {
       return meta.getIndexes(personType.name);
     }).then(function(indexes) {
@@ -162,7 +154,7 @@ describe("Test Index", function() {
   it('should create unique index', function() {
     var index = new DB.metamodel.DbIndex("name", true);
     return meta.createIndex(personType.name, index).then(function() {
-      return sleep(sleepTime);
+      return helper.sleep(sleepTime);
     }).then(function() {
       var person1 = new db[personType.name]();
       var person2 = new db[personType.name]();

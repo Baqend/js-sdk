@@ -1,10 +1,5 @@
 if (typeof DB == 'undefined') {
-  env = require('./env');
-  var chai = require("chai");
-  var chaiAsPromised = require("chai-as-promised");
-  chai.use(chaiAsPromised);
-  chai.config.includeStack = true;
-  expect = chai.expect;
+  require('./node');
   DB = require('../lib');
 }
 
@@ -12,7 +7,7 @@ describe('Test Acl', function() {
 
   var db, emf;
   before(function() {
-    emf = new DB.EntityManagerFactory({host: env.TEST_SERVER, tokenStorage: rootTokenStorage});
+    emf = new DB.EntityManagerFactory({host: env.TEST_SERVER, tokenStorage: helper.rootTokenStorage});
     return emf.ready().then(function() {
       var metamodel = emf.metamodel;
       if(!metamodel.managedType("AclPerson")) {
@@ -36,7 +31,7 @@ describe('Test Acl', function() {
 
   function createUserDb() {
     var em = emf.createEntityManager();
-    return em.User.register(makeLogin(), 'secret').then(function() {
+    return em.User.register(helper.makeLogin(), 'secret').then(function() {
       return em;
     });
   }

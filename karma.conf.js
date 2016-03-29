@@ -26,6 +26,7 @@ module.exports = function(config) {
       'node_modules/jahcode/jahcode.js',
       'build/baqend.js',
       'spec/env.js',
+      'spec/helper.js',
       'spec/**/*.spec.js',
       {pattern: 'build/*.html', included: false, watched: false}
     ],

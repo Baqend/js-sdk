@@ -1,9 +1,5 @@
 if (typeof DB == 'undefined') {
-  env = require('./env');
-  var chai = require("chai");
-  var chaiAsPromised = require("chai-as-promised");
-  chai.use(chaiAsPromised);
-  expect = chai.expect;
+  require('./node');
   DB = require('../lib');
 }
 
@@ -40,7 +36,7 @@ describe("Test enhancer", function() {
   ];
 
   beforeEach(function() {
-    var emf = new DB.EntityManagerFactory({host: env.TEST_SERVER, schema: model, tokenStorage: rootTokenStorage});
+    var emf = new DB.EntityManagerFactory({host: env.TEST_SERVER, schema: model, tokenStorage: helper.rootTokenStorage});
     return emf.metamodel.save().then(function() {
       db = emf.createEntityManager();
       expect(db.isReady).be.true;

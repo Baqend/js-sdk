@@ -1,10 +1,5 @@
 if (typeof DB == 'undefined') {
-  env = require('./env');
-  var chai = require("chai");
-  var chaiAsPromised = require("chai-as-promised");
-  chai.use(chaiAsPromised);
-  chai.config.includeStack = true;
-  expect = chai.expect;
+  require('./node');
   DB = require('../lib');
 }
 
@@ -12,7 +7,7 @@ describe('Test crud', function() {
   var db, personType, addressType, childType, emf, metamodel, streetType;
 
   before(function() {
-    emf = new DB.EntityManagerFactory({ host: env.TEST_SERVER, schema: {}, tokenStorage: rootTokenStorage });
+    emf = new DB.EntityManagerFactory({ host: env.TEST_SERVER, schema: {}, tokenStorage: helper.rootTokenStorage });
     metamodel = emf.metamodel;
 
     metamodel.addType(personType = new DB.metamodel.EntityType("Person", metamodel.entity(Object)));
@@ -1055,7 +1050,7 @@ describe('Test crud', function() {
     });
 
     it('should load entity by query single result and resolve depth', function() {
-      child.name = randomize("queryDepth");
+      child.name = helper.randomize("queryDepth");
       return child.save({depth:true}).then(function(saved) {
         child = saved;
         return emf.createEntityManager();
@@ -1078,7 +1073,7 @@ describe('Test crud', function() {
     });
 
     it('should load entity by query result list and resolve depth', function() {
-      child.name = randomize("queryDepth");
+      child.name = helper.randomize("queryDepth");
       return child.save({depth:true}).then(function(saved) {
         child = saved;
         return emf.createEntityManager();
@@ -1106,7 +1101,7 @@ describe('Test crud', function() {
     var myId, myKey;
 
     beforeEach(function() {
-      myKey = randomize('a/db/bucket/?param=3\\ed&g=1');
+      myKey = helper.randomize('a/db/bucket/?param=3\\ed&g=1');
       var person = new db.Person();
       person.key = myKey;
       myId = person.id;
@@ -1165,7 +1160,7 @@ describe('Test crud', function() {
 
       person.child = new db.Person();
       person.child.name = "Custom Child Person";
-      person.child.key = randomize('my/craßy*%unescap\\ed&id?=');
+      person.child.key = helper.randomize('my/craßy*%unescap\\ed&id?=');
       var childId = person.child.id;
 
       return person.save({refresh:true, depth: true}, function(result) {

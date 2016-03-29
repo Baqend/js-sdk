@@ -1,10 +1,5 @@
 if (typeof DB == 'undefined') {
-  env = require('./env');
-  var chai = require("chai");
-  var chaiAsPromised = require("chai-as-promised");
-  chai.use(chaiAsPromised);
-  //chai.config.includeStack = true;
-  expect = chai.expect;
+  require('./node');
   DB = require('../lib');
 }
 
@@ -12,11 +7,11 @@ describe('Test code', function() {
   var db, code, entityType, personType, emf;
 
   before(function() {
-    emf = new DB.EntityManagerFactory({host: env.TEST_SERVER, tokenStorage: rootTokenStorage});
+    emf = new DB.EntityManagerFactory({host: env.TEST_SERVER, tokenStorage: helper.rootTokenStorage});
 
     return emf.ready().then(function() {
       var metamodel = emf.metamodel;
-      personType = new DB.metamodel.EntityType(randomize("CodePerson"), metamodel.entity(Object));
+      personType = new DB.metamodel.EntityType(helper.randomize("CodePerson"), metamodel.entity(Object));
       metamodel.addType(personType);
 
       personType.addAttribute(new DB.metamodel.SingularAttribute("name", metamodel.baseType(String)));
@@ -257,7 +252,7 @@ describe('Test code', function() {
           };
         }
       };
-      bucket = randomize("code.Test");
+      bucket = helper.randomize("code.Test");
       db = emf.createEntityManager();
       code = db.code;
       entityType = db.metamodel.entity(personType.typeConstructor);

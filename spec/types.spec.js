@@ -1,9 +1,5 @@
 if (typeof DB == 'undefined') {
-  env = require('./env');
-  var chai = require("chai");
-  var chaiAsPromised = require("chai-as-promised");
-  chai.use(chaiAsPromised);
-  expect = chai.expect;
+  require('./node');
   DB = require('../lib');
 }
 
@@ -70,7 +66,7 @@ describe('Test entity type', function () {
   metamodel.addType(EmbeddedType);
 
   before(function() {
-    emf.tokenStorage = rootTokenStorage;
+    emf.tokenStorage = helper.rootTokenStorage;
 
     return emf.connect(env.TEST_SERVER).then(function() {
       return metamodel.save();

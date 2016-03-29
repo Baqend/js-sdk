@@ -1,10 +1,5 @@
 if (typeof DB == 'undefined') {
-  env = require('./env');
-  var chai = require("chai");
-  var chaiAsPromised = require("chai-as-promised");
-  chai.use(chaiAsPromised);
-  chai.config.includeStack = true;
-  expect = chai.expect;
+  require('./node');
   DB = require('../lib');
 }
 
@@ -18,7 +13,7 @@ describe('Test Push Notifications', function() {
     this.timeout(40000);
 
     var retires = 0;
-    emf = new DB.EntityManagerFactory({ host: env.TEST_SERVER, tokenStorage: rootTokenStorage });
+    emf = new DB.EntityManagerFactory({ host: env.TEST_SERVER, tokenStorage: helper.rootTokenStorage });
     return emf.ready().then(function() {
       if (!emf.metamodel.entity("Lock")) {
         var Lock = new DB.metamodel.EntityType("Lock", emf.metamodel.entity(Object));
@@ -38,7 +33,7 @@ describe('Test Push Notifications', function() {
       return lock.insert().catch(function(e) {
         if (retires++ > 60)
           throw e;
-        return sleep(500).then(createLock);
+        return helper.sleep(500).then(createLock);
       });
     }
   });

@@ -1,10 +1,5 @@
 if (typeof DB == 'undefined') {
-  env = require('./env');
-  var chai = require("chai");
-  var chaiAsPromised = require("chai-as-promised");
-  chai.use(chaiAsPromised);
-  chai.config.includeStack = true;
-  expect = chai.expect;
+  require('./node');
   DB = require('../lib');
 }
 
@@ -14,7 +9,7 @@ describe('Test user and roles', function() {
   this.timeout(RENEW_TIMEOUT * 2);
 
   before(function() {
-    emf = new DB.EntityManagerFactory({host: env.TEST_SERVER, tokenStorage: rootTokenStorage});
+    emf = new DB.EntityManagerFactory({host: env.TEST_SERVER, tokenStorage: helper.rootTokenStorage});
     return emf.createEntityManager().ready().then(function() {
       var userEntity = emf.metamodel.entity("User");
       if(!userEntity.getAttribute("email")) {
@@ -48,7 +43,7 @@ describe('Test user and roles', function() {
     });
 
     it('should register and login a new user', function() {
-      var login = makeLogin();
+      var login = helper.makeLogin();
       return db.User.register(login, 'secret').then(function(user) {
         expect(user).be.ok;
         expect(DB.binding.User.isInstance(user)).be.true;
@@ -64,7 +59,7 @@ describe('Test user and roles', function() {
     });
 
     it('should not set token and me when loginOption is NO_LOGIN', function() {
-      var user = new db.User({ username: makeLogin(), email: "test@mail.de" });
+      var user = new db.User({ username: helper.makeLogin(), email: "test@mail.de" });
       db.User.register(user, 'secret', db.User.LoginOption.NO_LOGIN).then(function() {
         expect(db.me).not.ok;
         expect(db.token).not.ok;
@@ -72,7 +67,7 @@ describe('Test user and roles', function() {
     });
 
     it('should register user from object', function() {
-      var user = new db.User({ username: makeLogin(), email: "test@mail.de" });
+      var user = new db.User({ username: helper.makeLogin(), email: "test@mail.de" });
       return db.User.register(user, 'secret').then(function(loaded) {
         expect(loaded.username).eqls(user.username);
         expect(loaded.email).eqls("test@mail.de");
@@ -80,12 +75,12 @@ describe('Test user and roles', function() {
     });
 
     it('should fail to register if username is missing', function() {
-      var user = { foobar: makeLogin() };
+      var user = { foobar: helper.makeLogin() };
       return expect(db.User.register(user, 'secret')).be.rejected;
     });
 
     it('should logout an user', function() {
-      var login = makeLogin();
+      var login = helper.makeLogin();
       return db.User.register(login, 'secret').then(function(user) {
         return db.User.logout();
       }).then(function() {
@@ -95,7 +90,7 @@ describe('Test user and roles', function() {
     });
 
     it('should not register a user twice', function() {
-      var login = makeLogin();
+      var login = helper.makeLogin();
       var promise = db.User.register(login, 'secret').then(function(user) {
         expect(user.username).be.equals(login);
       });
@@ -108,7 +103,7 @@ describe('Test user and roles', function() {
     });
 
     it('should not register an existing user', function() {
-      var login = makeLogin();
+      var login = helper.makeLogin();
       return db.User.register(login, 'secret').then(function(user) {
         return db.User.logout();
       }).then(function() {
@@ -120,7 +115,7 @@ describe('Test user and roles', function() {
     });
 
     it('should login with valid credentials', function() {
-      var login = makeLogin();
+      var login = helper.makeLogin();
       var user;
       return db.User.register(login, 'secret').then(function(u) {
         user = u;
@@ -145,12 +140,12 @@ describe('Test user and roles', function() {
     });
 
     it('should not login an unknown user', function() {
-      var login = makeLogin();
+      var login = helper.makeLogin();
       expect(db.User.login(login, 'secret')).be.rejected;
     });
 
     it('should not login with invalid credentials', function() {
-      var login = makeLogin();
+      var login = helper.makeLogin();
       return db.User.register(login, 'secret').then(function(u) {
         return db.User.logout();
       }).then(function() {
@@ -159,7 +154,7 @@ describe('Test user and roles', function() {
     });
 
     it('should not login twice', function() {
-      var login = makeLogin();
+      var login = helper.makeLogin();
       return db.User.register(login, 'secret').then(function(u) {
         expect(function() {
           db.User.login(login, 'secret');
@@ -176,7 +171,7 @@ describe('Test user and roles', function() {
     });
 
     it('should logout user', function() {
-      var login = makeLogin();
+      var login = helper.makeLogin();
       return db.User.register(login, 'secret').then(function() {
         expect(db.token).be.ok;
         expect(db.User.me).be.ok;
@@ -188,7 +183,7 @@ describe('Test user and roles', function() {
     });
 
     it('should renew user token', function() {
-      var login = makeLogin();
+      var login = helper.makeLogin();
       var oldToken;
       return db.User.register(login, 'secret').then(function() {
         return new Promise(function(resolve) {
@@ -204,7 +199,7 @@ describe('Test user and roles', function() {
     });
 
     it('should change password', function() {
-      var oldLogin = makeLogin();
+      var oldLogin = helper.makeLogin();
       var oldToken;
       return db.User.register(oldLogin, "secret").then(function() {
         oldToken = db.token;
@@ -226,7 +221,7 @@ describe('Test user and roles', function() {
     });
 
     it('should be allowed to change password as root', function() {
-      var oldLogin = makeLogin();
+      var oldLogin = helper.makeLogin();
       var oldToken;
       return db.User.register(oldLogin, "secret").then(function() {
         oldToken = db.token;
@@ -249,7 +244,7 @@ describe('Test user and roles', function() {
     });
 
     it('should not be allowed to insert user', function() {
-      var name = makeLogin();
+      var name = helper.makeLogin();
       var newUser = db.User.fromJSON({
         username: name
       });
@@ -258,7 +253,7 @@ describe('Test user and roles', function() {
     });
 
     it('should not be allowed to register with an empty password', function() {
-      return expect(db.User.register(makeLogin(), "")).be.rejected;
+      return expect(db.User.register(helper.makeLogin(), "")).be.rejected;
     });
   });
 
@@ -277,7 +272,7 @@ describe('Test user and roles', function() {
     });
 
     it('should remove token if password has been changed', function() {
-      var login = makeLogin();
+      var login = helper.makeLogin();
       return DB.User.register(login, 'secret').then(function() {
         return new Promise(function(resolve) {
           setTimeout(function() {
@@ -299,7 +294,7 @@ describe('Test user and roles', function() {
     });
 
     it('should remove token if token is invalid', function() {
-      var login = makeLogin();
+      var login = helper.makeLogin();
       return DB.User.register(login, 'secret').then(function() {
         var token = DB.tokenStorage.get(DB._connector.origin);
         expect(token).be.ok;
@@ -314,7 +309,7 @@ describe('Test user and roles', function() {
     });
 
     it('should not remove token if not global', function() {
-      var login = makeLogin();
+      var login = helper.makeLogin();
       var oldToken;
       return DB.User.register(login, 'secret').then(function() {
         return db.User.login(login, 'secret');
@@ -330,7 +325,7 @@ describe('Test user and roles', function() {
     });
 
     it('should use global storage if tokenStorage is true', function() {
-      var login = makeLogin();
+      var login = helper.makeLogin();
       return DB.User.register(login, 'secret').then(function() {
         expect(DB.tokenStorage).eqls(DB.entityManagerFactory.tokenStorage);
         expect(DB.me).be.ok;
@@ -340,7 +335,7 @@ describe('Test user and roles', function() {
     });
 
     it('should remove token by logout if tokenStorage is true', function() {
-      var login = makeLogin();
+      var login = helper.makeLogin();
       return DB.User.register(login, 'secret').then(function() {
         expect(DB.tokenStorage).eqls(DB.entityManagerFactory.tokenStorage);
         expect(DB.me).be.ok;
@@ -352,7 +347,7 @@ describe('Test user and roles', function() {
     });
 
     it('should autologin on when tokenStorage is true', function() {
-      var login = makeLogin();
+      var login = helper.makeLogin();
       return DB.User.register(login, 'secret').then(function() {
         var db = new DB.EntityManagerFactory(env.TEST_SERVER).createEntityManager(true);
         return db.ready().then(function() {
@@ -363,7 +358,7 @@ describe('Test user and roles', function() {
     });
 
     it('should not autologin when tokenStorage is false', function() {
-      var login = makeLogin();
+      var login = helper.makeLogin();
       return DB.User.register(login, 'secret').then(function() {
         var db = new DB.EntityManagerFactory(env.TEST_SERVER).createEntityManager();
         return db.ready().then(function() {
@@ -375,7 +370,7 @@ describe('Test user and roles', function() {
 
     if (typeof localStorage !== "undefined") {
       it('should save token in session storage when register loginOption is false', function() {
-        var user = new DB.User({ username: makeLogin()});
+        var user = new DB.User({ username: helper.makeLogin()});
         return DB.User.register(user, 'secret', false).then(function(u) {
           expect(u.username).eqls(user.username);
           expect(localStorage.getItem('BAT:' + db._connector.origin)).be.not.ok;
@@ -384,7 +379,7 @@ describe('Test user and roles', function() {
       });
 
       it('should save token in local storage when register loginOption is true', function() {
-        var user = new DB.User({ username: makeLogin()});
+        var user = new DB.User({ username: helper.makeLogin()});
         return DB.User.register(user, 'secret', true).then(function(u) {
           expect(u.username).eqls(user.username);
           expect(localStorage.getItem('BAT:' + db._connector.origin)).be.ok;
@@ -393,7 +388,7 @@ describe('Test user and roles', function() {
       });
 
       it('should save token in session storage when login loginOption is false', function() {
-        var username =  makeLogin();
+        var username =  helper.makeLogin();
         var user = new DB.User({ username: username});
         return DB.User.register(user, 'secret', db.User.LoginOption.NO_LOGIN).then(function() {
           return DB.User.login(username, 'secret', false);
@@ -405,7 +400,7 @@ describe('Test user and roles', function() {
       });
 
       it('should save token in local storage when login loginOption is true', function() {
-        var username =  makeLogin();
+        var username =  helper.makeLogin();
         var user = new DB.User({ username: username});
         return DB.User.register(user, 'secret', db.User.LoginOption.NO_LOGIN).then(function() {
           return DB.User.login(username, 'secret', true);
@@ -423,13 +418,13 @@ describe('Test user and roles', function() {
 
     beforeEach(function() {
       user1 = new db.User();
-      user1.username = makeLogin();
+      user1.username = helper.makeLogin();
 
       user2 = new db.User();
-      user2.username = makeLogin();
+      user2.username = helper.makeLogin();
 
       user3 = new db.User();
-      user3.username = makeLogin();
+      user3.username = helper.makeLogin();
 
       return db.User.register(user1, user1.username, db.User.LoginOption.NO_LOGIN).then(function(usr) {
         user1 = usr;
@@ -467,7 +462,7 @@ describe('Test user and roles', function() {
     });
 
     it('should renew token', function() {
-      var login = makeLogin();
+      var login = helper.makeLogin();
       var oldToken;
       return db.User.register(login, 'secret').then(function() {
         return new Promise(function(resolve) {

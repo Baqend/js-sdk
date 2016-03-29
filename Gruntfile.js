@@ -8,7 +8,7 @@ module.exports = function (grunt) {
   // @see https://github.com/peerigon/xunit-file/blob/master/lib/xunit-file.js
   process.env.JUNIT_REPORT_PATH = 'build/test-results/node.xml';
 
-  var TEST = 'spec/{env.js,spec.helper.js,**/*.spec.js}';
+  var TEST = 'spec/{env.js,helper.js,**/*.spec.js}';
 
   var browserifyOptions = {
     builtins: [],

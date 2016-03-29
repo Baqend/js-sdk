@@ -1,9 +1,5 @@
 if (typeof DB == 'undefined') {
-  env = require('./env');
-  var chai = require("chai");
-  var chaiAsPromised = require("chai-as-promised");
-  chai.use(chaiAsPromised);
-  expect = chai.expect;
+  require('./node');
   DB = require('../lib');
 }
 

@@ -1,10 +1,5 @@
 if (typeof DB == 'undefined') {
-  env = require('./env');
-  var chai = require("chai");
-  var chaiAsPromised = require("chai-as-promised");
-  chai.use(chaiAsPromised);
-  //chai.config.includeStack = true;
-  expect = chai.expect;
+  require('./node');
   DB = require('../lib');
 }
 
@@ -12,7 +7,7 @@ describe('Test Connect', function() {
   var user, origin;
 
   before(function() {
-    user = makeLogin();
+    user = helper.makeLogin();
     var emf = new DB.EntityManagerFactory(env.TEST_SERVER);
     var em = emf.createEntityManager();
 
