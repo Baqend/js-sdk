@@ -112,7 +112,7 @@ module.exports = function (grunt) {
       internal: {
         hostname: 'fb.baqend.com',
         configFile: 'karma.conf.js',
-        browsers: ['IE9-Win', 'IE10-Win', 'IE11-Win', 'Firefox-Win', 'Chrome-Win', 'Chrome-Linux', 'Firefox-Linux'],
+        browsers: ['Chrome-Linux'],
         singleRun: true
       },
       test: {

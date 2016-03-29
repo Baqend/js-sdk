@@ -21,8 +21,9 @@ describe('Test Push Notifications', function() {
     emf = new DB.EntityManagerFactory({ host: env.TEST_SERVER, tokenStorage: rootTokenStorage });
     return emf.ready().then(function() {
       if (!emf.metamodel.entity("Lock")) {
-        emf.metamodel.addType(new DB.metamodel.EntityType("Lock", emf.metamodel.entity(Object)));
-        return emf.metamodel.save();
+        var Lock = new DB.metamodel.EntityType("Lock", emf.metamodel.entity(Object));
+        emf.metamodel.addType(Lock);
+        return emf.metamodel.save(Lock);
       }
     }).then(function() {
       db = emf.createEntityManager();
