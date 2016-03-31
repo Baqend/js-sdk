@@ -123,7 +123,7 @@ module.exports = function (grunt) {
             timeout: 30000
           }
         },
-        browsers: ['PhantomJS', 'IE9-Win', 'Edge-Win', 'IE10-Win', 'IE11-Win', 'Firefox-Win', 'Chrome-Win', 'Chrome-Linux', 'Firefox-Linux', 'Safari-Mac'],
+        browsers: ['PhantomJS', 'IE9-Win', 'IE10-Win', 'IE11-Win', 'Firefox-Win', 'Chrome-Win', 'Chrome-Linux', 'Firefox-Linux', 'Safari-Mac'],
         reporters: ['junit'],
         singleRun: true,
         junitReporter: {
