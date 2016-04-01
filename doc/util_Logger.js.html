@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>Baqend JavaScript SDK 1.1.0 - Source: util/Logger.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+
+    <link rel="shortcut icon" type="image/x-icon" href="img/favicon.ico">
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/bootstrap-baqend.min.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<nav class="navbar navbar-default navbar-fixed-top" role="navigation">
+    <div class="container">
+
+        <!-- Collapsed navigation -->
+        <div class="navbar-header">
+            <!-- Expander button -->
+            <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+
+            <!-- Main title -->
+            <a class="navbar-brand" href="/"><img src="img/baqend_logo.svg"></a>
+        </div>
+
+        <!-- Expanded navigation -->
+        <div id="nav" class="navbar-collapse collapse">
+            <!-- Main navigation -->
+            <ul class="nav navbar-nav">
+                <li>
+                    <a href="http://www.baqend.com/guide/index.html">Guide</a>
+                </li>
+                <li class="active">
+                    <a href="baqend.html">JS API</a>
+                </li>
+                <li>
+                    <a href="http://www.baqend.com/#tutorial">Tutorial</a>
+                </li>
+                <li>
+                    <a href="http://dashboard.baqend.com/">Dashboard</a>
+                </li>
+                <li>
+                    <a href="https://community.baqend.com/">Community <span class="visible-lg-inline">Forum</span></a>
+                </li>
+            </ul>
+        </div>
+    </div>
+</nav>
+
+
+<div class="container">
+  <div class="row">
+    <div class="col-md-3">
+        <div class="bs-sidebar hidden-print fixed affix" role="complementary">
+            <input class="filter form-control input-sm" type="text" placeholder="FILTER"/>
+
+            <ul class="nav bs-sidenav">
+            
+            
+                <li class="">
+                    <a href="baqend.html" class="nav-name">baqend</a>
+                    <ul class="nav">
+                      
+                        <li class=""><a href="baqend.Acl.html" class="nav-name">Acl</a></li>
+                      
+                        <li class=""><a href="baqend.EntityManager.html" class="nav-name">EntityManager</a></li>
+                      
+                        <li class=""><a href="baqend.EntityManagerFactory.html" class="nav-name">EntityManagerFactory</a></li>
+                      
+                        <li class=""><a href="baqend.EntityTransaction.html" class="nav-name">EntityTransaction</a></li>
+                      
+                        <li class=""><a href="baqend.GeoPoint.html" class="nav-name">GeoPoint</a></li>
+                      
+                        <li class=""><a href="baqend.Query.html" class="nav-name">Query</a></li>
+                      
+                    </ul>
+                </li>
+            
+                <li class="">
+                    <a href="baqend.binding.html" class="nav-name">baqend.binding</a>
+                    <ul class="nav">
+                      
+                        <li class=""><a href="baqend.binding.Accessor.html" class="nav-name">Accessor</a></li>
+                      
+                        <li class=""><a href="baqend.binding.DeviceFactory.html" class="nav-name">DeviceFactory</a></li>
+                      
+                        <li class=""><a href="baqend.binding.Enhancer.html" class="nav-name">Enhancer</a></li>
+                      
+                        <li class=""><a href="baqend.binding.Entity.html" class="nav-name">Entity</a></li>
+                      
+                        <li class=""><a href="baqend.binding.EntityFactory.html" class="nav-name">EntityFactory</a></li>
+                      
+                        <li class=""><a href="baqend.binding.ManagedFactory.html" class="nav-name">ManagedFactory</a></li>
+                      
+                        <li class=""><a href="baqend.binding.Role.html" class="nav-name">Role</a></li>
+                      
+                        <li class=""><a href="baqend.binding.User.html" class="nav-name">User</a></li>
+                      
+                        <li class=""><a href="baqend.binding.UserFactory.html" class="nav-name">UserFactory</a></li>
+                      
+                    </ul>
+                </li>
+            
+                <li class="">
+                    <a href="baqend.collection.html" class="nav-name">baqend.collection</a>
+                    <ul class="nav">
+                      
+                        <li class=""><a href="baqend.collection.Collection.html" class="nav-name">Collection</a></li>
+                      
+                        <li class=""><a href="baqend.collection.IndexIterator.html" class="nav-name">IndexIterator</a></li>
+                      
+                        <li class=""><a href="baqend.collection.Iterable.html" class="nav-name">Iterable</a></li>
+                      
+                        <li class=""><a href="baqend.collection.Iterator.html" class="nav-name">Iterator</a></li>
+                      
+                        <li class=""><a href="baqend.collection.List.html" class="nav-name">List</a></li>
+                      
+                        <li class=""><a href="baqend.collection.Map.html" class="nav-name">Map</a></li>
+                      
+                        <li class=""><a href="baqend.collection.PropertyIterator.html" class="nav-name">PropertyIterator</a></li>
+                      
+                        <li class=""><a href="baqend.collection.Set.html" class="nav-name">Set</a></li>
+                      
+                    </ul>
+                </li>
+            
+                <li class="">
+                    <a href="baqend.connector.html" class="nav-name">baqend.connector</a>
+                    <ul class="nav">
+                      
+                        <li class=""><a href="baqend.connector.Connector.html" class="nav-name">Connector</a></li>
+                      
+                        <li class=""><a href="baqend.connector.IFrameConnector.html" class="nav-name">IFrameConnector</a></li>
+                      
+                        <li class=""><a href="baqend.connector.Message.html" class="nav-name">Message</a></li>
+                      
+                        <li class=""><a href="baqend.connector.NodeConnector.html" class="nav-name">NodeConnector</a></li>
+                      
+                        <li class=""><a href="baqend.connector.XMLHttpConnector.html" class="nav-name">XMLHttpConnector</a></li>
+                      
+                    </ul>
+                </li>
+            
+                <li class="">
+                    <a href="baqend.error.html" class="nav-name">baqend.error</a>
+                    <ul class="nav">
+                      
+                        <li class=""><a href="baqend.error.CommunicationError.html" class="nav-name">CommunicationError</a></li>
+                      
+                        <li class=""><a href="baqend.error.EntityExistsError.html" class="nav-name">EntityExistsError</a></li>
+                      
+                        <li class=""><a href="baqend.error.EntityNotFoundError.html" class="nav-name">EntityNotFoundError</a></li>
+                      
+                        <li class=""><a href="baqend.error.IllegalEntityError.html" class="nav-name">IllegalEntityError</a></li>
+                      
+                        <li class=""><a href="baqend.error.PersistentError.html" class="nav-name">PersistentError</a></li>
+                      
+                        <li class=""><a href="baqend.error.RollbackError.html" class="nav-name">RollbackError</a></li>
+                      
+                    </ul>
+                </li>
+            
+                <li class="">
+                    <a href="baqend.metamodel.html" class="nav-name">baqend.metamodel</a>
+                    <ul class="nav">
+                      
+                        <li class=""><a href="baqend.metamodel.Attribute.html" class="nav-name">Attribute</a></li>
+                      
+                        <li class=""><a href="baqend.metamodel.BasicType.html" class="nav-name">BasicType</a></li>
+                      
+                        <li class=""><a href="baqend.metamodel.CollectionAttribute.html" class="nav-name">CollectionAttribute</a></li>
+                      
+                        <li class=""><a href="baqend.metamodel.DbIndex.html" class="nav-name">DbIndex</a></li>
+                      
+                        <li class=""><a href="baqend.metamodel.EmbeddableType.html" class="nav-name">EmbeddableType</a></li>
+                      
+                        <li class=""><a href="baqend.metamodel.EntityType.html" class="nav-name">EntityType</a></li>
+                      
+                        <li class=""><a href="baqend.metamodel.ListAttribute.html" class="nav-name">ListAttribute</a></li>
+                      
+                        <li class=""><a href="baqend.metamodel.ManagedType.html" class="nav-name">ManagedType</a></li>
+                      
+                        <li class=""><a href="baqend.metamodel.MapAttribute.html" class="nav-name">MapAttribute</a></li>
+                      
+                        <li class=""><a href="baqend.metamodel.Metamodel.html" class="nav-name">Metamodel</a></li>
+                      
+                        <li class=""><a href="baqend.metamodel.ModelBuilder.html" class="nav-name">ModelBuilder</a></li>
+                      
+                        <li class=""><a href="baqend.metamodel.PluralAttribute.html" class="nav-name">PluralAttribute</a></li>
+                      
+                        <li class=""><a href="baqend.metamodel.SetAttribute.html" class="nav-name">SetAttribute</a></li>
+                      
+                        <li class=""><a href="baqend.metamodel.SingularAttribute.html" class="nav-name">SingularAttribute</a></li>
+                      
+                        <li class=""><a href="baqend.metamodel.Type.html" class="nav-name">Type</a></li>
+                      
+                    </ul>
+                </li>
+            
+                <li class="">
+                    <a href="baqend.util.html" class="nav-name">baqend.util</a>
+                    <ul class="nav">
+                      
+                        <li class=""><a href="baqend.util.Code.html" class="nav-name">Code</a></li>
+                      
+                        <li class=""><a href="baqend.util.Lockable.html" class="nav-name">Lockable</a></li>
+                      
+                        <li class=""><a href="baqend.util.Logger.html" class="nav-name">Logger</a></li>
+                      
+                        <li class=""><a href="baqend.util.Metadata.html" class="nav-name">Metadata</a></li>
+                      
+                        <li class=""><a href="baqend.util.Modules.html" class="nav-name">Modules</a></li>
+                      
+                        <li class=""><a href="baqend.util.Permission.html" class="nav-name">Permission</a></li>
+                      
+                        <li class=""><a href="baqend.util.PushMessage.html" class="nav-name">PushMessage</a></li>
+                      
+                        <li class=""><a href="baqend.util.TokenStorage.html" class="nav-name">TokenStorage</a></li>
+                      
+                        <li class=""><a href="baqend.util.ValidationResult.html" class="nav-name">ValidationResult</a></li>
+                      
+                        <li class=""><a href="baqend.util.Validator.html" class="nav-name">Validator</a></li>
+                      
+                    </ul>
+                </li>
+            
+            </ul>
+        </div>
+    </div>
+    <div class="col-md-9" id="main">
+      <h1 class="page-title">Source: util/Logger.js</h1>
+
+      
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>
+var message = require('../message');
+var StatusCode = require('../connector/Message').StatusCode;
+
+/**
+ * @class baqend.util.Logger
+ */
+var Logger = Object.inherit(/** @lends baqend.util.Logger.prototype */ {
+
+  /** @lends baqend.util.Logger */
+  extend: {
+    LEVELS: ['trace', 'debug', 'info', 'warn', 'error'],
+    FORMAT_REGEXP: /%[sdj%]/g,
+
+    create: function(entityManager) {
+      var proto = this.prototype;
+
+      function Logger() {
+        proto.log.apply(Logger, arguments);
+      }
+
+      Object.cloneOwnProperties(Logger, proto);
+      Logger._init(entityManager);
+
+      return Logger;
+    }
+  },
+
+  /**
+   * @type baqend.EntityManager
+   */
+  entityManager: null,
+  levelIndex: 2,
+
+  get level() {
+    return Logger.LEVELS[this.levelIndex];
+  },
+
+  set level(level) {
+    var index = Logger.LEVELS.indexOf(level);
+    if (index == -1)
+      throw new Error("Unknown logging level " + level);
+
+    this.levelIndex = index;
+  },
+
+  /**
+   * Logs a message with the given log level
+   * @param {String} [level='info'] The level used to log the message
+   * @param {String} message The message to log, the message string can be interpolated like the node util.format method
+   * @param {*} args... The arguments used to interpolated the message string
+   * @param {Object} [data=null] An optional object which will be included in the log entry
+   *
+   * @see https://nodejs.org/api/util.html#util_util_format_format
+   */
+  log: function(level, message, data) {
+    var args = Array.prototype.slice.call(arguments);
+
+    if (Logger.LEVELS.indexOf(args[0]) == -1) {
+      level = 'info';
+    } else {
+      level = args.shift();
+    }
+
+    if (this.levelIndex > Logger.LEVELS.indexOf(level))
+      return;
+
+    message = this._format(args.shift(), args);
+    data = null;
+    if (args.length &amp;&amp; typeof args[args.length - 1] === 'object') {
+      data = args.pop();
+    }
+
+    if (args.length) {
+      message += ", " + args.join(", ");
+    }
+
+    return this._log({
+      date: new Date(),
+      message: message,
+      level: level,
+      user: this.entityManager.me &amp;&amp; this.entityManager.me.id,
+      data: data
+    });
+  },
+
+  _format: function(f, args) {
+    if (args.length == 0)
+      return f;
+
+    var str = String(f).replace(Logger.FORMAT_REGEXP, function(x) {
+      if (x === '%%') return '%';
+      if (!args.length) return x;
+      switch (x) {
+        case '%s':
+          return String(args.shift());
+        case '%d':
+          return Number(args.shift());
+        case '%j':
+          try {
+            return JSON.stringify(args.shift());
+          } catch (_) {
+            return '[Circular]';
+          }
+        default:
+          return x;
+      }
+    });
+
+    return str;
+  },
+
+  _init: function(entityManager) {
+    this.entityManager = entityManager;
+
+    Logger.LEVELS.forEach(function(level) {
+      this[level] = this.log.bind(this, level);
+    }.bind(this));
+  },
+
+  _log: function(json) {
+    if (!this.entityManager.isReady) {
+      return this.entityManager.ready(this._log.bind(this, json));
+    } else {
+      return this.entityManager._send(new message.CreateObject('logs.AppLog', json));
+    }
+  }
+
+  /**
+   * Log message at trace level
+   * @param {String} message The message to log, the message string can be interpolated like the node util.format method
+   * @param {*} args... The arguments used to interpolated the message string
+   * @param {Object} [data=null] An optional object which will be included in the log entry
+   * @function trace
+   * @memberOf baqend.util.Logger.prototype
+   *
+   * @see https://nodejs.org/api/util.html#util_util_format_format
+   */
+
+  /**
+   * Log message at debug level
+   * @param {String} message The message to log, the message string can be interpolated like the node util.format method
+   * @param {*} args... The arguments used to interpolated the message string
+   * @param {Object} [data=null] An optional object which will be included in the log entry
+   * @function debug
+   * @memberOf baqend.util.Logger.prototype
+   *
+   * @see https://nodejs.org/api/util.html#util_util_format_format
+   */
+
+  /**
+   * Log message at info level
+   * @param {String} message The message to log, the message string can be interpolated like the node util.format method
+   * @param {*} args... The arguments used to interpolated the message string
+   * @param {Object} [data=null] An optional object which will be included in the log entry
+   * @function info
+   * @memberOf baqend.util.Logger.prototype
+   *
+   * @see https://nodejs.org/api/util.html#util_util_format_format
+   */
+
+  /**
+   * Log message at warn level
+   * @param {String} message The message to log, the message string can be interpolated like the node util.format method
+   * @param {*} args... The arguments used to interpolated the message string
+   * @param {Object} [data=null] An optional object which will be included in the log entry
+   * @function warn
+   * @memberOf baqend.util.Logger.prototype
+   *
+   * @see https://nodejs.org/api/util.html#util_util_format_format
+   */
+
+  /**
+   * Log message at error level
+   * @param {String} message The message to log, the message string can be interpolated like the node util.format method
+   * @param {*} args... The arguments used to interpolated the message string
+   * @param {Object} [data=null] An optional object which will be included in the log entry
+   * @function error
+   * @memberOf baqend.util.Logger.prototype
+   *
+   * @see https://nodejs.org/api/util.html#util_util_format_format
+   */
+});
+module.exports = Logger;</code></pre>
+        </article>
+    </section>
+
+
+
+
+
+      <footer>
+        Baqend JavaScript SDK 1.1.0 &copy 2015 Baqend GmbH<br>
+        Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.0</a> on Fri, 01 Apr 2016 11:43:33 GMT
+      </footer>
+    </div>
+  </div>
+</div>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+<script src="scripts/filter.js"> </script>
+</body>
+</html>
