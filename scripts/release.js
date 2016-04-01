@@ -15,7 +15,8 @@ if (!changelogArg) {
 }
 
 var date = new Date();
-var dateStr = date.getYear() + '-' + (date.getMonth() + 1) + '-' + date.getDate();
+var dateStr = date.toISOString();
+dateStr = dateStr.substring(0, dateStr.indexOf('T'));
 var pkg = JSON.parse(fs.readFileSync('package.json', 'utf-8'));
 
 var pushNPM = !pkg.private;
@@ -75,10 +76,12 @@ var version = versionCmd.output.trim();
 var changelog = fs.readFileSync('CHANGELOG.md'); //read existing contents into data
 var fd = fs.openSync('CHANGELOG.md', 'w+');
 fs.writeSync(fd, '<a name="' + version + '"></a>\n', 'utf8'); //write new data
-fs.writeSync(fd, '# ' + version + ' (' + dateStr + ')\n\n\n', 'utf8'); //write new data
+fs.writeSync(fd, '# ' + version.substring(1) + ' (' + dateStr + ')\n\n\n', 'utf8'); //write new data
 fs.writeSync(fd, changelogArg + '\n\n', 'utf8'); //write new data
 fs.writeSync(fd, changelog, 0, changelog.length); //append old data
 fs.close(fd);
+
+exit(0);
 
 var buildResult =
   exec('npm run dist').code ||
