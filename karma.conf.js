@@ -128,6 +128,13 @@ module.exports = function(config) {
         platform: 'WINDOWS',
         version: '11',
         name: 'Karma'
+      },
+      'Edge-Win': {
+        base: 'WebDriver',
+        config: webdriverConfig,
+        browserName: 'MicrosoftEdge',
+        platform: 'WINDOWS',
+        name: 'Karma'
       }
     },
 
