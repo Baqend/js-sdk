@@ -8,6 +8,14 @@ if (!versionArg) {
   exit(1);
 }
 
+var changelogArg = process.argv[3];
+if (!changelogArg) {
+  console.error('Missing changelog arg!');
+  exit(1);
+}
+
+var date = new Date();
+var dateStr = date.getYear() + '-' + (date.getMonth() + 1) + '-' + date.getDate();
 var pkg = JSON.parse(fs.readFileSync('package.json', 'utf-8'));
 
 var pushNPM = !pkg.private;
@@ -64,9 +72,17 @@ if (versionCmd.code != 0) {
 }
 var version = versionCmd.output.trim();
 
+var changelog = fs.readFileSync('CHANGELOG.md'); //read existing contents into data
+var fd = fs.openSync('CHANGELOG.md', 'w+');
+fs.writeSync(fd, '<a name="' + version + '"></a>\n', 'utf8'); //write new data
+fs.writeSync(fd, '# ' + version + ' (' + dateStr + ')\n\n\n', 'utf8'); //write new data
+fs.writeSync(fd, changelogArg + '\n\n', 'utf8'); //write new data
+fs.writeSync(fd, changelog, 0, changelog.length); //append old data
+fs.close(fd);
+
 var buildResult =
   exec('npm run dist').code ||
-  exec('git add package.json').code ||
+  exec('git add package.json CHANGELOG.md').code ||
   (gitAdd && exec('git add -f ' + gitAdd, {silent: true}).code) ||
   exec('git commit -m "[ci skip] release ' + version + '"').code ||
   exec('git tag ' + version + ' -m "release ' + version + '"').code;
