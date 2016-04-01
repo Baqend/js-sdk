@@ -1,9 +1,5 @@
 if (typeof DB == 'undefined') {
-  env = require('./env');
-  var chai = require("chai");
-  var chaiAsPromised = require("chai-as-promised");
-  chai.use(chaiAsPromised);
-  expect = chai.expect;
+  require('./node');
   DB = require('../lib');
 }
 
@@ -31,7 +27,7 @@ describe('Test logging', function() {
   it('should contains all values', function() {
     var start = new Date();
 
-    var msg = randomize('my string');
+    var msg = helper.randomize('my string');
     db.log(msg);
 
     return findLogByMessage(msg).then(function(entry) {
@@ -44,7 +40,7 @@ describe('Test logging', function() {
   });
 
   it('should substitute string in message', function() {
-    var msg = randomize('my string');
+    var msg = helper.randomize('my string');
     db.log('test message %s', msg);
 
     return findLogByMessage('test message ' + msg).then(function(entry) {
@@ -53,7 +49,7 @@ describe('Test logging', function() {
   });
 
   it('should substitute number in message', function() {
-    var str = randomize('my string');
+    var str = helper.randomize('my string');
     db.log('test message %d and %s', 5, str);
 
     return findLogByMessage('test message 5 and ' + str).then(function(entry) {
@@ -62,7 +58,7 @@ describe('Test logging', function() {
   });
 
   it('should substitute json in message', function() {
-    var json = {str: randomize('my string ')};
+    var json = {str: helper.randomize('my string ')};
     db.log('test message %j', json);
 
     var msg = 'test message {"str":"' + json.str + '"}';
@@ -72,7 +68,7 @@ describe('Test logging', function() {
   });
 
   it('should handle explicit log level', function() {
-    var msg = randomize('my string ');
+    var msg = helper.randomize('my string ');
     db.log('warn', msg);
 
     return findLogByMessage(msg).then(function(entry) {
@@ -82,7 +78,7 @@ describe('Test logging', function() {
   });
 
   it('should ignore supressed log levels', function() {
-    var msg = randomize('my string ');
+    var msg = helper.randomize('my string ');
     db.log('debug', msg);
 
     return findLogByMessage(msg).then(function(entry) {
@@ -91,7 +87,7 @@ describe('Test logging', function() {
   });
 
   it('should save additional data', function() {
-    var msg = randomize('my string ');
+    var msg = helper.randomize('my string ');
     db.log('info', msg, {value: 34, str: 'Test String'});
 
     return findLogByMessage(msg).then(function(entry) {
@@ -101,7 +97,7 @@ describe('Test logging', function() {
   });
 
   it('should allow different log levels', function() {
-    var msg = randomize('my string ');
+    var msg = helper.randomize('my string ');
     db.log.level = 'debug';
     db.log('debug', msg);
 
@@ -112,7 +108,7 @@ describe('Test logging', function() {
   });
 
   it('should provide log level helpers', function() {
-    var msg = randomize('my string ');
+    var msg = helper.randomize('my string ');
     db.log.level = 'trace';
 
     db.log.trace(msg);
@@ -132,7 +128,7 @@ describe('Test logging', function() {
   });
 
   it('should provide log level helpers', function() {
-    var msg = randomize('my string ');
+    var msg = helper.randomize('my string ');
     db.log.level = 'trace';
 
     db.log.trace(msg);
@@ -152,10 +148,10 @@ describe('Test logging', function() {
   });
 
   it('should protected log access by anonymous', function() {
-    var msg = randomize('my string ');
+    var msg = helper.randomize('my string ');
     db.log('warn', msg);
 
-    return expect(sleep(sleepTime).then(function() {
+    return expect(helper.sleep(sleepTime).then(function() {
       return db['logs.AppLog'].find().equal('message', msg).singleResult();
     })).rejectedWith(Error);
   });
@@ -166,10 +162,10 @@ describe('Test logging', function() {
     var db = emf.createEntityManager();
     expect(db.isReady).be.false;
 
-    var msg1 = randomize('my string ');
+    var msg1 = helper.randomize('my string ');
     db.log.warn(msg1);
 
-    var msg2 = randomize('my string ');
+    var msg2 = helper.randomize('my string ');
     db.log.info(msg2);
 
     return db.ready().then(function(em) {
@@ -185,7 +181,7 @@ describe('Test logging', function() {
   });
 
   it('should log additional parameters', function() {
-    var msg = randomize('my string');
+    var msg = helper.randomize('my string');
     db.log('test message %s', msg, 'test1', 2, true);
 
     return findLogByMessage('test message ' + msg + ', test1, 2, true').then(function(entry) {
@@ -196,13 +192,13 @@ describe('Test logging', function() {
 
 
   function findLogByMessage(msg) {
-    return sleep(sleepTime).then(function() {
+    return helper.sleep(sleepTime).then(function() {
       return rootDb['logs.AppLog'].find().equal('message', msg).singleResult();
     });
   }
 
   function findLogsByMessage(msg) {
-    return sleep(sleepTime).then(function() {
+    return helper.sleep(sleepTime).then(function() {
       return rootDb['logs.AppLog'].find().equal('message', msg).resultList();
     });
   }

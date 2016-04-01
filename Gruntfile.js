@@ -10,7 +10,14 @@ module.exports = function (grunt) {
   // @see https://github.com/peerigon/xunit-file/blob/master/lib/xunit-file.js
   process.env.JUNIT_REPORT_PATH = 'build/test-results/node.xml';
 
-  var TEST = 'spec/{env.js,spec.helper.js,**/*.spec.js}';
+  var TEST = 'spec/{env.js,helper.js,**/*.spec.js}';
+
+  var browserifyOptions = {
+    builtins: [],
+    detectGlobals: false,
+    //insertGlobalVars: ['global'],
+    standalone: "DB"
+  };
 
   var browserifyOptions = {
     builtins: [],
@@ -59,14 +66,6 @@ module.exports = function (grunt) {
     browserify: {
       options: {
         browserifyOptions: browserifyOptions,
-        transform: [
-          ['babelify', {
-            presets: 'es2015-loose',
-            plugins: ['external-helpers']
-          }]
-        ],
-        plugin: [injectBabelHelper],
-        exclude: ['websocket'],
         banner: longBanner
       },
 
@@ -78,12 +77,6 @@ module.exports = function (grunt) {
           watch: true,
           keepAlive: true,
           browserifyOptions: Object.assign({debug: true}, browserifyOptions),
-          transform: [
-            ['babelify', {
-              presets: 'es2015-loose',
-              plugins: ['external-helpers']
-            }]
-          ],
           banner: ''
         }
       },
@@ -156,7 +149,7 @@ module.exports = function (grunt) {
       internal: {
         hostname: 'fb.baqend.com',
         configFile: 'karma.conf.js',
-        browsers: ['IE9-Win', 'IE10-Win', 'IE11-Win', 'Firefox-Win', 'Chrome-Win', 'Chrome-Linux', 'Firefox-Linux'],
+        browsers: ['Chrome-Linux'],
         singleRun: true
       },
       test: {
@@ -167,7 +160,7 @@ module.exports = function (grunt) {
             timeout: 30000
           }
         },
-        browsers: ['PhantomJS', 'IE9-Win', 'IE10-Win', 'IE11-Win', 'Firefox-Win', 'Chrome-Win', 'Chrome-Linux', 'Firefox-Linux', 'Safari-Mac'],
+        browsers: ['PhantomJS', 'IE9-Win', 'Edge-Win', 'IE10-Win', 'IE11-Win', 'Firefox-Win', 'Chrome-Win', 'Chrome-Linux', 'Firefox-Linux', 'Safari-Mac'],
         reporters: ['junit'],
         singleRun: true,
         junitReporter: {

@@ -1,6 +1,6 @@
 {
   "name": "baqend",
-  "version": "0.10.5-0",
+  "version": "1.1.1-0",
   "description": "Baqend JavaScript SDK",
   "license": "MIT",
   "author": {
@@ -10,6 +10,8 @@
   "homepage": "http://baqend.com",
   "main": "lib/index.js",
   "dependencies": {
+    "crypto-js": "^3.1.6",
+    "lie": "^3.0.1",
     "node-uuid": "^1.4.3",
     "validator": "^4.4.0",
     "websocket": "^1.0.18"
@@ -73,5 +75,9 @@
   },
   "engines": {
     "node": ">=0.2.0"
+  },
+  "browser": {
+    "./lib/util/hmac.js": "./lib/util/hmac-browser.js",
+    "websocket": ""
   }
 }

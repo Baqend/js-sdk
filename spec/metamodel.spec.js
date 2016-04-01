@@ -1,9 +1,5 @@
 if (typeof DB == 'undefined') {
-  env = require('./env');
-  var chai = require("chai");
-  var chaiAsPromised = require("chai-as-promised");
-  chai.use(chaiAsPromised);
-  expect = chai.expect;
+  require('./node');
   DB = require('../lib');
 }
 
@@ -434,8 +430,8 @@ describe('Test Metamodel', function() {
   var metamodel;
 
   beforeEach(function() {
-    metamodel = new DB.metamodel.Metamodel();
-    metamodel.connected(DB.connector.Connector.create(env.TEST_SERVER));
+    var emf = new DB.EntityManagerFactory({host: env.TEST_SERVER, tokenStorage: helper.rootTokenStorage});
+    metamodel = emf.createMetamodel();
   });
 
   it('not init twice', function() {
@@ -451,7 +447,7 @@ describe('Test Metamodel', function() {
 
   it("should not be allowed to load after save metamodel", function() {
     metamodel.init({});
-    return saveMetamodel(metamodel).then(function() {
+    return metamodel.save().then(function() {
       expect(function() { metamodel.load() }).throw(Error);
     });
   });
@@ -469,23 +465,25 @@ describe('Test Metamodel', function() {
   it("should not be allowed to save without initialization", function() {
     var emf = new DB.EntityManagerFactory(env.TEST_SERVER);
 
-    return expect(saveMetamodel(emf.metamodel)).be.rejected;
+    return expect(function() {
+      emf.metamodel.save()
+    }).throw('Metamodel is not initialized.');
   });
 
   it("should allow modification when used by an EntityManager", function() {
-    var emf = new DB.EntityManagerFactory(env.TEST_SERVER);
+    var emf = new DB.EntityManagerFactory({host: env.TEST_SERVER, tokenStorage: helper.rootTokenStorage });
     var em = emf.createEntityManager();
 
-    return em.metamodel.init().then(function() {
-      return saveMetamodel(emf.metamodel);
+    return emf.ready().then(function() {
+      return emf.metamodel.save();
     });
   });
 
   it('should update schema', function() {
-    var emf = new DB.EntityManagerFactory(env.TEST_SERVER);
-    var db = emf.createEntityManager();
+    var emf = new DB.EntityManagerFactory({host: env.TEST_SERVER, tokenStorage: new DB.util.TokenStorage()});
+    var db = emf.createEntityManager(true);
     var metamodel = db.metamodel;
-    var SchemaUpdatePerson = randomize('SchemaUpdatePerson');
+    var SchemaUpdatePerson = helper.randomize('SchemaUpdatePerson');
     var initialType;
 
     return  db.ready().then(function() {
@@ -500,7 +498,7 @@ describe('Test Metamodel', function() {
 
       initialType = type.toJSON();
 
-      return metamodel.update(initialType, db.token);
+      return metamodel.update(initialType);
     }).then(function() {
       var UpdatePerson = metamodel.entity(SchemaUpdatePerson);
       var renameField = {
@@ -519,9 +517,9 @@ describe('Test Metamodel', function() {
         }
       };
 
-      return metamodel.update(renameField, db.token).then(function() {
+      return metamodel.update(renameField).then(function() {
       }).then(function() {
-        return metamodel.update(addField, db.token);
+        return metamodel.update(addField);
       });
     }).then(function() {
       var newPerson = metamodel.entity(SchemaUpdatePerson);
@@ -537,8 +535,8 @@ describe('Test Metamodel', function() {
     var type, childType, embeddedType, metamodel;
 
     before(function() {
-      metamodel = new DB.metamodel.Metamodel();
-      metamodel.connected(DB.connector.Connector.create(env.TEST_SERVER));
+      var emf = new DB.EntityManagerFactory({host: env.TEST_SERVER, tokenStorage: helper.rootTokenStorage});
+      metamodel = emf.metamodel;
       metamodel.init({});
       metamodel.addType(type = new DB.metamodel.EntityType("jstest.Person", metamodel.entity(Object)));
       metamodel.addType(childType = new DB.metamodel.EntityType("jstest.ChildPerson", type));
@@ -557,7 +555,7 @@ describe('Test Metamodel', function() {
       embeddedType.addAttribute(new DB.metamodel.SingularAttribute("age", metamodel.baseType(Number)));
       embeddedType.addAttribute(new DB.metamodel.SingularAttribute("ref", type));
 
-      return saveMetamodel(metamodel);
+      return metamodel.save();
     });
 
     it('should be available', function() {
@@ -573,8 +571,8 @@ describe('Test Metamodel', function() {
     });
 
     it('should be loadable', function() {
-      var model = new DB.metamodel.Metamodel();
-      model.connected(DB.connector.Connector.create(env.TEST_SERVER));
+      var emf = new DB.EntityManagerFactory({host: env.TEST_SERVER});
+      var model = emf.createMetamodel();
 
       return model.load().then(function() {
         var loadType = model.entity("jstest.Person");
@@ -684,8 +682,8 @@ describe('Test Metamodel', function() {
   describe('Acl', function() {
     var db, emf, obj, user1, user2, user3, initialType, initialEmbeddedType;
 
-    var SchemaAclPersonName = randomize('SchemaAclPerson');
-    var SchemaAclEmbeddedPersonName = randomize('SchemaAclEmbeddedPerson');
+    var SchemaAclPersonName = helper.randomize('SchemaAclPerson');
+    var SchemaAclEmbeddedPersonName = helper.randomize('SchemaAclEmbeddedPerson');
 
     function createUser(emf, username) {
       return emf.createEntityManager().ready().then(function(db) {
@@ -695,23 +693,19 @@ describe('Test Metamodel', function() {
       });
     }
 
-    function createMetamodel() {
-
-    }
-
     before(function() {
-      var staticEmf = new DB.EntityManagerFactory(env.TEST_SERVER);
+      var staticEmf = new DB.EntityManagerFactory({host: env.TEST_SERVER, tokenStorage: helper.rootTokenStorage});
 
       return Promise.all([
-        createUser(staticEmf, makeLogin()),
-        createUser(staticEmf, makeLogin()),
-        createUser(staticEmf, makeLogin())
+        createUser(staticEmf, helper.makeLogin()),
+        createUser(staticEmf, helper.makeLogin()),
+        createUser(staticEmf, helper.makeLogin())
       ]).then(function(users) {
         user1 = users[0];
         user2 = users[1];
         user3 = users[2];
 
-        var metamodel = staticEmf.createConnectedMetamodel();
+        var metamodel = staticEmf.createMetamodel();
         metamodel.init({});
 
         var type, embeddedType;
@@ -732,9 +726,10 @@ describe('Test Metamodel', function() {
         embeddedType.schemaAddPermission.allowAccess(user1);
         embeddedType.schemaReplacePermission.allowAccess(user1);
 
-        return saveMetamodel(metamodel);
+        return metamodel.save();
       }).then(function() {
         emf = new DB.EntityManagerFactory(env.TEST_SERVER);
+        //db and emf shares the same login credentials
         db = emf.createEntityManager(true);
         return db.ready().then(function() {
           obj = new db[SchemaAclPersonName]();
@@ -744,7 +739,7 @@ describe('Test Metamodel', function() {
     });
 
     it('should convert acls', function() {
-      var metamodel = emf.createConnectedMetamodel();
+      var metamodel = emf.createMetamodel();
       return metamodel.load().then(function() {
         var AclPerson = metamodel.entity(SchemaAclPersonName);
 
@@ -773,31 +768,31 @@ describe('Test Metamodel', function() {
       });
 
       beforeEach(function() {
-        metamodel = emf.createConnectedMetamodel();
+        metamodel = emf.createMetamodel();
       });
 
       it('should allow schema load', function() {
-        return metamodel.load(db.token).then(function() {
+        return metamodel.load().then(function() {
           expect(metamodel.entity(SchemaAclPersonName)).be.ok;
           expect(metamodel.embeddable(SchemaAclEmbeddedPersonName)).be.ok;
         });
       });
 
       it('should deny schema add', function() {
-        return metamodel.load(db.token).then(function() {
-          return expect(metamodel.save(db.token)).be.rejected;
+        return metamodel.load().then(function() {
+          return expect(metamodel.save()).be.rejected;
         });
       });
 
       it('should allow schema subclassing', function() {
-        return metamodel.load(db.token).then(function() {
+        return metamodel.load().then(function() {
           var AclPerson = metamodel.entity(SchemaAclPersonName);
 
-          var child = new DB.metamodel.EntityType(randomize("SchemaAclChildPerson"), AclPerson);
+          var child = new DB.metamodel.EntityType(helper.randomize("SchemaAclChildPerson"), AclPerson);
           child.schemaReplacePermission.allowAccess(db.User.me);
           metamodel.addType(child);
 
-          return expect(metamodel.save(child, db.token)).be.fulfilled;
+          return expect(metamodel.save(child)).be.fulfilled;
         });
       });
 
@@ -833,24 +828,24 @@ describe('Test Metamodel', function() {
       });
 
       beforeEach(function() {
-        metamodel = emf.createConnectedMetamodel();
+        metamodel = emf.createMetamodel();
       });
 
       it('should allow schema load', function() {
-        return metamodel.load(db.token).then(function() {
+        return metamodel.load().then(function() {
           expect(metamodel.entity(SchemaAclPersonName)).be.ok;
           expect(metamodel.embeddable(SchemaAclEmbeddedPersonName)).be.ok;
         });
       });
 
       it('should deny schema add', function() {
-        return metamodel.load(db.token).then(function() {
-          return expect(metamodel.save(db.token)).be.rejected;
+        return metamodel.load().then(function() {
+          return expect(metamodel.save()).be.rejected;
         });
       });
 
       it('should deny schema subclassing', function() {
-        return metamodel.load(db.token).then(function() {
+        return metamodel.load().then(function() {
           var AclPerson = metamodel.entity(SchemaAclPersonName);
 
           var rnd = Math.floor(Math.random() * 1000000);
@@ -858,7 +853,7 @@ describe('Test Metamodel', function() {
           child.schemaReplacePermission.allowAccess(db.User.me);
           metamodel.addType(child);
 
-          return expect(metamodel.save(child, db.token)).be.rejected;
+          return expect(metamodel.save(child)).be.rejected;
         });
       });
 
@@ -895,34 +890,34 @@ describe('Test Metamodel', function() {
       });
 
       beforeEach(function() {
-        metamodel = emf.createConnectedMetamodel();
+        metamodel = emf.createMetamodel();
       });
 
       it('should allow schema load', function() {
-        return metamodel.load(db.token).then(function() {
+        return metamodel.load().then(function() {
           expect(metamodel.entity(SchemaAclPersonName)).be.ok;
           expect(metamodel.embeddable(SchemaAclEmbeddedPersonName)).be.ok;
         });
       });
 
       it('should deny schema add', function() {
-        return metamodel.load(db.token).then(function() {
+        return metamodel.load().then(function() {
           var AclPerson = metamodel.entity(SchemaAclPersonName);
-          return expect(metamodel.save(AclPerson, db.token)).be.rejected;
+          return expect(metamodel.save(AclPerson)).be.rejected;
         });
       });
 
       it('should deny schema replace', function() {
-        return metamodel.load(db.token).then(function() {
+        return metamodel.load().then(function() {
           var AclPerson = metamodel.entity(SchemaAclPersonName);
           var json = AclPerson.toJSON();
           json.operation = 'replaceClass';
-          return expect(metamodel.update(json, db.token)).be.rejected;
+          return expect(metamodel.update(json)).be.rejected;
         });
       });
 
       it('should allow schema subclassing', function() {
-        return metamodel.load(db.token).then(function() {
+        return metamodel.load().then(function() {
           var AclPerson = metamodel.entity(SchemaAclPersonName);
 
           var rnd = Math.floor(Math.random() * 1000000);
@@ -930,7 +925,7 @@ describe('Test Metamodel', function() {
           child.schemaReplacePermission.allowAccess(db.User.me);
           metamodel.addType(child);
 
-          return expect(metamodel.save(child, db.token)).be.fulfilled;
+          return expect(metamodel.save(child)).be.fulfilled;
         });
       });
 

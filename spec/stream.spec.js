@@ -1,14 +1,11 @@
 if (typeof DB == 'undefined') {
-  env = require('./env');
-  var chai = require("chai");
-  var chaiAsPromised = require("chai-as-promised");
-  chai.use(chaiAsPromised);
-  expect = chai.expect;
+  require('./node');
   DB = require('../lib');
 }
+
 describe("Streaming Queries", function() {
   var t = 400;
-  var bucket = randomize("StreamingQueryPerson");
+  var bucket = helper.randomize("StreamingQueryPerson");
   var emf, metamodel, db, stream;
   var p0, p1, p2, p3, objects;
 
@@ -19,7 +16,7 @@ describe("Streaming Queries", function() {
     }
 
     var personType, addressType;
-    emf = new DB.EntityManagerFactory({ host: env.TEST_SERVER, schema: {} });
+    emf = new DB.EntityManagerFactory({ host: env.TEST_SERVER, schema: {}, tokenStorage: helper.rootTokenStorage });
     metamodel = emf.metamodel;
 
     metamodel.addType(personType = new DB.metamodel.EntityType(bucket, metamodel.entity(Object)));
@@ -35,15 +32,15 @@ describe("Streaming Queries", function() {
     addressType.addAttribute(new DB.metamodel.SingularAttribute("zip", metamodel.baseType(Number)));
     addressType.addAttribute(new DB.metamodel.SingularAttribute("city", metamodel.baseType(String)));
 
-    return saveMetamodel(metamodel).then(function() {
+    return metamodel.save().then(function() {
       db = emf.createEntityManager();
 
       p0 = new db[bucket]({
-        id: 'query_p0'
+        key: 'query_p0'
       });
 
       p1 = new db[bucket]({
-        id: 'query_p1',
+        key: 'query_p1',
         name: 'QueryPerson 1',
         age: 45,
         date: new Date('1978-02-03T00:00Z'),
@@ -53,7 +50,7 @@ describe("Streaming Queries", function() {
       });
 
       p2 = new db[bucket]({
-        id: 'query_p2',
+        key: 'query_p2',
         name: 'QueryPerson 2',
         age: 33,
         date: new Date('1966-05-01T00:00Z'),
@@ -63,7 +60,7 @@ describe("Streaming Queries", function() {
       });
 
       p3 = new db[bucket]({
-        id: 'query_p3',
+        key: 'query_p3',
         name: 'QueryPerson 3',
         age: 23,
         date: new Date('1989-05-01T00:00Z'),
@@ -78,7 +75,7 @@ describe("Streaming Queries", function() {
       /*var testStream = db[bucket].find().equal("name", "muh").stream(false);
        testStream.on("match", function(){});
        testStream.off();
-       return sleep(t);*/
+       return helper.sleep(t);*/
     });
   });
 
@@ -86,7 +83,7 @@ describe("Streaming Queries", function() {
     //Unregister Stream
     stream.off();
     //Remove excess objects
-    return sleep(t).then(function() {
+    return helper.sleep(t).then(function() {
       //TODO: fix this when ids are handled correctly in queries
       return db[bucket].find().notIn("id", [p0.id, p1.id, p2.id, p3.id]).resultList(function(result) {
         return Promise.all(result.map(function(person) {
@@ -128,9 +125,9 @@ describe("Streaming Queries", function() {
       result = e;
     });
 
-    return sleep(t).then(function() {
+    return helper.sleep(t).then(function() {
       p1.name = "Felix";
-      return sleep(t, p1.save());
+      return helper.sleep(t, p1.save());
     }).then(function() {
       expect(result.type).to.be.equal("match");
       expect(result.data).to.be.equal(p1);
@@ -149,10 +146,10 @@ describe("Streaming Queries", function() {
       result = e;
     });
 
-    return sleep(t).then(function() {
+    return helper.sleep(t).then(function() {
       var object = db[bucket].fromJSON(p3.toJSON(true));
       object.name = "franz";
-      return sleep(t, object.insert());
+      return helper.sleep(t, object.insert());
     }).then(function() {
       expect(result.type).to.be.equal("match");
       expect(result.data.name).to.be.equal("franz");
@@ -175,10 +172,10 @@ describe("Streaming Queries", function() {
     var object = db[bucket].fromJSON(p3.toJSON(true));
     object.name = "franzi";
 
-    return sleep(t).then(function() {
+    return helper.sleep(t).then(function() {
       return object.insert();
     }).then(function() {
-      return sleep(t, object.delete());
+      return helper.sleep(t, object.delete());
     }).then(function() {
       expect(result.data.id).to.be.equal(object.id);
       expect(result.type).to.be.equal("remove");
@@ -201,20 +198,20 @@ describe("Streaming Queries", function() {
 
     var object = db[bucket].fromJSON(p3.toJSON(true));
 
-    return sleep(t).then(function() {
+    return helper.sleep(t).then(function() {
       object.name = "flo";
       return object.insert();
     }).then(function() {
-      return sleep(t).then(function() {
+      return helper.sleep(t).then(function() {
         object.name = "karl-friedrich";
         return object.save();
       });
     }).then(function() {
-      return sleep(t).then(function() {
+      return helper.sleep(t).then(function() {
         return object.delete();
       });
     }).then(function() {
-      return sleep(t).then(function() {
+      return helper.sleep(t).then(function() {
         expect(results.length).to.be.equal(3);
         expect(results[0].operation).to.be.equal("insert");
         expect(results[1].operation).to.be.equal("update");
@@ -237,11 +234,11 @@ describe("Streaming Queries", function() {
     stream.on('match', listener);
     stream.on('match', listener);
 
-    return sleep(t).then(function() {
+    return helper.sleep(t).then(function() {
       return insert.insert()
     }).then(function(obj) {
       obj.name = "frrrrranz";
-      return sleep(t, obj.save());
+      return helper.sleep(t, obj.save());
     }).then(function() {
       expect(received.length).to.be.equal(4);
     });
@@ -255,14 +252,14 @@ describe("Streaming Queries", function() {
     };
     stream.on('match', listener);
 
-    return sleep(t).then(function() {
+    return helper.sleep(t).then(function() {
       var insert = db[bucket].fromJSON(p3.toJSON(true));
       insert.name = "franz";
-      return sleep(t, insert.insert());
+      return helper.sleep(t, insert.insert());
     }).then(function(obj) {
       stream.off('match', listener);
       obj.name = "";
-      return sleep(t, obj.save())
+      return helper.sleep(t, obj.save())
     }).then(function() {
       expect(calls).to.be.equal(1);
     });
@@ -277,18 +274,17 @@ describe("Streaming Queries", function() {
     };
     stream.once('match', listener);
 
-    return sleep(t).then(function() {
+    return helper.sleep(t).then(function() {
       var insert = db[bucket].fromJSON(p3.toJSON(true));
       insert.name = "franz";
       return insert.insert();
     }).then(function(obj) {
       obj.name = "";
-      return sleep(t, obj.save())
+      return helper.sleep(t, obj.save())
     }).then(function() {
       expect(calls).to.be.equal(1);
     });
   });
 
-})
-;
+});
 

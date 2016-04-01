@@ -1,10 +1,5 @@
 if (typeof DB == 'undefined') {
-  env = require('./env');
-  var chai = require("chai");
-  var chaiAsPromised = require("chai-as-promised");
-  chai.use(chaiAsPromised);
-  chai.config.includeStack = true;
-  expect = chai.expect;
+  require('./node');
   DB = require('../lib');
 }
 
@@ -12,7 +7,7 @@ describe('Test crud', function() {
   var db, personType, addressType, childType, emf, metamodel, streetType;
 
   before(function() {
-    emf = new DB.EntityManagerFactory({ host: env.TEST_SERVER, schema: {} });
+    emf = new DB.EntityManagerFactory({ host: env.TEST_SERVER, schema: {}, tokenStorage: helper.rootTokenStorage });
     metamodel = emf.metamodel;
 
     metamodel.addType(personType = new DB.metamodel.EntityType("Person", metamodel.entity(Object)));
@@ -41,7 +36,7 @@ describe('Test crud', function() {
     streetType.addAttribute(new DB.metamodel.SingularAttribute("number", metamodel.baseType(Number)));
     streetType.addAttribute(new DB.metamodel.SingularAttribute("neighbor", personType));
 
-    return saveMetamodel(metamodel);
+    return metamodel.save();
   });
 
   beforeEach(function() {
@@ -1055,7 +1050,7 @@ describe('Test crud', function() {
     });
 
     it('should load entity by query single result and resolve depth', function() {
-      child.name = randomize("queryDepth");
+      child.name = helper.randomize("queryDepth");
       return child.save({depth:true}).then(function(saved) {
         child = saved;
         return emf.createEntityManager();
@@ -1078,7 +1073,7 @@ describe('Test crud', function() {
     });
 
     it('should load entity by query result list and resolve depth', function() {
-      child.name = randomize("queryDepth");
+      child.name = helper.randomize("queryDepth");
       return child.save({depth:true}).then(function(saved) {
         child = saved;
         return emf.createEntityManager();
@@ -1103,18 +1098,34 @@ describe('Test crud', function() {
   });
 
   describe('custom ids', function() {
-    var myId;
+    var myId, myKey;
 
     beforeEach(function() {
+      myKey = helper.randomize('a/db/bucket/?param=3\\ed&g=1');
       var person = new db.Person();
-      person.id = randomize('a/db/bucket/?param=3\\ed&g=1');
+      person.key = myKey;
       myId = person.id;
     });
 
     afterEach(function() {
       return db.Person.load(myId).then(function(obj) {
-        return obj.delete();
+        if (obj)
+          return obj.delete();
       });
+    });
+
+    it('should handle key as ids', function() {
+      var person = new db.Person();
+      person.id = myKey;
+      expect(person.id).equal('/db/Person/' + encodeURIComponent(myKey));
+      expect(person.key).equal(myKey);
+    });
+
+    it('should handle ids as ids', function() {
+      var person = new db.Person();
+      person.id = '/db/Person/' + encodeURIComponent(myKey);
+      expect(person.id).equal('/db/Person/' + encodeURIComponent(myKey));
+      expect(person.key).equal(myKey);
     });
 
     it('should create and load new object', function() {
@@ -1124,11 +1135,13 @@ describe('Test crud', function() {
 
       return person.save(function(result) {
         expect(person.id).equals(myId);
+        expect(person.key).equals(myKey);
         expect(person.name).equals("Custom Person");
         expect(person).equals(result);
-        return db.Person.load(myId);
+        return db.Person.load(myKey);
       }).then(function(person) {
         expect(person.id).equals(myId);
+        expect(person.key).equals(myKey);
         expect(person.name).equals("Custom Person");
         return emf.createEntityManager();
       }).then(function(db2) {
@@ -1147,7 +1160,7 @@ describe('Test crud', function() {
 
       person.child = new db.Person();
       person.child.name = "Custom Child Person";
-      person.child.id = randomize('my/craßy*%unescap\\ed&id?=');
+      person.child.key = helper.randomize('my/craßy*%unescap\\ed&id?=');
       var childId = person.child.id;
 
       return person.save({refresh:true, depth: true}, function(result) {

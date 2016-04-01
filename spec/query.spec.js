@@ -1,9 +1,5 @@
 if (typeof DB == 'undefined') {
-  env = require('./env');
-  var chai = require("chai");
-  var chaiAsPromised = require("chai-as-promised");
-  chai.use(chaiAsPromised);
-  expect = chai.expect;
+  require('./node');
   DB = require('../lib');
 }
 
@@ -13,7 +9,7 @@ describe("Test Query", function() {
   before(function() {
     var personType, addressType;
 
-    emf = new DB.EntityManagerFactory({ host: env.TEST_SERVER, schema: {} });
+    emf = new DB.EntityManagerFactory({ host: env.TEST_SERVER, schema: {}, tokenStorage: helper.rootTokenStorage });
     metamodel = emf.metamodel;
 
     metamodel.addType(personType = new DB.metamodel.EntityType("QueryPerson", metamodel.entity(Object)));
@@ -30,7 +26,7 @@ describe("Test Query", function() {
     addressType.addAttribute(new DB.metamodel.SingularAttribute("zip", metamodel.baseType(Number)));
     addressType.addAttribute(new DB.metamodel.SingularAttribute("city", metamodel.baseType(String)));
 
-    return saveMetamodel(metamodel);
+    return metamodel.save();
   });
 
   describe("Builder", function() {
@@ -536,11 +532,11 @@ describe("Test Query", function() {
       db = emf.createEntityManager();
 
       p0 = new db.QueryPerson({
-        id: 'query_p0'
+        key: 'query_p0'
       });
 
       p1 = new db.QueryPerson({
-        id: 'query_p1',
+        key: 'query_p1',
         person: p0,
         name: 'QueryPerson 1',
         age: 45,
@@ -551,7 +547,7 @@ describe("Test Query", function() {
       });
 
       p2 = new db.QueryPerson({
-        id: 'query_p2',
+        key: 'query_p2',
         person: p1,
         name: 'QueryPerson 2',
         age: 33,
@@ -562,7 +558,7 @@ describe("Test Query", function() {
       });
 
       p3 = new db.QueryPerson({
-        id: 'query_p3',
+        key: 'query_p3',
         person: p1,
         name: 'QueryPerson 3',
         age: 23,

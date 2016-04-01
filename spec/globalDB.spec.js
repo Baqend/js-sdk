@@ -1,9 +1,5 @@
 if (typeof DB == 'undefined') {
-  env = require('./env');
-  var chai = require("chai");
-  var chaiAsPromised = require("chai-as-promised");
-  chai.use(chaiAsPromised);
-  expect = chai.expect;
+  require('./node');
   DB = require('../lib');
 }
 
@@ -30,7 +26,7 @@ describe('Test Global DB', function() {
     });
   });
 
-  it('should only create one instance', function() {
+  it('should only allow one connect call', function() {
     expect(function() {
       DB.connect(env.TEST_SERVER);
     }).throw(Error);

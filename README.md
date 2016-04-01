@@ -4,15 +4,26 @@ Baqend JavaScript SDK
 Setup
 -----
 
-To use the Baqend SDK, just include the baqend.js or baqend.min.js from the dist folder
-at the bottom of your body.
-Alternatively you can install the Baqend SDK with npm. Just type `npm install --save-dev baqend` 
+To use the Baqend SDK, just include the [baqend.js](//baqend.global.ssl.fastly.net/js-sdk/latest/baqend.js) or 
+[baqend.min.js](//baqend.global.ssl.fastly.net/js-sdk/latest/baqend.min.js) from the dist folder
+at the bottom of your body.<br>
+Alternatively you can install the Baqend SDK with npm. Just type `npm install --save-dev baqend`<br> 
+Or install with bower `bower install --save-dev baqend` <br>
+Or [download the latest release](https://github.com/Baqend/js-sdk/releases/latest) directly from GitHub.
 
 ```html
 <!-- for development -->
 <script type="text/javascript" src="dist/baqend.js"></script>
 <!-- for production -->
 <script type="text/javascript" src="dist/baqend.min.js"></script>
+```
+
+You can also include it from our CDN-Provider `fastly`.
+```html
+<!-- for development -->
+<script type="text/javascript" src="//baqend.global.ssl.fastly.net/js-sdk/latest/baqend.js"></script>
+<!-- for production -->
+<script type="text/javascript" src="//baqend.global.ssl.fastly.net/js-sdk/latest/baqend.min.js"></script>
 ```
 
 The Baqend SDK provides a global `DB` variable by default.

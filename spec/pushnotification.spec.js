@@ -1,36 +1,50 @@
 if (typeof DB == 'undefined') {
-  env = require('./env');
-  var chai = require("chai");
-  var chaiAsPromised = require("chai-as-promised");
-  chai.use(chaiAsPromised);
-  chai.config.includeStack = true;
-  expect = chai.expect;
+  require('./node');
   DB = require('../lib');
 }
 
 describe('Test Push Notifications', function() {
-  var emf, db;
+  var emf, db, lock;
 
   var TEST_GCM_DEVICE = "APA91bFBRJGMI2OkQxhV3peP4ncZOIxGJBJ8s0tkKyWvzQErpZmuSzMzm6ugz3rOauMQ1CRui0bBsEQvuN0W8X1wTP547C6MSNcErnNYXyvc1F5eKZCs-GAtE_NcESolea2AM6_cRe9R";
   var TEST_GCM_APIKEY = "AIzaSyAQvWS3mtqnTfLAA3LjepyQRrqDisVRnE0";
 
   before(function() {
-    emf = new DB.EntityManagerFactory(env.TEST_SERVER);
+    this.timeout(40000);
 
-    db = emf.createEntityManager();
-    return db.ready().then(function() {
-      return db.login("root", "root");
+    var retires = 0;
+    emf = new DB.EntityManagerFactory({ host: env.TEST_SERVER, tokenStorage: helper.rootTokenStorage });
+    return emf.ready().then(function() {
+      if (!emf.metamodel.entity("Lock")) {
+        var Lock = new DB.metamodel.EntityType("Lock", emf.metamodel.entity(Object));
+        emf.metamodel.addType(Lock);
+        return emf.metamodel.save(Lock);
+      }
+    }).then(function() {
+      db = emf.createEntityManager();
+      lock = new db.Lock({id: "push"});
+      return createLock();
     }).then(function() {
       var msg = new DB.message.GCMAKey(TEST_GCM_APIKEY);
-      return db._send(msg);
+      return emf.send(msg);
     });
+
+    function createLock() {
+      return lock.insert().catch(function(e) {
+        if (retires++ > 60)
+          throw e;
+        return helper.sleep(500).then(createLock);
+      });
+    }
+  });
+
+  after(function() {
+    return lock.delete();
   });
 
   beforeEach(function() {
     db = emf.createEntityManager();
-    return db.ready(function() {
-      return db.logout();
-    });
+    return db.ready();
   });
 
   it('should register device', function() {
@@ -89,30 +103,25 @@ describe('Test Push Notifications', function() {
     return expect(device.save()).to.rejected;
   });
 
-  if(typeof global != "undefined") {
-    it('should remove cookie if device cannot be found', function() {
-      return db.Device.register("Android", TEST_GCM_DEVICE).then(function() {
-        return emf._loadConnect();
-      }).then(function() {
-        return emf.createEntityManager(true).ready()
-      }).then(function(newDB) {
-        expect(newDB.isDeviceRegistered).be.true;
-        expect(newDB.Device.isRegistered).be.true;
-        expect(newDB._connector.cookie).not.null;
-        return db.Device.find().resultList();
-      }).then(function(result) {
-        expect(result).not.empty;
-        return Promise.all(result.map(function(device) {
-          return device.delete({ force: true });
-        }));
-      }).then(function() {
-        return emf._loadConnect();
-      }).then(function() {
-        return emf.createEntityManager(true).ready();
-      }).then(function(newDB) {
-        expect(newDB._connector.cookie).be.null;
-      });
+  it('should remove cookie if device cannot be found', function() {
+    return db.Device.register("Android", TEST_GCM_DEVICE).then(function() {
+      return new DB.EntityManagerFactory(env.TEST_SERVER).createEntityManager(true).ready();
+    }).then(function(newDB) {
+      expect(newDB.isDeviceRegistered).be.true;
+      expect(newDB.Device.isRegistered).be.true;
+      return db.Device.find().resultList();
+    }).then(function(result) {
+      expect(result).not.empty;
+      return Promise.all(result.map(function(device) {
+        return device.delete({ force: true });
+      }));
+    }).then(function() {
+      DB.connector.Connector.connections = {};
+      return new DB.EntityManagerFactory(env.TEST_SERVER).createEntityManager(true).ready();
+    }).then(function(newDB) {
+      expect(newDB.isDeviceRegistered).be.false;
+      expect(newDB.Device.isRegistered).be.false;
     });
-  }
+  });
 
 });

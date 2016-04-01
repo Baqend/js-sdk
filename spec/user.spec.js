@@ -1,10 +1,5 @@
 if (typeof DB == 'undefined') {
-  env = require('./env');
-  var chai = require("chai");
-  var chaiAsPromised = require("chai-as-promised");
-  chai.use(chaiAsPromised);
-  chai.config.includeStack = true;
-  expect = chai.expect;
+  require('./node');
   DB = require('../lib');
 }
 
@@ -13,15 +8,13 @@ describe('Test user and roles', function() {
   var RENEW_TIMEOUT = 2000;
   this.timeout(RENEW_TIMEOUT * 2);
 
-  this.timeout(RENEW_TIMEOUT * 2);
-
   before(function() {
-    emf = new DB.EntityManagerFactory(env.TEST_SERVER);
+    emf = new DB.EntityManagerFactory({host: env.TEST_SERVER, tokenStorage: helper.rootTokenStorage});
     return emf.createEntityManager().ready().then(function() {
       var userEntity = emf.metamodel.entity("User");
       if(!userEntity.getAttribute("email")) {
         userEntity.addAttribute(new DB.metamodel.SingularAttribute("email", emf.metamodel.baseType(String)));
-        return saveMetamodel(emf.metamodel);
+        return emf.metamodel.save();
       }
     });
   });
@@ -40,8 +33,17 @@ describe('Test user and roles', function() {
       expect(db.User.newPassword).be.ok;
     });
 
+    it('should not share the tokenStorage with the emf', function() {
+      expect(db.tokenStorage).not.equal(emf.tokenStorage);
+    });
+
+    it('should share the tokenStorage with the emf if createEm is true', function() {
+      var db = emf.createEntityManager(true);
+      expect(db.tokenStorage).equal(emf.tokenStorage);
+    });
+
     it('should register and login a new user', function() {
-      var login = makeLogin();
+      var login = helper.makeLogin();
       return db.User.register(login, 'secret').then(function(user) {
         expect(user).be.ok;
         expect(DB.binding.User.isInstance(user)).be.true;
@@ -56,18 +58,16 @@ describe('Test user and roles', function() {
       });
     });
 
-    it('should not set token and me', function() {
-      var user = new db.User({ username: makeLogin(), email: "test@mail.de" });
-      return db.User.logout().then(function() {
-        return db.User.register(user, 'secret', false);
-      }).then(function() {
+    it('should not set token and me when loginOption is NO_LOGIN', function() {
+      var user = new db.User({ username: helper.makeLogin(), email: "test@mail.de" });
+      db.User.register(user, 'secret', db.User.LoginOption.NO_LOGIN).then(function() {
         expect(db.me).not.ok;
         expect(db.token).not.ok;
       });
     });
 
     it('should register user from object', function() {
-      var user = new db.User({ username: makeLogin(), email: "test@mail.de" });
+      var user = new db.User({ username: helper.makeLogin(), email: "test@mail.de" });
       return db.User.register(user, 'secret').then(function(loaded) {
         expect(loaded.username).eqls(user.username);
         expect(loaded.email).eqls("test@mail.de");
@@ -75,12 +75,12 @@ describe('Test user and roles', function() {
     });
 
     it('should fail to register if username is missing', function() {
-      var user = { foobar: makeLogin() };
+      var user = { foobar: helper.makeLogin() };
       return expect(db.User.register(user, 'secret')).be.rejected;
     });
 
     it('should logout an user', function() {
-      var login = makeLogin();
+      var login = helper.makeLogin();
       return db.User.register(login, 'secret').then(function(user) {
         return db.User.logout();
       }).then(function() {
@@ -90,7 +90,7 @@ describe('Test user and roles', function() {
     });
 
     it('should not register a user twice', function() {
-      var login = makeLogin();
+      var login = helper.makeLogin();
       var promise = db.User.register(login, 'secret').then(function(user) {
         expect(user.username).be.equals(login);
       });
@@ -103,7 +103,7 @@ describe('Test user and roles', function() {
     });
 
     it('should not register an existing user', function() {
-      var login = makeLogin();
+      var login = helper.makeLogin();
       return db.User.register(login, 'secret').then(function(user) {
         return db.User.logout();
       }).then(function() {
@@ -115,7 +115,7 @@ describe('Test user and roles', function() {
     });
 
     it('should login with valid credentials', function() {
-      var login = makeLogin();
+      var login = helper.makeLogin();
       var user;
       return db.User.register(login, 'secret').then(function(u) {
         user = u;
@@ -140,12 +140,12 @@ describe('Test user and roles', function() {
     });
 
     it('should not login an unknown user', function() {
-      var login = makeLogin();
+      var login = helper.makeLogin();
       expect(db.User.login(login, 'secret')).be.rejected;
     });
 
     it('should not login with invalid credentials', function() {
-      var login = makeLogin();
+      var login = helper.makeLogin();
       return db.User.register(login, 'secret').then(function(u) {
         return db.User.logout();
       }).then(function() {
@@ -154,7 +154,7 @@ describe('Test user and roles', function() {
     });
 
     it('should not login twice', function() {
-      var login = makeLogin();
+      var login = helper.makeLogin();
       return db.User.register(login, 'secret').then(function(u) {
         expect(function() {
           db.User.login(login, 'secret');
@@ -171,21 +171,19 @@ describe('Test user and roles', function() {
     });
 
     it('should logout user', function() {
-      expect(db.isGlobal).be.false;
-      var login = makeLogin();
+      var login = helper.makeLogin();
       return db.User.register(login, 'secret').then(function() {
         expect(db.token).be.ok;
-        expect(db.me).be.ok;
+        expect(db.User.me).be.ok;
         return db.logout();
       }).then(function() {
-        expect(db.token).be.not.ok;
-        expect(db.me).be.not.ok;
+        expect(db.token).be.null;
+        expect(db.User.me).be.null;
       });
     });
 
     it('should renew user token', function() {
-      expect(db.isGlobal).be.false;
-      var login = makeLogin();
+      var login = helper.makeLogin();
       var oldToken;
       return db.User.register(login, 'secret').then(function() {
         return new Promise(function(resolve) {
@@ -201,7 +199,7 @@ describe('Test user and roles', function() {
     });
 
     it('should change password', function() {
-      var oldLogin = makeLogin();
+      var oldLogin = helper.makeLogin();
       var oldToken;
       return db.User.register(oldLogin, "secret").then(function() {
         oldToken = db.token;
@@ -223,7 +221,7 @@ describe('Test user and roles', function() {
     });
 
     it('should be allowed to change password as root', function() {
-      var oldLogin = makeLogin();
+      var oldLogin = helper.makeLogin();
       var oldToken;
       return db.User.register(oldLogin, "secret").then(function() {
         oldToken = db.token;
@@ -246,7 +244,7 @@ describe('Test user and roles', function() {
     });
 
     it('should not be allowed to insert user', function() {
-      var name = makeLogin();
+      var name = helper.makeLogin();
       var newUser = db.User.fromJSON({
         username: name
       });
@@ -255,7 +253,7 @@ describe('Test user and roles', function() {
     });
 
     it('should not be allowed to register with an empty password', function() {
-      return expect(db.User.register(makeLogin(), "")).be.rejected;
+      return expect(db.User.register(helper.makeLogin(), "")).be.rejected;
     });
   });
 
@@ -273,71 +271,73 @@ describe('Test user and roles', function() {
       return DB.logout();
     });
 
-    if(typeof global != "undefined") {
-      it('should remove cookie if password has been changed', function() {
-        var login = makeLogin();
-        return DB.User.register(login, 'secret').then(function() {
-          return new Promise(function(resolve) {
-            setTimeout(function() {
-              resolve();
-            }, RENEW_TIMEOUT);
-          });
-        }).then(function() {
-          return db.User.login(login, 'secret');
-        }).then(function() {
-          return db.me.newPassword('secret', 'newSecret');
-        }).then(function() {
-          expect(DB._connector.cookie).be.ok;
-          return DB.renew();
-        }).then(function() {
-          expect(DB._connector.cookie).be.null;
-        });
-      });
-
-      it('should remove cookie if token is invalid', function() {
-        var login = makeLogin();
-        return DB.User.register(login, 'secret').then(function() {
-          expect(DB._connector.cookie).be.ok;
-          DB._connector.cookie = DB._connector.cookie.replace(/.{1}$/, DB._connector.cookie.substr(0, DB._connector.cookie.length) == '0'? '1': '0');
-          return DB.renew();
-        }).then(function(user) {
-          expect(user).be.null;
-          expect(DB._connector.cookie).be.null;
-        });
-      });
-
-      it('should not remove cookie if not global', function() {
-        var login = makeLogin();
-        var oldCookie;
-        return DB.User.register(login, 'secret').then(function() {
-          return db.User.login(login, 'secret');
-        }).then(function() {
-          expect(DB._connector.cookie).be.ok;
-          oldCookie = DB._connector.cookie;
-          db.token = db.token.replace(/.{1}$/, db.token.substr(0, db.token.length) == '0'? '1': '0');
-          return db.renew();
-        }).then(function(user) {
-          expect(user).be.null;
-          expect(DB._connector.cookie).eqls(oldCookie);
-        });
-      });
-
-    }
-
-    it('should use cookie if global', function() {
-      var login = makeLogin();
+    it('should remove token if password has been changed', function() {
+      var login = helper.makeLogin();
       return DB.User.register(login, 'secret').then(function() {
-        expect(DB.isGlobal).be.true;
+        return new Promise(function(resolve) {
+          setTimeout(function() {
+            resolve();
+          }, RENEW_TIMEOUT);
+        });
+      }).then(function() {
+        return db.User.login(login, 'secret');
+      }).then(function() {
+        return db.me.newPassword('secret', 'newSecret');
+      }).then(function() {
+        expect(DB.tokenStorage.get(DB._connector.origin)).be.ok;
+        return DB.renew();
+      }).then(function() {
+        expect(DB.tokenStorage.get(DB._connector.origin)).be.null;
+        expect(DB.User.me).be.null;
+        expect(DB.token).be.null;
+      });
+    });
+
+    it('should remove token if token is invalid', function() {
+      var login = helper.makeLogin();
+      return DB.User.register(login, 'secret').then(function() {
+        var token = DB.tokenStorage.get(DB._connector.origin);
+        expect(token).be.ok;
+        DB.tokenStorage.update(DB._connector.origin, token.replace(/.{1}$/, token.substr(token.length - 1, token.length) == '0'? '1': '0'));
+        return DB.renew();
+      }).then(function(user) {
+        expect(user).be.null;
+        expect(DB.tokenStorage.get(DB._connector.origin)).be.null;
+        expect(DB.User.me).be.null;
+        expect(DB.token).be.null;
+      });
+    });
+
+    it('should not remove token if not global', function() {
+      var login = helper.makeLogin();
+      var oldToken;
+      return DB.User.register(login, 'secret').then(function() {
+        return db.User.login(login, 'secret');
+      }).then(function() {
+        expect(DB.token).be.ok;
+        oldToken = DB.token;
+        db.token = db.token.replace(/.{1}$/, db.token.substr(db.token.length - 1, db.token.length) == '0'? '1': '0');
+        return db.renew();
+      }).then(function(user) {
+        expect(user).be.null;
+        expect(DB.token).eqls(oldToken);
+      });
+    });
+
+    it('should use global storage if tokenStorage is true', function() {
+      var login = helper.makeLogin();
+      return DB.User.register(login, 'secret').then(function() {
+        expect(DB.tokenStorage).eqls(DB.entityManagerFactory.tokenStorage);
         expect(DB.me).be.ok;
         expect(DB.token).be.ok;
         return DB.renew();
       });
     });
 
-    it('should remove cookie if global', function() {
-      var login = makeLogin();
+    it('should remove token by logout if tokenStorage is true', function() {
+      var login = helper.makeLogin();
       return DB.User.register(login, 'secret').then(function() {
-        expect(DB.isGlobal).be.true;
+        expect(DB.tokenStorage).eqls(DB.entityManagerFactory.tokenStorage);
         expect(DB.me).be.ok;
         expect(DB.token).be.ok;
         return DB.logout();
@@ -346,8 +346,8 @@ describe('Test user and roles', function() {
       });
     });
 
-    it('should autologin on global instances', function() {
-      var login = makeLogin();
+    it('should autologin on when tokenStorage is true', function() {
+      var login = helper.makeLogin();
       return DB.User.register(login, 'secret').then(function() {
         var db = new DB.EntityManagerFactory(env.TEST_SERVER).createEntityManager(true);
         return db.ready().then(function() {
@@ -357,13 +357,60 @@ describe('Test user and roles', function() {
       });
     });
 
-    it('should not autologin on global instances', function() {
-      var db = new DB.EntityManagerFactory(env.TEST_SERVER).createEntityManager(true);
-      return db.ready().then(function() {
-        expect(db.me).be.not.ok;
-        expect(db.token).be.not.ok;
+    it('should not autologin when tokenStorage is false', function() {
+      var login = helper.makeLogin();
+      return DB.User.register(login, 'secret').then(function() {
+        var db = new DB.EntityManagerFactory(env.TEST_SERVER).createEntityManager();
+        return db.ready().then(function() {
+          expect(db.me).be.not.ok;
+          expect(db.token).be.not.ok;
+        });
       });
     });
+
+    if (typeof localStorage !== "undefined") {
+      it('should save token in session storage when register loginOption is false', function() {
+        var user = new DB.User({ username: helper.makeLogin()});
+        return DB.User.register(user, 'secret', false).then(function(u) {
+          expect(u.username).eqls(user.username);
+          expect(localStorage.getItem('BAT:' + db._connector.origin)).be.not.ok;
+          expect(sessionStorage.getItem('BAT:' + db._connector.origin)).be.ok;
+        });
+      });
+
+      it('should save token in local storage when register loginOption is true', function() {
+        var user = new DB.User({ username: helper.makeLogin()});
+        return DB.User.register(user, 'secret', true).then(function(u) {
+          expect(u.username).eqls(user.username);
+          expect(localStorage.getItem('BAT:' + db._connector.origin)).be.ok;
+          expect(sessionStorage.getItem('BAT:' + db._connector.origin)).be.not.ok;
+        });
+      });
+
+      it('should save token in session storage when login loginOption is false', function() {
+        var username =  helper.makeLogin();
+        var user = new DB.User({ username: username});
+        return DB.User.register(user, 'secret', db.User.LoginOption.NO_LOGIN).then(function() {
+          return DB.User.login(username, 'secret', false);
+        }).then(function(u) {
+          expect(u.username).eqls(user.username);
+          expect(localStorage.getItem('BAT:' + db._connector.origin)).be.not.ok;
+          expect(sessionStorage.getItem('BAT:' + db._connector.origin)).be.ok;
+        });
+      });
+
+      it('should save token in local storage when login loginOption is true', function() {
+        var username =  helper.makeLogin();
+        var user = new DB.User({ username: username});
+        return DB.User.register(user, 'secret', db.User.LoginOption.NO_LOGIN).then(function() {
+          return DB.User.login(username, 'secret', true);
+        }).then(function(u) {
+          expect(u.username).eqls(user.username);
+          expect(localStorage.getItem('BAT:' + db._connector.origin)).be.ok;
+          expect(sessionStorage.getItem('BAT:' + db._connector.origin)).be.not.ok;
+        });
+      });
+    }
   });
 
   describe('roles', function() {
@@ -371,20 +418,20 @@ describe('Test user and roles', function() {
 
     beforeEach(function() {
       user1 = new db.User();
-      user1.username = makeLogin();
+      user1.username = helper.makeLogin();
 
       user2 = new db.User();
-      user2.username = makeLogin();
+      user2.username = helper.makeLogin();
 
       user3 = new db.User();
-      user3.username = makeLogin();
+      user3.username = helper.makeLogin();
 
-      return db.User.register(user1, user1.username, false).then(function(usr) {
+      return db.User.register(user1, user1.username, db.User.LoginOption.NO_LOGIN).then(function(usr) {
         user1 = usr;
-        return db.User.register(user2, user2.username, false);
+        return db.User.register(user2, user2.username, db.User.LoginOption.NO_LOGIN);
       }).then(function(usr) {
         user2 = usr;
-        return db.User.register(user3, user3.username, false);
+        return db.User.register(user3, user3.username, db.User.LoginOption.NO_LOGIN);
       }).then(function(usr) {
         user3 = usr;
       });
@@ -415,7 +462,7 @@ describe('Test user and roles', function() {
     });
 
     it('should renew token', function() {
-      var login = makeLogin();
+      var login = helper.makeLogin();
       var oldToken;
       return db.User.register(login, 'secret').then(function() {
         return new Promise(function(resolve) {
