@@ -1,3 +1,11 @@
+<a name="v1.1.1"></a>
+# v1.1.1 (116-4-5)
+
+
+### Bug Fixes
+
+* Add missing login option for OAuth login
+
 <a name="v1.1.0"></a>
 # 1.1.0 (2016-04-01)
 
