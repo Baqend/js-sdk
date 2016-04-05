@@ -811,8 +811,8 @@ describe('Test crud', function() {
         sibs.address = address;
         sibs.push(sib);
       }
-      child.listSiblings.add(sibs[0]);
-      child.listSiblings.add(sibs[1]);
+      child.listSiblings.push(sibs[0]);
+      child.listSiblings.push(sibs[1]);
       child.setSiblings.add(sibs[2]);
       child.setSiblings.add(sibs[3]);
       child.mapSiblings.set(sibs[4], sibs[5]);

@@ -171,7 +171,7 @@ describe('Test entity type', function () {
       var list = new DB.List();
       var vals = types[name].values;
       for (var i = 0; i < vals.length; ++i) {
-        list.add(vals[i]);
+        list.push(vals[i]);
       }
 
       test(name + "List", list);
@@ -179,11 +179,11 @@ describe('Test entity type', function () {
   });
 
   describe("refList value", function() {
-    test("refList", new DB.List(), new DB.List([testObject(), testObject(), null, testObject()]));
+    test("refList", new DB.List(), new DB.List(testObject(), testObject(), null, testObject()));
   });
 
   describe("embeddedList value", function() {
-    test("embeddedList", new DB.List(), new DB.List([embeddableObject(), embeddableObject(), null, embeddableObject()]));
+    test("embeddedList", new DB.List(), new DB.List(embeddableObject(), embeddableObject(), null, embeddableObject()));
   });
 
   for (name in types) {
@@ -415,7 +415,7 @@ describe('Test entity type', function () {
     var args = Array.prototype.slice.call(arguments, 1);
     args.forEach(function(arg) {
       var expectedValue, value;
-      if (Array.isInstance(arg)) {
+      if (arg instanceof Array) {
         value = arg[0];
         expectedValue = arg[1];
       } else {

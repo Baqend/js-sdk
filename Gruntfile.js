@@ -19,13 +19,6 @@ module.exports = function (grunt) {
     standalone: "DB"
   };
 
-  var browserifyOptions = {
-    builtins: [],
-    detectGlobals: false,
-    //insertGlobalVars: ['global'],
-    standalone: "DB"
-  };
-
   function injectBabelHelper(b, opts) {
     if (!opts.debug) {
       //list of helpers babel-core\lib\transformation\file\index.js
@@ -34,7 +27,8 @@ module.exports = function (grunt) {
         'createClass',
         'defaults',
         'classCallCheck',
-        'possibleConstructorReturn'
+        'possibleConstructorReturn',
+        'typeof'
       ], 'var');
 
       var first = true;
@@ -66,7 +60,8 @@ module.exports = function (grunt) {
     browserify: {
       options: {
         browserifyOptions: browserifyOptions,
-        banner: longBanner
+        banner: longBanner,
+        plugin: [injectBabelHelper]
       },
 
       debug: {
@@ -114,10 +109,10 @@ module.exports = function (grunt) {
     connect: {
       debug: {
         options: {
-          open: {
+          /*open: {
             target: 'http://localhost:8000/build/debug.html',
             appName: 'Chrome'
-          }
+          }*/
         }
       }
     },
