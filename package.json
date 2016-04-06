@@ -38,6 +38,7 @@
     "babelify": "^7.2.0",
     "chai": "^3.4.1",
     "chai-as-promised": "^5.2.0",
+    "core-js": "^2.2.1",
     "grunt": "^0.4.5",
     "grunt-browserify": "^4.0.1",
     "grunt-contrib-clean": "^0.7.0",
@@ -78,8 +79,7 @@
     "node": ">=0.2.0"
   },
   "browser": {
-    "./lib/util/util.js": "./lib/util/util-browser.js",
-    "websocket": "./lib/util/websocket.js"
+    "./lib/util/util.js": "./lib/util/util-browser.js"
   },
   "browserify": {
     "transform": [

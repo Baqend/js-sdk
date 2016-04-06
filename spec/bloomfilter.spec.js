@@ -8,7 +8,7 @@ describe('Test Bloomfilter', function() {
   var db, type;
 
   before(function() {
-    emf = new DB.EntityManagerFactory({host: env.TEST_SERVER, tokenStorage: helper.rootTokenStorage});
+    var emf = new DB.EntityManagerFactory({host: env.TEST_SERVER, tokenStorage: helper.rootTokenStorage});
 
     return emf.ready().then(function() {
       var metamodel = emf.metamodel;
