@@ -174,16 +174,16 @@ describe('Test entity type', function () {
         list.push(vals[i]);
       }
 
-      test(name + "List", list);
+      test(name + "List", [list, list]);
     });
   });
 
   describe("refList value", function() {
-    test("refList", new DB.List(), new DB.List(testObject(), testObject(), null, testObject()));
+    test("refList", [new DB.List()], [new DB.List(testObject(), testObject(), null, testObject())]);
   });
 
   describe("embeddedList value", function() {
-    test("embeddedList", new DB.List(), new DB.List(embeddableObject(), embeddableObject(), null, embeddableObject()));
+    test("embeddedList", [new DB.List()], [new DB.List(embeddableObject(), embeddableObject(), null, embeddableObject())]);
   });
 
   for (name in types) {
@@ -420,16 +420,16 @@ describe('Test entity type', function () {
         expectedValue = arg[1];
       } else {
         value = arg;
+      }
 
-        if (value instanceof DB.List) {
-          expectedValue = new DB.List(value);
-        } else if (value instanceof DB.Set) {
-          expectedValue = new DB.Set(value);
-        } else if (value instanceof DB.Map) {
-          expectedValue = new DB.Map(value);
-        } else {
-          expectedValue = value;
-        }
+      if (value instanceof DB.List) {
+        expectedValue = new DB.List.from(value);
+      } else if (value instanceof DB.Set) {
+        expectedValue = new DB.Set(value);
+      } else if (value instanceof DB.Map) {
+        expectedValue = new DB.Map(value);
+      } else {
+        expectedValue = value;
       }
 
       it(value + " should be saved and reloaded", function() {
@@ -448,5 +448,10 @@ describe('Test entity type', function () {
         });
       });
     });
+  }
+
+  function testList(test) {
+    test(test);
+
   }
 });

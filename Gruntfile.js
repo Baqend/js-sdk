@@ -61,7 +61,12 @@ module.exports = function (grunt) {
       options: {
         browserifyOptions: browserifyOptions,
         banner: longBanner,
-        plugin: [injectBabelHelper]
+        plugin: [injectBabelHelper],
+        transform: [
+          ['babelify', {
+            "plugins": ["external-helpers"]
+          }]
+        ]
       },
 
       debug: {
@@ -72,7 +77,9 @@ module.exports = function (grunt) {
           watch: true,
           keepAlive: true,
           browserifyOptions: Object.assign({debug: true}, browserifyOptions),
-          banner: ''
+          banner: '',
+          plugin: [],
+          transform: ['babelify']
         }
       },
 
