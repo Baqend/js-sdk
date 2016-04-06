@@ -78,7 +78,7 @@
     "node": ">=0.2.0"
   },
   "browser": {
-    "./lib/util/hmac.js": "./lib/util/hmac-browser.js",
+    "./lib/util/util.js": "./lib/util/util-browser.js",
     "websocket": "./lib/util/websocket.js"
   },
   "browserify": {
