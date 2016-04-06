@@ -87,7 +87,7 @@ var buildResult =
   exec('npm run dist').code ||
   exec('git add package.json CHANGELOG.md').code ||
   (gitAdd && exec('git add -f ' + gitAdd, {silent: true}).code) ||
-  exec('git commit -m "[ci skip] release ' + version + '"').code ||
+  exec('git commit -m "release ' + version + ' [ci skip]"').code ||
   exec('git tag ' + version + ' -m "release ' + version + '"').code;
 
 if (buildResult) {
@@ -108,7 +108,7 @@ console.log('Postrelease:');
 var devVersion = exec('npm version --no-git-tag-version prerelease').output.trim();
 (gitAdd && exec('git rm --cached -r ' + gitAdd, {silent: true}).code) ||
 exec('git add package.json').code ||
-exec('git commit -m "[ci skip] new development version ' + devVersion + '"').code ||
+exec('git commit -m "new development version ' + devVersion + ' [ci skip]"').code ||
 exec('git push origin ' + requiredBranch).code;
 
 
