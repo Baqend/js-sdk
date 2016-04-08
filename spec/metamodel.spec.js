@@ -512,7 +512,7 @@ describe('Test Metamodel', function() {
         bucket: UpdatePerson.ref,
         field: {
           name: "firstName",
-          type: "String",
+          type: "/db/String",
           order: 2
         }
       };
