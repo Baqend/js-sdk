@@ -16,9 +16,9 @@ describe('Test entity type', function () {
     "float": {type: metamodel.baseType('Double'), simple:true, values: [-2.3, 4] },
     "integer": {type: metamodel.baseType('Integer'), simple:true, values: [0, -4, 56] },
     "string": { type: metamodel.baseType('String'), simple:true, values: ["", "Test String"] },
-    "time": { type: metamodel.baseType('Time'), simple:true, values: [new Date("1970-01-01T17:33:14")] },
-    "date": { type: metamodel.baseType('Date'), simple:true, values: [new Date("2013-11-22")] },
-    "dateTime": { type: metamodel.baseType('DateTime'), simple:true, values: [new Date()] },
+    "time": { type: metamodel.baseType('Time'), simple:true, values: [new Date("1970-01-01T00:00:00"), new Date("1970-01-01T17:33:14")] },
+    "date": { type: metamodel.baseType('Date'), simple:true, values: [new Date("1970-01-01"), new Date("2013-11-22")] },
+    "dateTime": { type: metamodel.baseType('DateTime'), simple:true, values: [new Date(), new Date("1970-01-01T17:33:14")] },
     "geoPoint": { type: metamodel.baseType('GeoPoint'), values: [new DB.GeoPoint(34.5658, 110.4576), new DB.GeoPoint(0, 0)] },
     "jsonArray": { type: metamodel.baseType('JsonArray'), values: [[1,'string',{key:'value'}, [1,2,3]], [], [null, 0, false, '', [], {}]] },
     "jsonObject": { type: metamodel.baseType('JsonObject'), values: [
@@ -172,12 +172,7 @@ describe('Test entity type', function () {
 
   Object.keys(types).forEach(function(name) {
     describe(name + "List value", function() {
-      var list = new DB.List();
-      var vals = types[name].values;
-      for (var i = 0; i < vals.length; ++i) {
-        list.push(vals[i]);
-      }
-
+      var list = DB.List.from(types[name].values);
       testList(name + "List", list);
     });
   });
@@ -193,12 +188,7 @@ describe('Test entity type', function () {
   for (name in types) {
     if (types[name].simple) {
       describe(name + "Set value", function() {
-        var set = new DB.Set();
-        var vals = types[name].values;
-        for (var i = 0; i < vals.length; ++i) {
-          set.add(vals[i]);
-        }
-
+        var set = new DB.Set(types[name].values);
         testSet(name + "Set", set);
       });
     }
@@ -412,7 +402,7 @@ describe('Test entity type', function () {
   function testList(name, list) {
     test(name);
 
-    it(name + " should be saved with an empty list", function() {
+    it("should be saved with an empty list", function() {
       obj[name] = new DB.List();
 
       return obj.save({refresh: true}).then(function() {
@@ -421,7 +411,7 @@ describe('Test entity type', function () {
       });
     });
 
-    it(name + " should add values", function() {
+    it("should add values", function() {
       obj[name] = DB.List.from(list);
 
       return obj.save().then(function() {
@@ -437,7 +427,7 @@ describe('Test entity type', function () {
       });
     });
 
-    it(name + " should remove values", function() {
+    it("should remove values", function() {
       var newList = obj[name] = DB.List.from(list);
 
       var json = state.getJson();
@@ -447,12 +437,75 @@ describe('Test entity type', function () {
       expect(newList.length).eq(0);
     });
 
+    it("should track removes", function() {
+      obj[name] = DB.List.from(list);
+
+      var version = 0;
+      return obj.save().then(function() {
+        obj[name].pop();
+        version = obj.version;
+        return obj.save({refresh: true});
+      }).then(function() {
+        var newList = obj[name];
+        expect(obj.version).eql(version + 1);
+        expect(newList.length).eql(list.length - 1);
+        for (var i = 0; i < list.length - 1; ++i) {
+          expect(newList[i]).eql(list[i]);
+        }
+      });
+    });
+
+    it("should track adds", function() {
+      obj[name] = new DB.List();
+
+      var version = 0;
+      return obj.save().then(function() {
+        obj[name].push(list[0]);
+        version = obj.version;
+        return obj.save({refresh: true});
+      }).then(function() {
+        var newList = obj[name];
+        expect(obj.version).eql(version + 1);
+        expect(newList.length).eql(1);
+        expect(newList[0]).eql(list[0]);
+      });
+    });
+
+    it("should track changes", function() {
+      obj[name] = [list[0]];
+
+      var version = 0;
+      return obj.save().then(function() {
+        obj[name][0] = list[1];
+        version = obj.version;
+        return obj.save({refresh: true});
+      }).then(function() {
+        var newList = obj[name];
+        expect(obj.version).eql(version + 1);
+        expect(newList.length).eql(1);
+        expect(newList[0]).eql(list[1]);
+      });
+    });
+
+    it("should not track none changes", function() {
+      obj[name] = DB.List.from(list);
+
+      var version = 0;
+      return obj.save().then(function() {
+        version = obj.version;
+        obj[name][0] = list[0];
+        return obj.save({refresh: true});
+      }).then(function() {
+        expect(obj.version).eql(version);
+      });
+    });
+
     var args = Array.prototype.slice.call(arguments, 1);
     args.forEach(function(arg) {
       var value = arg;
       var expectedValue = DB.List.from(value);
 
-      it(name + " should be saved and reloaded", function() {
+      it(arg + " should be saved and reloaded", function() {
         obj[name] = value;
 
         return obj.save({refresh: true}).then(function() {
@@ -470,7 +523,7 @@ describe('Test entity type', function () {
   function testSet(name, set) {
     test(name);
 
-    it(name + " should be saved with an empty set", function() {
+    it("should be saved with an empty set", function() {
       obj[name] = new DB.Set();
 
       return obj.save({refresh: true}).then(function() {
@@ -479,7 +532,7 @@ describe('Test entity type', function () {
       });
     });
 
-    it(name + " should add values", function() {
+    it("should add values", function() {
       obj[name] = new DB.Set(set);
 
       return obj.save().then(function() {
@@ -494,7 +547,7 @@ describe('Test entity type', function () {
       });
     });
 
-    it(name + " should remove values", function() {
+    it("should remove values", function() {
       var newSet = obj[name] = new DB.Set(set);
 
       var json = state.getJson();
@@ -504,12 +557,83 @@ describe('Test entity type', function () {
       expect(newSet.size).eq(0);
     });
 
+    it("should track removes", function() {
+      obj[name] = new DB.Set(set);
+
+      var version = 0;
+      var removed = set.values().next().value;
+      return obj.save().then(function() {
+        obj[name].delete(removed);
+        version = obj.version;
+        return obj.save({refresh: true});
+      }).then(function() {
+        var newSet = obj[name];
+        expect(obj.version).eql(version + 1);
+        expect(newSet.size).eql(set.size - 1);
+        for (var iter = set.values(), item; !(item = iter.next()).done;) {
+          expect(newSet.has(item.value)).eql(item.value !== removed);
+        }
+      });
+    });
+
+    it("should track adds", function() {
+      obj[name] = new DB.Set();
+
+      var version = 0;
+      var add = set.values().next().value;
+      return obj.save().then(function() {
+        obj[name].add(add);
+        version = obj.version;
+        return obj.save({refresh: true});
+      }).then(function() {
+        var newSet = obj[name];
+        expect(obj.version).eql(version + 1);
+        expect(newSet.size).eql(1);
+        expect(newSet.values().next().value).eql(add);
+      });
+    });
+
+    it("should track changes", function() {
+      var items = set.values();
+      var val1 = items.next().value;
+      var val2 = items.next().value;
+
+      obj[name] = new DB.Set();
+      obj[name].add(val1);
+
+      var version = 0;
+      return obj.save().then(function() {
+        obj[name].delete(val1);
+        obj[name].add(val2);
+        version = obj.version;
+        return obj.save({refresh: true});
+      }).then(function() {
+        var newSet = obj[name];
+        expect(obj.version).eql(version + 1);
+        expect(newSet.size).eql(1);
+        expect(newSet.values().next().value).eql(val2);
+      });
+    });
+
+    it("should not track none changes", function() {
+      obj[name] = new DB.Set(set);
+
+      var version = 0;
+      return obj.save().then(function() {
+        version = obj.version;
+        obj[name].add(set.values().next().value);
+        return obj.save({refresh: true});
+      }).then(function() {
+        expect(obj.version).eql(version);
+      });
+    });
+
     var args = Array.prototype.slice.call(arguments, 1);
     args.forEach(function(arg) {
       var value = arg;
       var expectedValue = new DB.Set(value);
 
-      it(name + " should be saved and reloaded", function() {
+      it(arg + " should be saved and reloaded", function() {
         obj[name] = value;
 
         return obj.save({refresh: true}).then(function() {
@@ -527,7 +651,7 @@ describe('Test entity type', function () {
   function testMap(name, map) {
     test(name);
 
-    it(name + " should be saved with an empty map", function() {
+    it("should be saved with an empty map", function() {
       obj[name] = new DB.Map();
 
       return obj.save({refresh: true}).then(function() {
@@ -536,7 +660,7 @@ describe('Test entity type', function () {
       });
     });
 
-    it(name + " should add key", function() {
+    it("should add key", function() {
       obj[name] = new DB.Map(map);
 
       return obj.save().then(function() {
@@ -551,7 +675,7 @@ describe('Test entity type', function () {
       });
     });
 
-    it(name + " should remove key", function() {
+    it("should remove key", function() {
       var newMap = obj[name] = new DB.Map(map);
 
       var json = state.getJson();
@@ -561,12 +685,88 @@ describe('Test entity type', function () {
       expect(newMap.size).eq(0);
     });
 
+    it("should track removes", function() {
+      obj[name] = new DB.Map(map);
+
+      var version = 0;
+      var removed = map.keys().next().value;
+      return obj.save().then(function() {
+        obj[name].delete(removed);
+        version = obj.version;
+        return obj.save({refresh: true});
+      }).then(function() {
+        var newMap = obj[name];
+        expect(obj.version).eql(version + 1);
+        expect(newMap.size).eql(map.size - 1);
+        for (var iter = map.entries(), item; !(item = iter.next()).done;) {
+          if (item.value[0] == removed) {
+            expect(newMap.has(item.value[0])).be.false;
+          } else {
+            expect(newMap.get(item.value[0])).eqls(item.value[1]);
+          }
+        }
+      });
+    });
+
+    it("should track adds", function() {
+      obj[name] = new DB.Map();
+
+      var version = 0;
+      var add = map.entries().next().value;
+      return obj.save().then(function() {
+        obj[name].set(add[0], add[1]);
+        version = obj.version;
+        return obj.save({refresh: true});
+      }).then(function() {
+        var newMap = obj[name];
+        expect(obj.version).eql(version + 1);
+        expect(newMap.size).eql(1);
+        expect(newMap.get(add[0])).eql(add[1]);
+      });
+    });
+
+    it("should track changes", function() {
+      var items = map.entries();
+      var entry1 = items.next().value;
+      var entry2 = items.next().value;
+
+      obj[name] = new DB.Map();
+      obj[name].set(entry1[0], entry1[1]);
+
+      var version = 0;
+      return obj.save().then(function() {
+        obj[name].delete(entry1[0]);
+        obj[name].set(entry2[0], entry2[1]);
+        version = obj.version;
+        return obj.save({refresh: true});
+      }).then(function() {
+        var newMap = obj[name];
+        expect(obj.version).eql(version + 1);
+        expect(newMap.size).eql(1);
+        expect(newMap.get(entry2[0])).eql(entry2[1]);
+      });
+    });
+
+    it("should not track none changes", function() {
+      obj[name] = new DB.Map(map);
+
+      var version = 0;
+      return obj.save().then(function() {
+        version = obj.version;
+        var entry = map.entries().next().value;
+        obj[name].set(entry[0], entry[1]);
+        return obj.save({refresh: true});
+      }).then(function() {
+        expect(obj.version).eql(version);
+      });
+    });
+
     var args = Array.prototype.slice.call(arguments, 1);
     args.forEach(function(arg) {
       var value = arg;
       var expectedValue = new DB.Map(value);
 
-      it(name + " should be saved and reloaded", function() {
+      it(arg + " should be saved and reloaded", function() {
         obj[name] = value;
 
         return obj.save({refresh: true}).then(function() {
