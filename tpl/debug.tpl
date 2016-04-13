@@ -22,7 +22,7 @@
 
 <script>
   mocha.checkLeaks();
-  mocha.globals(['jQuery']);
+  mocha.globals(['jQuery', 'ms__*']);
   mocha.run();
 </script>
 </body>

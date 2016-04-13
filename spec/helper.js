@@ -1,3 +1,7 @@
+if (typeof DB == 'undefined') {
+  DB = require('../lib');
+}
+
 var helper = {
   rootTokenStorage: null,
   makeLogin: function() {

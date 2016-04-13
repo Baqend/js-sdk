@@ -6,10 +6,6 @@ module.exports = function (grunt) {
   var banner = '/*! <%= pkg.name %> <%= pkg.version %> | <%= copyright %> | <%= pkg.license %> */\n';
   var longBanner = grunt.file.read('tpl/banner.tpl');
 
-  // redirect mocha node tests to the given xml
-  // @see https://github.com/peerigon/xunit-file/blob/master/lib/xunit-file.js
-  process.env.JUNIT_REPORT_PATH = 'build/test-results/node.xml';
-
   var TEST = 'spec/{env.js,helper.js,**/*.spec.js}';
 
   var browserifyOptions = {
@@ -116,10 +112,10 @@ module.exports = function (grunt) {
     connect: {
       debug: {
         options: {
-          /*open: {
+          open: {
             target: 'http://localhost:8000/build/debug.html',
             appName: 'Chrome'
-          }*/
+          }
         }
       }
     },
@@ -175,6 +171,11 @@ module.exports = function (grunt) {
       test: {
         options: {
           reporter: 'mocha-jenkins-reporter',
+          reporterOptions: {
+            junit_report_name: "Node Tests",
+            junit_report_path: "build/test-results/node.xml",
+            junit_report_stack: 1
+          },
           timeout: 4000
         },
         src: [TEST]

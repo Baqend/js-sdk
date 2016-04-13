@@ -16,9 +16,9 @@ describe('Test entity type', function () {
     "float": {type: metamodel.baseType('Double'), simple:true, values: [-2.3, 4] },
     "integer": {type: metamodel.baseType('Integer'), simple:true, values: [0, -4, 56] },
     "string": { type: metamodel.baseType('String'), simple:true, values: ["", "Test String"] },
-    "time": { type: metamodel.baseType('Time'), simple:true, values: [new Date("1970-01-01T00:00:00"), new Date("1970-01-01T17:33:14")] },
-    "date": { type: metamodel.baseType('Date'), simple:true, values: [new Date("1970-01-01"), new Date("2013-11-22")] },
-    "dateTime": { type: metamodel.baseType('DateTime'), simple:true, values: [new Date(), new Date("1970-01-01T17:33:14")] },
+    "time": { type: metamodel.baseType('Time'), simple:true, values: [new Date("1970-01-01T00:00:00Z"), new Date("1970-01-01T17:33:14Z")] },
+    "date": { type: metamodel.baseType('Date'), simple:true, values: [new Date("1970-01-01T00:00:00Z"), new Date("2013-11-22T00:00:00Z")] },
+    "dateTime": { type: metamodel.baseType('DateTime'), simple:true, values: [new Date(), new Date("1970-01-01T17:33:14Z")] },
     "geoPoint": { type: metamodel.baseType('GeoPoint'), values: [new DB.GeoPoint(34.5658, 110.4576), new DB.GeoPoint(0, 0)] },
     "jsonArray": { type: metamodel.baseType('JsonArray'), values: [[1,'string',{key:'value'}, [1,2,3]], [], [null, 0, false, '', [], {}]] },
     "jsonObject": { type: metamodel.baseType('JsonObject'), values: [
