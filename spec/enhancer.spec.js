@@ -501,7 +501,8 @@ describe("Test enhancer", function() {
           this.b = b;\
           this.c = c;\
         }\
-      };');
+      };\
+      Test;'); // add Test as last statement so firefox returns the class properly
   }
 
   function defineClass() {
@@ -511,6 +512,7 @@ describe("Test enhancer", function() {
         constructor(a) {\
           this.a = a;\
         }\
-      };');
+      };\
+      Test');  // add Test as last statement so firefox returns the class properly
   }
 });
