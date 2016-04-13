@@ -39,7 +39,7 @@ describe('Test Acl', function() {
   describe('Object', function() {
 
     it('should be created with an empty rule set', function() {
-      var acl = new db.AclPerson().acl;
+      var acl = (new db.AclPerson()).acl;
 
       expect(acl.isPublicReadAllowed()).be.true;
       expect(acl.isPublicWriteAllowed()).be.true;

@@ -1,12 +1,10 @@
+var through = require('through2');
+
 module.exports = function (grunt) {
   'use strict';
 
   var banner = '/*! <%= pkg.name %> <%= pkg.version %> | <%= copyright %> | <%= pkg.license %> */\n';
   var longBanner = grunt.file.read('tpl/banner.tpl');
-
-  // redirect mocha node tests to the given xml
-  // @see https://github.com/peerigon/xunit-file/blob/master/lib/xunit-file.js
-  process.env.JUNIT_REPORT_PATH = 'build/test-results/node.xml';
 
   var TEST = 'spec/{env.js,helper.js,**/*.spec.js}';
 
@@ -16,6 +14,35 @@ module.exports = function (grunt) {
     //insertGlobalVars: ['global'],
     standalone: "DB"
   };
+
+  function injectBabelHelper(b, opts) {
+    if (!opts.debug) {
+      //list of helpers babel-core\lib\transformation\file\index.js
+      var helper = require("babel-core").buildExternalHelpers([
+        'inherits',
+        'createClass',
+        'defaults',
+        'classCallCheck',
+        'possibleConstructorReturn',
+        'typeof'
+      ], 'var');
+
+      var first = true;
+      b.pipeline.get('pack').push(through.obj(
+          function (row, enc, next) {
+            if (first) {
+              var line = 'return ';
+              this.push(row.slice(0, row.length - line.length));
+              this.push(helper);
+              this.push(line);
+              first = false;
+            } else {
+              this.push(row)
+            }
+            next()
+          }));
+    }
+  }
 
   grunt.initConfig({
     pkg: grunt.file.readJSON('package.json'),
@@ -29,7 +56,13 @@ module.exports = function (grunt) {
     browserify: {
       options: {
         browserifyOptions: browserifyOptions,
-        banner: longBanner
+        banner: longBanner,
+        plugin: [injectBabelHelper],
+        transform: [
+          ['babelify', {
+            "plugins": ["external-helpers"]
+          }]
+        ]
       },
 
       debug: {
@@ -40,7 +73,9 @@ module.exports = function (grunt) {
           watch: true,
           keepAlive: true,
           browserifyOptions: Object.assign({debug: true}, browserifyOptions),
-          banner: ''
+          banner: '',
+          plugin: [],
+          transform: ['babelify']
         }
       },
 
@@ -136,6 +171,11 @@ module.exports = function (grunt) {
       test: {
         options: {
           reporter: 'mocha-jenkins-reporter',
+          reporterOptions: {
+            junit_report_name: "Node Tests",
+            junit_report_path: "build/test-results/node.xml",
+            junit_report_stack: 1
+          },
           timeout: 4000
         },
         src: [TEST]

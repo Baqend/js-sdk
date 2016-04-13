@@ -151,127 +151,10 @@ describe("Test enhancer", function() {
     expect(testClass._metadata).be.ok;
   });
 
-  it('should enhance custom classes', function() {
-    var myClass = function() {
-      DB.binding.Entity.call(this);
-      this.test = 'hallo';
-    };
-
-    var subClass = DB.binding.Entity.extend(myClass);
-
-    myClass.prototype.firstName = function() {
-      return "firstName";
-    };
-
-    db.TestClass = myClass;
-
-    db.TestClass.prototype.lastName = function() {
-      return "lastName";
-    };
-
-    expect(subClass).equals(myClass);
-
-    var testClass = new db.TestClass();
-    expect(testClass.firstName()).equal("firstName");
-    expect(testClass.lastName()).equal("lastName");
-    expect("testValue" in testClass).be.true;
-    expect(testClass.test).equals('hallo');
-    expect(testClass.save).be.ok;
-    expect(testClass.insert).be.ok;
-    expect(testClass.update).be.ok;
-    expect(testClass.load).be.ok;
-    expect(testClass.delete).be.ok;
-    expect(testClass.attr).be.ok;
-
-    expect(testClass instanceof DB.binding.Entity).be.true;
-    expect(testClass instanceof DB.binding.Managed).be.true;
-    expect(testClass instanceof myClass).be.true;
-  });
-
-  it('should call custom classes constructor', function() {
-    db.TestClass = DB.binding.Entity.extend(function(a,b,c) {
-      DB.binding.Entity.call(this);
-      this.a = a;
-      this.b = b;
-      this.c = c;
-    });
-
-    var testClass = new db.TestClass(1,2,3);
-    expect(testClass.a).equals(1);
-    expect(testClass.b).equals(2);
-    expect(testClass.c).equals(3);
-  });
-
-  it('should reject none entity classes', function() {
-    var myClass = function(a) {
-      this.a = a;
-    };
-
-    expect(function() {
-      db.TestClass = myClass;
-    }).throw('must extends the Entity class');
-  });
-
-  it('should reject none embaddable classes', function() {
-    var myClass = function(a) {
-      this.a = a;
-    };
-
-    expect(function() {
-      db.TestEmbeddedClass = myClass;
-    }).throw('must extends the Managed class');
-  });
-
-  it('should reject none embaddable classes', function() {
-    var myClass = DB.binding.Entity.extend(function(a) {
-      this.a = a;
-    });
-
-    expect(function() {
-      db.TestEmbeddedClass = myClass;
-    }).throw('must extends the Managed class');
-  });
-
-  it('should be allowed once to set a class', function() {
-    db.TestClass = DB.binding.Entity.extend(function() {});
-
-    expect(function() {
-      db.TestClass = DB.binding.Entity.extend(function() {});
-    }).throw('already been set');
-  });
-
-  it('should allow adding classes before initialization', function() {
-    var emf = new DB.EntityManagerFactory({schema: model});
-
-    var db = emf.createEntityManager();
-    db.TestClass = DB.binding.Entity.extend(function(a,b,c) {
-      DB.binding.Entity.call(this);
-      this.a = a;
-      this.b = b;
-      this.c = c;
-    });
-
-    expect(db.isReady).be.false;
-    emf.connect(env.TEST_SERVER);
-
-    return db.ready().then(function() {
-      var testClass = new db.TestClass(1,2,3);
-      expect(testClass.a).equals(1);
-      expect(testClass.b).equals(2);
-      expect(testClass.c).equals(3);
-      expect(testClass.save).be.ok;
-      expect(testClass.insert).be.ok;
-      expect(testClass.update).be.ok;
-      expect(testClass.load).be.ok;
-      expect(testClass.delete).be.ok;
-      expect(testClass.attr).be.ok;
-    });
-  });
-
   it("enhanced objects should be enumarable", function() {
     var obj = new db.TestClass();
 
-    var expected = ['id', 'version', 'acl', 'key', 'testValue'];
+    var expected = ['id', 'version', 'acl', 'testValue'];
     var count = 0;
     for (var prop in obj) {
       if (!(obj[prop] instanceof Function)) {
@@ -384,5 +267,252 @@ describe("Test enhancer", function() {
     expect(newTestClass.value).eql(5);
   });
 
+  describe('ES5 classes', function() {
+    it('should enhance custom classes', function() {
+      var myClass = function() {
+        DB.binding.Entity.init(this);
+        this.test = 'hallo';
+      };
 
+      var subClass = DB.binding.Entity.extend(myClass);
+
+      myClass.prototype.firstName = function() {
+        return "firstName";
+      };
+
+      db.TestClass = myClass;
+
+      db.TestClass.prototype.lastName = function() {
+        return "lastName";
+      };
+
+      expect(subClass).equals(myClass);
+
+      var testClass = new db.TestClass();
+      expect(testClass.firstName()).equal("firstName");
+      expect(testClass.lastName()).equal("lastName");
+      expect("testValue" in testClass).be.true;
+      expect(testClass.test).equals('hallo');
+      expect(testClass.save).be.ok;
+      expect(testClass.insert).be.ok;
+      expect(testClass.update).be.ok;
+      expect(testClass.load).be.ok;
+      expect(testClass.delete).be.ok;
+      expect(testClass.attr).be.ok;
+
+      expect(testClass instanceof DB.binding.Entity).be.true;
+      expect(testClass instanceof DB.binding.Managed).be.true;
+      expect(testClass instanceof myClass).be.true;
+    });
+
+    it('should call custom classes constructor', function() {
+      db.TestClass = DB.binding.Entity.extend(function(a,b,c) {
+        DB.binding.Entity.init(this);
+        this.a = a;
+        this.b = b;
+        this.c = c;
+      });
+
+      var testClass = new db.TestClass(1,2,3);
+      expect(testClass.a).equals(1);
+      expect(testClass.b).equals(2);
+      expect(testClass.c).equals(3);
+    });
+
+    it('should reject none entity classes', function() {
+      var myClass = function(a) {
+        this.a = a;
+      };
+
+      expect(function() {
+        db.TestClass = myClass;
+      }).throw('must extends the Entity class');
+    });
+
+    it('should reject none embaddable classes', function() {
+      var myClass = function(a) {
+        this.a = a;
+      };
+
+      expect(function() {
+        db.TestEmbeddedClass = myClass;
+      }).throw('must extends the Managed class');
+    });
+
+    it('should reject none embaddable classes', function() {
+      var myClass = DB.binding.Entity.extend(function(a) {
+        this.a = a;
+      });
+
+      expect(function() {
+        db.TestEmbeddedClass = myClass;
+      }).throw('must extends the Managed class');
+    });
+
+    it('should be allowed once to set a class', function() {
+      db.TestClass = DB.binding.Entity.extend(function() {});
+
+      expect(function() {
+        db.TestClass = DB.binding.Entity.extend(function() {});
+      }).throw('already been set');
+    });
+
+    it('should allow adding classes before initialization', function() {
+      var emf = new DB.EntityManagerFactory({schema: model});
+
+      var db = emf.createEntityManager();
+      db.TestClass = DB.binding.Entity.extend(function(a,b,c) {
+        DB.binding.Entity.init(this);
+        this.a = a;
+        this.b = b;
+        this.c = c;
+      });
+
+      expect(db.isReady).be.false;
+      emf.connect(env.TEST_SERVER);
+
+      return db.ready().then(function() {
+        var testClass = new db.TestClass(1,2,3);
+        expect(testClass.a).equals(1);
+        expect(testClass.b).equals(2);
+        expect(testClass.c).equals(3);
+        expect(testClass.save).be.ok;
+        expect(testClass.insert).be.ok;
+        expect(testClass.update).be.ok;
+        expect(testClass.load).be.ok;
+        expect(testClass.delete).be.ok;
+        expect(testClass.attr).be.ok;
+      });
+    });
+  });
+
+  var supportsES6Classes = false;
+  try {
+    defineEntityClass();
+    supportsES6Classes = true;
+  } catch (e) {}
+
+  if (supportsES6Classes) {
+    describe('ES6 classes', function() {
+      it('should enhance custom es6 classes', function() {
+        var myClass = defineEntityClass();
+
+        myClass.prototype.firstName = function() {
+          return "firstName";
+        };
+
+        db.TestClass = myClass;
+        db.TestClass.prototype.lastName = function() {
+          return "lastName";
+        };
+
+        var testClass = new db.TestClass('hallo');
+        expect(testClass.firstName()).equal("firstName");
+        expect(testClass.lastName()).equal("lastName");
+        expect("testValue" in testClass).be.true;
+        expect(testClass.a).equals('hallo');
+        expect(testClass.save).be.ok;
+        expect(testClass.insert).be.ok;
+        expect(testClass.update).be.ok;
+        expect(testClass.load).be.ok;
+        expect(testClass.delete).be.ok;
+        expect(testClass.attr).be.ok;
+
+        expect(testClass instanceof DB.binding.Entity).be.true;
+        expect(testClass instanceof DB.binding.Managed).be.true;
+        expect(testClass instanceof myClass).be.true;
+      });
+
+      it('should call custom es6 classes constructor', function() {
+        db.TestClass = defineEntityClass();
+
+        var testClass = new db.TestClass(1,2,3);
+        expect(testClass.a).equals(1);
+        expect(testClass.b).equals(2);
+        expect(testClass.c).equals(3);
+      });
+
+      it('should reject none entity classes', function() {
+        var myClass = defineClass();
+
+        expect(function() {
+          db.TestClass = myClass;
+        }).throw('must extends the Entity class');
+      });
+
+      it('should reject none embaddable classes', function() {
+        var myClass = defineClass();
+
+        expect(function() {
+          db.TestEmbeddedClass = myClass;
+        }).throw('must extends the Managed class');
+      });
+
+      it('should reject none embaddable classes', function() {
+        var myClass = defineEntityClass();
+
+        expect(function() {
+          db.TestEmbeddedClass = myClass;
+        }).throw('must extends the Managed class');
+      });
+
+      it('should be allowed once to set a class', function() {
+        var myClass = defineEntityClass();
+
+        db.TestClass = myClass;
+
+        expect(function() {
+          db.TestClass = defineEntityClass();
+        }).throw('already been set');
+      });
+
+      it('should allow adding classes before initialization', function() {
+        var emf = new DB.EntityManagerFactory({schema: model});
+
+        var db = emf.createEntityManager();
+        db.TestClass = defineEntityClass();
+
+        expect(db.isReady).be.false;
+        emf.connect(env.TEST_SERVER);
+
+        return db.ready().then(function() {
+          var testClass = new db.TestClass(1,2,3);
+          expect(testClass.a).equals(1);
+          expect(testClass.b).equals(2);
+          expect(testClass.c).equals(3);
+          expect(testClass.save).be.ok;
+          expect(testClass.insert).be.ok;
+          expect(testClass.update).be.ok;
+          expect(testClass.load).be.ok;
+          expect(testClass.delete).be.ok;
+          expect(testClass.attr).be.ok;
+        });
+      });
+    });
+  }
+
+  function defineEntityClass() {
+    return eval('\
+      "use strict";\
+      class Test extends DB.binding.Entity {\
+        constructor(a,b,c) {\
+          super();\
+          this.a = a;\
+          this.b = b;\
+          this.c = c;\
+        }\
+      };\
+      Test;'); // add Test as last statement so firefox returns the class properly
+  }
+
+  function defineClass() {
+    return eval('\
+      "use strict";\
+      class Test {\
+        constructor(a) {\
+          this.a = a;\
+        }\
+      };\
+      Test');  // add Test as last statement so firefox returns the class properly
+  }
 });
