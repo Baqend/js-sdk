@@ -27,6 +27,9 @@ module.exports = function (grunt) {
         'typeof'
       ], 'var');
 
+      //make babel helpers ie < 11 ready
+      helper = helper.replace('subClass\.__proto__ = superClass', '_defaults(subClass, superClass)');
+
       var first = true;
       b.pipeline.get('pack').push(through.obj(
           function (row, enc, next) {
@@ -171,6 +174,7 @@ module.exports = function (grunt) {
       test: {
         options: {
           reporter: 'mocha-jenkins-reporter',
+          quiet: true,
           reporterOptions: {
             junit_report_name: "Node Tests",
             junit_report_path: "build/test-results/node.xml",
