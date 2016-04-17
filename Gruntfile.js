@@ -1,5 +1,3 @@
-var through = require('through2');
-
 module.exports = function (grunt) {
   'use strict';
 
@@ -11,39 +9,8 @@ module.exports = function (grunt) {
   var browserifyOptions = {
     builtins: [],
     detectGlobals: false,
-    //insertGlobalVars: ['global'],
     standalone: "DB"
   };
-
-  function injectBabelHelper(b, opts) {
-    //list of helpers babel-core\lib\transformation\file\index.js
-    var helper = require("babel-core").buildExternalHelpers([
-      'inherits',
-      'createClass',
-      'defaults',
-      'classCallCheck',
-      'possibleConstructorReturn',
-      'typeof'
-    ], 'var');
-
-    //make babel helpers ie < 11 ready
-    helper = helper.replace('subClass\.__proto__ = superClass', 'babelHelpers.defaults(subClass, superClass)');
-
-    var first = true;
-    b.pipeline.get('pack').push(through.obj(
-        function (row, enc, next) {
-          if (first) {
-            var line = 'return ';
-            this.push(row.slice(0, row.length - line.length));
-            this.push(helper);
-            this.push(line);
-            first = false;
-          } else {
-            this.push(row)
-          }
-          next()
-        }));
-  }
 
   grunt.initConfig({
     pkg: grunt.file.readJSON('package.json'),
@@ -58,7 +25,7 @@ module.exports = function (grunt) {
       options: {
         browserifyOptions: browserifyOptions,
         banner: longBanner,
-        plugin: [injectBabelHelper],
+        plugin: ['./scripts/babel-helper', 'bundle-collapser/plugin', 'browserify-derequire'],
         transform: [
           ['babelify', {
             "plugins": ["external-helpers"]
@@ -68,7 +35,7 @@ module.exports = function (grunt) {
 
       debug: {
         files: {
-          'build/baqend.js': ['lib/index.js']
+          'build/baqend.js': ['lib/baqend.js']
         },
         options: {
           watch: true,
@@ -82,13 +49,13 @@ module.exports = function (grunt) {
 
       test: {
         files: {
-          'build/baqend.js': ['lib/index.js']
+          'build/baqend.js': ['lib/baqend.js']
         }
       },
 
       dist: {
         files: {
-          'dist/baqend.js': ['lib/index.js']
+          'dist/baqend.js': ['lib/baqend.js']
         }
       }
     },

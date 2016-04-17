@@ -2,7 +2,7 @@
 /.grunt
 /node_modules
 /build
-/scripts
+/scripts/release.js
 /tpl
 *.iml
 .DS_Store
