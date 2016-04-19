@@ -76,7 +76,7 @@ var changelog = fs.readFileSync('CHANGELOG.md'); //read existing contents into d
 var fd = fs.openSync('CHANGELOG.md', 'w+');
 fs.writeSync(fd, '<a name="' + version + '"></a>\n', 'utf8'); //write new data
 fs.writeSync(fd, '# ' + version + ' (' + dateStr + ')\n\n\n', 'utf8'); //write new data
-fs.writeSync(fd, changelogArg + '\n\n', 'utf8'); //write new data
+fs.writeSync(fd, changelogArg.replace(/\\n/, '\n') + '\n\n', 'utf8'); //write new data
 fs.writeSync(fd, changelog, 0, changelog.length); //append old data
 fs.close(fd);
 
