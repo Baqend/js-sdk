@@ -1,0 +1,4715 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>Baqend JavaScript SDK 2.0.0 - Class: Condition</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+
+    <link rel="shortcut icon" type="image/x-icon" href="img/favicon.ico">
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/bootstrap-baqend.min.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<nav class="navbar navbar-default navbar-fixed-top" role="navigation">
+    <div class="container">
+
+        <!-- Collapsed navigation -->
+        <div class="navbar-header">
+            <!-- Expander button -->
+            <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+
+            <!-- Main title -->
+            <a class="navbar-brand" href="/"><img src="img/baqend_logo.svg"></a>
+        </div>
+
+        <!-- Expanded navigation -->
+        <div id="nav" class="navbar-collapse collapse">
+            <!-- Main navigation -->
+            <ul class="nav navbar-nav">
+                <li>
+                    <a href="http://www.baqend.com/guide/index.html">Guide</a>
+                </li>
+                <li class="active">
+                    <a href="baqend.html">JS API</a>
+                </li>
+                <li>
+                    <a href="http://www.baqend.com/#tutorial">Tutorial</a>
+                </li>
+                <li>
+                    <a href="http://dashboard.baqend.com/">Dashboard</a>
+                </li>
+                <li>
+                    <a href="https://community.baqend.com/">Community <span class="visible-lg-inline">Forum</span></a>
+                </li>
+            </ul>
+        </div>
+    </div>
+</nav>
+
+
+<div class="container">
+  <div class="row">
+    <div class="col-md-3">
+        <div class="bs-sidebar hidden-print fixed affix" role="complementary">
+            <input class="filter form-control input-sm" type="text" placeholder="FILTER"/>
+
+            <ul class="nav bs-sidenav">
+            
+            
+                <li class="">
+                    <a href="baqend.html" class="nav-name">baqend</a>
+                    <ul class="nav">
+                      
+                        <li class=""><a href="baqend.EntityManager.html" class="nav-name">EntityManager</a></li>
+                      
+                        <li class=""><a href="baqend.EntityManagerFactory.html" class="nav-name">EntityManagerFactory</a></li>
+                      
+                        <li class=""><a href="baqend.EntityTransaction.html" class="nav-name">EntityTransaction</a></li>
+                      
+                        <li class=""><a href="baqend.GeoPoint.html" class="nav-name">GeoPoint</a></li>
+                      
+                        <li class=""><a href="baqend.Query.html" class="nav-name">Query</a></li>
+                      
+                    </ul>
+                </li>
+            
+                <li class="">
+                    <a href="baqend.binding.html" class="nav-name">baqend.binding</a>
+                    <ul class="nav">
+                      
+                        <li class=""><a href="baqend.binding.Accessor.html" class="nav-name">Accessor</a></li>
+                      
+                        <li class=""><a href="baqend.binding.DeviceFactory.html" class="nav-name">DeviceFactory</a></li>
+                      
+                        <li class=""><a href="baqend.binding.Enhancer.html" class="nav-name">Enhancer</a></li>
+                      
+                        <li class=""><a href="baqend.binding.Entity.html" class="nav-name">Entity</a></li>
+                      
+                        <li class=""><a href="baqend.binding.EntityFactory.html" class="nav-name">EntityFactory</a></li>
+                      
+                        <li class=""><a href="baqend.binding.Managed.html" class="nav-name">Managed</a></li>
+                      
+                        <li class=""><a href="baqend.binding.ManagedFactory.html" class="nav-name">ManagedFactory</a></li>
+                      
+                        <li class=""><a href="baqend.binding.Role.html" class="nav-name">Role</a></li>
+                      
+                        <li class=""><a href="baqend.binding.User.html" class="nav-name">User</a></li>
+                      
+                        <li class=""><a href="baqend.binding.UserFactory.html" class="nav-name">UserFactory</a></li>
+                      
+                    </ul>
+                </li>
+            
+                <li class="">
+                    <a href="baqend.caching.html" class="nav-name">baqend.caching</a>
+                    <ul class="nav">
+                      
+                        <li class=""><a href="baqend.caching.BloomFilter.html" class="nav-name">BloomFilter</a></li>
+                      
+                    </ul>
+                </li>
+            
+                <li class="">
+                    <a href="baqend.connector.html" class="nav-name">baqend.connector</a>
+                    <ul class="nav">
+                      
+                        <li class=""><a href="baqend.connector.Connector.html" class="nav-name">Connector</a></li>
+                      
+                        <li class=""><a href="baqend.connector.IFrameConnector.html" class="nav-name">IFrameConnector</a></li>
+                      
+                        <li class=""><a href="baqend.connector.Message.html" class="nav-name">Message</a></li>
+                      
+                        <li class=""><a href="baqend.connector.NodeConnector.html" class="nav-name">NodeConnector</a></li>
+                      
+                        <li class=""><a href="baqend.connector.XMLHttpConnector.html" class="nav-name">XMLHttpConnector</a></li>
+                      
+                    </ul>
+                </li>
+            
+                <li class="">
+                    <a href="baqend.error.html" class="nav-name">baqend.error</a>
+                    <ul class="nav">
+                      
+                        <li class=""><a href="baqend.error.CommunicationError.html" class="nav-name">CommunicationError</a></li>
+                      
+                        <li class=""><a href="baqend.error.EntityExistsError.html" class="nav-name">EntityExistsError</a></li>
+                      
+                        <li class=""><a href="baqend.error.IllegalEntityError.html" class="nav-name">IllegalEntityError</a></li>
+                      
+                        <li class=""><a href="baqend.error.PersistentError.html" class="nav-name">PersistentError</a></li>
+                      
+                        <li class=""><a href="baqend.error.RollbackError.html" class="nav-name">RollbackError</a></li>
+                      
+                    </ul>
+                </li>
+            
+                <li class="">
+                    <a href="baqend.metamodel.html" class="nav-name">baqend.metamodel</a>
+                    <ul class="nav">
+                      
+                        <li class=""><a href="baqend.metamodel.Attribute.html" class="nav-name">Attribute</a></li>
+                      
+                        <li class=""><a href="baqend.metamodel.BasicType.html" class="nav-name">BasicType</a></li>
+                      
+                        <li class=""><a href="baqend.metamodel.CollectionAttribute.html" class="nav-name">CollectionAttribute</a></li>
+                      
+                        <li class=""><a href="baqend.metamodel.DbIndex.html" class="nav-name">DbIndex</a></li>
+                      
+                        <li class=""><a href="baqend.metamodel.EmbeddableType.html" class="nav-name">EmbeddableType</a></li>
+                      
+                        <li class=""><a href="baqend.metamodel.EntityType.html" class="nav-name">EntityType</a></li>
+                      
+                        <li class=""><a href="baqend.metamodel.ListAttribute.html" class="nav-name">ListAttribute</a></li>
+                      
+                        <li class=""><a href="baqend.metamodel.ManagedType.html" class="nav-name">ManagedType</a></li>
+                      
+                        <li class=""><a href="baqend.metamodel.MapAttribute.html" class="nav-name">MapAttribute</a></li>
+                      
+                        <li class=""><a href="baqend.metamodel.Metamodel.html" class="nav-name">Metamodel</a></li>
+                      
+                        <li class=""><a href="baqend.metamodel.ModelBuilder.html" class="nav-name">ModelBuilder</a></li>
+                      
+                        <li class=""><a href="baqend.metamodel.PluralAttribute.html" class="nav-name">PluralAttribute</a></li>
+                      
+                        <li class=""><a href="baqend.metamodel.SetAttribute.html" class="nav-name">SetAttribute</a></li>
+                      
+                        <li class=""><a href="baqend.metamodel.SingularAttribute.html" class="nav-name">SingularAttribute</a></li>
+                      
+                        <li class=""><a href="baqend.metamodel.Type.html" class="nav-name">Type</a></li>
+                      
+                    </ul>
+                </li>
+            
+                <li class="">
+                    <a href="baqend.util.html" class="nav-name">baqend.util</a>
+                    <ul class="nav">
+                      
+                        <li class=""><a href="baqend.util.Acl.html" class="nav-name">Acl</a></li>
+                      
+                        <li class=""><a href="baqend.util.Code.html" class="nav-name">Code</a></li>
+                      
+                        <li class=""><a href="baqend.util.Lockable.html" class="nav-name">Lockable</a></li>
+                      
+                        <li class=""><a href="baqend.util.Logger.html" class="nav-name">Logger</a></li>
+                      
+                        <li class=""><a href="baqend.util.Metadata.html" class="nav-name">Metadata</a></li>
+                      
+                        <li class=""><a href="baqend.util.Modules.html" class="nav-name">Modules</a></li>
+                      
+                        <li class=""><a href="baqend.util.Permission.html" class="nav-name">Permission</a></li>
+                      
+                        <li class=""><a href="baqend.util.PushMessage.html" class="nav-name">PushMessage</a></li>
+                      
+                        <li class=""><a href="baqend.util.TokenStorage.html" class="nav-name">TokenStorage</a></li>
+                      
+                        <li class=""><a href="baqend.util.ValidationResult.html" class="nav-name">ValidationResult</a></li>
+                      
+                        <li class=""><a href="baqend.util.Validator.html" class="nav-name">Validator</a></li>
+                      
+                    </ul>
+                </li>
+            
+            </ul>
+        </div>
+    </div>
+    <div class="col-md-9" id="main">
+      <h1 class="page-title">Class: Condition</h1>
+
+      
+
+
+
+
+<section>
+
+<header>
+    
+        <h2>
+            <span class="ancestors"><a href="baqend.html">baqend</a><a href="baqend.Query.html">.Query</a>.</span>Condition</h2>
+        
+    
+</header>
+
+<article>
+    <div class="container-overview">
+    
+        
+
+    
+
+    <h4 class="name" id="Condition"><span class="type-signature"></span>new Condition<span class="signature">()</span><span class="type-signature"></span></h4>
+
+    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="Query.js.html">Query.js</a>, <a href="Query.js.html#line120">line 120</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    
+    </div>
+
+    
+
+    
+
+    
+
+     
+
+    
+
+    
+
+    
+        <h3 class="subsection-title">Methods</h3>
+
+        
+            
+
+    
+
+    <h4 class="name" id=".between"><span class="type-signature">(static) </span>between<span class="signature">(field, lessValue, greaterValue)</span><span class="type-signature"> &rarr; {<a href="baqend.Query.Condition.html">baqend.Query.Condition</a>}</span></h4>
+
+    
+
+
+
+<div class="description">
+    <p>Adds a between filter to the field. This is a shorthand for an less than and greater than filter.</p>
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params table">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>field</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">String</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>The field to filter</p></td>
+        </tr>
+        
+
+
+    
+
+        <tr>
+            
+                <td class="name"><code>lessValue</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Number</span>
+|
+
+<span class="param-type">String</span>
+|
+
+<span class="param-type">Date</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>The field value must be greater than this value</p></td>
+        </tr>
+        
+
+
+    
+
+        <tr>
+            
+                <td class="name"><code>greaterValue</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Number</span>
+|
+
+<span class="param-type">String</span>
+|
+
+<span class="param-type">Date</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>The field value must be less than this value</p></td>
+        </tr>
+        
+
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="Query.js.html">Query.js</a>, <a href="Query.js.html#line211">line 211</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+
+        
+<div class="param-desc">
+    <p>The resulting Query</p>
+</div>
+
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type"><a href="baqend.Query.Condition.html">Condition</a></span>
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+        
+            
+
+    
+
+    <h4 class="name" id=".containsAll"><span class="type-signature">(static) </span>containsAll<span class="signature">(field)</span><span class="type-signature"> &rarr; {<a href="baqend.Query.Condition.html">baqend.Query.Condition</a>}</span></h4>
+
+    
+
+
+
+<div class="description">
+    <p>Adds a contains all filter to the collection field. The collection must contain all the given values.</p>
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params table">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>field</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">String</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>The field to filter</p></td>
+        </tr>
+        
+
+
+    
+
+        <tr>
+            
+                <td class="name"><code>args...</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">*</span>
+|
+
+<span class="param-type">Array.&lt;*></span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>The field value or values to filter</p></td>
+        </tr>
+        
+
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="Query.js.html">Query.js</a>, <a href="Query.js.html#line267">line 267</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+    <dt class="tag-see">See:</dt>
+    <dd class="tag-see">
+        <ul>
+            <li><a href="http://docs.mongodb.org/manual/reference/operator/query/all/">http://docs.mongodb.org/manual/reference/operator/query/all/</a></li>
+        </ul>
+    </dd>
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+
+        
+<div class="param-desc">
+    <p>The resulting Query</p>
+</div>
+
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type"><a href="baqend.Query.Condition.html">Condition</a></span>
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+        
+            
+
+    
+
+    <h4 class="name" id=".equal"><span class="type-signature">(static) </span>equal<span class="signature">(field, value)</span><span class="type-signature"> &rarr; {<a href="baqend.Query.Condition.html">baqend.Query.Condition</a>}</span></h4>
+
+    
+
+
+
+<div class="description">
+    <p>Adds a equal filter to the field. All other other filters on the field will be discarded</p>
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params table">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>field</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">String</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>The field to filter</p></td>
+        </tr>
+        
+
+
+    
+
+        <tr>
+            
+                <td class="name"><code>value</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">*</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>The value used to filter</p></td>
+        </tr>
+        
+
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="Query.js.html">Query.js</a>, <a href="Query.js.html#line140">line 140</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+
+        
+<div class="param-desc">
+    <p>The resulting Query</p>
+</div>
+
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type"><a href="baqend.Query.Condition.html">Condition</a></span>
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+        
+            
+
+    
+
+    <h4 class="name" id=".greaterThan"><span class="type-signature">(static) </span>greaterThan<span class="signature">(field, value)</span><span class="type-signature"> &rarr; {<a href="baqend.Query.Condition.html">baqend.Query.Condition</a>}</span></h4>
+
+    
+
+
+
+<div class="description">
+    <p>Adds a greater than filter to the field.</p>
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params table">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>field</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">String</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>The field to filter</p></td>
+        </tr>
+        
+
+
+    
+
+        <tr>
+            
+                <td class="name"><code>value</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Number</span>
+|
+
+<span class="param-type">String</span>
+|
+
+<span class="param-type">Date</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>The value used to filter</p></td>
+        </tr>
+        
+
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="Query.js.html">Query.js</a>, <a href="Query.js.html#line164">line 164</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+    <dt class="tag-see">See:</dt>
+    <dd class="tag-see">
+        <ul>
+            <li><a href="http://docs.mongodb.org/manual/reference/operator/query/gt/">http://docs.mongodb.org/manual/reference/operator/query/gt/</a></li>
+        </ul>
+    </dd>
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+
+        
+<div class="param-desc">
+    <p>The resulting Query</p>
+</div>
+
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type"><a href="baqend.Query.Condition.html">Condition</a></span>
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+        
+            
+
+    
+
+    <h4 class="name" id=".greaterThanOrEqualTo"><span class="type-signature">(static) </span>greaterThanOrEqualTo<span class="signature">(field, value)</span><span class="type-signature"> &rarr; {<a href="baqend.Query.Condition.html">baqend.Query.Condition</a>}</span></h4>
+
+    
+
+
+
+<div class="description">
+    <p>Adds a greater than or equal to filter to the field.</p>
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params table">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>field</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">String</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>The field to filter</p></td>
+        </tr>
+        
+
+
+    
+
+        <tr>
+            
+                <td class="name"><code>value</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Number</span>
+|
+
+<span class="param-type">String</span>
+|
+
+<span class="param-type">Date</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>The value used to filter</p></td>
+        </tr>
+        
+
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="Query.js.html">Query.js</a>, <a href="Query.js.html#line176">line 176</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+    <dt class="tag-see">See:</dt>
+    <dd class="tag-see">
+        <ul>
+            <li><a href="http://docs.mongodb.org/manual/reference/operator/query/gte/">http://docs.mongodb.org/manual/reference/operator/query/gte/</a></li>
+        </ul>
+    </dd>
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+
+        
+<div class="param-desc">
+    <p>The resulting Query</p>
+</div>
+
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type"><a href="baqend.Query.Condition.html">Condition</a></span>
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+        
+            
+
+    
+
+    <h4 class="name" id=".in"><span class="type-signature">(static) </span>in<span class="signature">(field)</span><span class="type-signature"> &rarr; {<a href="baqend.Query.Condition.html">baqend.Query.Condition</a>}</span></h4>
+
+    
+
+
+
+<div class="description">
+    <p>Adds a in filter to the field. The field value must be equal to one of the given values</p>
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params table">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>field</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">String</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>The field to filter</p></td>
+        </tr>
+        
+
+
+    
+
+        <tr>
+            
+                <td class="name"><code>args...</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">*</span>
+|
+
+<span class="param-type">Array.&lt;*></span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>The field value or values to filter</p></td>
+        </tr>
+        
+
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="Query.js.html">Query.js</a>, <a href="Query.js.html#line224">line 224</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+    <dt class="tag-see">See:</dt>
+    <dd class="tag-see">
+        <ul>
+            <li><a href="http://docs.mongodb.org/manual/reference/operator/query/in/">http://docs.mongodb.org/manual/reference/operator/query/in/</a></li>
+        </ul>
+    </dd>
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+
+        
+<div class="param-desc">
+    <p>The resulting Query</p>
+</div>
+
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type"><a href="baqend.Query.Condition.html">Condition</a></span>
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+        
+            
+
+    
+
+    <h4 class="name" id=".isNotNull"><span class="type-signature">(static) </span>isNotNull<span class="signature">(field)</span><span class="type-signature"> &rarr; {<a href="baqend.Query.Condition.html">baqend.Query.Condition</a>}</span></h4>
+
+    
+
+
+
+<div class="description">
+    <p>Adds a not null filter to the field. The field value must not be null</p>
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params table">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>field</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">String</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>The field to filter</p></td>
+        </tr>
+        
+
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="Query.js.html">Query.js</a>, <a href="Query.js.html#line254">line 254</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+
+        
+<div class="param-desc">
+    <p>The resulting Query</p>
+</div>
+
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type"><a href="baqend.Query.Condition.html">Condition</a></span>
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+        
+            
+
+    
+
+    <h4 class="name" id=".isNull"><span class="type-signature">(static) </span>isNull<span class="signature">(field)</span><span class="type-signature"> &rarr; {<a href="baqend.Query.Condition.html">baqend.Query.Condition</a>}</span></h4>
+
+    
+
+
+
+<div class="description">
+    <p>Adds a null filter to the field. The field value must be null</p>
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params table">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>field</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">String</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>The field to filter</p></td>
+        </tr>
+        
+
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="Query.js.html">Query.js</a>, <a href="Query.js.html#line245">line 245</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+
+        
+<div class="param-desc">
+    <p>The resulting Query</p>
+</div>
+
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type"><a href="baqend.Query.Condition.html">Condition</a></span>
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+        
+            
+
+    
+
+    <h4 class="name" id=".lessThan"><span class="type-signature">(static) </span>lessThan<span class="signature">(field, value)</span><span class="type-signature"> &rarr; {<a href="baqend.Query.Condition.html">baqend.Query.Condition</a>}</span></h4>
+
+    
+
+
+
+<div class="description">
+    <p>Adds a less than filter to the field.</p>
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params table">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>field</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">String</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>The field to filter</p></td>
+        </tr>
+        
+
+
+    
+
+        <tr>
+            
+                <td class="name"><code>value</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Number</span>
+|
+
+<span class="param-type">String</span>
+|
+
+<span class="param-type">Date</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>The value used to filter</p></td>
+        </tr>
+        
+
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="Query.js.html">Query.js</a>, <a href="Query.js.html#line188">line 188</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+    <dt class="tag-see">See:</dt>
+    <dd class="tag-see">
+        <ul>
+            <li><a href="http://docs.mongodb.org/manual/reference/operator/query/lt/">http://docs.mongodb.org/manual/reference/operator/query/lt/</a></li>
+        </ul>
+    </dd>
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+
+        
+<div class="param-desc">
+    <p>The resulting Query</p>
+</div>
+
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type"><a href="baqend.Query.Condition.html">Condition</a></span>
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+        
+            
+
+    
+
+    <h4 class="name" id=".lessThanOrEqualTo"><span class="type-signature">(static) </span>lessThanOrEqualTo<span class="signature">(field, value)</span><span class="type-signature"> &rarr; {<a href="baqend.Query.Condition.html">baqend.Query.Condition</a>}</span></h4>
+
+    
+
+
+
+<div class="description">
+    <p>Adds a less than or equal to filter to the field.</p>
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params table">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>field</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">String</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>The field to filter</p></td>
+        </tr>
+        
+
+
+    
+
+        <tr>
+            
+                <td class="name"><code>value</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Number</span>
+|
+
+<span class="param-type">String</span>
+|
+
+<span class="param-type">Date</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>The value used to filter</p></td>
+        </tr>
+        
+
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="Query.js.html">Query.js</a>, <a href="Query.js.html#line200">line 200</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+    <dt class="tag-see">See:</dt>
+    <dd class="tag-see">
+        <ul>
+            <li><a href="http://docs.mongodb.org/manual/reference/operator/query/lte/">http://docs.mongodb.org/manual/reference/operator/query/lte/</a></li>
+        </ul>
+    </dd>
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+
+        
+<div class="param-desc">
+    <p>The resulting Query</p>
+</div>
+
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type"><a href="baqend.Query.Condition.html">Condition</a></span>
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+        
+            
+
+    
+
+    <h4 class="name" id=".matches"><span class="type-signature">(static) </span>matches<span class="signature">(field, regExp)</span><span class="type-signature"> &rarr; {<a href="baqend.Query.Condition.html">baqend.Query.Condition</a>}</span></h4>
+
+    
+
+
+
+<div class="description">
+    <p>Adds a regular expression filter to the field. The field value must matches the regular expression.</p>
+<p>Note: Only anchored expressions (Expressions that starts with an ^) and the multiline flag are supported.</p>
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params table">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>field</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">String</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>The field to filter</p></td>
+        </tr>
+        
+
+
+    
+
+        <tr>
+            
+                <td class="name"><code>regExp</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">String</span>
+|
+
+<span class="param-type">RegExp</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>The regular expression of the filter</p></td>
+        </tr>
+        
+
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="Query.js.html">Query.js</a>, <a href="Query.js.html#line293">line 293</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+    <dt class="tag-see">See:</dt>
+    <dd class="tag-see">
+        <ul>
+            <li><a href="http://docs.mongodb.org/manual/reference/operator/query/regex/">http://docs.mongodb.org/manual/reference/operator/query/regex/</a></li>
+        </ul>
+    </dd>
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+
+        
+<div class="param-desc">
+    <p>The resulting Query</p>
+</div>
+
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type"><a href="baqend.Query.Condition.html">Condition</a></span>
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+        
+            
+
+    
+
+    <h4 class="name" id=".mod"><span class="type-signature">(static) </span>mod<span class="signature">(field, divisor, remainder)</span><span class="type-signature"> &rarr; {<a href="baqend.Query.Condition.html">baqend.Query.Condition</a>}</span></h4>
+
+    
+
+
+
+<div class="description">
+    <p>Adds a modulo filter to the field. The field value divided by divisor must be equal to the remainder.</p>
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params table">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>field</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">String</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>The field to filter</p></td>
+        </tr>
+        
+
+
+    
+
+        <tr>
+            
+                <td class="name"><code>divisor</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Number</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>The divisor of the modulo filter</p></td>
+        </tr>
+        
+
+
+    
+
+        <tr>
+            
+                <td class="name"><code>remainder</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Number</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>The remainder of the modulo filter</p></td>
+        </tr>
+        
+
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="Query.js.html">Query.js</a>, <a href="Query.js.html#line280">line 280</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+    <dt class="tag-see">See:</dt>
+    <dd class="tag-see">
+        <ul>
+            <li><a href="http://docs.mongodb.org/manual/reference/operator/query/mod/">http://docs.mongodb.org/manual/reference/operator/query/mod/</a></li>
+        </ul>
+    </dd>
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+
+        
+<div class="param-desc">
+    <p>The resulting Query</p>
+</div>
+
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type"><a href="baqend.Query.Condition.html">Condition</a></span>
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+        
+            
+
+    
+
+    <h4 class="name" id=".near"><span class="type-signature">(static) </span>near<span class="signature">(field, geoPoint, maxDistance)</span><span class="type-signature"> &rarr; {<a href="baqend.Query.Condition.html">baqend.Query.Condition</a>}</span></h4>
+
+    
+
+
+
+<div class="description">
+    <p>Adds a geopoint based near filter to the GeoPoint field. The GeoPoint must be within the maximum distance<br>to the given GeoPoint. Returns from nearest to farthest.</p>
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params table">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>field</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">String</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>The field to filter</p></td>
+        </tr>
+        
+
+
+    
+
+        <tr>
+            
+                <td class="name"><code>geoPoint</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><a href="baqend.GeoPoint.html">GeoPoint</a></span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>The GeoPoint to filter</p></td>
+        </tr>
+        
+
+
+    
+
+        <tr>
+            
+                <td class="name"><code>maxDistance</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Number</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>Tha maximum distance to filter in meters</p></td>
+        </tr>
+        
+
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="Query.js.html">Query.js</a>, <a href="Query.js.html#line340">line 340</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+    <dt class="tag-see">See:</dt>
+    <dd class="tag-see">
+        <ul>
+            <li><a href="http://docs.mongodb.org/manual/reference/operator/query/nearSphere/">http://docs.mongodb.org/manual/reference/operator/query/nearSphere/</a></li>
+        </ul>
+    </dd>
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+
+        
+<div class="param-desc">
+    <p>The resulting Query</p>
+</div>
+
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type"><a href="baqend.Query.Condition.html">Condition</a></span>
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+        
+            
+
+    
+
+    <h4 class="name" id=".notEqual"><span class="type-signature">(static) </span>notEqual<span class="signature">(field, value)</span><span class="type-signature"> &rarr; {<a href="baqend.Query.Condition.html">baqend.Query.Condition</a>}</span></h4>
+
+    
+
+
+
+<div class="description">
+    <p>Adds a not equal filter to the field.</p>
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params table">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>field</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">String</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>The field to filter</p></td>
+        </tr>
+        
+
+
+    
+
+        <tr>
+            
+                <td class="name"><code>value</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">*</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>The value used to filter</p></td>
+        </tr>
+        
+
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="Query.js.html">Query.js</a>, <a href="Query.js.html#line152">line 152</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+    <dt class="tag-see">See:</dt>
+    <dd class="tag-see">
+        <ul>
+            <li><a href="http://docs.mongodb.org/manual/reference/operator/query/nin/">http://docs.mongodb.org/manual/reference/operator/query/nin/</a></li>
+        </ul>
+    </dd>
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+
+        
+<div class="param-desc">
+    <p>The resulting Query</p>
+</div>
+
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type"><a href="baqend.Query.Condition.html">Condition</a></span>
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+        
+            
+
+    
+
+    <h4 class="name" id=".notIn"><span class="type-signature">(static) </span>notIn<span class="signature">(field)</span><span class="type-signature"> &rarr; {<a href="baqend.Query.Condition.html">baqend.Query.Condition</a>}</span></h4>
+
+    
+
+
+
+<div class="description">
+    <p>Adds a not in filter to the field. The field value must not be equal to any of the given values</p>
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params table">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>field</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">String</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>The field to filter</p></td>
+        </tr>
+        
+
+
+    
+
+        <tr>
+            
+                <td class="name"><code>args...</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">*</span>
+|
+
+<span class="param-type">Array.&lt;*></span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>The field value or values to filter</p></td>
+        </tr>
+        
+
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="Query.js.html">Query.js</a>, <a href="Query.js.html#line236">line 236</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+    <dt class="tag-see">See:</dt>
+    <dd class="tag-see">
+        <ul>
+            <li><a href="http://docs.mongodb.org/manual/reference/operator/query/nin/">http://docs.mongodb.org/manual/reference/operator/query/nin/</a></li>
+        </ul>
+    </dd>
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+
+        
+<div class="param-desc">
+    <p>The resulting Query</p>
+</div>
+
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type"><a href="baqend.Query.Condition.html">Condition</a></span>
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+        
+            
+
+    
+
+    <h4 class="name" id=".size"><span class="type-signature">(static) </span>size<span class="signature">(field, size)</span><span class="type-signature"> &rarr; {<a href="baqend.Query.Condition.html">baqend.Query.Condition</a>}</span></h4>
+
+    
+
+
+
+<div class="description">
+    <p>Adds a size filter to the collection field. The collection must have exactly size members.</p>
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params table">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>field</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">String</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>The field to filter</p></td>
+        </tr>
+        
+
+
+    
+
+        <tr>
+            
+                <td class="name"><code>size</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Number</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>The collections size to filter</p></td>
+        </tr>
+        
+
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="Query.js.html">Query.js</a>, <a href="Query.js.html#line326">line 326</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+    <dt class="tag-see">See:</dt>
+    <dd class="tag-see">
+        <ul>
+            <li><a href="http://docs.mongodb.org/manual/reference/operator/query/size/">http://docs.mongodb.org/manual/reference/operator/query/size/</a></li>
+        </ul>
+    </dd>
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+
+        
+<div class="param-desc">
+    <p>The resulting Query</p>
+</div>
+
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type"><a href="baqend.Query.Condition.html">Condition</a></span>
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+        
+            
+
+    
+
+    <h4 class="name" id=".where"><span class="type-signature">(static) </span>where<span class="signature">(conditions)</span><span class="type-signature"> &rarr; {<a href="baqend.Query.Condition.html">baqend.Query.Condition</a>}</span></h4>
+
+    
+
+
+
+<div class="description">
+    <p>An object, that contains filter rules which will be merged with the current filters of this query.</p>
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params table">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>conditions</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Object</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>Additional filters for this query</p></td>
+        </tr>
+        
+
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="Query.js.html">Query.js</a>, <a href="Query.js.html#line130">line 130</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+
+        
+<div class="param-desc">
+    <p>The resulting Query</p>
+</div>
+
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type"><a href="baqend.Query.Condition.html">Condition</a></span>
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+        
+            
+
+    
+
+    <h4 class="name" id=".withinPolygon"><span class="type-signature">(static) </span>withinPolygon<span class="signature">(field)</span><span class="type-signature"> &rarr; {<a href="baqend.Query.Condition.html">baqend.Query.Condition</a>}</span></h4>
+
+    
+
+
+
+<div class="description">
+    <p>Adds a GeoPoint based polygon filter to the GeoPoint field. The GeoPoint must be contained within the polygon.</p>
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params table">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>field</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">String</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>The field to filter</p></td>
+        </tr>
+        
+
+
+    
+
+        <tr>
+            
+                <td class="name"><code>geoPoints...</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><a href="baqend.GeoPoint.html">GeoPoint</a></span>
+|
+
+<span class="param-type">Array.&lt;<a href="baqend.GeoPoint.html">baqend.GeoPoint</a>></span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>The geoPoints that describes the polygon of the filter</p></td>
+        </tr>
+        
+
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="Query.js.html">Query.js</a>, <a href="Query.js.html#line358">line 358</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+    <dt class="tag-see">See:</dt>
+    <dd class="tag-see">
+        <ul>
+            <li><a href="http://docs.mongodb.org/manual/reference/operator/query/geoWithin/">http://docs.mongodb.org/manual/reference/operator/query/geoWithin/</a></li>
+        </ul>
+    </dd>
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+
+        
+<div class="param-desc">
+    <p>The resulting Query</p>
+</div>
+
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type"><a href="baqend.Query.Condition.html">Condition</a></span>
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+        
+            
+
+    
+
+    <h4 class="name" id="containsAny"><span class="type-signature"></span>containsAny<span class="signature">(field)</span><span class="type-signature"> &rarr; {<a href="baqend.Query.Condition.html">baqend.Query.Condition</a>}</span></h4>
+
+    
+
+
+
+<div class="description">
+    <p>Adds a contains any filter to the collection field. The collection must contains one the given values.<br>Alias for <code>baqend.Query.Condition#in</code></p>
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params table">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>field</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">String</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>The field to filter</p></td>
+        </tr>
+        
+
+
+    
+
+        <tr>
+            
+                <td class="name"><code>args...</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">*</span>
+|
+
+<span class="param-type">Array.&lt;*></span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>The field value or values to filter</p></td>
+        </tr>
+        
+
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="Query.js.html">Query.js</a>, <a href="Query.js.html#line427">line 427</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+    <dt class="tag-see">See:</dt>
+    <dd class="tag-see">
+        <ul>
+            <li><a href="http://docs.mongodb.org/manual/reference/operator/query/in/">http://docs.mongodb.org/manual/reference/operator/query/in/</a></li>
+        </ul>
+    </dd>
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+
+        
+<div class="param-desc">
+    <p>The resulting Query</p>
+</div>
+
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type"><a href="baqend.Query.Condition.html">Condition</a></span>
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+        
+            
+
+    
+
+    <h4 class="name" id="ge"><span class="type-signature"></span>ge<span class="signature">(field, value)</span><span class="type-signature"> &rarr; {<a href="baqend.Query.Condition.html">baqend.Query.Condition</a>}</span></h4>
+
+    
+
+
+
+<div class="description">
+    <p>Adds a greater than or equal to filter to the field. Shorthand for <code>baqend.Query.Condition#greaterThanOrEqualTo</code>.</p>
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params table">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>field</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">String</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>The field to filter</p></td>
+        </tr>
+        
+
+
+    
+
+        <tr>
+            
+                <td class="name"><code>value</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Number</span>
+|
+
+<span class="param-type">String</span>
+|
+
+<span class="param-type">Date</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>The value used to filter</p></td>
+        </tr>
+        
+
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="Query.js.html">Query.js</a>, <a href="Query.js.html#line415">line 415</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+    <dt class="tag-see">See:</dt>
+    <dd class="tag-see">
+        <ul>
+            <li><a href="http://docs.mongodb.org/manual/reference/operator/query/gte/">http://docs.mongodb.org/manual/reference/operator/query/gte/</a></li>
+        </ul>
+    </dd>
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+
+        
+<div class="param-desc">
+    <p>The resulting Query</p>
+</div>
+
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type"><a href="baqend.Query.Condition.html">Condition</a></span>
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+        
+            
+
+    
+
+    <h4 class="name" id="gt"><span class="type-signature"></span>gt<span class="signature">(field, value)</span><span class="type-signature"> &rarr; {<a href="baqend.Query.Condition.html">baqend.Query.Condition</a>}</span></h4>
+
+    
+
+
+
+<div class="description">
+    <p>Adds a greater than filter to the field. Shorthand for <code>baqend.Query.Condition#greaterThan</code>.</p>
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params table">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>field</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">String</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>The field to filter</p></td>
+        </tr>
+        
+
+
+    
+
+        <tr>
+            
+                <td class="name"><code>value</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Number</span>
+|
+
+<span class="param-type">String</span>
+|
+
+<span class="param-type">Date</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>The value used to filter</p></td>
+        </tr>
+        
+
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="Query.js.html">Query.js</a>, <a href="Query.js.html#line404">line 404</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+    <dt class="tag-see">See:</dt>
+    <dd class="tag-see">
+        <ul>
+            <li><a href="http://docs.mongodb.org/manual/reference/operator/query/gt/">http://docs.mongodb.org/manual/reference/operator/query/gt/</a></li>
+        </ul>
+    </dd>
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+
+        
+<div class="param-desc">
+    <p>The resulting Query</p>
+</div>
+
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type"><a href="baqend.Query.Condition.html">Condition</a></span>
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+        
+            
+
+    
+
+    <h4 class="name" id="le"><span class="type-signature"></span>le<span class="signature">(field, value)</span><span class="type-signature"> &rarr; {<a href="baqend.Query.Condition.html">baqend.Query.Condition</a>}</span></h4>
+
+    
+
+
+
+<div class="description">
+    <p>Adds a less than or equal to filter to the field. Shorthand for <code>baqend.Query.Condition#lessThanOrEqualTo</code>.</p>
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params table">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>field</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">String</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>The field to filter</p></td>
+        </tr>
+        
+
+
+    
+
+        <tr>
+            
+                <td class="name"><code>value</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Number</span>
+|
+
+<span class="param-type">String</span>
+|
+
+<span class="param-type">Date</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>The value used to filter</p></td>
+        </tr>
+        
+
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="Query.js.html">Query.js</a>, <a href="Query.js.html#line393">line 393</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+    <dt class="tag-see">See:</dt>
+    <dd class="tag-see">
+        <ul>
+            <li><a href="http://docs.mongodb.org/manual/reference/operator/query/lte/">http://docs.mongodb.org/manual/reference/operator/query/lte/</a></li>
+        </ul>
+    </dd>
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+
+        
+<div class="param-desc">
+    <p>The resulting Query</p>
+</div>
+
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type"><a href="baqend.Query.Condition.html">Condition</a></span>
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+        
+            
+
+    
+
+    <h4 class="name" id="lt"><span class="type-signature"></span>lt<span class="signature">(field, value)</span><span class="type-signature"> &rarr; {<a href="baqend.Query.Condition.html">baqend.Query.Condition</a>}</span></h4>
+
+    
+
+
+
+<div class="description">
+    <p>Adds a less than filter to the field. Shorthand for <code>baqend.Query.Condition#lessThan</code>.</p>
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params table">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>field</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">String</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>The field to filter</p></td>
+        </tr>
+        
+
+
+    
+
+        <tr>
+            
+                <td class="name"><code>value</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Number</span>
+|
+
+<span class="param-type">String</span>
+|
+
+<span class="param-type">Date</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>The value used to filter</p></td>
+        </tr>
+        
+
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="Query.js.html">Query.js</a>, <a href="Query.js.html#line382">line 382</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+    <dt class="tag-see">See:</dt>
+    <dd class="tag-see">
+        <ul>
+            <li><a href="http://docs.mongodb.org/manual/reference/operator/query/lt/">http://docs.mongodb.org/manual/reference/operator/query/lt/</a></li>
+        </ul>
+    </dd>
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+
+        
+<div class="param-desc">
+    <p>The resulting Query</p>
+</div>
+
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type"><a href="baqend.Query.Condition.html">Condition</a></span>
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+        
+    
+
+    
+
+    
+</article>
+
+</section>
+
+
+
+
+
+      <footer>
+        Baqend JavaScript SDK 2.0.0 &copy 2015 Baqend GmbH<br>
+        Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.0</a> on Tue, 19 Apr 2016 10:36:06 GMT
+      </footer>
+    </div>
+  </div>
+</div>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+<script src="scripts/filter.js"> </script>
+</body>
+</html>

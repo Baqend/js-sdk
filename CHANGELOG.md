@@ -1,3 +1,22 @@
+<a name="v2.0.0"></a>
+# v2.0.0 (116-4-19)
+
+
+### Bug Fixes
+
+* Improved collection handling and type casting
+
+### Features
+
+* The sdk is ported to a es6 and is transpiled with babel to es5. But there are no breaking API changes therefore you can silently upgrade in most cases.
+* If you like to use the es6 code base and want to transpile the es6 code by yourself, require the lib/baqend.js directly.
+
+### Breaking changes
+
+* DB.List is now a native Array
+ * therefore the `new Array(<iterable>)` constructor is gone and should be replaced with `Array.from(<iterable>)`
+ * list.get/add/delete/size must be replaced by the corresponding native array functions and you can use the index based access of lists, i.e. `list[0] = 'val'`
+
 <a name="v1.1.1"></a>
 # v1.1.1 (116-4-5)
 
