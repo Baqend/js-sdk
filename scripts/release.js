@@ -15,7 +15,7 @@ if (!changelogArg) {
 }
 
 var date = new Date();
-var dateStr = date.getYear() + '-' + (date.getMonth() + 1) + '-' + date.getDate();
+var dateStr = date.getFullYear() + '-' + (date.getMonth() + 1) + '-' + date.getDate();
 var pkg = JSON.parse(fs.readFileSync('package.json', 'utf-8'));
 
 var pushNPM = !pkg.private;

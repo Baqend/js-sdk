@@ -1,5 +1,5 @@
 <a name="v2.0.0"></a>
-# v2.0.0 (116-4-19)
+# v2.0.0 (2016-4-19)
 
 
 ### Bug Fixes
@@ -18,7 +18,7 @@
  * list.get/add/delete/size must be replaced by the corresponding native array functions and you can use the index based access of lists, i.e. `list[0] = 'val'`
 
 <a name="v1.1.1"></a>
-# v1.1.1 (116-4-5)
+# v1.1.1 (2016-4-5)
 
 
 ### Bug Fixes
