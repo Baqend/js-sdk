@@ -1,3 +1,12 @@
+<a name="v2.0.1"></a>
+# v2.0.1 (2016-4-26)
+
+
+### Bug Fixes
+
+* Handle logout of cookie-based sessions correctly
+* Better peerdependency handling of the websocket node module
+
 <a name="v2.0.0"></a>
 # v2.0.0 (2016-4-19)
 
