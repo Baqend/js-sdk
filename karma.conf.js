@@ -144,8 +144,8 @@ module.exports = function(config) {
     // If browser does not capture in given timeout [ms], kill it
     captureTimeout: 10 * 60 * 1000,
 
-    browserDisconnectTimeout : 10000, // default 2000
-    browserDisconnectTolerance : 1, // default 0
+    browserDisconnectTimeout : 30 * 1000, // default 2000
+    browserDisconnectTolerance : 5, // default 0
 
     // Continuous Integration mode
     // if true, it capture browsers, run tests and exit
