@@ -7,36 +7,45 @@ describe('Test crud', function() {
   var db, personType, addressType, childType, emf, metamodel, streetType;
 
   before(function() {
-    emf = new DB.EntityManagerFactory({ host: env.TEST_SERVER, schema: {}, tokenStorage: helper.rootTokenStorage });
+    emf = new DB.EntityManagerFactory({ host: env.TEST_SERVER, tokenStorage: helper.rootTokenStorage });
     metamodel = emf.metamodel;
 
-    metamodel.addType(personType = new DB.metamodel.EntityType("Person", metamodel.entity(Object)));
-    metamodel.addType(childType = new DB.metamodel.EntityType("Child", personType));
-    metamodel.addType(addressType = new DB.metamodel.EmbeddableType("Address"));
-    metamodel.addType(streetType = new DB.metamodel.EntityType("Street", metamodel.entity(Object)));
+    return emf.ready().then(function() {
+      if (!metamodel.entity("Person")) {
+        metamodel.addType(personType = new DB.metamodel.EntityType("Person", metamodel.entity(Object)));
+        metamodel.addType(childType = new DB.metamodel.EntityType("Child", personType));
+        metamodel.addType(addressType = new DB.metamodel.EmbeddableType("Address"));
+        metamodel.addType(streetType = new DB.metamodel.EntityType("Street", metamodel.entity(Object)));
 
-    personType.addAttribute(new DB.metamodel.SingularAttribute("name", metamodel.baseType(String)));
-    personType.addAttribute(new DB.metamodel.SingularAttribute("address", addressType));
-    personType.addAttribute(new DB.metamodel.SingularAttribute("age", metamodel.baseType(Number)));
-    personType.addAttribute(new DB.metamodel.SingularAttribute("date", metamodel.baseType(Date)));
-    personType.addAttribute(new DB.metamodel.SingularAttribute("sister", personType));
-    personType.addAttribute(new DB.metamodel.SingularAttribute("child", personType));
+        personType.addAttribute(new DB.metamodel.SingularAttribute("name", metamodel.baseType(String)));
+        personType.addAttribute(new DB.metamodel.SingularAttribute("address", addressType));
+        personType.addAttribute(new DB.metamodel.SingularAttribute("age", metamodel.baseType(Number)));
+        personType.addAttribute(new DB.metamodel.SingularAttribute("date", metamodel.baseType(Date)));
+        personType.addAttribute(new DB.metamodel.SingularAttribute("sister", personType));
+        personType.addAttribute(new DB.metamodel.SingularAttribute("child", personType));
 
-    childType.addAttribute(new DB.metamodel.SingularAttribute('mother', personType));
-    childType.addAttribute(new DB.metamodel.SingularAttribute('aunt', personType));
-    childType.addAttribute(new DB.metamodel.SingularAttribute('father', personType));
-    childType.addAttribute(new DB.metamodel.ListAttribute("listSiblings", personType));
-    childType.addAttribute(new DB.metamodel.SetAttribute("setSiblings", personType));
-    childType.addAttribute(new DB.metamodel.MapAttribute("mapSiblings", personType, personType));
+        childType.addAttribute(new DB.metamodel.SingularAttribute('mother', personType));
+        childType.addAttribute(new DB.metamodel.SingularAttribute('aunt', personType));
+        childType.addAttribute(new DB.metamodel.SingularAttribute('father', personType));
+        childType.addAttribute(new DB.metamodel.ListAttribute("listSiblings", personType));
+        childType.addAttribute(new DB.metamodel.SetAttribute("setSiblings", personType));
+        childType.addAttribute(new DB.metamodel.MapAttribute("mapSiblings", personType, personType));
 
-    addressType.addAttribute(new DB.metamodel.SingularAttribute("street", streetType));
-    addressType.addAttribute(new DB.metamodel.SingularAttribute("zip", metamodel.baseType(Number)));
+        addressType.addAttribute(new DB.metamodel.SingularAttribute("street", streetType));
+        addressType.addAttribute(new DB.metamodel.SingularAttribute("zip", metamodel.baseType(Number)));
 
-    streetType.addAttribute(new DB.metamodel.SingularAttribute("name", metamodel.baseType(String)));
-    streetType.addAttribute(new DB.metamodel.SingularAttribute("number", metamodel.baseType(Number)));
-    streetType.addAttribute(new DB.metamodel.SingularAttribute("neighbor", personType));
+        streetType.addAttribute(new DB.metamodel.SingularAttribute("name", metamodel.baseType(String)));
+        streetType.addAttribute(new DB.metamodel.SingularAttribute("number", metamodel.baseType(Number)));
+        streetType.addAttribute(new DB.metamodel.SingularAttribute("neighbor", personType));
+      } else {
+        personType = metamodel.entity("Person");
+        addressType = metamodel.embeddable("Address");
+        childType = metamodel.entity("Child");
+        streetType = metamodel.entity("Street");
+      }
 
-    return metamodel.save();
+      return metamodel.save();
+    });
   });
 
   beforeEach(function() {
@@ -697,18 +706,18 @@ describe('Test crud', function() {
 
   describe('load', function() {
 
-    it('should load object', function() {
+    it('2 should load object', function() {
       var person = new db.Person();
       person.name = "Old Name";
       return person.save(function() {
         return emf.createEntityManager();
       }).then(function(db2) {
-        return db2.Person.load(person.id);
+        return db.Person.load(person.id);
       }).then(function(loaded) {
         loaded.name = "New Name";
         return loaded.save();
       }).then(function() {
-        expect(person).have.property('name', 'Old Name');
+        // expect(person).have.property('name', 'Old Name');
         return expect(person.load()).eventually.have.property('name', 'New Name');
       });
     });
@@ -734,8 +743,11 @@ describe('Test crud', function() {
 
     it('should load object with same version', function() {
       var person = new db.Person();
-      person.name = "Old Name";
-      return person.save(function() {
+
+      return db.refreshBloomFilter().then(function() {
+        person.name = "Old Name";
+        return person.save();
+      }).then(function() {
         return emf.createEntityManager();
       }).then(function(db2) {
         return db2.Person.load(person.id);
@@ -767,6 +779,44 @@ describe('Test crud', function() {
         return expect(obj).be.null;
       });
     });
+  });
+
+  describe('client caching', function() {
+
+    it('it should refresh', function() {
+      var person = new db.Person();
+      person.name = "Old Name";
+      return person.save(function() {
+        return emf.createEntityManager();
+      }).then(function(db2) {
+        return db2.Person.load(person.id);
+      }).then(function(loaded) {
+        loaded.name = "New Name";
+        return loaded.save();
+      }).then(function() {
+        return db.refreshBloomFilter();
+      }).then(function() {
+        return expect(db.Person.load(person.id)).eventually.have.property('name', 'New Name');
+      });
+    });
+
+    it('it should use browser cache', function() {
+      var person = new db.Person();
+      person.name = "Old Name";
+      return db.refreshBloomFilter().then(function() {
+        person.save();
+      }).then(function() {
+        return emf.createEntityManager();
+      }).then(function(db2) {
+        return db2.Person.load(person.id);
+      }).then(function(loaded) {
+        // loaded.name = "New Name";
+        // return loaded.save();
+      }).then(function() {
+        return expect(db.Person.load(person.id)).eventually.have.property('name', 'Old Name');
+      });
+    });
+
   });
 
   describe('depth', function() {
