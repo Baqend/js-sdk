@@ -292,9 +292,9 @@ describe('Test Acl', function() {
       return obj.save().then(function() {
         id = obj.id;
         return Promise.all([
-          expect(db.AclPerson.load(id)).eventually.property('id', id),
-          expect(db2.AclPerson.load(id)).eventually.be.null,
-          expect(db3.AclPerson.load(id)).eventually.property('id', id)
+          expect(db.AclPerson.load(id, {refresh: true})).eventually.property('id', id),
+          expect(db2.AclPerson.load(id, {refresh: true})).eventually.be.null,
+          expect(db3.AclPerson.load(id, {refresh: true})).eventually.property('id', id)
         ]);
       });
     });
@@ -307,9 +307,9 @@ describe('Test Acl', function() {
       return obj.save().then(function() {
         id = obj.id;
         return Promise.all([
-          expect(db.AclPerson.load(id)).eventually.property('id', id),
-          expect(db2.AclPerson.load(id)).eventually.be.null,
-          expect(db3.AclPerson.load(id)).eventually.property('id', id)
+          expect(db.AclPerson.load(id, {refresh: true})).eventually.property('id', id),
+          expect(db2.AclPerson.load(id, {refresh: true})).eventually.be.null,
+          expect(db3.AclPerson.load(id, {refresh: true})).eventually.property('id', id)
         ]);
       });
     });
@@ -322,9 +322,9 @@ describe('Test Acl', function() {
       return obj.save().then(function() {
         id = obj.id;
         return Promise.all([
-          expect(db.AclPerson.load(id)).eventually.property('id', id),
-          expect(db2.AclPerson.load(id)).eventually.be.null,
-          expect(db3.AclPerson.load(id)).eventually.be.null
+          expect(db.AclPerson.load(id, {refresh: true})).eventually.property('id', id),
+          expect(db2.AclPerson.load(id, {refresh: true})).eventually.be.null,
+          expect(db3.AclPerson.load(id, {refresh: true})).eventually.be.null
         ]);
       });
     });
