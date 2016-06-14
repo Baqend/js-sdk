@@ -888,6 +888,33 @@ describe('Test crud', function() {
         return expect(db.Person.load(person.id)).eventually.have.property('name', 'New Name');
       });
     });
+
+    it('it should use cache black listing', function() {
+      var person = new db.Person();
+      person.name = "Old Name";
+      return db.refreshBloomFilter().then(function() {
+        return person.save();
+      }).then(function() {
+        return expect(db.Person.load(person.id)).eventually.have.property('name', 'Old Name');
+      }).then(function() {
+        return db.Person.load(person.id);
+      }).then(function(loaded) {
+        loaded.name = "New Name";
+        // adds the obj to the blacklist.
+        return loaded.save();
+      }).then(function() {
+        // updates the object again
+        return db.modules.post('updatePerson', {id: person.id, value: 'Very New Name'});
+      }).then(function() {
+        // loads the obj from sever and removes it from the blacklist.
+        return expect(db.Person.load(person.id)).eventually.have.property('name', 'Very New Name');
+      }).then(function() {
+        return db.modules.post('updatePerson', {id: person.id, value: 'Extremely New Name'});
+      }).then(function() {
+        // Now the object must be loaded from cache again
+        return expect(db.Person.load(person.id)).eventually.have.property('name', 'Very New Name');
+      });
+    });
   });
 
   describe('depth', function() {
