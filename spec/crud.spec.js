@@ -864,6 +864,50 @@ describe('Test crud', function() {
       });
     });
 
+    it('should automatically refresh bloom filter', function() {
+      var person = new db.Person();
+      person.name = "Old Name";
+      db.bloomFilterRefresh = 1;
+      var oldBFDate = db.bloomFilter.creation;
+      return person.save(function() {
+      }).then(function() {
+        expect(db.bloomFilter.contains(person.id)).not.be.true;
+        return db.Person.load(person.id);
+      }).then(function() {
+        return db.modules.post('updatePerson', {id: person.id, value: 'New Name'});
+      }).then(function() {
+        return helper.sleep(1000);
+      }).then(function() {
+        return expect(db.Person.load(person.id)).eventually.have.property('name', 'New Name');
+      }).then(function() {
+        db.bloomFilterRefresh = 60;
+        return helper.sleep(200);
+      }).then(function() {
+        expect(db.bloomFilter.creation).not.equals(oldBFDate);
+        expect(db.bloomFilter.contains(person.id)).be.true;
+      });
+    });
+
+    it('should disable cache during bloom filter refresh', function() {
+      var person = new db.Person();
+      person.name = "Old Name";
+      db.bloomFilterRefresh = 1;
+      var oldBFDate = db.bloomFilter.creation;
+      return person.save(function() {
+      }).then(function() {
+        return db.Person.load(person.id);
+      }).then(function() {
+        return db.modules.post('updatePerson', {id: person.id, value: 'New Name'});
+      }).then(function() {
+        return helper.sleep(1500);
+      }).then(function() {
+        expect(db.bloomFilter.creation).equals(oldBFDate);
+        return expect(db.Person.load(person.id)).eventually.have.property('name', 'New Name');
+      }).then(function() {
+        db.bloomFilterRefresh = 60;
+      });
+    });
+
     it('should use browser cache', function() {
       var person = new db.Person();
       person.name = "Old Name";
