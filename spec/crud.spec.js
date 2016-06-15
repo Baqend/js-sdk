@@ -824,21 +824,32 @@ describe('Test crud', function() {
   });
 
   describe('client caching', function() {
+
+
+    // no client caching in node
+    if (typeof window == 'undefined') {
+      it('should disable bloomfilter in node', function() {
+        var em = emf.createEntityManager();
+        expect(em.isCachingDisabled).be.true;
+      });
+
+      return;
+    }
+
     before(function() {
       return emf.createEntityManager().code.saveCode('updatePerson', 'module', function(module, exports) {
-            exports.call = function(db, data) {
-              var objId = data.id;
-              var newValue = data.value;
-              return db.Person.load(objId).then(function(person) {
-                person.name = newValue;
-                return person.save();
-              });
-            }
-          }
-      );
+        exports.call = function(db, data) {
+          var objId = data.id;
+          var newValue = data.value;
+          return db.Person.load(objId).then(function(person) {
+            person.name = newValue;
+            return person.save();
+          });
+        }
+      });
     });
 
-    it('it should refresh', function() {
+    it('should refresh', function() {
       var person = new db.Person();
       person.name = "Old Name";
       return person.save(function() {
@@ -853,7 +864,7 @@ describe('Test crud', function() {
       });
     });
 
-    it('it should use browser cache', function() {
+    it('should use browser cache', function() {
       var person = new db.Person();
       person.name = "Old Name";
       return db.refreshBloomFilter().then(function() {
@@ -867,7 +878,7 @@ describe('Test crud', function() {
       });
     });
 
-    it('it should use cache white listing', function() {
+    it('should use cache white listing', function() {
       var person = new db.Person();
       person.name = "Old Name";
       return db.refreshBloomFilter().then(function() {
@@ -889,7 +900,7 @@ describe('Test crud', function() {
       });
     });
 
-    it('it should use cache black listing', function() {
+    it('should use cache black listing', function() {
       var person = new db.Person();
       person.name = "Old Name";
       return db.refreshBloomFilter().then(function() {
