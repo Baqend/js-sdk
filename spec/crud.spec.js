@@ -7,36 +7,45 @@ describe('Test crud', function() {
   var db, personType, addressType, childType, emf, metamodel, streetType;
 
   before(function() {
-    emf = new DB.EntityManagerFactory({ host: env.TEST_SERVER, schema: {}, tokenStorage: helper.rootTokenStorage });
+    emf = new DB.EntityManagerFactory({host: env.TEST_SERVER, tokenStorage: helper.rootTokenStorage});
     metamodel = emf.metamodel;
 
-    metamodel.addType(personType = new DB.metamodel.EntityType("Person", metamodel.entity(Object)));
-    metamodel.addType(childType = new DB.metamodel.EntityType("Child", personType));
-    metamodel.addType(addressType = new DB.metamodel.EmbeddableType("Address"));
-    metamodel.addType(streetType = new DB.metamodel.EntityType("Street", metamodel.entity(Object)));
+    return emf.ready().then(function() {
+      if (!metamodel.entity("Person")) {
+        metamodel.addType(personType = new DB.metamodel.EntityType("Person", metamodel.entity(Object)));
+        metamodel.addType(childType = new DB.metamodel.EntityType("Child", personType));
+        metamodel.addType(addressType = new DB.metamodel.EmbeddableType("Address"));
+        metamodel.addType(streetType = new DB.metamodel.EntityType("Street", metamodel.entity(Object)));
 
-    personType.addAttribute(new DB.metamodel.SingularAttribute("name", metamodel.baseType(String)));
-    personType.addAttribute(new DB.metamodel.SingularAttribute("address", addressType));
-    personType.addAttribute(new DB.metamodel.SingularAttribute("age", metamodel.baseType(Number)));
-    personType.addAttribute(new DB.metamodel.SingularAttribute("date", metamodel.baseType(Date)));
-    personType.addAttribute(new DB.metamodel.SingularAttribute("sister", personType));
-    personType.addAttribute(new DB.metamodel.SingularAttribute("child", personType));
+        personType.addAttribute(new DB.metamodel.SingularAttribute("name", metamodel.baseType(String)));
+        personType.addAttribute(new DB.metamodel.SingularAttribute("address", addressType));
+        personType.addAttribute(new DB.metamodel.SingularAttribute("age", metamodel.baseType(Number)));
+        personType.addAttribute(new DB.metamodel.SingularAttribute("date", metamodel.baseType(Date)));
+        personType.addAttribute(new DB.metamodel.SingularAttribute("sister", personType));
+        personType.addAttribute(new DB.metamodel.SingularAttribute("child", personType));
 
-    childType.addAttribute(new DB.metamodel.SingularAttribute('mother', personType));
-    childType.addAttribute(new DB.metamodel.SingularAttribute('aunt', personType));
-    childType.addAttribute(new DB.metamodel.SingularAttribute('father', personType));
-    childType.addAttribute(new DB.metamodel.ListAttribute("listSiblings", personType));
-    childType.addAttribute(new DB.metamodel.SetAttribute("setSiblings", personType));
-    childType.addAttribute(new DB.metamodel.MapAttribute("mapSiblings", personType, personType));
+        childType.addAttribute(new DB.metamodel.SingularAttribute('mother', personType));
+        childType.addAttribute(new DB.metamodel.SingularAttribute('aunt', personType));
+        childType.addAttribute(new DB.metamodel.SingularAttribute('father', personType));
+        childType.addAttribute(new DB.metamodel.ListAttribute("listSiblings", personType));
+        childType.addAttribute(new DB.metamodel.SetAttribute("setSiblings", personType));
+        childType.addAttribute(new DB.metamodel.MapAttribute("mapSiblings", personType, personType));
 
-    addressType.addAttribute(new DB.metamodel.SingularAttribute("street", streetType));
-    addressType.addAttribute(new DB.metamodel.SingularAttribute("zip", metamodel.baseType(Number)));
+        addressType.addAttribute(new DB.metamodel.SingularAttribute("street", streetType));
+        addressType.addAttribute(new DB.metamodel.SingularAttribute("zip", metamodel.baseType(Number)));
 
-    streetType.addAttribute(new DB.metamodel.SingularAttribute("name", metamodel.baseType(String)));
-    streetType.addAttribute(new DB.metamodel.SingularAttribute("number", metamodel.baseType(Number)));
-    streetType.addAttribute(new DB.metamodel.SingularAttribute("neighbor", personType));
+        streetType.addAttribute(new DB.metamodel.SingularAttribute("name", metamodel.baseType(String)));
+        streetType.addAttribute(new DB.metamodel.SingularAttribute("number", metamodel.baseType(Number)));
+        streetType.addAttribute(new DB.metamodel.SingularAttribute("neighbor", personType));
+      } else {
+        personType = metamodel.entity("Person");
+        addressType = metamodel.embeddable("Address");
+        childType = metamodel.entity("Child");
+        streetType = metamodel.entity("Street");
+      }
 
-    return metamodel.save();
+      return metamodel.save();
+    });
   });
 
   beforeEach(function() {
@@ -90,8 +99,10 @@ describe('Test crud', function() {
       var obj = new db.Person();
       obj.attach(db);
 
-      var db2 =  emf.createEntityManager();
-      expect(function() { obj.attach(db2); }).throw(DB.error.EntityExistsError);
+      var db2 = emf.createEntityManager();
+      expect(function() {
+        obj.attach(db2);
+      }).throw(DB.error.EntityExistsError);
       expect(obj._metadata.db).equals(db);
       expect(db2.contains(obj)).be.false;
     });
@@ -126,7 +137,9 @@ describe('Test crud', function() {
       var obj = personType.create();
       expect(obj._metadata.db).equals(DB);
 
-      expect(function() { obj.attach(db); }).throw(DB.error.EntityExistsError);
+      expect(function() {
+        obj.attach(db);
+      }).throw(DB.error.EntityExistsError);
       expect(obj._metadata.db).equals(DB);
       expect(db.contains(obj)).be.false;
     });
@@ -161,7 +174,7 @@ describe('Test crud', function() {
     it('should save and refresh object', function() {
       var person = new db.Person();
       person.name = "Old Name";
-      var promise = expect(person.save({refresh:true})).eventually.have.property('name', 'Old Name');
+      var promise = expect(person.save({refresh: true})).eventually.have.property('name', 'Old Name');
       person.name = "New Name";
       return promise;
     });
@@ -212,7 +225,7 @@ describe('Test crud', function() {
         });
       }).then(function() {
         person.name = 'Alice Ford';
-        return person.save({force:true});
+        return person.save({force: true});
       }).then(function() {
         return db.Person.load(person.id).then(function(person2) {
           expect(person2.name).equals('Alice Ford');
@@ -239,7 +252,7 @@ describe('Test crud', function() {
         var newPerson = new db.Person();
         newPerson.name = 'Peter Parker';
         newPerson.id = person.id;
-        return newPerson.save({force:true});
+        return newPerson.save({force: true});
       }).then(function() {
         return db.Person.load(person.id).then(function(person2) {
           expect(person2.name).equals('Peter Parker');
@@ -271,7 +284,7 @@ describe('Test crud', function() {
         });
       }).then(function() {
         person.name = 'Peter Parker';
-        return person.save({force:true});
+        return person.save({force: true});
       }).then(function() {
         return db.Person.load(person.id).then(function(person2) {
           expect(person2.name).equals('Peter Parker');
@@ -299,7 +312,7 @@ describe('Test crud', function() {
     it('should not save afterward changed values but refrehs it', function() {
       var person = new db.Person();
       person.name = 'Old Name';
-      var promise = person.save({refresh:true});
+      var promise = person.save({refresh: true});
       person.name = 'New Name';
       return promise.then(function() {
         expect(person._metadata.isDirty).be.false;
@@ -351,7 +364,7 @@ describe('Test crud', function() {
         }).then(function() {
           return newPerson.optimisticSave(function(optimisticPerson, abort) {
             i++;
-            if(i == 2) {
+            if (i == 2) {
               return abort();
             }
             optimisticPerson.name = i;
@@ -442,7 +455,9 @@ describe('Test crud', function() {
         person2.name = 'Alice Ford';
         return person2.save();
       }).then(function(person2) {
-        return db.Person.load(person.id).then(function(person3) {
+        return db.refreshBloomFilter().then(function() {
+          return db.Person.load(person.id);
+        }).then(function(person3) {
           expect(person3).equals(person);
           expect(person3.name).equals('Alice Ford');
           expect(person3.version).equals(person2.version);
@@ -450,11 +465,35 @@ describe('Test crud', function() {
       });
     });
 
-    it('should not refresh if a loaded object is still up to date', function() {
+    it('should not refresh local state (static load with option)', function() {
+      person.name = 'Tom Miller';
+
+      return db.Person.load(person.id, {local: true}).then(function(obj) {
+        expect(obj.name).equals('Tom Miller');
+      });
+    });
+
+    it('should not refresh local state', function() {
+      person.name = 'Tom Miller';
+
+      return person.load().then(function(obj) {
+        expect(obj.name).equals('Tom Miller');
+      });
+    });
+
+    it('should refresh local state', function() {
+      person.name = 'Tom Miller';
+
+      return person.load({refresh: true}).then(function(obj) {
+        expect(obj.name).equals('Peter Mueller');
+      });
+    });
+
+    it('should refresh with static load', function() {
       person.name = 'Tom Miller';
 
       return db.Person.load(person.id).then(function(obj) {
-        expect(obj.name).equals('Tom Miller');
+        expect(obj.name).equals('Peter Mueller');
       });
     });
 
@@ -509,7 +548,9 @@ describe('Test crud', function() {
     });
 
     it('should be allowed to save after delete', function() {
-      return person.delete().then(function(per) { return per.save(); }).then(function(saved) {
+      return person.delete().then(function(per) {
+        return per.save();
+      }).then(function(saved) {
         expect(saved.id).be.ok;
         expect(saved.version).be.ok;
         expect(saved._metadata.isPersistent).be.true;
@@ -525,11 +566,15 @@ describe('Test crud', function() {
     });
 
     it('should be allowed to delete an object without id', function() {
-      return expect(person.delete().then(function(per) { return per.delete() })).be.rejectedWith(DB.error.IllegalEntityError);
+      return expect(person.delete().then(function(per) {
+        return per.delete()
+      })).be.rejectedWith(DB.error.IllegalEntityError);
     });
 
     it('should be allowed to forcly delete an object without id', function() {
-      return expect(person.delete().then(function(per) { return per.delete({force:true}) } )).be.fulfilled;
+      return expect(person.delete().then(function(per) {
+        return per.delete({force: true})
+      })).be.fulfilled;
     });
 
     it('should not be allowed to add deleted objects with same id', function() {
@@ -565,7 +610,7 @@ describe('Test crud', function() {
         person2.name = "Foo Bar";
         return person2.save();
       }).then(function() {
-        return person.delete({force:true});
+        return person.delete({force: true});
       }).then(function() {
         return expect(db.Person.load(person.id)).become(null);
       });
@@ -602,7 +647,7 @@ describe('Test crud', function() {
 
     it('should update and refresh object', function() {
       person.name = 'New Name';
-      var promise = expect(person.update({refresh:true})).eventually.have.property('name', 'New Name');
+      var promise = expect(person.update({refresh: true})).eventually.have.property('name', 'New Name');
       person.name = 'Newer Name';
 
       return promise;
@@ -634,7 +679,7 @@ describe('Test crud', function() {
         return person2.save();
       }).then(function() {
         person.name = "New Name";
-        return person.update({force:true});
+        return person.update({force: true});
       }).then(function() {
         return db.Person.load(person.id);
       }).then(function(loaded) {
@@ -663,7 +708,7 @@ describe('Test crud', function() {
     it('should insert and refresh object', function() {
       var person = new db.Person();
       person.name = "Peter Insert";
-      var promise = expect(person.insert({refresh:true})).eventually.have.property('name', 'Peter Insert');
+      var promise = expect(person.insert({refresh: true})).eventually.have.property('name', 'Peter Insert');
       person.name = "New Peter Insert";
       return promise;
     });
@@ -697,18 +742,18 @@ describe('Test crud', function() {
 
   describe('load', function() {
 
-    it('should load object', function() {
+    it('2 should load object', function() {
       var person = new db.Person();
       person.name = "Old Name";
       return person.save(function() {
         return emf.createEntityManager();
       }).then(function(db2) {
-        return db2.Person.load(person.id);
+        return db.Person.load(person.id);
       }).then(function(loaded) {
         loaded.name = "New Name";
         return loaded.save();
       }).then(function() {
-        expect(person).have.property('name', 'Old Name');
+        // expect(person).have.property('name', 'Old Name');
         return expect(person.load()).eventually.have.property('name', 'New Name');
       });
     });
@@ -719,35 +764,42 @@ describe('Test crud', function() {
       return person.save(function() {
         return emf.createEntityManager();
       }).then(function(db2) {
-        return db2.Person.load(person.id, { refresh: true });
+        return db2.Person.load(person.id, {refresh: true});
       }).then(function(loaded) {
         loaded.name = "New Name";
         return loaded.save();
       }).then(function() {
         person._metadata.version = 2;
         expect(person).have.property('name', 'Old Name');
-        return expect(db.Person.load(person.id, { refresh: true })).eventually.have.property('name', 'New Name');
+        return expect(db.Person.load(person.id, {refresh: true})).eventually.have.property('name', 'New Name');
       }).then(function() {
-        return expect(person.load({ refresh: true })).eventually.have.property('name', 'New Name');
+        return expect(person.load({refresh: true})).eventually.have.property('name', 'New Name');
       });
     });
 
-    it('should load object with same version', function() {
+    it('should not find deleted object', function() {
       var person = new db.Person();
       person.name = "Old Name";
-      return person.save(function() {
-        return emf.createEntityManager();
-      }).then(function(db2) {
-        return db2.Person.load(person.id);
-      }).then(function(loaded) {
-        loaded.name = "New Name";
-        return loaded.save();
+
+      return person.save().then(function(obj) {
+        return obj.delete();
       }).then(function() {
-        person._metadata.version = 2;
-        expect(person).have.property('name', 'Old Name');
-        return expect(db.Person.load(person.id)).eventually.have.property('name', 'Old Name');
+        return db.Person.load(person.id);
+      }).then(function(obj) {
+        return expect(obj).be.null;
+      });
+    });
+
+    it('should should clear deleted object locally', function() {
+      var person = new db.Person();
+      person.name = "Old Name";
+
+      return person.save().then(function(obj) {
+        return obj.delete();
       }).then(function() {
-        return expect(person.load()).eventually.have.property('name', 'Old Name');
+        return person.load();
+      }).then(function(obj) {
+        return expect(obj).be.null;
       });
     });
 
@@ -761,10 +813,161 @@ describe('Test crud', function() {
         return db2.Person.load(person.id);
       }).then(function(loaded) {
         return loaded.delete();
+      }).then(function(obj) {
+        return db.refreshBloomFilter();
       }).then(function() {
-        return person.load();
+        return db.Person.load(person.id);
       }).then(function(obj) {
         return expect(obj).be.null;
+      });
+    });
+  });
+
+  describe('client caching', function() {
+
+
+    // no client caching in node
+    if (typeof window == 'undefined') {
+      it('should disable bloomfilter in node', function() {
+        var em = emf.createEntityManager();
+        expect(em.isCachingDisabled).be.true;
+      });
+
+      return;
+    }
+
+    before(function() {
+      return emf.createEntityManager().code.saveCode('updatePerson', 'module', function(module, exports) {
+        exports.call = function(db, data) {
+          var objId = data.id;
+          var newValue = data.value;
+          return db.Person.load(objId).then(function(person) {
+            person.name = newValue;
+            return person.save();
+          });
+        }
+      });
+    });
+
+    it('should refresh', function() {
+      var person = new db.Person();
+      person.name = "Old Name";
+      return person.save(function() {
+      }).then(function() {
+        return db.Person.load(person.id);
+      }).then(function() {
+        return db.modules.post('updatePerson', {id: person.id, value: 'New Name'});
+      }).then(function() {
+        return db.refreshBloomFilter();
+      }).then(function() {
+        return expect(db.Person.load(person.id)).eventually.have.property('name', 'New Name');
+      });
+    });
+
+    it('should automatically refresh bloom filter', function() {
+      var person = new db.Person();
+      person.name = "Old Name";
+      db.bloomFilterRefresh = 1;
+      var oldBFDate = db.bloomFilter.creation;
+      return person.save(function() {
+      }).then(function() {
+        expect(db.bloomFilter.contains(person.id)).not.be.true;
+        return db.Person.load(person.id);
+      }).then(function() {
+        return db.modules.post('updatePerson', {id: person.id, value: 'New Name'});
+      }).then(function() {
+        return helper.sleep(1000);
+      }).then(function() {
+        return expect(db.Person.load(person.id)).eventually.have.property('name', 'New Name');
+      }).then(function() {
+        db.bloomFilterRefresh = 60;
+        return helper.sleep(200);
+      }).then(function() {
+        expect(db.bloomFilter.creation).not.equals(oldBFDate);
+        expect(db.bloomFilter.contains(person.id)).be.true;
+      });
+    });
+
+    it('should disable cache during bloom filter refresh', function() {
+      var person = new db.Person();
+      person.name = "Old Name";
+      db.bloomFilterRefresh = 1;
+      var oldBFDate = db.bloomFilter.creation;
+      return person.save(function() {
+      }).then(function() {
+        return db.Person.load(person.id);
+      }).then(function() {
+        return db.modules.post('updatePerson', {id: person.id, value: 'New Name'});
+      }).then(function() {
+        return helper.sleep(1500);
+      }).then(function() {
+        expect(db.bloomFilter.creation).equals(oldBFDate);
+        return expect(db.Person.load(person.id)).eventually.have.property('name', 'New Name');
+      }).then(function() {
+        db.bloomFilterRefresh = 60;
+      });
+    });
+
+    it('should use browser cache', function() {
+      var person = new db.Person();
+      person.name = "Old Name";
+      return db.refreshBloomFilter().then(function() {
+        return person.save();
+      }).then(function() {
+        return db.Person.load(person.id);
+      }).then(function() {
+        return db.modules.post('updatePerson', {id: person.id, value: 'New Name'});
+      }).then(function() {
+        return expect(db.Person.load(person.id)).eventually.have.property('name', 'Old Name');
+      });
+    });
+
+    it('should use cache white listing', function() {
+      var person = new db.Person();
+      person.name = "Old Name";
+      return db.refreshBloomFilter().then(function() {
+        return person.save();
+      }).then(function() {
+        return db.Person.load(person.id);
+      }).then(function() {
+        return db.modules.post('updatePerson', {id: person.id, value: 'New Name'});
+      }).then(function() {
+        return db.refreshBloomFilter();
+      }).then(function() {
+        // BloomFilter forces revalidation.
+        return expect(db.Person.load(person.id)).eventually.have.property('name', 'New Name');
+      }).then(function() {
+        return db.modules.post('updatePerson', {id: person.id, value: 'Very New Name'});
+      }).then(function() {
+        // Now the object must be on the cache white list
+        return expect(db.Person.load(person.id)).eventually.have.property('name', 'New Name');
+      });
+    });
+
+    it('should use cache black listing', function() {
+      var person = new db.Person();
+      person.name = "Old Name";
+      return db.refreshBloomFilter().then(function() {
+        return person.save();
+      }).then(function() {
+        return expect(db.Person.load(person.id)).eventually.have.property('name', 'Old Name');
+      }).then(function() {
+        return db.Person.load(person.id);
+      }).then(function(loaded) {
+        loaded.name = "New Name";
+        // adds the obj to the blacklist.
+        return loaded.save();
+      }).then(function() {
+        // updates the object again
+        return db.modules.post('updatePerson', {id: person.id, value: 'Very New Name'});
+      }).then(function() {
+        // loads the obj from sever and removes it from the blacklist.
+        return expect(db.Person.load(person.id)).eventually.have.property('name', 'Very New Name');
+      }).then(function() {
+        return db.modules.post('updatePerson', {id: person.id, value: 'Extremely New Name'});
+      }).then(function() {
+        // Now the object must be loaded from cache again
+        return expect(db.Person.load(person.id)).eventually.have.property('name', 'Very New Name');
       });
     });
   });
@@ -803,7 +1006,7 @@ describe('Test crud', function() {
       child.setSiblings = new DB.Set();
       child.mapSiblings = new DB.Map();
       sibs = [];
-      for(var i = 0; i < 6; i++) {
+      for (var i = 0; i < 6; i++) {
         var sib = new db.Person();
         sib.name = "sib" + i;
         sibs.child = child;
@@ -819,7 +1022,7 @@ describe('Test crud', function() {
     });
 
     it('should save and convert result to JSON', function() {
-      return child.save({depth:true}).then(function(saved) {
+      return child.save({depth: true}).then(function(saved) {
         var json = saved.toJSON();
         expect(json.aunt).eqls(mother.id);
         expect(json.name).eqls(child.name);
@@ -827,7 +1030,7 @@ describe('Test crud', function() {
     });
 
     it('should save and delete referenced objects by depth', function() {
-      return child.save({depth:2}).then(function() {
+      return child.save({depth: 2}).then(function() {
         var promises = [
           expect(db.Child.load(child.id)).not.become(null),
           expect(db.Person.load(mother.id)).not.become(null),
@@ -858,7 +1061,7 @@ describe('Test crud', function() {
     });
 
     it('should save and delete referenced objects by reachability', function() {
-      return child.save({depth:true}).then(function() {
+      return child.save({depth: true}).then(function() {
         var promises = [
           expect(db.Child.load(child.id)).not.become(null),
           expect(db.Person.load(mother.id)).not.become(null),
@@ -871,7 +1074,7 @@ describe('Test crud', function() {
         });
         return Promise.all(promises);
       }).then(function() {
-        return child.delete({depth:true});
+        return child.delete({depth: true});
       }).then(function(deleted) {
         expect(deleted).equals(child);
         var promises = [
@@ -890,7 +1093,7 @@ describe('Test crud', function() {
 
     it('should get referenced objects by depth', function() {
       var db2;
-      return child.save({depth:true}).then(function(saved) {
+      return child.save({depth: true}).then(function(saved) {
         child = saved;
         return emf.createEntityManager();
       }).then(function(em) {
@@ -917,7 +1120,7 @@ describe('Test crud', function() {
 
     it('should get referenced objects by reachability', function() {
       var db2;
-      return child.save({depth:true}).then(function(saved) {
+      return child.save({depth: true}).then(function(saved) {
         child = saved;
         return emf.createEntityManager();
       }).then(function(em) {
@@ -940,7 +1143,7 @@ describe('Test crud', function() {
     });
 
     it('should not get all referenced objects', function() {
-      return child.save({depth:true}).then(function(saved) {
+      return child.save({depth: true}).then(function(saved) {
         child = saved;
         return emf.createEntityManager();
       }).then(function(em) {
@@ -954,8 +1157,8 @@ describe('Test crud', function() {
     });
 
     it('should load all referenced objects by reachability', function() {
-      return child.save({depth:true}).then(function(saved) {
-        var promise = saved.load({depth:true, refresh: true});
+      return child.save({depth: true}).then(function(saved) {
+        var promise = saved.load({depth: true, refresh: true});
         saved.father.sister.name = "New Name";
         saved.father.name = "New Name";
         return promise;
@@ -966,8 +1169,8 @@ describe('Test crud', function() {
     });
 
     it('should load all referenced objects by depth', function() {
-      return child.save({depth:2}).then(function(saved) {
-        var promise = saved.load({depth:true, refresh: true});
+      return child.save({depth: 2}).then(function(saved) {
+        var promise = saved.load({depth: true, refresh: true});
         saved.father.sister.name = "New Name";
         saved.father.name = "New Name";
         return promise;
@@ -978,8 +1181,8 @@ describe('Test crud', function() {
     });
 
     it('should not load all referenced objects', function() {
-      return child.save({depth:true}).then(function(saved) {
-        var promise = saved.load({depth:1, refresh: true});
+      return child.save({depth: true}).then(function(saved) {
+        var promise = saved.load({depth: 1, refresh: true});
         saved.father.sister.name = "New Name";
         saved.father.name = "New Name";
         return promise;
@@ -990,7 +1193,7 @@ describe('Test crud', function() {
     });
 
     it('should insert referenced objects by depth', function() {
-      return child.insert({depth:2}).then(function() {
+      return child.insert({depth: 2}).then(function() {
         return Promise.all([
           expect(db.Child.load(child.id)).not.become(null),
           expect(db.Person.load(mother.id)).not.become(null),
@@ -1002,7 +1205,7 @@ describe('Test crud', function() {
     });
 
     it('should insert referenced objects by reachability', function() {
-      return child.insert({depth:true}).then(function() {
+      return child.insert({depth: true}).then(function() {
         return Promise.all([
           expect(db.Child.load(child.id)).not.become(null),
           expect(db.Person.load(mother.id)).not.become(null),
@@ -1014,10 +1217,10 @@ describe('Test crud', function() {
     });
 
     it('should update all referenced objects by depth', function() {
-      return child.save({depth:true}).then(function(saved) {
+      return child.save({depth: true}).then(function(saved) {
         saved.father.sister.name = "New Name";
         saved.father.name = "New Name";
-        return saved.update({force:true, depth:2});
+        return saved.update({force: true, depth: 2});
       }).then(function(loaded) {
         expect(loaded.father.sister.name).equals("New Name");
         expect(loaded.father.name).equals("New Name");
@@ -1025,10 +1228,10 @@ describe('Test crud', function() {
     });
 
     it('should update all referenced objects by reachability', function() {
-      return child.save({depth:true}).then(function(saved) {
+      return child.save({depth: true}).then(function(saved) {
         saved.father.sister.name = "New Name";
         saved.father.name = "New Name";
-        return saved.update({force:true, depth:true});
+        return saved.update({force: true, depth: true});
       }).then(function(loaded) {
         expect(loaded.father.sister.name).equals("New Name");
         expect(loaded.father.name).equals("New Name");
@@ -1036,10 +1239,10 @@ describe('Test crud', function() {
     });
 
     it('should update and refresh all referenced objects by reachability', function() {
-      return child.save({depth:true}).then(function(saved) {
+      return child.save({depth: true}).then(function(saved) {
         saved.father.sister.name = "New Name";
         saved.father.name = "New Name";
-        var promise = saved.update({refresh:true, force:true, depth: true});
+        var promise = saved.update({refresh: true, force: true, depth: true});
         saved.father.sister.name = "Newer Name";
         saved.father.name = "Newer Name";
         return promise;
@@ -1051,7 +1254,7 @@ describe('Test crud', function() {
 
     it('should load entity by query single result and resolve depth', function() {
       child.name = helper.randomize("queryDepth");
-      return child.save({depth:true}).then(function(saved) {
+      return child.save({depth: true}).then(function(saved) {
         child = saved;
         return emf.createEntityManager();
       }).then(function(em) {
@@ -1074,7 +1277,7 @@ describe('Test crud', function() {
 
     it('should load entity by query result list and resolve depth', function() {
       child.name = helper.randomize("queryDepth");
-      return child.save({depth:true}).then(function(saved) {
+      return child.save({depth: true}).then(function(saved) {
         child = saved;
         return emf.createEntityManager();
       }).then(function(em) {
@@ -1152,7 +1355,7 @@ describe('Test crud', function() {
       });
     });
 
-    it('should useable as references', function() {
+    it('should be useable as references', function() {
       var person = new db.Person();
       person.id = myId;
       var id = person.id;
@@ -1163,7 +1366,7 @@ describe('Test crud', function() {
       person.child.key = helper.randomize('my/craßy*%unescap\\ed&id?=');
       var childId = person.child.id;
 
-      return person.save({refresh:true, depth: true}, function(result) {
+      return person.save({refresh: true, depth: true}, function(result) {
         expect(person.id).equals(myId);
         expect(person.name).equals("Custom Person");
         expect(person.child.id).equals(childId);
@@ -1184,7 +1387,9 @@ describe('Test crud', function() {
           return child.delete();
         });
       }).then(function() {
-        return person.child.load();
+        return db.refreshBloomFilter();
+      }).then(function() {
+        return db.Person.load(person.child.id);
       }).then(function(obj) {
         expect(obj).be.null;
       });
