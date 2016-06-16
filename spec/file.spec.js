@@ -3,6 +3,10 @@ if (typeof DB == 'undefined') {
   DB = require('../lib');
 }
 
+//skip IE9 and node for now
+if (typeof Blob == 'undefined')
+    return;
+
 describe('Test file', function() {
   this.timeout(10 * 1000)
 
