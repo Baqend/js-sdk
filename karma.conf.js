@@ -23,13 +23,17 @@ module.exports = function(config) {
 
     // list of files / patterns to load in the browser
     files: [
-      'node_modules/jahcode/jahcode.js',
       'build/baqend.js',
       'spec/env.js',
       'spec/helper.js',
       'spec/**/*.spec.js',
-      {pattern: 'build/*.html', included: false, watched: false}
+      {pattern: 'build/*.html', included: false, watched: false},
+      {pattern: 'spec/assets/*', watched: false, included: false, served: true, nocache: false}
     ],
+
+    proxies: {
+      "/spec/": "/base/spec/"
+    },
 
     // list of files to exclude
     exclude: [],

@@ -23,6 +23,18 @@ var helper = {
         success(value);
       }, time);
     });
+  },
+  asset: function(src) {
+    return new Promise(function(resolve, reject) {
+      var oReq = new XMLHttpRequest();
+      oReq.open("GET", "/spec/assets/" + src, true);
+      oReq.responseType = "blob";
+      oReq.onload = function() {
+        resolve(oReq.response);
+      };
+      oReq.onerror = reject;
+      oReq.send()
+    });
   }
 };
 
