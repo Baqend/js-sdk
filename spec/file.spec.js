@@ -3,12 +3,12 @@ if (typeof DB == 'undefined') {
   DB = require('../lib');
 }
 
-//skip IE9 and node for now
-if (typeof Blob == 'undefined')
+describe('Test file', function() {
+  //skip IE9 and node for now
+  if (typeof Blob == 'undefined')
     return;
 
-describe('Test file', function() {
-  this.timeout(10 * 1000)
+  this.timeout(10 * 1000);
 
   var flames, emf, rootDb;
   var dataBase64 = 'data:image/gif;base64,R0lGODlhDAAeALMAAGUJC/SHGvJZI18NDP347fifGeyqlfqqFdjHx/FhIu98HuLY1/NwHvN5G2AMDP///yH5BAAAAAAALAAAAAAMAB4AAARM8MlJ63SWOpzf3t3HVSKolab0qel6mS7LxR6I0OuCw2k9967dj+cYvFAUAJKEGnkKh0OJQggEHgSaRNHoPBheSsJrEIQf5nD6zKZEAAA7';
@@ -504,9 +504,14 @@ describe('Test file', function() {
 
   describe('delete', function() {
     var uploadFile;
+    var fileName;
+
+    before(function() {
+      fileName = rootDb.util.uuid()
+    });
 
     beforeEach(function() {
-      uploadFile = new rootDb.File({name: 'test.png', data: flames});
+      uploadFile = new rootDb.File({name: fileName, data: flames});
       return uploadFile.upload({force: true});
     });
 
@@ -525,7 +530,7 @@ describe('Test file', function() {
     });
 
     it('should reject a stale deletion', function() {
-      var file = new rootDb.File({name: 'test.png', data: dataSvg, type: 'data-url'});
+      var file = new rootDb.File({name: fileName, data: dataSvg, type: 'data-url'});
       return expect(file.upload({force: true}).then(function() {
         return uploadFile.delete();
       })).be.rejectedWith('is out of date');

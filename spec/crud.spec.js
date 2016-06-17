@@ -171,6 +171,21 @@ describe('Test crud', function() {
       });
     });
 
+    it('should save existing object from JSON', function() {
+      var person = {
+        "id": "/db/Person/" + db.util.uuid(),
+        "name": "TestName",
+        "address": {
+          "zip": 22527
+        }
+      };
+      return db.Person.fromJSON(person).save(function(saved) {
+        expect(saved.id).eqls(person.id);
+        expect(saved.name).eqls(person.name);
+        expect(saved.address.zip).eqls(person.address.zip);
+      });
+    });
+
     it('should save and refresh object', function() {
       var person = new db.Person();
       person.name = "Old Name";
