@@ -25,12 +25,19 @@ var helper = {
     });
   },
   asset: function(src) {
+    return helper.req("/spec/assets/" + src);
+  },
+  req: function(url) {
     return new Promise(function(resolve, reject) {
       var oReq = new XMLHttpRequest();
-      oReq.open("GET", "/spec/assets/" + src, true);
+      oReq.open("GET", url, true);
       oReq.responseType = "blob";
       oReq.onload = function() {
-        resolve(oReq.response);
+        if (oReq.status >= 400) {
+          reject({status: oReq.status});
+        } else {
+          resolve(oReq.response);
+        }
       };
       oReq.onerror = reject;
       oReq.send()

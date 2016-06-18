@@ -351,6 +351,26 @@ describe('Test code', function() {
       });
     });
 
+    it('should accept query object', function() {
+      return code.saveCode(bucket, 'module', function(module, exports) {
+        exports.call = function(db, data) { return data.first + ' ' + data.last };
+      }).then(function() {
+        return db.modules.get(bucket, { first: 'firstName', last: 'lastName' });
+      }).then(function(result) {
+        expect(result).eqls("firstName lastName");
+      });
+    });
+
+    it('should accept provide data as requestType', function() {
+      return code.saveCode(bucket, 'module', function(module, exports) {
+        exports.call = function(db, data) { return '{"test": true}' };
+      }).then(function() {
+        return db.modules.get(bucket, {}, {responseType: 'json'});
+      }).then(function(result) {
+        expect(result).eqls({test: true});
+      });
+    });
+
     it('should accept string parameter', function() {
       return code.saveCode(bucket, 'module', function(module, exports) {
         exports.call = function(db, data) { return data };
@@ -371,15 +391,49 @@ describe('Test code', function() {
       });
     });
 
-    it('should accept query object', function() {
-      return code.saveCode(bucket, 'module', function(module, exports) {
-        exports.call = function(db, data) { return data.first + ' ' + data.last };
-      }).then(function() {
-        return db.modules.get(bucket, { first: 'firstName', last: 'lastName' });
-      }).then(function(result) {
-        expect(result).eqls("firstName lastName");
+    if (typeof Blob != "undefined") {
+      it('should accept blob parameter', function() {
+        var asset;
+
+        return code.saveCode(bucket, 'module', binaryNodeHandler).then(function() {
+          return helper.asset('flames.png');
+        }).then(function(blob) {
+          asset = blob;
+          return db.modules.post(bucket, blob, {responseType: 'blob'});
+        }).then(function(result) {
+          expect(result).eqls(asset);
+        });
       });
-    });
+
+      it('should accept base64 parameter', function() {
+        var svgBase64 = 'PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxIDEiPjxwYXRoIGQ9Im0wLDB2MWgxVjAiLz48L3N2Zz4=';
+        var mimeType = 'image/svg+xml';
+
+        return code.saveCode(bucket, 'module', binaryNodeHandler).then(function() {
+          return db.modules.post(bucket, svgBase64, {requestType: 'base64', mimeType: mimeType, responseType: 'data-url'});
+        }).then(function(result) {
+          expect(result).string('data:' + mimeType);
+          expect(result).string(svgBase64);
+        });
+      });
+    }
+
+    function binaryNodeHandler(module, exports) {
+      exports.post = function(db, req, res) {
+        return new Promise(function(success) {
+          var chunks = [];
+          req.on('data', function(chunk) {
+            chunks.push(chunk);
+          });
+          req.on('end', function() {
+            res.status(200)
+                .type(req.get('Content-Type'))
+                .send(Buffer.concat(chunks));
+            success();
+          });
+        });
+      };
+    }
   });
 
 });

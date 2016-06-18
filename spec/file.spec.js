@@ -291,6 +291,54 @@ describe('Test file', function() {
     });
   });
 
+  describe('url', function() {
+    var anonymousDB, uploadFile;
+
+    before(function() {
+      anonymousDB = emf.createEntityManager();
+      return anonymousDB.ready().then(function() {
+        var acl = new DB.Acl()
+            .allowReadAccess(rootDb.User.me)
+            .allowWriteAccess(rootDb.User.me);
+
+        uploadFile = new rootDb.File({folder: "private_bucket", data: flames, acl: acl});
+        return uploadFile.upload();
+      })
+    });
+
+    it('should not contains credentials for anonymous user', function() {
+      var file = new anonymousDB.File({name: 'test.png'});
+      expect(file.url).eql(env.TEST_SERVER + '/file/www/test.png');
+    });
+
+    it('should not contains credentials for anonymous user in none www bucket', function() {
+      var file = new anonymousDB.File({folder: '/testfolder/', name: 'test.png'});
+      expect(file.url).eql(env.TEST_SERVER + '/file/testfolder/test.png');
+    });
+
+    it('should not contains credentials for the www bucket', function() {
+      var file = new rootDb.File({name: 'test.png'});
+      expect(file.url).eql(env.TEST_SERVER + '/file/www/test.png');
+    });
+
+    it('should contains credentials for none www bucket', function() {
+      var file = new rootDb.File({folder: '/testfolder/', name: 'test.png'});
+      expect(file.url).string(env.TEST_SERVER + '/file/testfolder/test.png?BAT=');
+    });
+
+    it('should provide no access for none authorized user', function() {
+      var file = new anonymousDB.File(uploadFile.id);
+      return expect(helper.req(file.url)).be.rejectedWith({status: 466});
+    });
+
+    it('should provide access for authorized user', function() {
+      var file = new rootDb.File(uploadFile.id);
+      return helper.req(file.url).then(function(data) {
+        expect(data).be.eql(flames);
+      });
+    });
+  });
+
   describe('upload', function() {
     it('should denied for anonymous', function() {
       var file;

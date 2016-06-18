@@ -82,22 +82,17 @@ describe('Test crud', function() {
       }
     });
 
-    it('should unattached object to db', function() {
+    it('should implicit attach object to db', function() {
       var obj = new db.Person();
 
       expect(obj.id).be.null;
       expect(db.contains(obj)).be.false;
-
-      obj.attach(db);
-
-      expect(obj.id).be.ok;
-      expect(db.contains(obj)).be.true;
+      expect(obj._metadata.isAttached).be.true;
       expect(obj._metadata.db).equals(db);
     });
 
     it('should not reattach objects to another db', function() {
       var obj = new db.Person();
-      obj.attach(db);
 
       var db2 = emf.createEntityManager();
       expect(function() {
@@ -159,30 +154,38 @@ describe('Test crud', function() {
     });
 
     it('should save new object from JSON', function() {
-      var person = {
+      var json = {
         "name": "TestName",
         "address": {
           "zip": 22527
         }
       };
-      return db.Person.fromJSON(person).save(function(saved) {
-        expect(saved.name).eqls(person.name);
-        expect(saved.address.zip).eqls(person.address.zip);
+
+      var person = db.Person.fromJSON(json);
+      expect(db.util.Metadata.get(person).db).eql(db);
+
+      return person.save(function(saved) {
+        expect(saved.name).eql(json.name);
+        expect(saved.address.zip).eql(json.address.zip);
       });
     });
 
     it('should save existing object from JSON', function() {
-      var person = {
+      var json = {
         "id": "/db/Person/" + db.util.uuid(),
         "name": "TestName",
         "address": {
           "zip": 22527
         }
       };
-      return db.Person.fromJSON(person).save(function(saved) {
-        expect(saved.id).eqls(person.id);
-        expect(saved.name).eqls(person.name);
-        expect(saved.address.zip).eqls(person.address.zip);
+
+      var person = db.Person.fromJSON(json);
+      expect(db.util.Metadata.get(person).db).eql(db);
+
+      return person.save(function(saved) {
+        expect(saved.id).eqls(json.id);
+        expect(saved.name).eqls(json.name);
+        expect(saved.address.zip).eqls(json.address.zip);
       });
     });
 
