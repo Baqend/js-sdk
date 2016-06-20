@@ -23,7 +23,7 @@
   <script>
     onload = function(){
       mocha.checkLeaks();
-      mocha.globals(['jQuery', 'ms__*']);
+      mocha.globals(['jQuery', 'ms__*', '$*']);
       mocha.run();
     }
   </script>
