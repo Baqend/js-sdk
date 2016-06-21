@@ -583,6 +583,13 @@ describe('Test file', function() {
         return uploadFile.delete();
       })).be.rejectedWith('is out of date');
     });
+
+    it('should remove a stale deletion with force', function() {
+      var file = new rootDb.File({name: fileName, data: dataSvg, type: 'data-url'});
+      return file.upload({force: true}).then(function() {
+        return uploadFile.delete({force: true});
+      });
+    });
   });
 
   describe('acl', function() {
@@ -700,6 +707,14 @@ describe('Test file', function() {
         return file.download().then(function(data) {
           expect(file.mimeType).eql('image/png');
           expect(data).eql(flames);
+          expect(file.acl.isPublicReadAllowed()).be.false;
+          expect(file.acl.isPublicWriteAllowed()).be.false;
+          expect(file.acl.isReadAllowed(db1.User.me)).be.true;
+          expect(file.acl.isReadAllowed(db2.User.me)).be.true;
+          expect(file.acl.isReadAllowed(db3.User.me)).be.false;
+          expect(file.acl.isWriteAllowed(db1.User.me)).be.true;
+          expect(file.acl.isWriteAllowed(db2.User.me)).be.false;
+          expect(file.acl.isWriteAllowed(db3.User.me)).be.false;
         });
       });
 

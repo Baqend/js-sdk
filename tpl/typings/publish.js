@@ -23,6 +23,7 @@ function getNamespaceOf(longname) {
   if (!namespace) {
     namespace = parentNamespace.namespaces[name] = {
       name: name,
+      longname: (parentNamespace.lognname? parentNamespace + '.': '') + name,
       depth: parentNamespace.depth + 1,
       namespaces: {},
       imports: [],
@@ -70,7 +71,7 @@ exports.publish = function(data, opts, tutorials) {
   });
   
   var text = fs.readFileSync(__dirname + '/head.d.ts');
-  text += createNs(rootNs);
+  text += createNs(data, rootNs);
 
   fs.writeFileSync('typings.d.ts', text);
   fs.writeFileSync('doc.json', JSON.stringify(data().get(), null, '  '));
@@ -78,7 +79,7 @@ exports.publish = function(data, opts, tutorials) {
   return null;
 }
 
-function createNs(namespace) {
+function createNs(data, namespace) {
 
   var body = namespace.body;
 
@@ -93,7 +94,8 @@ function createNs(namespace) {
           text += prefix + '  ' + ns.imports.join('\n' + prefix + '  ') + '\n';
         }
 
-        text += createNs(ns);
+        text += createMembers(data, prefix, ns, true);
+        text += createNs(data, ns);
         text += prefix + '}\n\n';
         return text;
       })
@@ -103,9 +105,15 @@ function createNs(namespace) {
 }
 
 function createClass(data, cls, ns) {
-  var lines = [];
+  var classLine = 'export ';
+  if (cls.name.endsWith("Factory")) {
+    classLine += 'interface ' + cls.name;
+  } else {
+    classLine += 'class ' + cls.name;
+  }
 
-  var classLine = 'export class ' + cls.name;
+  var prefix = spaces(ns.depth);
+
   if (cls.augments) {
     classLine += ' extends ';
 
@@ -127,12 +135,17 @@ function createClass(data, cls, ns) {
     }).join(', ');
   }
 
-  classLine += ' {';
+  classLine += ' {\n';
 
-  lines.push(classLine);
+  var members = createMembers(data, prefix, cls);
 
-  var members = data({memberof: cls.longname}).get() || [];
-  var hiddenMembers = data({memberof: cls.longname + '.' + cls.name}).get() || [];
+  ns.body += prefix + classLine + members + prefix + '}\n';
+}
+
+function createMembers(data, prefix, scope, exportIt) {
+  var lines = [];
+  var members = data({memberof: scope.longname}).get() || [];
+  var hiddenMembers = data({memberof: scope.longname + '.' + scope.name}).get() || [];
   members = [].concat(hiddenMembers, members);
 
   members.forEach(function(member) {
@@ -148,9 +161,15 @@ function createClass(data, cls, ns) {
         if (!member.type) //skip setter
           return;
 
+        if (exportIt)
+          line += 'export let ';
+
         line += member.name + ': ' + createType(member.type) + ';';
         break;
       case 'function':
+        if (exportIt)
+          line += 'export function ';
+
         line += '' + member.name + '(';
         line += createParams(member);
         line += '): ' + createReturn(member) + ';';
@@ -161,12 +180,8 @@ function createClass(data, cls, ns) {
     }
     lines.push(line);
   });
-  lines.push('}');
 
-  var prefix = spaces(ns.depth);
-  var classBody = (lines.length == 2? lines.join(''): lines.join('\n' + prefix)) + '\n';
-
-  ns.body += prefix + classBody;
+  return (lines.length == 0? lines.join(''): prefix + lines.join('\n' + prefix)) + '\n';
 }
 
 function createEnum(enu, ns) {
