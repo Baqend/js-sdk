@@ -276,10 +276,11 @@ describe('Test Acl', function() {
         id = obj.id;
         return db.AclPerson.load(id);
       }).then(function(obj) {
+        //use refresh to bypass the cache for the same object
         return Promise.all([
-          expect(db.AclPerson.load(id)).eventually.property('id', id),
-          expect(db2.AclPerson.load(id)).eventually.property('id', id),
-          expect(db3.AclPerson.load(id)).eventually.be.null
+          expect(db.AclPerson.load(id, {refresh: true})).eventually.property('id', id),
+          expect(db2.AclPerson.load(id, {refresh: true})).eventually.property('id', id),
+          expect(db3.AclPerson.load(id, {refresh: true})).eventually.be.null
         ]);
       });
     });

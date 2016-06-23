@@ -843,14 +843,18 @@ describe('Test crud', function() {
 
   describe('client caching', function() {
 
-
     // no client caching in node
-    if (typeof window == 'undefined') {
+    if (helper.isNode) {
       it('should disable bloomfilter in node', function() {
         var em = emf.createEntityManager();
         expect(em.isCachingDisabled).be.true;
       });
 
+      return;
+    }
+
+    //no client caching in phantom
+    if (helper.isPhantomJS) {
       return;
     }
 

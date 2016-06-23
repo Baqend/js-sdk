@@ -10,7 +10,7 @@ describe('Test file', function() {
 
   this.timeout(10 * 1000);
 
-  var flames, emf, rootDb;
+  var flames, rocket, emf, rootDb;
   var dataBase64 = 'data:image/gif;base64,R0lGODlhDAAeALMAAGUJC/SHGvJZI18NDP347fifGeyqlfqqFdjHx/FhIu98HuLY1/NwHvN5G2AMDP///yH5BAAAAAAALAAAAAAMAB4AAARM8MlJ63SWOpzf3t3HVSKolab0qel6mS7LxR6I0OuCw2k9967dj+cYvFAUAJKEGnkKh0OJQggEHgSaRNHoPBheSsJrEIQf5nD6zKZEAAA7';
   var dataSvg = 'data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%201%201%22%3E%3Cpath%20d%3D%22m0%2C0v1h1V0%22%2F%3E%3C%2Fsvg%3E';
   var svgBase64 = 'PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxIDEiPjxwYXRoIGQ9Im0wLDB2MWgxVjAiLz48L3N2Zz4=';
@@ -23,8 +23,9 @@ describe('Test file', function() {
   before(function() {
     emf = new DB.EntityManagerFactory(env.TEST_SERVER);
 
-    return helper.asset('flames.png').then(function(data) {
-      flames = data;
+    return Promise.all([helper.asset('flames.png'), helper.asset('rocket.jpg')]).then(function(data) {
+      flames = data[0];
+      rocket = data[1];
     }).then(function() {
       return emf.createEntityManager().ready().then(function(em) {
         return em.User.login('root', 'root').then(function() {
@@ -307,23 +308,23 @@ describe('Test file', function() {
     });
 
     it('should not contains credentials for anonymous user', function() {
-      var file = new anonymousDB.File({name: 'test.png'});
-      expect(file.url).eql(env.TEST_SERVER + '/file/www/test.png');
+      var file = new anonymousDB.File({name: 'public.png'});
+      expect(file.url).eql(env.TEST_SERVER + '/file/www/public.png');
     });
 
     it('should not contains credentials for anonymous user in none www bucket', function() {
-      var file = new anonymousDB.File({folder: '/testfolder/', name: 'test.png'});
-      expect(file.url).eql(env.TEST_SERVER + '/file/testfolder/test.png');
+      var file = new anonymousDB.File({folder: '/testfolder/', name: 'private.png'});
+      expect(file.url).eql(env.TEST_SERVER + '/file/testfolder/private.png');
     });
 
     it('should not contains credentials for the www bucket', function() {
-      var file = new rootDb.File({name: 'test.png'});
-      expect(file.url).eql(env.TEST_SERVER + '/file/www/test.png');
+      var file = new rootDb.File({name: 'public.png'});
+      expect(file.url).eql(env.TEST_SERVER + '/file/www/public.png');
     });
 
     it('should contains credentials for none www bucket', function() {
-      var file = new rootDb.File({folder: '/testfolder/', name: 'test.png'});
-      expect(file.url).string(env.TEST_SERVER + '/file/testfolder/test.png?BAT=');
+      var file = new rootDb.File({folder: '/testfolder/', name: 'private.png'});
+      expect(file.url).string(env.TEST_SERVER + '/file/testfolder/private.png?BAT=');
     });
 
     it('should provide no access for none authorized user', function() {
@@ -449,25 +450,29 @@ describe('Test file', function() {
   });
 
   describe('download', function() {
-    var uploadFile;
+    var pngFile, jsonFile, htmlFile, gifFile, svgFile;
 
     before(function() {
-      uploadFile = new rootDb.File({name: 'test.png', data: flames});
+      pngFile = new rootDb.File({data: flames});
+      jsonFile = new rootDb.File({data: json});
+      htmlFile = new rootDb.File({data: html, mimeType: 'text/html;charset=utf-8'});
+      gifFile = new rootDb.File({data: dataBase64, type: 'data-url'});
+      svgFile = new rootDb.File({data: dataSvg, type: 'data-url'});
 
       return Promise.all([
-        new rootDb.File({name: 'test.json', data: json}).upload({force: true}),
-        new rootDb.File({name: 'test.html', data: html, mimeType: 'text/html;charset=utf-8'}).upload({force: true}),
-        new rootDb.File({name: 'test.gif', data: dataBase64, type: 'data-url'}).upload({force: true}),
-        new rootDb.File({name: 'test.svg', data: dataSvg, type: 'data-url'}).upload({force: true}),
-        uploadFile.upload({force: true})
+        pngFile.upload(),
+        jsonFile.upload(),
+        htmlFile.upload(),
+        gifFile.upload(),
+        svgFile.upload()
       ]);
     });
 
     it('should stored under specified name', function() {
-      var file = new rootDb.File({name: 'test.png'});
+      var file = new rootDb.File(pngFile.id);
       return file.download().then(function(data) {
         expect(data).instanceof(Blob);
-        expect(file.eTag).eql(uploadFile.eTag);
+        expect(file.eTag).eql(pngFile.eTag);
         expect(file.lastModified).gt(new Date(Date.now() - 5 * 60 * 1000));
         expect(file.lastModified).lt(new Date(Date.now() + 5 * 60 * 1000));
         expect(file.mimeType).eql('image/png');
@@ -479,11 +484,11 @@ describe('Test file', function() {
     it('should be downloadable as anonymous', function() {
       var file;
       return emf.createEntityManager().ready().then(function(db) {
-        file = new db.File({name: 'test.png'});
+        file = new db.File(pngFile.id);
         return file.download();
       }).then(function(data) {
         expect(data).instanceof(Blob);
-        expect(file.eTag).eql(uploadFile.eTag);
+        expect(file.eTag).eql(pngFile.eTag);
         expect(file.lastModified).gt(new Date(Date.now() - 5 * 60 * 1000));
         expect(file.lastModified).lt(new Date(Date.now() + 5 * 60 * 1000));
         expect(file.mimeType).eql('image/png');
@@ -493,7 +498,7 @@ describe('Test file', function() {
     });
 
     it('should download blob format', function() {
-      var file = new rootDb.File({name: 'test.png'});
+      var file = new rootDb.File(pngFile.id);
       return file.download({type: 'blob'}).then(function(data) {
         expect(file.mimeType.toLowerCase()).eql('image/png');
         expect(data).eql(flames);
@@ -501,7 +506,7 @@ describe('Test file', function() {
     });
 
     it('should download json format', function() {
-      var file = new rootDb.File({name: 'test.json'});
+      var file = new rootDb.File(jsonFile.id);
       return file.download({type: 'json'}).then(function(data) {
         expect(file.mimeType.toLowerCase()).eql('application/json; charset=utf-8');
         expect(data).eql(json);
@@ -509,7 +514,7 @@ describe('Test file', function() {
     });
 
     it('should download text format', function() {
-      var file = new rootDb.File({name: 'test.html'});
+      var file = new rootDb.File(htmlFile.id);
       return file.download({type: 'text'}).then(function(data) {
         expect(file.mimeType.toLowerCase()).eql('text/html;charset=utf-8');
         expect(data).eql(html);
@@ -517,7 +522,7 @@ describe('Test file', function() {
     });
 
     it('should download base64 format', function() {
-      var file = new rootDb.File({name: 'test.svg'});
+      var file = new rootDb.File(svgFile.id);
       return file.download({type: 'base64'}).then(function(data) {
         expect(file.mimeType).string('image/svg+xml');
         expect(data).eql(svgBase64);
@@ -525,7 +530,7 @@ describe('Test file', function() {
     });
 
     it('should download data-url base64 format', function() {
-      var file = new rootDb.File({name: 'test.gif'});
+      var file = new rootDb.File(gifFile.id);
       return file.download({type: 'data-url'}).then(function(data) {
         expect(file.mimeType).eql('image/gif');
         expect(data).eql(dataBase64);
@@ -533,7 +538,7 @@ describe('Test file', function() {
     });
 
     it('should download data-url format', function() {
-      var file = new rootDb.File({name: 'test.svg'});
+      var file = new rootDb.File(svgFile.id);
       return file.download({type: 'data-url'}).then(function(data) {
         expect(file.mimeType).string('image/svg+xml');
         expect(data).string(svgBase64);
@@ -542,7 +547,7 @@ describe('Test file', function() {
     });
 
     it('should download arraybuffer format', function() {
-      var file = new rootDb.File({name: 'test.png'});
+      var file = new rootDb.File(pngFile.id);
       return file.download({type: 'arraybuffer'}).then(function(data) {
         expect(file.mimeType).eql('image/png');
         expect(data).eql(arrayBuffer);
@@ -747,6 +752,128 @@ describe('Test file', function() {
     })
 
 
+  });
+
+  describe('client caching', function() {
+
+    // no client caching in node and phantom js
+    if (helper.isNode || helper.isPhantomJS) {
+      return;
+    }
+
+    var uploadFile, db, jsonBlob = new Blob(['{"Hallo":"World"}'], {type: 'application/json'});
+
+    before(function() {
+      db = emf.createEntityManager();
+
+      var rootEmf = new DB.EntityManagerFactory({host: env.TEST_SERVER, tokenStorage: helper.rootTokenStorage});
+      rootEmf.ready().then(function() {
+        return rootEmf.code.saveCode('updateFile', 'module', function(module, exports) {
+          exports.call = function(db, data) {
+            var fileId = data.id;
+            var newValue = data.value;
+            return new db.File(fileId).upload({type: 'json', data: newValue, force: true});
+          }
+        });
+      }).then(function() {
+        return db.ready();
+      });
+
+      return rootDb
+    });
+
+    beforeEach(function() {
+      uploadFile = new rootDb.File({data: flames});
+      return uploadFile.upload().then(function() {
+        return db.refreshBloomFilter();
+      });
+    });
+
+    function updateFile(file, newJson) {
+      return rootDb.modules.post('updateFile', {id: file.id, value: newJson || json});
+    }
+
+    it('should cache a file', function() {
+      var file = new db.File(uploadFile.id);
+      return file.download({type: 'blob'}).then(function(data) {
+        expect(file.mimeType.toLowerCase()).eql('image/png');
+        expect(data).eql(flames);
+        return updateFile(file);
+      }).then(function() {
+        return file.download({type: 'blob'});
+      }).then(function(data) {
+        expect(file.mimeType.toLowerCase()).eql('image/png');
+        expect(data).eql(flames);
+      });
+    });
+
+    it('should revalidate a file', function() {
+      var file = new db.File(uploadFile.id);
+      return file.download({type: 'blob'}).then(function(data) {
+        expect(file.mimeType.toLowerCase()).eql('image/png');
+        expect(data).eql(flames);
+        return updateFile(file);
+      }).then(function() {
+        return db.refreshBloomFilter();
+      }).then(function() {
+        return file.download({type: 'json'});
+      }).then(function(data) {
+        expect(file.mimeType.toLowerCase()).string('application/json');
+        expect(data).eql(json);
+      });
+    });
+
+    it('should cache the url', function() {
+      var file = new db.File(uploadFile.id);
+      return helper.req(file.url).then(function(data) {
+        expect(data.type.toLowerCase()).eql('image/png');
+        expect(data).eql(flames);
+        return updateFile(file);
+      }).then(function() {
+        return helper.req(file.url);
+      }).then(function(data) {
+        expect(data.type.toLowerCase()).eql('image/png');
+        expect(data).eql(flames);
+      });
+    });
+
+    it('should revalidate the url', function() {
+      var file = new db.File(uploadFile.id);
+      return helper.req(file.url).then(function(data) {
+        expect(data.type.toLowerCase()).eql('image/png');
+        expect(data).eql(flames);
+        return updateFile(file);
+      }).then(function() {
+        return db.refreshBloomFilter();
+      }).then(function() {
+        return helper.req(file.url);
+      }).then(function(data) {
+        expect(data.type.toLowerCase()).string('application/json');
+        expect(data.size).eql(jsonBlob.size);
+      });
+    });
+
+    it('should force revalidate with cache buster', function() {
+      var file = new db.File(uploadFile.id);
+      return helper.req(file.url).then(function(data) {
+        expect(data.type.toLowerCase()).eql('image/png');
+        expect(data).eql(flames);
+        return updateFile(file);
+      }).then(function() {
+        return db.refreshBloomFilter();
+      }).then(function() {
+        return helper.req(file.url);
+      }).then(function(data) {
+        expect(data.type.toLowerCase()).string('application/json');
+        expect(data.size).eql(jsonBlob.size);
+        return uploadFile.upload({data: flames, force: true});
+      }).then(function() {
+        return helper.req(file.url);
+      }).then(function(data) {
+        expect(data.type.toLowerCase()).eql('image/png');
+        expect(data).eql(flames);
+      });
+    });
   });
 
 });

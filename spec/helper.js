@@ -27,11 +27,11 @@ var helper = {
   asset: function(src) {
     return helper.req("/spec/assets/" + src);
   },
-  req: function(url) {
+  req: function(url, responseType) {
     return new Promise(function(resolve, reject) {
       var oReq = new XMLHttpRequest();
       oReq.open("GET", url, true);
-      oReq.responseType = "blob";
+      oReq.responseType = responseType || 'blob';
       oReq.onload = function() {
         if (oReq.status >= 400) {
           reject({status: oReq.status});
@@ -42,7 +42,9 @@ var helper = {
       oReq.onerror = reject;
       oReq.send()
     });
-  }
+  },
+  isNode: typeof window == 'undefined',
+  isPhantomJS: typeof navigator != 'undefined' && navigator.userAgent.indexOf('PhantomJS') != -1
 };
 
 before(function() {
