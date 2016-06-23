@@ -17,6 +17,8 @@
   </script>
 
   <script src="../build/baqend.js"></script>
+  <script src="../spec/env.js"></script>
+  <script src="../spec/helper.js"></script>
 
   <% _.forEach(scripts, function(src) { %><script type="text/javascript" src="../<%- src %>"></script><% }); %>
 

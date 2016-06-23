@@ -4,7 +4,7 @@ module.exports = function (grunt) {
   var banner = '/*! <%= pkg.name %> <%= pkg.version %> | <%= copyright %> | <%= pkg.license %> */\n';
   var longBanner = grunt.file.read('tpl/banner.tpl');
 
-  var TEST = 'spec/{env.js,helper.js,**/*.spec.js}';
+  var TEST = 'spec/**/*.spec.js';
 
   var browserifyOptions = {
     builtins: [],
