@@ -8,7 +8,7 @@ describe('Test file', function() {
   if (typeof Blob == 'undefined')
     return;
 
-  this.timeout(10 * 1000);
+  this.timeout(20 * 1000);
 
   var flames, rocket, emf, rootDb;
   var dataBase64 = 'data:image/gif;base64,R0lGODlhDAAeALMAAGUJC/SHGvJZI18NDP347fifGeyqlfqqFdjHx/FhIu98HuLY1/NwHvN5G2AMDP///yH5BAAAAAAALAAAAAAMAB4AAARM8MlJ63SWOpzf3t3HVSKolab0qel6mS7LxR6I0OuCw2k9967dj+cYvFAUAJKEGnkKh0OJQggEHgSaRNHoPBheSsJrEIQf5nD6zKZEAAA7';
@@ -632,7 +632,7 @@ describe('Test file', function() {
       });
 
       beforeEach(function() {
-        uploadFile = new rootDb.File({folder: bucket, name: 'test.png', data: flames});
+        uploadFile = new rootDb.File({folder: bucket, data: flames});
         return uploadFile.upload({force: true});
       });
 
@@ -662,24 +662,24 @@ describe('Test file', function() {
       });
 
       it('should allow update with update permission', function() {
-        var file = new db2.File({folder: bucket, name: 'test.png', data: flames, eTag: uploadFile.eTag});
+        var file = new db2.File({folder: bucket, name: uploadFile.name, data: flames, eTag: uploadFile.eTag});
         return file.upload().then(function() {
           expect(file.mimeType).eql('image/png');
         });
       });
 
       it('should deny update without update permission', function() {
-        var file = new db1.File({folder: bucket, name: 'test.png', data: flames, eTag: uploadFile.eTag});
+        var file = new db1.File({folder: bucket, name: uploadFile.name, data: flames, eTag: uploadFile.eTag});
         return expect(file.upload()).rejectedWith('update permissions are required');
       });
 
       it('should allow delete with delete permission', function() {
-        var file = new db1.File({folder: bucket, name: 'test.png', data: flames, eTag: uploadFile.eTag});
+        var file = new db1.File({folder: bucket, name: uploadFile.name, data: flames, eTag: uploadFile.eTag});
         return file.delete();
       });
 
       it('should deny delete without delete permission', function() {
-        var file = new db2.File({folder: bucket, name: 'test.png', data: flames, eTag: uploadFile.eTag});
+        var file = new db2.File({folder: bucket, name: uploadFile.name, data: flames, eTag: uploadFile.eTag});
         return expect(file.delete()).rejectedWith('delete permissions are required');
       });
     });
@@ -703,7 +703,7 @@ describe('Test file', function() {
           .allowWriteAccess(db1.User.me)
           .allowReadAccess(db2.User.me);
 
-        uploadFile = new rootDb.File({folder: bucket, name: 'test.png', data: flames, acl: acl});
+        uploadFile = new rootDb.File({folder: bucket, data: flames, acl: acl});
         return uploadFile.upload({force: true});
       });
 
@@ -729,29 +729,27 @@ describe('Test file', function() {
       });
 
       it('should allow update with write Permission', function() {
-        var file = new db1.File({folder: bucket, name: 'test.png', data: flames, eTag: uploadFile.eTag});
+        var file = new db1.File({folder: bucket, name: uploadFile.name, data: flames, eTag: uploadFile.eTag});
         return file.upload().then(function() {
           expect(file.mimeType).eql('image/png');
         });
       });
 
       it('should deny update without write Permission', function() {
-        var file = new db2.File({folder: bucket, name: 'test.png', data: flames, eTag: uploadFile.eTag});
+        var file = new db2.File({folder: bucket, name: uploadFile.name, data: flames, eTag: uploadFile.eTag});
         return expect(file.upload()).rejectedWith('Write permissions are required');
       });
 
       it('should allow delete with write Permission', function() {
-        var file = new db1.File({folder: bucket, name: 'test.png', data: flames, eTag: uploadFile.eTag});
+        var file = new db1.File({folder: bucket, name: uploadFile.name, data: flames, eTag: uploadFile.eTag});
         return file.delete();
       });
 
       it('should deny delete without write Permission', function() {
-        var file = new db2.File({folder: bucket, name: 'test.png', data: flames, eTag: uploadFile.eTag});
+        var file = new db2.File({folder: bucket, name: uploadFile.name, data: flames, eTag: uploadFile.eTag});
         return expect(file.delete()).rejectedWith('Write permissions are required');
       });
-    })
-
-
+    });
   });
 
   describe('client caching', function() {
@@ -783,9 +781,9 @@ describe('Test file', function() {
     });
 
     beforeEach(function() {
-      uploadFile = new rootDb.File({data: flames});
-      return uploadFile.upload().then(function() {
-        return db.refreshBloomFilter();
+      return db.refreshBloomFilter().then(function() {
+        uploadFile = new rootDb.File({data: flames});
+        return uploadFile.upload();
       });
     });
 
@@ -793,19 +791,22 @@ describe('Test file', function() {
       return rootDb.modules.post('updateFile', {id: file.id, value: newJson || json});
     }
 
-    it('should cache a file', function() {
-      var file = new db.File(uploadFile.id);
-      return file.download({type: 'blob'}).then(function(data) {
-        expect(file.mimeType.toLowerCase()).eql('image/png');
-        expect(data).eql(flames);
-        return updateFile(file);
-      }).then(function() {
-        return file.download({type: 'blob'});
-      }).then(function(data) {
-        expect(file.mimeType.toLowerCase()).eql('image/png');
-        expect(data).eql(flames);
+    //ie seems not to cache binary resources which are requested via xhr
+    if (!helper.isIE && !helper.isIEdge) {
+      it('should cache a file', function() {
+        var file = new db.File(uploadFile.id);
+        return file.download({type: 'blob'}).then(function(data) {
+          expect(file.mimeType.toLowerCase()).eql('image/png');
+          expect(data).eql(flames);
+          return updateFile(file);
+        }).then(function() {
+          return file.download({type: 'blob'});
+        }).then(function(data) {
+          expect(file.mimeType.toLowerCase()).eql('image/png');
+          expect(data).eql(flames);
+        });
       });
-    });
+    }
 
     it('should revalidate a file', function() {
       var file = new db.File(uploadFile.id);
@@ -823,19 +824,23 @@ describe('Test file', function() {
       });
     });
 
-    it('should cache the url', function() {
-      var file = new db.File(uploadFile.id);
-      return helper.req(file.url).then(function(data) {
-        expect(data.type.toLowerCase()).eql('image/png');
-        expect(data).eql(flames);
-        return updateFile(file);
-      }).then(function() {
-        return helper.req(file.url);
-      }).then(function(data) {
-        expect(data.type.toLowerCase()).eql('image/png');
-        expect(data).eql(flames);
+    //ie seems not to cache binary resources which are requested via xhr
+    if (!helper.isIE && !helper.isIEdge) {
+      it('should cache the url', function() {
+        var file = new db.File(uploadFile.id);
+        return helper.req(file.url).then(function(data) {
+          expect(data.type.toLowerCase()).eql('image/png');
+          expect(data).eql(flames);
+          return updateFile(file);
+        }).then(function() {
+          return helper.req(file.url);
+        }).then(function(data) {
+          expect(data.type.toLowerCase()).eql('image/png');
+          expect(data).eql(flames);
+        });
       });
-    });
+    }
+
 
     it('should revalidate the url', function() {
       var file = new db.File(uploadFile.id);

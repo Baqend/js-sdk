@@ -844,7 +844,7 @@ describe('Test crud', function() {
   describe('client caching', function() {
 
     // no client caching in node
-    if (helper.isNode) {
+    if (helper.isNode || !DB.util.atob) {
       it('should disable bloomfilter in node', function() {
         var em = emf.createEntityManager();
         expect(em.isCachingDisabled).be.true;

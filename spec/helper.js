@@ -44,7 +44,9 @@ var helper = {
     });
   },
   isNode: typeof window == 'undefined',
-  isPhantomJS: typeof navigator != 'undefined' && navigator.userAgent.indexOf('PhantomJS') != -1
+  isPhantomJS: typeof navigator != 'undefined' && navigator.userAgent.indexOf('PhantomJS') != -1,
+  isIE: typeof navigator != 'undefined' && navigator.userAgent.indexOf('Trident') != -1,
+  isIEdge: typeof navigator != 'undefined' && navigator.userAgent.indexOf('Edge') != -1
 };
 
 before(function() {

@@ -4,16 +4,17 @@ if (typeof DB == 'undefined') {
 }
 
 describe("Streaming Queries", function() {
+  // skips test for ie9 and ie10
+  if (typeof window != 'undefined' && !window.WebSocket) {
+    return;
+  }
+
   var t = 400;
   var bucket = helper.randomize("StreamingQueryPerson");
   var emf, metamodel, db, stream;
   var p0, p1, p2, p3, objects;
 
   before(function() {
-    // skips test for ie9
-    if (typeof window != 'undefined' && !window.WebSocket) {
-      this.skip();
-    }
 
     var personType, addressType;
     emf = new DB.EntityManagerFactory({ host: env.TEST_SERVER, schema: {}, tokenStorage: helper.rootTokenStorage });
