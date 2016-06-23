@@ -1,3 +1,16 @@
+<a name="v2.1.0"></a>
+# v2.1.0 (2016-6-23)
+
+
+### Bug Fixes
+
+* Many jsdoc errors are fixed
+
+### Features
+
+* Introduce a File API client (IE 10+)
+* Enable client caching and complete the BloomFilter based cache invalidations
+
 <a name="v2.0.1"></a>
 # v2.0.1 (2016-4-26)
 
