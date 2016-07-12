@@ -26,7 +26,8 @@ describe('Test Acl', function() {
 
   after(function() {
     var user = db.User.me;
-    return user.delete();
+    if (user)
+      return user.delete();
   });
 
   function createUserDb() {
