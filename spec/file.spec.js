@@ -207,9 +207,9 @@ describe('Test file', function() {
         var acl = new rootDb.Acl();
         acl.allowReadAccess(rootDb.User.me);
         acl.allowWriteAccess(rootDb.User.me);
-        
+
         var date = new Date("01-01-2016");
-        
+
         var file = new rootDb.File({
           data: f,
           type: 'blob',
@@ -699,9 +699,9 @@ describe('Test file', function() {
 
       beforeEach(function() {
         var acl = new DB.Acl()
-          .allowReadAccess(db1.User.me)
-          .allowWriteAccess(db1.User.me)
-          .allowReadAccess(db2.User.me);
+            .allowReadAccess(db1.User.me)
+            .allowWriteAccess(db1.User.me)
+            .allowReadAccess(db2.User.me);
 
         uploadFile = new rootDb.File({folder: bucket, data: flames, acl: acl});
         return uploadFile.upload({force: true});
@@ -748,6 +748,64 @@ describe('Test file', function() {
       it('should deny delete without write Permission', function() {
         var file = new db2.File({folder: bucket, name: uploadFile.name, data: flames, eTag: uploadFile.eTag});
         return expect(file.delete()).rejectedWith('Write permissions are required');
+      });
+    });
+  });
+
+  describe('listing files', function() {
+    it('should list files in a folder', function() {
+      var file1 = new rootDb.File({folder: '/www', name: 'test.png', data: flames});
+      var file2 = new rootDb.File({folder: '/www/images', name: 'test1.png', data: flames});
+      var file3 = new rootDb.File({folder: '/www/images', name: 'test2.png', data: flames});
+      Promise.all(file1, file2, file3).then(function() {
+        var folder = new rootDB.File('/file/www/');
+        return rootDb.File.listFiles(folder);
+      }).then(function(files) {
+        expect(files.length).eql(2);
+        expect(files[0].name).eql('images/');
+        expect(files[2].name).eql('test.png');
+
+        var folder = new rootDB.File('/file/www/images/');
+        return rootDb.File.listFiles(folder);
+      }).then(function(files) {
+        expect(files.length).eql(2);
+        expect(files[0].name).eql('test1.png');
+        expect(files[2].name).eql('test2.png');
+
+        var folder = new rootDB.File('/file/www/images/');
+        return rootDb.File.listFiles(folder, null, 1);
+      }).then(function(files) {
+        expect(files.length).eql(1);
+        expect(files[0].name).eql('test1.png');
+
+        var folder = new rootDB.File('/file/www/images/');
+        return rootDb.File.listFiles(folder, files[0], 1);
+      }).then(function(files) {
+        expect(files.length).eql(1);
+        expect(files[0].name).eql('test2.png');
+      });
+    });
+
+
+    it('should list buckets', function() {
+      // TODO first implement creation of buckets.
+
+      var intialBucketCount;
+      rootDb.File.listBuckets().then(function(buckets) {
+        intialBucketCount = buckets.length;
+
+        return rootDb.File.saveMetadata('listBucketTest', {
+          load: new rootDb.util.Permission().allowAccess(rootDb.User.me),
+          insert: new rootDb.util.Permission().allowAccess(rootDb.User.me),
+          update: new rootDb.util.Permission().allowAccess(rootDb.User.me),
+          delete: new rootDb.util.Permission().allowAccess(rootDb.User.me),
+          query: new rootDb.util.Permission().allowAccess(rootDb.User.me)
+        });
+      }).then(function() {
+        return rootDb.File.listBuckets();
+      }).then(function(buckets) {
+        expect(buckets.length).eql(intialBucketCount + 1);
+        // TODO compare actual bucket names.
       });
     });
   });
