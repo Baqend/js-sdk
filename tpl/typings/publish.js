@@ -89,11 +89,11 @@ exports.publish = function(data, opts, tutorials) {
   let text = fs.readFileSync(__dirname + '/head.d.tpl');
   text += createNs(data, rootNs).join(os.EOL);
 
-  fs.writeFileSync('lib/baqend.d.ts', text);
+  fs.writeFileSync('index.d.ts', text);
   fs.writeFileSync('doc.json', JSON.stringify(data().get(), null, '  '));
 
   return null;
-}
+};
 
 function createNs(data, namespace) {
   let lines = [];
@@ -158,6 +158,11 @@ function createClass(data, cls, ns) {
   classLine += ' {';
 
   let lines = [classLine];
+
+  if (!isInterface) {
+    lines.push(ns.prefix + '  constructor(' + createParams(cls) + ')');
+  }
+
   push(lines, createMembers(data, ns.prefix, cls.longname));
   if (!isInterface && cls.augments && cls.augments.length > 1) {
     for (let i = 1, len = cls.augments.length; i < len; ++i) {

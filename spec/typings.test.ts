@@ -1,7 +1,7 @@
 /// <reference path="types.d.ts" />
 
-import {binding, query, model} from '../lib/baqend';
-import db from '../lib/baqend';
+import {binding, query, model} from '../index';
+import db from '../index';
 import "./types.d.ts";
 
 db.connect('test', true).then(() => {
