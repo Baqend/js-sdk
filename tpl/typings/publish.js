@@ -1,33 +1,40 @@
-var fs = require('fs');
-var rootNs = {
-  depth: 0,
+"use strict";
+
+const fs = require('fs');
+const os = require('os');
+
+const rootNs = {
+  longname: '',
+  prefix: '',
   namespaces: {},
   imports: [],
-  body: ''
+  body: []
 };
 
-var typeDefs = {};
+const typeDefs = {};
+const push = Function.prototype.apply.bind(Array.prototype.push);
 
 function getNamespaceOf(longname) {
-  var ns = longname.substring(0, longname.lastIndexOf("."));
+  let nsIndex = longname.lastIndexOf(".");
 
-  var parentNamespace;
-  if (ns.indexOf(".") != -1) {
-    parentNamespace = getNamespaceOf(ns);
-  } else {
-    parentNamespace = rootNs;
+  if (nsIndex == -1) {
+    return rootNs;
   }
 
-  var name = ns.substring(ns.lastIndexOf('.') + 1);
-  var namespace = parentNamespace.namespaces[name];
+  let ns = longname.substring(0, nsIndex);
+  let name = ns.substring(ns.lastIndexOf('.') + 1, nsIndex);
+
+  let parentNamespace = getNamespaceOf(ns);
+
+  let namespace = parentNamespace.namespaces[name];
   if (!namespace) {
     namespace = parentNamespace.namespaces[name] = {
       name: name,
       longname: (parentNamespace.lognname? parentNamespace + '.': '') + name,
-      depth: parentNamespace.depth + 1,
+      prefix: parentNamespace.prefix + '  ',
       namespaces: {},
       imports: [],
-      body: ''
+      body: []
     };
   }
 
@@ -40,119 +47,170 @@ function getNamespaceOf(longname) {
  @param {Tutorial} tutorials
  */
 exports.publish = function(data, opts, tutorials) {
-  var types = data({kind: "typedef"}).get();
+  let types = data({kind: "typedef"}).get();
   Object.keys(types).forEach(function(k) {
-    var type = types[k];
+    let type = types[k];
     typeDefs[type.longname] = '(' + createParams(type) + ') => ' + createReturn(type);
   });
 
-  var classes = data({kind: "class"}).get();
+  let classes = data({kind: ["class","interface"]}).get();
   Object.keys(classes).forEach(function(k) {
-    var cls = classes[k];
+    let cls = classes[k];
 
-    var longname = cls.longname;
+    let longname = cls.longname;
     //skipping classes like EntityManager.EntityManager
     if (!cls.ignore && longname && longname.indexOf(cls.name) == longname.length - cls.name.length) {
-      var ns = getNamespaceOf(longname);
-      createClass(data, cls, ns);
+      let ns = getNamespaceOf(longname);
+      let lines = createClass(data, cls, ns);
+
+      ns.body.push('');
+      push(ns.body, lines);
     }
   });
 
-  var enums = data({isEnum: true}).get();
+  let enums = data({isEnum: true}).get();
   Object.keys(enums).forEach(function(k) {
-    var enu = enums[k];
+    let enu = enums[k];
 
-    var longname = enu.longname;
+    let longname = enu.longname;
     //skipping classes like EntityManager.EntityManager
     if (!enu.ignore && longname && longname.indexOf(enu.name) == longname.length - enu.name.length) {
-      var ns = getNamespaceOf(longname);
-      createEnum(enu, ns);
+      let ns = getNamespaceOf(longname);
+
+      let lines = createEnum(enu, ns);
+      if (ns.body.length) {
+        ns.body.push('');
+      }
+
+      push(ns.body, lines);
     }
   });
   
-  var text = fs.readFileSync(__dirname + '/head.d.ts');
-  text += createNs(data, rootNs);
+  let text = fs.readFileSync(__dirname + '/head.d.tpl');
+  text += createNs(data, rootNs).join(os.EOL);
 
-  fs.writeFileSync('typings.d.ts', text);
+  fs.writeFileSync('index.d.ts', text);
   fs.writeFileSync('doc.json', JSON.stringify(data().get(), null, '  '));
 
   return null;
-}
+};
 
 function createNs(data, namespace) {
+  let lines = [];
+  let prefix = namespace.prefix;
 
-  var body = namespace.body;
+  if (namespace.imports.length) {
+    push(lines, namespace.imports.map((imp => namespace.prefix + imp)));
+  }
 
-  body += Object.keys(namespace.namespaces)
-      .map(function(k) {
-        var ns = namespace.namespaces[k];
-        var prefix = spaces(namespace.depth);
-        var nsDef = namespace.depth == 0? 'declare': 'export';
-        var text = prefix + nsDef + ' namespace ' + ns.name + ' {\n';
+  push(lines, namespace.body);
 
-        if (ns.imports.length) {
-          text += prefix + '  ' + ns.imports.join('\n' + prefix + '  ') + '\n';
-        }
+  Object.keys(namespace.namespaces).forEach((k) => {
+    let ns = namespace.namespaces[k];
 
-        text += createMembers(data, prefix, ns, true);
-        text += createNs(data, ns);
-        text += prefix + '}\n\n';
-        return text;
-      })
-      .join('');
+    lines.push('');
+    if (ns.name) {
+      lines.push(prefix + 'export namespace ' + ns.name + ' {');
+    }
 
-  return body;
+    let isClassNameSpace = data({kind: ["class","interface"], longname: ns.longname}).get().length;
+    if (!isClassNameSpace) {
+      push(lines, createMembers(data, ns.prefix, ns.longname, true));
+    }
+
+    push(lines, createNs(data, ns));
+
+    if (ns.name) {
+      lines.push(prefix + '}');
+    }
+  });
+
+  return lines;
 }
 
 function createClass(data, cls, ns) {
-  var classLine = 'export ';
-  if (cls.name.endsWith("Factory")) {
+  let classLine = ns.prefix + 'export ';
+  let isInterface = cls.kind == 'interface' || cls.longname.startsWith('binding') && cls.longname.indexOf('Factory') != -1;
+  if (isInterface) {
     classLine += 'interface ' + cls.name;
   } else {
     classLine += 'class ' + cls.name;
   }
 
-  var prefix = spaces(ns.depth);
-
-  if (cls.augments) {
-    classLine += ' extends ';
-
-    classLine += cls.augments.map((augment) => {
-      var extd = augment;
-
-      var index = extd.lastIndexOf('.');
-      if (index != -1) {
-        var otherNs = extd.substring(0, index);
-        extd = extd.substring(index + 1);
-        if (cls.longname.indexOf(otherNs) != 0 || cls.longname.indexOf('.', index + 1) != -1) {
-          var importLine = 'import ' + extd + ' = ' + augment + ';';
-          if (ns.imports.indexOf(importLine) == -1)
-            ns.imports.push(importLine);
-        }
+  if (cls.augments || cls.implements) {
+    if (isInterface) {
+      classLine += ' extends ';
+      classLine += [].concat(
+        (cls.augments || []).map(augment => importCls(ns, cls, augment)),
+        (cls.implements || []).map(iface => importCls(ns, cls, iface))
+      ).join(', ');
+    } else {
+      if (cls.augments) {
+        classLine += ' extends ' + importCls(ns, cls, cls.augments[0]);
       }
 
-      return extd;
-    }).join(', ');
+      if (cls.implements) {
+        classLine += ' implements ' + cls.implements.map(iface => importCls(ns, cls, iface)).join(', ');
+      }
+    }
   }
 
-  classLine += ' {\n';
+  classLine += ' {';
 
-  var members = createMembers(data, prefix, cls);
+  let lines = [classLine];
 
-  ns.body += prefix + classLine + members + prefix + '}\n';
+  if (!isInterface) {
+    lines.push(ns.prefix + '  constructor(' + createParams(cls) + ')');
+  }
+
+  push(lines, createMembers(data, ns.prefix, cls.longname));
+  if (!isInterface && cls.augments && cls.augments.length > 1) {
+    for (let i = 1, len = cls.augments.length; i < len; ++i) {
+      push(lines, createMembers(data, ns.prefix, cls.augments[i]));
+    }
+  }
+
+  if (lines.length == 1)
+    return [classLine + '}'];
+
+  lines.push(ns.prefix + '}');
+  return lines;
 }
 
-function createMembers(data, prefix, scope, exportIt) {
-  var lines = [];
-  var members = data({memberof: scope.longname}).get() || [];
-  var hiddenMembers = data({memberof: scope.longname + '.' + scope.name}).get() || [];
+function importCls(ns, cls, parent) {
+  let generics = '';
+  let genericIndex = parent.indexOf('<');
+  if (genericIndex != -1) {
+    generics = parent.substring(genericIndex);
+    parent = parent.substring(0, genericIndex);
+  }
+
+  let extd = parent;
+  let parentNameSpace = getNamespaceOf(parent);
+
+  extd = extd.substring(extd.lastIndexOf('.') + 1); // split out namespace
+  if (parentNameSpace != ns && !cls.longname.startsWith(parentNameSpace.longname)) {
+    let importLine = 'import ' + extd + ' = ' + parent + ';';
+    if (ns.imports.indexOf(importLine) == -1)
+      ns.imports.push(importLine);
+  }
+
+  return extd + generics;
+}
+
+function createMembers(data, prefix, fullClassName, exportIt) {
+  let name = fullClassName.substring(fullClassName.lastIndexOf('.') + 1);
+
+  let lines = [];
+  let members = data({memberof: fullClassName}).get() || [];
+  let hiddenMembers = data({memberof: fullClassName + '.' + name}).get() || [];
   members = [].concat(hiddenMembers, members);
 
   members.forEach(function(member) {
     if (member.inherited || member.ignore || member.isEnum || member.access == 'private' || member.undocumented)
       return;
 
-    var line = '  ';
+    let line = prefix + '  ';
     if (member.scope == 'static')
       line += 'static ';
 
@@ -175,46 +233,48 @@ function createMembers(data, prefix, scope, exportIt) {
         line += '): ' + createReturn(member) + ';';
         break;
       default:
-        console.log('Not handled ' + member.kind + ' ' + member.name)
         return;
     }
     lines.push(line);
   });
 
-  return (lines.length == 0? lines.join(''): prefix + lines.join('\n' + prefix)) + '\n';
+  return lines;
 }
 
 function createEnum(enu, ns) {
-  var prefix = spaces(ns.depth);
-  var enumBody = prefix + 'export enum ' + enu.name + ' {\n';
+  let lines = [];
+  lines.push(`${ns.prefix}export enum ${enu.name} {`);
 
-  enumBody += prefix + enu.properties.map((prop) => {
-    return '  ' + prop.name + ' = ' + prop.defaultvalue;
-  }).join(',\n' + prefix) + '\n';
+  for (let i = 0, len = enu.properties.length; i < len; ++i) {
+    let prop = enu.properties[i];
+    let line = `${ns.prefix}  ${prop.name} = ${prop.defaultvalue}`;
+    if (i < len - 1)
+      line += ',';
+    lines.push(line);
+  }
 
-  enumBody += prefix + '}\n';
-
-  ns.body += enumBody;
+  lines.push(ns.prefix + '}');
+  return lines;
 }
 
 function createParams(member) {
   if (!member.params)
     return '';
 
-  var params = {};
+  let params = {};
 
   member.params.forEach(function(param, index) {
-    var names = param.name.split('.');
-    var name = names[0];
+    let names = param.name.split('.');
+    let name = names[0];
 
-    var type = createType(param.type);
+    let type = createType(param.type);
     if (names.length > 1) {
-      var obj = params[name];
+      let obj = params[name];
       if (typeof obj != "object") {
         obj = params[name] = {};
       }
 
-      obj[names[1]] = type;
+      obj[names[1]] = {type: type, optional: param.optional};
     } else {
       params[name] = type;
     }
@@ -223,8 +283,8 @@ function createParams(member) {
   return member.params.filter((param) => {
     return params[param.name];
   }).map((param) => {
-    var paramSpec = params[param.name];
-    var p = '';
+    let paramSpec = params[param.name];
+    let p = '';
     if (param.variable) {
       p += '...';
     }
@@ -242,7 +302,8 @@ function createParams(member) {
       p += paramSpec;
     } else {
       p += '{' + Object.keys(paramSpec).map(key => {
-        return key + ': ' + paramSpec[key];
+        let subParam = paramSpec[key];
+        return key + (subParam.optional? '?': '') + ': ' + subParam.type;
       }).join(', ') + '}';
     }
 
@@ -268,7 +329,7 @@ function createType(typeSpec) {
     return 'unknown'
   } else {
     return typeSpec.names.map((name) => {
-      var type = typeDefs[name];
+      let type = typeDefs[name];
       if (!type) {
         type = name;
         type = type.replace(/function/g, 'Function');
@@ -284,12 +345,4 @@ function createType(typeSpec) {
       return type;
     }).join('|');
   }
-}
-
-function spaces(depth) {
-  var prefix = '';
-  for (var i = 0; i < depth; ++i) {
-    prefix += '  ';
-  }
-  return prefix;
 }

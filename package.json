@@ -13,6 +13,7 @@
     "./lib/index.js": "./dist/baqend.js",
     "./lib/util/util.js": "./lib/util/util-browser.js"
   },
+  "typings": "index.d.ts",
   "dependencies": {
     "core-js": "^2.2.2",
     "crypto-js": "^3.1.6",
@@ -82,9 +83,14 @@
   "scripts": {
     "test": "grunt mochaTest:test",
     "dist": "grunt dist",
-    "release": "node scripts/release"
+    "release": "node scripts/release",
+    "typings": "jsdoc -t tpl/typings -r lib && tsc --target es6 --noImplicitAny spec/typings.test.ts",
+    "baqend": "node cli/index.js"
   },
   "engines": {
     "node": ">=4.2.0"
+  },
+  "bin": {
+    "baqend": "cli/index.js"
   }
 }
