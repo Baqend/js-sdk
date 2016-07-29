@@ -1,6 +1,6 @@
 {
   "name": "baqend",
-  "version": "2.1.1-0",
+  "version": "2.2.0-rc1",
   "description": "Baqend JavaScript SDK",
   "license": "MIT",
   "author": {
@@ -8,9 +8,9 @@
     "email": "info@baqend.com"
   },
   "homepage": "http://baqend.com",
-  "main": "lib/index.js",
+  "main": "index.js",
   "browser": {
-    "./lib/index.js": "./dist/baqend.js",
+    "./index.js": "./dist/baqend.js",
     "./lib/util/util.js": "./lib/util/util-browser.js"
   },
   "typings": "index.d.ts",

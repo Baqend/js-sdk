@@ -273,7 +273,7 @@ export namespace connector {
     doSend(message: connector.Message, request: Object, receive: Function): any;
     subscribe(topic: string|Object, cb: Function): any;
     unsubscribe(topic: string|Object, cb: Function): any;
-    sendOverSocket(message: {topic: string, token: string}): any;
+    sendOverSocket(msg: {topic: string, token: string}): any;
     createWebSocket(destination: string): WebSocket;
     prepareRequestEntity(message: connector.Message): any;
     prepareResponseEntity(message: connector.Message, response: Object): any;
@@ -501,6 +501,10 @@ export namespace message {
   }
 
   export class ApiVersion extends Message {
+    constructor()
+  }
+
+  export class Events extends Message {
     constructor()
   }
 
