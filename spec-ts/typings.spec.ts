@@ -1,8 +1,7 @@
-/// <reference path="types.d.ts" />
+/// <reference path="./types.d.ts" />
 
-import {binding, query, model} from '../index';
-import db from '../index';
-import "./types.d.ts";
+import {binding, query, model, baqend} from '../index';
+import {db} from '../index';
 
 db.connect('test', true).then(() => {
     //db.Test.load('test').then((entity) => {
@@ -42,9 +41,7 @@ db.Test.load('test').then((entity) => {
     entity.myProp = 'test';
 });
 
-let Hallo:binding.EntityFactory<binding.Entity> = db["Hallo"];
-
-Hallo.find().singleResult().then(() => {
+db['Hallo'].find().singleResult().then(() => {
     
 });
 

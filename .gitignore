@@ -4,5 +4,7 @@
 /build
 /dist
 /doc
+/spec-ts/*.js
+/index.d.ts
 .DS_Store
 *.iml

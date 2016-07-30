@@ -458,7 +458,7 @@ describe('Test Metamodel', function() {
   });
 
   it("should not block the entityManager when is ready", function() {
-    var emf = new DB.EntityManagerFactory({ host: env.TEST_SERVER, schema: {} });
+    var emf = new DB.EntityManagerFactory({ host: env.TEST_SERVER, schema: {}, tokenStorage: new DB.util.TokenStorage() });
     expect(emf.createEntityManager().isReady).be.true;
   });
 
@@ -760,11 +760,11 @@ describe('Test Metamodel', function() {
     describe('for user1', function() {
       var metamodel;
       before(function() {
-        return db.login(user1.username, 'secret');
+        return db.User.login(user1.username, 'secret');
       });
 
       after(function() {
-        return db.logout();
+        return db.User.logout();
       });
 
       beforeEach(function() {
@@ -820,11 +820,11 @@ describe('Test Metamodel', function() {
     describe('for user2', function() {
       var metamodel;
       before(function() {
-        return db.login(user2.username, 'secret');
+        return db.User.login(user2.username, 'secret');
       });
 
       after(function() {
-        return db.logout();
+        return db.User.logout();
       });
 
       beforeEach(function() {
@@ -882,11 +882,11 @@ describe('Test Metamodel', function() {
     describe('for user3', function() {
       var metamodel;
       before(function() {
-        return db.login(user3.username, 'secret');
+        return db.User.login(user3.username, 'secret');
       });
 
       after(function() {
-        return db.logout();
+        return db.User.logout();
       });
 
       beforeEach(function() {

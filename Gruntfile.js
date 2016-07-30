@@ -168,19 +168,6 @@ module.exports = function (grunt) {
           'dist/baqend.min.js': 'dist/baqend.js'
         }
       }
-    },
-
-    jsdoc: {
-      dist: {
-        src: ['lib/**/*.js'],
-        options: {
-          destination: 'doc',
-          template : "tpl/theme",
-          configure : "tpl/jsdoc.conf.json",
-          private: undefined,
-          package: 'package.json'
-        }
-      }
     }
   });
 
@@ -192,7 +179,6 @@ module.exports = function (grunt) {
   grunt.loadNpmTasks('grunt-karma');
   grunt.loadNpmTasks('grunt-mocha-test');
   grunt.loadNpmTasks('grunt-run');
-  grunt.loadNpmTasks('grunt-jsdoc');
 
   grunt.registerTask('debug', [
     'template:debug',
@@ -203,8 +189,7 @@ module.exports = function (grunt) {
   grunt.registerTask('dist', [
     'clean:dist',
     'browserify:dist',
-    'uglify:dist',
-    'jsdoc:dist'
+    'uglify:dist'
   ]);
 
   grunt.registerTask('test', [

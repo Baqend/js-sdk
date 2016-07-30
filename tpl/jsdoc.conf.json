@@ -9,7 +9,7 @@
     "monospaceLinks": true,
     "default": {
       "outputSourceFiles" : true,
-      "useLongnameInNav": true
+      "useLongnameInNav": false
     },
     "applicationName": "Baqend JavaScript SDK Copyright © 2015 Baqend GmbH.",
     "disqus": "",

@@ -4,7 +4,7 @@ if (typeof DB == 'undefined') {
 }
 
 describe('Test crud', function() {
-  var db, personType, addressType, childType, emf, metamodel, streetType;
+  var db, db2, personType, addressType, childType, emf, metamodel, streetType;
 
   before(function() {
     emf = new DB.EntityManagerFactory({host: env.TEST_SERVER, tokenStorage: helper.rootTokenStorage});
@@ -50,6 +50,8 @@ describe('Test crud', function() {
 
   beforeEach(function() {
     db = emf.createEntityManager();
+    db2 = emf.createEntityManager();
+    return Promise.all([db.ready(), db2.ready()]);
   });
 
   describe('contains', function() {
@@ -94,7 +96,6 @@ describe('Test crud', function() {
     it('should not reattach objects to another db', function() {
       var obj = new db.Person();
 
-      var db2 = emf.createEntityManager();
       expect(function() {
         obj.attach(db2);
       }).throw(DB.error.EntityExistsError);
@@ -215,7 +216,6 @@ describe('Test crud', function() {
     });
 
     it('should not save a stale object', function() {
-      var db2 = emf.createEntityManager();
       var person = new db2.Person();
 
       return expect(person.save().then(function() {
@@ -233,7 +233,6 @@ describe('Test crud', function() {
     });
 
     it('should forcibly save a stale object', function() {
-      var db2 = emf.createEntityManager();
       var person = new db2.Person();
 
       return person.save().then(function() {
@@ -252,7 +251,6 @@ describe('Test crud', function() {
     });
 
     it('should not override an object that exists', function() {
-      var db2 = emf.createEntityManager();
       var person = new db2.Person();
 
       return person.save().then(function() {
@@ -263,7 +261,6 @@ describe('Test crud', function() {
     });
 
     it('should forcibly override an object that exists', function() {
-      var db2 = emf.createEntityManager();
       var person = new db2.Person();
 
       return person.save().then(function() {
@@ -281,8 +278,6 @@ describe('Test crud', function() {
     it('should not save an deleted object', function() {
       var person = new db.Person();
       return person.save().then(function() {
-        var db2 = emf.createEntityManager();
-
         return db2.Person.load(person.id).then(function(person2) {
           return person2.delete();
         });
@@ -295,8 +290,6 @@ describe('Test crud', function() {
     it('should forcibly save an deleted object', function() {
       var person = new db.Person();
       return person.save().then(function() {
-        var db2 = emf.createEntityManager();
-
         return db2.Person.load(person.id).then(function(person2) {
           return person2.delete();
         });
@@ -342,7 +335,6 @@ describe('Test crud', function() {
     describe('optimisticSave', function() {
 
       it('should retry if the object is out of date', function() {
-        var db2 = emf.createEntityManager();
         var person = new db2.Person();
         var newPerson;
 
@@ -366,7 +358,6 @@ describe('Test crud', function() {
       });
 
       it('should be allowed to abort the process', function() {
-        var db2 = emf.createEntityManager();
         var person = new db2.Person();
         var newPerson;
 
@@ -394,7 +385,6 @@ describe('Test crud', function() {
       });
 
       it('should be allowed to return a promise', function() {
-        var db2 = emf.createEntityManager();
         var person = new db2.Person();
         var newPerson;
 
@@ -465,7 +455,6 @@ describe('Test crud', function() {
     });
 
     it('should refresh if the object is stale', function() {
-      var db2 = emf.createEntityManager();
       person.name = 'Tom Miller';
 
       return db2.Person.load(person.id).then(function(person2) {
@@ -516,8 +505,6 @@ describe('Test crud', function() {
     });
 
     it('should retrieved different version in different db context', function() {
-      var db2 = emf.createEntityManager();
-
       var p1 = db.Person.load(person.id);
       var p2 = db2.Person.load(person.id);
 
@@ -605,7 +592,6 @@ describe('Test crud', function() {
     });
 
     it('should not be allowed to delete outdated object', function() {
-      var db2 = emf.createEntityManager();
       var person = new db2.Person();
 
       return expect(person.save().then(function() {
@@ -619,7 +605,6 @@ describe('Test crud', function() {
     });
 
     it('should be allowed to forcibly delete outdated object', function() {
-      var db2 = emf.createEntityManager();
       var person = new db2.Person();
 
       return person.save().then(function() {
@@ -672,7 +657,6 @@ describe('Test crud', function() {
     });
 
     it('should not allowed to update outdated object', function() {
-      var db2 = emf.createEntityManager();
       var person = new db2.Person();
 
       return expect(person.save().then(function() {
@@ -687,7 +671,6 @@ describe('Test crud', function() {
     });
 
     it('should allowed to forcibly update outdated object', function() {
-      var db2 = emf.createEntityManager();
       var person = new db2.Person();
 
       return person.save().then(function() {
@@ -745,7 +728,6 @@ describe('Test crud', function() {
     });
 
     it('should not be allowed to insert existing object', function() {
-      var db2 = emf.createEntityManager();
       var person = new db2.Person();
 
       return person.save().then(function(saved) {
@@ -760,19 +742,19 @@ describe('Test crud', function() {
 
   describe('load', function() {
 
-    it('2 should load object', function() {
+    it('should load modified object', function() {
       var person = new db.Person();
       person.name = "Old Name";
-      return person.save(function() {
-        return emf.createEntityManager();
-      }).then(function(db2) {
-        return db.Person.load(person.id);
+      return person.save().then(function() {
+        return db2.Person.load(person.id);
       }).then(function(loaded) {
         loaded.name = "New Name";
         return loaded.save();
       }).then(function() {
-        // expect(person).have.property('name', 'Old Name');
-        return expect(person.load()).eventually.have.property('name', 'New Name');
+        return db.refreshBloomFilter();
+      }).then(function() {
+        expect(person).have.property('name', 'Old Name');
+        return expect(db.Person.load(person.id)).eventually.have.property('name', 'New Name');
       });
     });
 
@@ -780,8 +762,6 @@ describe('Test crud', function() {
       var person = new db.Person();
       person.name = "Old Name";
       return person.save(function() {
-        return emf.createEntityManager();
-      }).then(function(db2) {
         return db2.Person.load(person.id, {refresh: true});
       }).then(function(loaded) {
         loaded.name = "New Name";
@@ -826,8 +806,6 @@ describe('Test crud', function() {
       person.name = "Old Name";
 
       return person.save().then(function(obj) {
-        return emf.createEntityManager();
-      }).then(function(db2) {
         return db2.Person.load(person.id);
       }).then(function(loaded) {
         return loaded.delete();
@@ -1114,12 +1092,8 @@ describe('Test crud', function() {
     });
 
     it('should get referenced objects by depth', function() {
-      var db2;
       return child.save({depth: true}).then(function(saved) {
         child = saved;
-        return emf.createEntityManager();
-      }).then(function(em) {
-        db2 = em;
         sibs.forEach(function(sib) {
           expect(db2.containsById(sib)).be.false;
         });
@@ -1127,7 +1101,7 @@ describe('Test crud', function() {
         expect(db2.containsById(sister)).be.false;
         expect(db2.containsById(mother)).be.false;
         expect(db2.containsById(street)).be.false;
-        return em.Child.load(child.id, {depth: 2});
+        return db2.Child.load(child.id, {depth: 2});
       }).then(function(loaded) {
         expect(loaded.father.sister._metadata.isAvailable).be.true;
         expect(loaded.father._metadata.isAvailable).be.true;
@@ -1141,17 +1115,13 @@ describe('Test crud', function() {
     });
 
     it('should get referenced objects by reachability', function() {
-      var db2;
       return child.save({depth: true}).then(function(saved) {
         child = saved;
-        return emf.createEntityManager();
-      }).then(function(em) {
-        db2 = em;
         expect(db2.containsById(father)).be.false;
         expect(db2.containsById(sister)).be.false;
         expect(db2.containsById(mother)).be.false;
         expect(db2.containsById(street)).be.false;
-        return em.Child.load(child.id, {depth: true});
+        return db2.Child.load(child.id, {depth: true});
       }).then(function(loaded) {
         expect(loaded.father.sister._metadata.isAvailable).be.true;
         expect(loaded.father._metadata.isAvailable).be.true;
@@ -1167,9 +1137,7 @@ describe('Test crud', function() {
     it('should not get all referenced objects', function() {
       return child.save({depth: true}).then(function(saved) {
         child = saved;
-        return emf.createEntityManager();
-      }).then(function(em) {
-        return em.Child.load(child.id, {depth: 1});
+        return db2.Child.load(child.id, {depth: 1});
       }).then(function(loaded) {
         expect(loaded.father.sister._metadata.isAvailable).be.false;
         expect(loaded.father._metadata.isAvailable).be.true;
@@ -1278,13 +1246,11 @@ describe('Test crud', function() {
       child.name = helper.randomize("queryDepth");
       return child.save({depth: true}).then(function(saved) {
         child = saved;
-        return emf.createEntityManager();
-      }).then(function(em) {
-        expect(em.containsById(father)).be.false;
-        expect(em.containsById(sister)).be.false;
-        expect(em.containsById(mother)).be.false;
-        expect(em.containsById(street)).be.false;
-        return em.Child.find().equal("name", child.name).singleResult({depth: true});
+        expect(db2.containsById(father)).be.false;
+        expect(db2.containsById(sister)).be.false;
+        expect(db2.containsById(mother)).be.false;
+        expect(db2.containsById(street)).be.false;
+        return db2.Child.find().equal("name", child.name).singleResult({depth: true});
       }).then(function(loaded) {
         expect(loaded.father.sister._metadata.isAvailable).be.true;
         expect(loaded.father._metadata.isAvailable).be.true;
@@ -1301,13 +1267,11 @@ describe('Test crud', function() {
       child.name = helper.randomize("queryDepth");
       return child.save({depth: true}).then(function(saved) {
         child = saved;
-        return emf.createEntityManager();
-      }).then(function(em) {
-        expect(em.containsById(father)).be.false;
-        expect(em.containsById(sister)).be.false;
-        expect(em.containsById(mother)).be.false;
-        expect(em.containsById(street)).be.false;
-        return em.Child.find().equal("name", child.name).resultList({depth: true});
+        expect(db2.containsById(father)).be.false;
+        expect(db2.containsById(sister)).be.false;
+        expect(db2.containsById(mother)).be.false;
+        expect(db2.containsById(street)).be.false;
+        return db2.Child.find().equal("name", child.name).resultList({depth: true});
       }).then(function(loaded) {
         loaded = loaded[0];
         expect(loaded.father.sister._metadata.isAvailable).be.true;
@@ -1368,8 +1332,6 @@ describe('Test crud', function() {
         expect(person.id).equals(myId);
         expect(person.key).equals(myKey);
         expect(person.name).equals("Custom Person");
-        return emf.createEntityManager();
-      }).then(function(db2) {
         return db2.Person.load(myId);
       }).then(function(person) {
         expect(person.id).equals(myId);
@@ -1393,8 +1355,6 @@ describe('Test crud', function() {
         expect(person.name).equals("Custom Person");
         expect(person.child.id).equals(childId);
         expect(person.child.name).equals("Custom Child Person");
-        return emf.createEntityManager();
-      }).then(function(db2) {
         return db2.Person.load(childId).then(function(child) {
           expect(child.id).equals(childId);
           expect(child.name).equals("Custom Child Person");

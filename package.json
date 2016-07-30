@@ -1,6 +1,6 @@
 {
   "name": "baqend",
-  "version": "2.2.0-rc1",
+  "version": "2.2.0-0",
   "description": "Baqend JavaScript SDK",
   "license": "MIT",
   "author": {
@@ -18,7 +18,8 @@
     "core-js": "^2.2.2",
     "crypto-js": "^3.1.6",
     "node-uuid": "^1.4.3",
-    "validator": "^4.4.0"
+    "validator": "^4.4.0",
+    "shelljs": "^0.6.0"
   },
   "peerDependencies": {
     "websocket": "^1.0.22"
@@ -76,21 +77,21 @@
     "mocha": "^2.3.4",
     "mocha-jenkins-reporter": "^0.2.2",
     "phantomjs-prebuilt": "^2.1.7",
-    "shelljs": "^0.6.0",
     "through2": "^2.0.0",
     "uglify-js": "^2.4.19"
   },
   "scripts": {
     "test": "grunt mochaTest:test",
-    "dist": "grunt dist",
+    "dist": "grunt dist && typings && jsdoc",
     "release": "node scripts/release",
-    "typings": "jsdoc -t tpl/typings -r lib && tsc --target es6 --noImplicitAny spec/typings.test.ts",
+    "typings": "jsdoc -t tpl/typings -r lib && tsc --target es6 --noImplicitAny spec-ts/typings.spec.ts",
+    "jsdoc": "jsdoc -t tpl/theme -r lib -c tpl/jsdoc.conf.json --package package.json -d doc",
     "baqend": "node cli/index.js"
   },
   "engines": {
     "node": ">=4.2.0"
   },
   "bin": {
-    "baqend": "cli/index.js"
+    "baqend": "./cli/index.js"
   }
 }

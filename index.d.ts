@@ -38,7 +38,7 @@ export interface baqend extends EntityManager {
 }
 
 export class EntityManager extends Lockable {
-  constructor(entityManagerFactory: EntityManagerFactory, tokenStorage: util.TokenStorage)
+  constructor(entityManagerFactory: EntityManagerFactory)
   log: util.Logger;
   _entities: Map<String, binding.Entity>;
   entityManagerFactory: EntityManagerFactory;
@@ -51,8 +51,8 @@ export class EntityManager extends Lockable {
   bloomFilter: caching.BloomFilter;
   bloomFilterRefresh: number;
   isOpen: boolean;
-  token: string;
-  connected(connector: connector.Connector, connectData?: Object): any;
+  token: String;
+  connected(connector: connector.Connector, connectData: Object, tokenStorage: util.TokenStorage): any;
   getReference(entityClass: Class<binding.Entity>|string, key?: string): any;
   createQueryBuilder(resultClass?: Class<any>): query.Builder<any>;
   clear(): any;
@@ -92,15 +92,16 @@ export class EntityManager extends Lockable {
 }
 
 export class EntityManagerFactory extends Lockable {
-  constructor(options?: {host?: string, port?: number, secure?: boolean, basePath?: string, schema?: Object, global?: boolean, bloomFilterRefresh?: number})
+  constructor(options?: {host?: string, port?: number, secure?: boolean, basePath?: string, schema?: Object, global?: boolean, tokenStorage?: util.TokenStorage, tokenStorageFactory?: util.TokenStorageFactory, bloomFilterRefresh?: number})
   _connector: connector.Connector;
   metamodel: metamodel.Metamodel;
   code: util.Code;
   tokenStorage: util.TokenStorage;
+  tokenStorageFactory: util.TokenStorageFactory;
   bloomFilterRefresh: number;
   connect(hostOrApp: string, port?: number, secure?: boolean, basePath?: string): any;
   createMetamodel(): metamodel.Metamodel;
-  createEntityManager(tokenStorage: boolean|util.TokenStorage): EntityManager;
+  createEntityManager(useSharedTokenStorage?: boolean): EntityManager;
 }
 
 export class EntityTransaction {
@@ -122,6 +123,16 @@ export class GeoPoint {
   toJSON(): json;
   static EARTH_RADIUS_IN_KILOMETERS: number;
   static EARTH_RADIUS_IN_MILES: number;
+}
+
+export class GlobalStorage {
+  constructor()
+  _saveToken(): any;
+}
+
+export class WebStorage {
+  constructor()
+  _saveToken(): any;
 }
 
 export namespace binding {
@@ -171,7 +182,7 @@ export namespace binding {
     find(): query.Builder<T>;
   }
 
-  export interface Factory {
+  export interface Factory<T> {
     new(...args: Array<any>): any;
     newInstance(a?: Array<any>): any;
   }
@@ -192,7 +203,7 @@ export namespace binding {
     loadMetadata(options: {refresh?: Object}, doneCallback?: (file: binding.File) => any, failCallback?: (error: error.PersistentError) => any): Promise<binding.File>;
   }
 
-  export interface FileFactory extends Factory {
+  export interface FileFactory extends Factory<binding.File> {
     create(db: EntityManager): binding.FileFactory;
     newInstance(args?: Array<any>): binding.File;
     saveMetadata(bucket: string, metadata: {loadPermission: util.Permission, insertPermission: util.Permission, updatePermission: util.Permission, deletePermission: util.Permission, queryPermission: util.Permission}): Promise<Object>;
@@ -206,7 +217,7 @@ export namespace binding {
     toJSON(): json;
   }
 
-  export interface ManagedFactory<T> extends Factory {
+  export interface ManagedFactory<T> extends Factory<T> {
     newInstance(args?: Array<any>): T;
     fromJSON(json: json): T;
     addMethods(methods: ([string, Function])): any;
@@ -217,7 +228,7 @@ export namespace binding {
     new(properties: ([string, any])): T;
   }
 
-  export class RoleEntity extends Entity {
+  export class Role extends Entity {
     constructor(properties?: Object)
     hasUser(): boolean;
     addUser(user: model.User): any;
@@ -226,7 +237,7 @@ export namespace binding {
     name: string;
   }
 
-  export class UserEntity extends Entity {
+  export class User extends Entity {
     constructor(properties?: Object)
     newPassword(currentPassword: string, password: string, doneCallback?: (entity: binding.Entity) => Promise<any>|any, failCallback?: (error: error.PersistentError) => Promise<any>|any): Promise<model.User>;
     username: string;
@@ -441,12 +452,18 @@ export namespace util {
     addDevice(device: binding.Entity): any;
   }
 
+  export interface TokenStorageFactory {
+    create(origin: string): Promise<TokenStorage>;
+  }
+
   export class TokenStorage {
     constructor()
-    tokens: ([String, String]);
-    get(origin: string): string;
-    update(origin: string, token: String): any;
-    signPath(origin: string, resource: string): string;
+    temporary: boolean;
+    _saveToken(origin: string, token: string, temporary: boolean): any;
+    update(token: String): any;
+    signPath(resource: string): string;
+    static GLOBAL: util.TokenStorageFactory;
+    static WEB_STORAGE: util.TokenStorageFactory;
   }
 
   export class ValidationResult {
@@ -847,6 +864,10 @@ export namespace metamodel {
     constructor(keys: string|Object|Array<string>, unique?: boolean)
     drop: boolean;
     toJSON(): json;
+    static ASC: string;
+    static DESC: string;
+    static GEO: string;
+    static fromJSON(json: json): any;
   }
 
   export class EmbeddableType extends ManagedType {
@@ -1019,13 +1040,13 @@ export namespace metamodel {
 }
 
 export namespace model {
-  import UserEntity = binding.UserEntity;
-  import RoleEntity = binding.RoleEntity;
+  import User = binding.User;
+  import Role = binding.Role;
   import Entity = binding.Entity;
 
-  export interface User extends UserEntity {}
+  export interface User extends User {}
 
-  export interface Role extends RoleEntity {}
+  export interface Role extends Role {}
 
   export interface Device extends Entity {}
 }
@@ -1034,9 +1055,9 @@ export namespace query {
 
   export class Builder<T> extends Query<T> {
     constructor(entityManager: EntityManager, resultClass: Class<T>)
-    and(...args: Array<Query<T>|Array<Query<T>>>): Query<T>;
-    or(...args: Array<Query<T>|Array<Query<T>>>): Query<T>;
-    nor(...args: Array<Query<T>|Array<Query<T>>>): Query<T>;
+    and(...args: Array<query.Query<T>|Array<query.Query<T>>>): query.Query<T>;
+    or(...args: Array<query.Query<T>|Array<query.Query<T>>>): query.Query<T>;
+    nor(...args: Array<query.Query<T>|Array<query.Query<T>>>): query.Query<T>;
     where(conditions: json): query.Filter<T>;
     equal(field: string, value: any): query.Filter<T>;
     notEqual(field: string, value: any): query.Filter<T>;
@@ -1126,11 +1147,11 @@ export namespace query {
 
   export class Query<T> {
     constructor()
-    ascending(field: string): Query<T>;
-    descending(field: string): Query<T>;
-    sort(sort: Object): Query<T>;
-    offset(offset: number): Query<T>;
-    limit(limit: number): Query<T>;
+    ascending(field: string): query.Query<T>;
+    descending(field: string): query.Query<T>;
+    sort(sort: Object): query.Query<T>;
+    offset(offset: number): query.Query<T>;
+    limit(limit: number): query.Query<T>;
     resultList(options?: {depth?: number|boolean}, doneCallback?: (result: Array<T>) => Promise<any>|any, failCallback?: (error: error.PersistentError) => Promise<any>|any): Promise<Array<T>>;
     resultList(doneCallback?: (result: Array<T>) => Promise<any>|any, failCallback?: (error: error.PersistentError) => Promise<any>|any): Promise<Array<T>>;
     singleResult(options?: {depth?: number|boolean}, doneCallback?: (entity: T) => Promise<any>|any, failCallback?: (error: error.PersistentError) => Promise<any>|any): Promise<T>;

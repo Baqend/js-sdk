@@ -69,14 +69,20 @@
             <ul class="nav bs-sidenav">
             <?js self = this; ?>
             <?js Object.keys(self.nav).sort().forEach(function(key, index) { ?>
-                <li class="<?js= nav == key? 'active': '' ?>">
-                    <?js= self.linkto(key, key, 'nav-name') ?>
-                    <ul class="nav">
-                      <?js self.nav[key].forEach(function(item) { ?>
+                <?js if (!key) { ?>
+                    <?js self.nav[key].forEach(function(item) { ?>
                         <li class="<?js= item.longname == active? 'active': '' ?>"><?js= self.linkto(item.longname, item.name, 'nav-name') ?></li>
-                      <?js }) ?>
-                    </ul>
-                </li>
+                    <?js }) ?>
+                <?js } else { ?>
+                    <li class="<?js= nav == key? 'active': '' ?>">
+                        <?js= self.linkto(key, key, 'nav-name') ?>
+                        <ul class="nav">
+                          <?js self.nav[key].forEach(function(item) { ?>
+                            <li class="<?js= item.longname == active? 'active': '' ?>"><?js= self.linkto(item.longname, item.name, 'nav-name') ?></li>
+                          <?js }) ?>
+                        </ul>
+                    </li>
+                <?js } ?>
             <?js }) ?>
             </ul>
         </div>

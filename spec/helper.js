@@ -50,11 +50,10 @@ var helper = {
 };
 
 before(function() {
-  var emf = new DB.EntityManagerFactory(env.TEST_SERVER);
-  return emf.createEntityManager().ready().then(function(em) {
-    return em.User.login('root', 'root').then(function() {
-      helper.rootTokenStorage = em.tokenStorage;
-    });
+  helper.rootTokenStorage = new DB.util.TokenStorage();
+  var emf = new DB.EntityManagerFactory({host: env.TEST_SERVER, tokenStorage: helper.rootTokenStorage});
+  return emf.createEntityManager(true).ready().then(function(em) {
+    return em.User.login('root', 'root');
   });
 });
 

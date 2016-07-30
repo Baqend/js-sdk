@@ -21,30 +21,35 @@ const nativeTypes = ['User', 'Role', 'Device'];
 const push = Function.prototype.apply.bind(Array.prototype.push);
 
 module.exports = function(args) {
-  const factory = new baqend.EntityManagerFactory({host: args.app});
+  if (!args.app) {
+    return false;
+  } else {
+    createTypings(args.app, args.dest);
+    return true;
+  }
+};
+
+function createTypings(app, dest) {
+  const factory = new baqend.EntityManagerFactory({host: app});
 
   factory.ready().then(() => {
     let typings = typingsFromMetamodel(factory.metamodel);
-    let dest = args.dest || 'typings/baqend.d.ts';
+    dest = dest || 'typings';
 
-    if (dest.indexOf('/') != -1) {
-      let dir = dest.substring(0, dest.lastIndexOf('/'));
-
-      if (!fs.existsSync(dir)){
-        fs.mkdirSync(dir);
-      }
+    if (!fs.existsSync(dest)){
+      fs.mkdirSync(dest);
     }
 
-    fs.writeFileSync(dest, typings.join(os.EOL));
+    fs.writeFileSync(dest + '/baqend-model.d.ts', typings.join(os.EOL));
   }).catch((e) => {
     console.error(e.stack)
   });
-};
+}
 
 function typingsFromMetamodel(metamodel) {
   let typings = [];
   //import all native types, so they can be easily used in definitions
-  typings.push(`import {binding, model, GeoPoint} from "baqend";`);
+  typings.push(`import {binding, GeoPoint} from "baqend";`);
   typings.push('');
 
   let module = [];

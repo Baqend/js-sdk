@@ -600,7 +600,9 @@ describe('Test file', function() {
   describe('acl', function() {
     function createUserDb() {
       var em = emf.createEntityManager();
-      return em.User.register(helper.makeLogin(), 'secret').then(function() {
+      return em.ready(function() {
+        return em.User.register(helper.makeLogin(), 'secret');
+      }).then(function() {
         return em;
       });
     }
