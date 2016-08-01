@@ -79,7 +79,7 @@ export class EntityManager extends Lockable {
   ensureBloomFilterFreshness(): any;
   mustRevalidate(id: string): boolean;
   ensureCacheHeader(id: string, message: connector.Message, refresh: boolean): any;
-  createURL(relativeUrl: string, authorize?: boolean): string;
+  createURL(relativePath: string, authorize?: boolean): string;
   List(...args: Array<any>): void;
   Set(collection?: Iterable<any>): void;
   Map(collection?: Iterable<any>): void;
@@ -188,26 +188,32 @@ export namespace binding {
   }
 
   export class File {
-    constructor(fileOptions: {name?: string, folder?: string, data: string|Blob|File|ArrayBuffer|json, type?: string, mimeType?: string, eTag?: string, lastModified?: string, acl?: Acl})
+    constructor(fileOptions: {id?: string, name?: string, parent?: string, path?: string, data: string|Blob|File|ArrayBuffer|json, type?: string, mimeType?: string, eTag?: string, lastModified?: string, acl?: Acl})
     id: string;
     url: string;
     name: string;
-    folder: string;
     mimeType: string;
     acl: string;
     lastModified: string;
     eTag: string;
+    path: string;
+    parent: string;
+    isMetadataLoaded: boolean;
     upload(uploadOptions?: {data: string|Blob|File|ArrayBuffer|json, type?: string, mimeType?: string, eTag?: string, lastModified?: string, acl?: Acl, force?: boolean}, doneCallback?: (file: binding.File) => any, failCallback?: (error: error.PersistentError) => any): Promise<binding.File>;
     download(downloadOptions?: {type?: string, refresh?: string}, doneCallback?: (data: string|Blob|File|ArrayBuffer|json) => any, failCallback?: (error: error.PersistentError) => any): Promise<(string|Blob|File|ArrayBuffer|json)>;
     delete(deleteOptions?: {force?: boolean}, doneCallback?: (data: binding.File) => any, failCallback?: (error: error.PersistentError) => any): Promise<binding.File>;
     loadMetadata(options: {refresh?: Object}, doneCallback?: (file: binding.File) => any, failCallback?: (error: error.PersistentError) => any): Promise<binding.File>;
+    saveMetadata(): Promise<binding.File>;
   }
 
   export interface FileFactory extends Factory<binding.File> {
     create(db: EntityManager): binding.FileFactory;
     newInstance(args?: Array<any>): binding.File;
-    saveMetadata(bucket: string, metadata: {loadPermission: util.Permission, insertPermission: util.Permission, updatePermission: util.Permission, deletePermission: util.Permission, queryPermission: util.Permission}): Promise<Object>;
-    new(fileOptions: {name?: string, folder?: string, data: string|Blob|File|ArrayBuffer|json, type?: string, mimeType?: string, eTag?: string, lastModified?: string, acl?: Acl}): binding.File;
+    saveMetadata(bucket: string, metadata: {loadPermission: util.Permission, insertPermission: util.Permission, updatePermission: util.Permission, deletePermission: util.Permission, queryPermission: util.Permission}, doneCallback?: (bucketMetadata: Array<Object>) => any, failCallback?: (error: error.PersistentError) => any): Promise<void>;
+    loadMetadata(bucket: string, options: {refresh?: Object}, doneCallback?: (bucketMetadata: Array<Object>) => any, failCallback?: (error: error.PersistentError) => any): Promise<Object>;
+    listBuckets(doneCallback?: (files: Array<binding.File>) => any, failCallback?: (error: error.PersistentError) => any): Promise<Array<binding.File>>;
+    listFiles(folder: binding.File|string, start: binding.File, count: number, doneCallback?: (files: Array<binding.File>) => any, failCallback?: (error: error.PersistentError) => any): Promise<Array<binding.File>>;
+    new(fileOptions: {name?: string, parent?: string, data: string|Blob|File|ArrayBuffer|json, type?: string, mimeType?: string, eTag?: string, lastModified?: string, acl?: Acl}): binding.File;
   }
 
   export class Managed {
@@ -439,6 +445,7 @@ export namespace util {
     deleteAccess(userOrRole: model.User|model.Role): util.Permission;
     toJSON(): json;
     fromJSON(json: json): any;
+    static fromJSON(json: json): util.Permission;
   }
 
   export class PushMessage {
