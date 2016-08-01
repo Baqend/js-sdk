@@ -51,7 +51,7 @@ describe('Test file', function() {
       expect(file.id).eql('/file/www/' + file.key);
       expect(file.key).is.defined;
       expect(file.bucket).eql('www');
-      expect(file.folder).eql('/www');
+      expect(file.parent).eql('/www');
       expect(file.name).eql(file.key);
 
       expect(function() {
@@ -76,7 +76,7 @@ describe('Test file', function() {
       expect(file.id).eql('/file/test/myFile.txt');
       expect(file.key).eql('myFile.txt');
       expect(file.bucket).eql('test');
-      expect(file.folder).eql('/test');
+      expect(file.parent).eql('/test');
       expect(file.name).eql('myFile.txt');
 
       expect(function() {
@@ -99,9 +99,28 @@ describe('Test file', function() {
     it('should initialize with deep path parameter', function() {
       var file = new rootDb.File('/file/test/my/deep/path/myFile.txt');
       expect(file.id).eql('/file/test/my/deep/path/myFile.txt');
+      expect(file.path).eql('/test/my/deep/path/myFile.txt');
       expect(file.key).eql('my/deep/path/myFile.txt');
       expect(file.bucket).eql('test');
-      expect(file.folder).eql('/test/my/deep/path');
+      expect(file.parent).eql('/test/my/deep/path');
+      expect(file.name).eql('myFile.txt');
+    });
+
+    it('should initialize with actual path parameter', function() {
+      var file = new rootDb.File({path: 'test/my/deep/path/myFile.txt'});
+      expect(file.id).eql('/file/test/my/deep/path/myFile.txt');
+      expect(file.key).eql('my/deep/path/myFile.txt');
+      expect(file.bucket).eql('test');
+      expect(file.parent).eql('/test/my/deep/path');
+      expect(file.name).eql('myFile.txt');
+    });
+
+    it('should initialize with parent parameter', function() {
+      var file = new rootDb.File({parent: '/test/my/deep/path/', name: 'myFile.txt'});
+      expect(file.id).eql('/file/test/my/deep/path/myFile.txt');
+      expect(file.key).eql('my/deep/path/myFile.txt');
+      expect(file.bucket).eql('test');
+      expect(file.parent).eql('/test/my/deep/path');
       expect(file.name).eql('myFile.txt');
     });
 
@@ -113,10 +132,6 @@ describe('Test file', function() {
       expect(function() {
         new rootDb.File('/test/bucket/myFile.txt');
       }).throw('Invalid file reference');
-
-      expect(function() {
-        new rootDb.File('/file/bucket/');
-      }).throw('Invalid file reference');
     });
 
     it('should initialize with data parameters', function() {
@@ -124,7 +139,7 @@ describe('Test file', function() {
       expect(file.id).eql('/file/www/' + file.key);
       expect(file.key).eql('test.png');
       expect(file.bucket).eql('www');
-      expect(file.folder).eql('/www');
+      expect(file.parent).eql('/www');
       expect(file.name).eql('test.png');
       expect(file.acl).is.defined;
       expect(file.acl.isPublicReadAllowed()).be.true;
@@ -143,7 +158,7 @@ describe('Test file', function() {
         expect(file.id).eql('/file/www/' + file.key);
         expect(file.key).eql('file.png');
         expect(file.bucket).eql('www');
-        expect(file.folder).eql('/www');
+        expect(file.parent).eql('/www');
         expect(file.name).eql('file.png');
         expect(file.acl).is.defined;
         expect(file.acl.isPublicReadAllowed()).be.true;
@@ -159,7 +174,7 @@ describe('Test file', function() {
       expect(file.id).eql('/file/www/' + file.key);
       expect(file.key).is.defined;
       expect(file.bucket).eql('www');
-      expect(file.folder).eql('/www');
+      expect(file.parent).eql('/www');
       expect(file.name).eql(file.key);
       expect(file.acl).is.defined;
       expect(file.acl.isPublicReadAllowed()).be.true;
@@ -174,7 +189,7 @@ describe('Test file', function() {
       expect(file.id).eql('/file/www/' + file.key);
       expect(file.key).is.defined;
       expect(file.bucket).eql('www');
-      expect(file.folder).eql('/www');
+      expect(file.parent).eql('/www');
       expect(file.name).eql(file.key);
       expect(file.acl).is.defined;
       expect(file.acl.isPublicReadAllowed()).be.true;
@@ -189,7 +204,7 @@ describe('Test file', function() {
       expect(file.id).eql('/file/www/' + file.key);
       expect(file.key).is.defined;
       expect(file.bucket).eql('www');
-      expect(file.folder).eql('/www');
+      expect(file.parent).eql('/www');
       expect(file.name).eql(file.key);
       expect(file.acl).is.defined;
       expect(file.acl.isPublicReadAllowed()).be.true;
@@ -207,14 +222,14 @@ describe('Test file', function() {
         var acl = new rootDb.Acl();
         acl.allowReadAccess(rootDb.User.me);
         acl.allowWriteAccess(rootDb.User.me);
-        
-        var date = new Date("01-01-2016");
-        
+
+        var date = new Date("2016-01-01");
+
         var file = new rootDb.File({
           data: f,
           type: 'blob',
           name: 'my.png',
-          folder: '/www/test',
+          parent: '/www/test',
           mimeType: 'text/html',
           lastModified: date,
           acl: acl,
@@ -224,70 +239,67 @@ describe('Test file', function() {
         expect(file.id).eql('/file/www/test/my.png');
         expect(file.key).eql('test/my.png');
         expect(file.bucket).eql('www');
-        expect(file.folder).eql('/www/test');
+        expect(file.parent).eql('/www/test');
         expect(file.name).eql('my.png');
         expect(file.acl).eql(acl);
-        expect(file.lastModified).eq(date);
+        expect(file.lastModified).gte(date);
+        expect(file.lastModified).lte(date);
         expect(file.eTag).eql('827598375');
         expect(file.mimeType).eql('text/html');
       });
     });
 
     it('should initialize with folder and name parameters', function() {
-      var file = new rootDb.File({folder: '/testfolder', name: 'test.png'});
+      var file = new rootDb.File({parent: '/testfolder', name: 'test.png'});
       expect(file.id).eql('/file/testfolder/test.png');
       expect(file.key).eql('test.png');
       expect(file.bucket).eql('testfolder');
-      expect(file.folder).eql('/testfolder');
+      expect(file.parent).eql('/testfolder');
       expect(file.name).eql('test.png');
     });
 
     it('should initialize with folder and name parameters', function() {
-      var file = new rootDb.File({folder: 'testfolder', name: 'test.png'});
+      var file = new rootDb.File({parent: 'testfolder', name: 'test.png'});
       expect(file.id).eql('/file/testfolder/test.png');
       expect(file.key).eql('test.png');
       expect(file.bucket).eql('testfolder');
-      expect(file.folder).eql('/testfolder');
+      expect(file.parent).eql('/testfolder');
       expect(file.name).eql('test.png');
     });
 
     it('should initialize with folder and name parameters', function() {
-      var file = new rootDb.File({folder: '/testfolder/', name: 'test.png'});
+      var file = new rootDb.File({parent: '/testfolder/', name: 'test.png'});
       expect(file.id).eql('/file/testfolder/test.png');
       expect(file.key).eql('test.png');
       expect(file.bucket).eql('testfolder');
-      expect(file.folder).eql('/testfolder');
+      expect(file.parent).eql('/testfolder');
       expect(file.name).eql('test.png');
     });
 
     it('should initialize with deep folder', function() {
-      var file = new rootDb.File({folder: '/deep/test/folder/', name: 'test.png'});
+      var file = new rootDb.File({parent: '/deep/test/folder/', name: 'test.png'});
       expect(file.id).eql('/file/deep/test/folder/test.png');
       expect(file.key).eql('test/folder/test.png');
       expect(file.bucket).eql('deep');
-      expect(file.folder).eql('/deep/test/folder');
+      expect(file.parent).eql('/deep/test/folder');
       expect(file.name).eql('test.png');
     });
 
     it('should reject invalid folder', function() {
       expect(function() {
-        new rootDb.File({folder: '/', name: 'test.png'});
-      }).throw('Invalid folder name');
+        new rootDb.File({parent: '/', name: 'test.png'});
+      }).throw('Invalid parent name');
 
-      var file = new rootDb.File({folder: '', name: 'test.png'});
-      expect(file.folder).eql('/www');
+      var file = new rootDb.File({parent: '', name: 'test.png'});
+      expect(file.parent).eql('/www');
     });
 
     it('should reject invalid file name', function() {
       expect(function() {
-        new rootDb.File({folder: '/www', name: '/test.png'});
-      }).throw('Invalid file name');
+        new rootDb.File({parent: '/www', name: '/test.png'});
+      }).throw('Invalid path');
 
-      expect(function() {
-        new rootDb.File({folder: '/www', name: 'test/test.png'});
-      }).throw('Invalid file name');
-
-      var file = new rootDb.File({folder: '/www', name: ''});
+      var file = new rootDb.File({parent: '/www', name: ''});
       expect(file.name).not.eql('');
     });
   });
@@ -302,8 +314,16 @@ describe('Test file', function() {
             .allowReadAccess(rootDb.User.me)
             .allowWriteAccess(rootDb.User.me);
 
-        uploadFile = new rootDb.File({folder: "private_bucket", data: flames, acl: acl});
-        return uploadFile.upload();
+        return rootDb.File.saveMetadata("private_bucket", {
+          load: new DB.util.Permission().allowAccess(rootDb.User.me),
+          insert: new DB.util.Permission().allowAccess(rootDb.User.me),
+          update: new DB.util.Permission().allowAccess(rootDb.User.me),
+          delete: new DB.util.Permission().allowAccess(rootDb.User.me),
+          query: new DB.util.Permission().allowAccess(rootDb.User.me)
+        }).then(function() {
+          uploadFile = new rootDb.File({parent: "private_bucket", data: flames, acl: acl});
+          return uploadFile.upload();
+        });
       })
     });
 
@@ -313,7 +333,7 @@ describe('Test file', function() {
     });
 
     it('should not contains credentials for anonymous user in none www bucket', function() {
-      var file = new anonymousDB.File({folder: '/testfolder/', name: 'private.png'});
+      var file = new anonymousDB.File({parent: '/testfolder/', name: 'private.png'});
       expect(file.url).eql(env.TEST_SERVER + '/file/testfolder/private.png');
     });
 
@@ -323,7 +343,7 @@ describe('Test file', function() {
     });
 
     it('should contains credentials for none www bucket', function() {
-      var file = new rootDb.File({folder: '/testfolder/', name: 'private.png'});
+      var file = new rootDb.File({parent: '/testfolder/', name: 'private.png'});
       expect(file.url).string(env.TEST_SERVER + '/file/testfolder/private.png?BAT=');
     });
 
@@ -341,6 +361,15 @@ describe('Test file', function() {
   });
 
   describe('upload', function() {
+
+    before(function() {
+      return rootDb.File.loadMetadata('www').then(function(acls) {
+        acls.update = new rootDb.util.Permission().allowAccess(rootDb.User.me);
+        acls.insert = new rootDb.util.Permission().allowAccess(rootDb.User.me);
+        return rootDb.File.saveMetadata('www', acls);
+      });
+    });
+
     it('should denied for anonymous', function() {
       var file;
       return expect(emf.createEntityManager().ready().then(function(db) {
@@ -555,6 +584,59 @@ describe('Test file', function() {
     });
   });
 
+  describe('metadata', function() {
+    var pngFile, jsonFile, bucket = 'metadataTest';
+
+    before(function() {
+      pngFile = new rootDb.File({parent: bucket, data: flames});
+      jsonFile = new rootDb.File({data: json});
+
+      return Promise.all([
+        pngFile.upload(),
+        jsonFile.upload(),
+        rootDb.File.saveMetadata(bucket, {})
+      ]);
+    });
+
+    it('should be loaded', function() {
+      var file = new rootDb.File(pngFile.id);
+      return file.loadMetadata().then(function() {
+        expect(file.eTag).eql(pngFile.eTag);
+        expect(file.lastModified).gt(new Date(Date.now() - 5 * 60 * 1000));
+        expect(file.lastModified).lt(new Date(Date.now() + 5 * 60 * 1000));
+        expect(file.mimeType).eql('image/png');
+        expect(file.acl.isPublicReadAllowed()).be.true;
+        expect(file.acl.isPublicWriteAllowed()).be.true;
+      });
+    });
+
+    it('should be updated', function() {
+      var testAcls = new rootDb.Acl()
+          .allowReadAccess(rootDb.User.me)
+          .allowWriteAccess(rootDb.User.me);
+      var file = new rootDb.File(pngFile.id);
+
+      return file.loadMetadata().then(function() {
+        file.acl.allowReadAccess(rootDb.User.me)
+            .allowWriteAccess(rootDb.User.me);
+        return file.saveMetadata();
+      }).then(function() {
+        expect(file.acl).eql(testAcls);
+      });
+    });
+
+    it('should not allow file acls in www bucket', function() {
+      var file = new rootDb.File(jsonFile.id);
+
+      return file.loadMetadata().then(function() {
+        file.acl.allowReadAccess(rootDb.User.me)
+            .allowWriteAccess(rootDb.User.me);
+        return expect(file.saveMetadata()).be.rejectedWith('File acls are not allowed in www bucket');
+      });
+    });
+  });
+
+
   describe('delete', function() {
     var uploadFile;
     var fileName;
@@ -622,20 +704,71 @@ describe('Test file', function() {
 
     describe('on bucket', function() {
       var uploadFile, bucket = "js_" + DB.util.uuid().replace(/-/g, '_');
+      var bucketAcls;
 
       before(function() {
-        return rootDb.File.saveMetadata(bucket, {
+        bucketAcls = {
           load: new DB.util.Permission().allowAccess(db1.User.me).allowAccess(db2.User.me),
           insert: new DB.util.Permission().allowAccess(db1.User.me),
           update: new DB.util.Permission().allowAccess(db2.User.me),
           delete: new DB.util.Permission().allowAccess(db1.User.me),
           query: new DB.util.Permission().allowAccess(db2.User.me)
-        });
+        };
+
+        return rootDb.File.saveMetadata(bucket, bucketAcls);
       });
 
       beforeEach(function() {
-        uploadFile = new rootDb.File({folder: bucket, data: flames});
+        uploadFile = new rootDb.File({parent: bucket, data: flames});
         return uploadFile.upload({force: true});
+      });
+
+      it('should load the bucket acls', function() {
+        return rootDb.File.loadMetadata(bucket).then(function(data) {
+          expect(data).eql(bucketAcls);
+        });
+      });
+
+      it('should deny setting www bucket to private', function() {
+        return rootDb.File.loadMetadata('www').then(function(acls) {
+          acls.load = new rootDb.util.Permission().allowAccess(rootDb.User.me);
+          return expect(rootDb.File.saveMetadata('www', acls)).be.rejectedWith('The www cannot be private.');
+        });
+      });
+
+      it('should allow setting www bucket write access', function() {
+        return rootDb.File.saveMetadata('www', {}).then(function() {
+          return rootDb.File.loadMetadata('www');
+        }).then(function(acls) {
+          acls.insert = new rootDb.util.Permission();
+          acls.delete = new rootDb.util.Permission();
+          acls.query = new rootDb.util.Permission();
+          acls.update = new rootDb.util.Permission();
+          return rootDb.File.saveMetadata('www', acls);
+        }).then(function() {
+          return rootDb.File.loadMetadata('www');
+        }).then(function(acls) {
+          expect(acls.insert.isPublicAllowed()).to.be.true;
+          expect(acls.delete.isPublicAllowed()).to.be.true;
+          expect(acls.query.isPublicAllowed()).to.be.true;
+          expect(acls.update.isPublicAllowed()).to.be.true;
+        }).then(function() {
+          return rootDb.File.loadMetadata('www');
+        }).then(function(acls) {
+          acls.insert = new rootDb.util.Permission().allowAccess(rootDb.User.me);
+          acls.delete = new rootDb.util.Permission().allowAccess(rootDb.User.me);
+          acls.query = new rootDb.util.Permission().allowAccess(rootDb.User.me);
+          acls.update = new rootDb.util.Permission().allowAccess(rootDb.User.me);
+          return rootDb.File.saveMetadata('www', acls);
+        }).then(function() {
+          return rootDb.File.loadMetadata('www');
+        }).then(function(acls) {
+          console.log(acls);
+          expect(acls.insert.isPublicAllowed()).to.be.false;
+          expect(acls.delete.isPublicAllowed()).to.be.false;
+          expect(acls.query.isPublicAllowed()).to.be.false;
+          expect(acls.update.isPublicAllowed()).to.be.false;
+        });
       });
 
       it('should allow load with load permission', function() {
@@ -652,36 +785,36 @@ describe('Test file', function() {
       });
 
       it('should allow insert with insert permission', function() {
-        var file = new db1.File({folder: bucket, data: flames});
+        var file = new db1.File({parent: bucket, data: flames});
         return file.upload().then(function() {
           expect(file.mimeType).eql('image/png');
         });
       });
 
       it('should deny insert without insert permission', function() {
-        var file = new db2.File({folder: bucket, data: flames});
+        var file = new db2.File({parent: bucket, data: flames});
         return expect(file.upload()).rejectedWith('insert permissions are required');
       });
 
       it('should allow update with update permission', function() {
-        var file = new db2.File({folder: bucket, name: uploadFile.name, data: flames, eTag: uploadFile.eTag});
+        var file = new db2.File({parent: bucket, name: uploadFile.name, data: flames, eTag: uploadFile.eTag});
         return file.upload().then(function() {
           expect(file.mimeType).eql('image/png');
         });
       });
 
       it('should deny update without update permission', function() {
-        var file = new db1.File({folder: bucket, name: uploadFile.name, data: flames, eTag: uploadFile.eTag});
+        var file = new db1.File({parent: bucket, name: uploadFile.name, data: flames, eTag: uploadFile.eTag});
         return expect(file.upload()).rejectedWith('update permissions are required');
       });
 
       it('should allow delete with delete permission', function() {
-        var file = new db1.File({folder: bucket, name: uploadFile.name, data: flames, eTag: uploadFile.eTag});
+        var file = new db1.File({parent: bucket, name: uploadFile.name, data: flames, eTag: uploadFile.eTag});
         return file.delete();
       });
 
       it('should deny delete without delete permission', function() {
-        var file = new db2.File({folder: bucket, name: uploadFile.name, data: flames, eTag: uploadFile.eTag});
+        var file = new db2.File({parent: bucket, name: uploadFile.name, data: flames, eTag: uploadFile.eTag});
         return expect(file.delete()).rejectedWith('delete permissions are required');
       });
     });
@@ -701,11 +834,11 @@ describe('Test file', function() {
 
       beforeEach(function() {
         var acl = new DB.Acl()
-          .allowReadAccess(db1.User.me)
-          .allowWriteAccess(db1.User.me)
-          .allowReadAccess(db2.User.me);
+            .allowReadAccess(db1.User.me)
+            .allowWriteAccess(db1.User.me)
+            .allowReadAccess(db2.User.me);
 
-        uploadFile = new rootDb.File({folder: bucket, data: flames, acl: acl});
+        uploadFile = new rootDb.File({parent: bucket, data: flames, acl: acl});
         return uploadFile.upload({force: true});
       });
 
@@ -731,25 +864,89 @@ describe('Test file', function() {
       });
 
       it('should allow update with write Permission', function() {
-        var file = new db1.File({folder: bucket, name: uploadFile.name, data: flames, eTag: uploadFile.eTag});
+        var file = new db1.File({parent: bucket, name: uploadFile.name, data: flames, eTag: uploadFile.eTag});
         return file.upload().then(function() {
           expect(file.mimeType).eql('image/png');
         });
       });
 
       it('should deny update without write Permission', function() {
-        var file = new db2.File({folder: bucket, name: uploadFile.name, data: flames, eTag: uploadFile.eTag});
+        var file = new db2.File({parent: bucket, name: uploadFile.name, data: flames, eTag: uploadFile.eTag});
         return expect(file.upload()).rejectedWith('Write permissions are required');
       });
 
       it('should allow delete with write Permission', function() {
-        var file = new db1.File({folder: bucket, name: uploadFile.name, data: flames, eTag: uploadFile.eTag});
+        var file = new db1.File({parent: bucket, name: uploadFile.name, data: flames, eTag: uploadFile.eTag});
         return file.delete();
       });
 
       it('should deny delete without write Permission', function() {
-        var file = new db2.File({folder: bucket, name: uploadFile.name, data: flames, eTag: uploadFile.eTag});
+        var file = new db2.File({parent: bucket, name: uploadFile.name, data: flames, eTag: uploadFile.eTag});
         return expect(file.delete()).rejectedWith('Write permissions are required');
+      });
+    });
+  });
+
+  describe('listing files', function() {
+
+    before(function() {
+      return rootDb.File.saveMetadata('wwww', {});
+    });
+
+    it('should list files in a folder', function() {
+      var file1 = new rootDb.File({parent: '/wwww', name: 'test.png', data: flames});
+      var file2 = new rootDb.File({parent: '/wwww/images', name: 'test1.png', data: flames});
+      var file3 = new rootDb.File({parent: '/wwww/images', name: 'test2.png', data: flames});
+      return Promise.all([file1.upload({force: true}), file2.upload({force: true}), file3.upload({force: true})]).then(function() {
+        var folder = new rootDb.File('/file/wwww/');
+        return rootDb.File.listFiles(folder);
+      }).then(function(files) {
+        expect(files.length).eql(2);
+        expect(files[0].name).eql('images/');
+        expect(files[1].name).eql('test.png');
+
+        var folder = new rootDb.File('/file/wwww/images/');
+        return rootDb.File.listFiles(folder);
+      }).then(function(files) {
+        expect(files.length).eql(2);
+        expect(files[0].name).eql('test1.png');
+        expect(files[1].name).eql('test2.png');
+
+        var folder = new rootDb.File('/file/wwww/images/');
+        return rootDb.File.listFiles(folder, null, 1);
+      }).then(function(files) {
+        expect(files.length).eql(1);
+        expect(files[0].name).eql('test1.png');
+
+        var folder = new rootDb.File('/file/wwww/images/');
+
+        return rootDb.File.listFiles(folder, files[0], 1);
+      }).then(function(files) {
+        expect(files.length).eql(1);
+        expect(files[0].name).eql('test2.png');
+      });
+    });
+
+
+    it('should list buckets', function() {
+      var intialBucketCount;
+      return rootDb.File.listBuckets().then(function(buckets) {
+        intialBucketCount = buckets.length;
+
+        return rootDb.File.saveMetadata('listBucketTest', {
+          load: new rootDb.util.Permission().allowAccess(rootDb.User.me),
+          insert: new rootDb.util.Permission().allowAccess(rootDb.User.me),
+          update: new rootDb.util.Permission().allowAccess(rootDb.User.me),
+          delete: new rootDb.util.Permission().allowAccess(rootDb.User.me),
+          query: new rootDb.util.Permission().allowAccess(rootDb.User.me)
+        });
+      }).then(function() {
+        return rootDb.File.listBuckets();
+      }).then(function(buckets) {
+        // expect(buckets.length).eql(intialBucketCount + 1);
+        expect(buckets.some(function(bucket) {
+          return bucket.bucket == 'listBucketTest'
+        })).to.be.true;
       });
     });
   });
@@ -853,6 +1050,7 @@ describe('Test file', function() {
       }).then(function() {
         return db.refreshBloomFilter();
       }).then(function() {
+        file = new db.File(uploadFile.id);
         return helper.req(file.url);
       }).then(function(data) {
         expect(data.type.toLowerCase()).string('application/json');
@@ -869,6 +1067,7 @@ describe('Test file', function() {
       }).then(function() {
         return db.refreshBloomFilter();
       }).then(function() {
+        file = new db.File(uploadFile.id);
         return helper.req(file.url);
       }).then(function(data) {
         expect(data.type.toLowerCase()).string('application/json');
