@@ -1,3 +1,17 @@
+<a name="v2.2.0"></a>
+# v2.2.0 (2016-8-2)
+
+
+### Bug Fixes
+
+* Bug fix 
+*
+
+### Features
+
+* New Feature
+*
+
 <a name="v2.1.0"></a>
 # v2.1.0 (2016-6-23)
 
