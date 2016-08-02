@@ -35,7 +35,7 @@ module.exports = function (grunt) {
 
       debug: {
         files: {
-          'build/baqend.js': ['lib/baqend.js']
+          'build/baqend.js': ['lib/index.js']
         },
         options: {
           watch: true,
@@ -49,13 +49,13 @@ module.exports = function (grunt) {
 
       test: {
         files: {
-          'build/baqend.js': ['lib/baqend.js']
+          'build/baqend.js': ['lib/index.js']
         }
       },
 
       dist: {
         files: {
-          'dist/baqend.js': ['lib/baqend.js']
+          'dist/baqend.js': ['lib/index.js']
         }
       }
     },
