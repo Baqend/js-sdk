@@ -4,13 +4,12 @@
 
 ### Bug Fixes
 
-* Bug fix 
-*
+* Improved es6 shimming for better compatibility with angular 2
 
 ### Features
 
-* New Feature
-*
+* Added Typescript support and typings
+* File and bucket listining is now supported
 
 <a name="v2.1.0"></a>
 # v2.1.0 (2016-6-23)
