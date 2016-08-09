@@ -8,6 +8,9 @@ switch (argv._[0]) {
   case 'typings':
     result = require('./typings')(argv);
     break;
+  case 'deploy':
+    result = require('./deploy')(argv);
+    break;
 }
 
 if (!result) {

@@ -1,5 +1,10 @@
+var fs, http, https, urlParser;
 if (typeof DB == 'undefined') {
   DB = require('../lib');
+  fs = require('fs');
+  http = require('http');
+  https = require('https');
+  urlParser = require('url');
 }
 
 var helper = {
@@ -24,23 +29,75 @@ var helper = {
       }, time);
     });
   },
-  asset: function(src) {
-    return helper.req("/spec/assets/" + src);
+  asset: function(src, type) {
+    if (fs) {
+      return helper.file("spec/assets/" + src).then(function(file) {
+        if (type == 'arraybuffer') {
+          return file.buffer.slice(file.byteOffset, file.byteOffset + file.byteLength);
+        } else {
+          return file;
+        }
+      });
+    } else {
+      return helper.req("/spec/assets/" + src).then(function(file) {
+        if (type == 'arraybuffer') {
+          return new Promise(function(resolve, reject) {
+            var fileReader = new FileReader();
+            fileReader.onload = function() {
+              resolve(this.result);
+            };
+            fileReader.onerror = reject;
+            fileReader.readAsArrayBuffer(file);
+          });
+        } else {
+          return file;
+        }
+      });
+    }
+  },
+  file: function(path) {
+    return new Promise(function(success, error) {
+      fs.readFile(path, (err, data) => {
+        if (err) error(err);
+        success(data);
+      });
+    });
   },
   req: function(url, responseType) {
     return new Promise(function(resolve, reject) {
-      var oReq = new XMLHttpRequest();
-      oReq.open("GET", url, true);
-      oReq.responseType = responseType || 'blob';
-      oReq.onload = function() {
-        if (oReq.status >= 400) {
-          reject({status: oReq.status});
-        } else {
-          resolve(oReq.response);
-        }
-      };
-      oReq.onerror = reject;
-      oReq.send()
+      if (urlParser) {
+        var options = urlParser.parse(url);
+        options.method = 'GET';
+        var ht = options.protocol == 'http:'? http: https;
+        var req = ht.request(options, function(res) {
+          var chunks = [];
+          res.on('data', function(chunk) {
+            chunks.push(chunk);
+          });
+          res.on('end', function() {
+            if (res.statusCode >= 400) {
+              reject({status: res.statusCode})
+            } else {
+              resolve(Buffer.concat(chunks));
+            }
+          });
+        });
+        req.on('error', reject);
+        req.end();
+      } else {
+        var oReq = new XMLHttpRequest();
+        oReq.open("GET", url, true);
+        oReq.responseType = responseType || 'blob';
+        oReq.onload = function() {
+          if (oReq.status >= 400) {
+            reject({status: oReq.status});
+          } else {
+            resolve(oReq.response);
+          }
+        };
+        oReq.onerror = reject;
+        oReq.send()
+      }
     });
   },
   isNode: typeof window == 'undefined',

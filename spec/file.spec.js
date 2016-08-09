@@ -4,8 +4,8 @@ if (typeof DB == 'undefined') {
 }
 
 describe('Test file', function() {
-  //skip IE9 and node for now
-  if (typeof Blob == 'undefined')
+  //skip IE9
+  if (typeof Blob == 'undefined' && typeof Buffer == 'undefined')
     return;
 
   this.timeout(20 * 1000);
@@ -23,26 +23,21 @@ describe('Test file', function() {
   before(function() {
     emf = new DB.EntityManagerFactory(env.TEST_SERVER);
 
-    return Promise.all([helper.asset('flames.png'), helper.asset('rocket.jpg')]).then(function(data) {
+    return Promise.all([
+      helper.asset('flames.png'),
+      helper.asset('rocket.jpg'),
+      helper.asset('rocket.jpg', 'arraybuffer'),
+    ]).then(function(data) {
       flames = data[0];
       rocket = data[1];
+      arrayBuffer = data[2];
     }).then(function() {
       return emf.createEntityManager().ready().then(function(em) {
         return em.User.login('root', 'root').then(function() {
           rootDb = em;
         });
       });
-    }).then(function() {
-      return new Promise(function(resolve, reject) {
-        var fileReader = new FileReader();
-        fileReader.onload = function() {
-          arrayBuffer = this.result;
-          resolve();
-        };
-        fileReader.onerror = reject;
-        fileReader.readAsArrayBuffer(flames);
-      });
-    })
+    });
   });
 
   describe('object', function() {
@@ -134,8 +129,14 @@ describe('Test file', function() {
       }).throw('Invalid file reference');
     });
 
-    it('should initialize with data parameters', function() {
-      var file = new rootDb.File({name: 'test.png', data: flames});
+    it('should initialize with blob/buffer parameters', function() {
+      var file;
+      if (helper.isNode) {
+        file = new rootDb.File({name: 'test.png', data: flames, mimeType: 'image/png'});
+      } else {
+        file = new rootDb.File({name: 'test.png', data: flames});
+      }
+
       expect(file.id).eql('/file/www/' + file.key);
       expect(file.key).eql('test.png');
       expect(file.bucket).eql('www');
@@ -149,17 +150,40 @@ describe('Test file', function() {
       expect(file.mimeType).eql('image/png');
     });
 
-    it('should initialize with file parameter', function() {
-      return helper.asset('flames.png').then(function(f) {
-        f.name = 'file.png';
-        f.lastModifiedDate = new Date();
+    if (!helper.isNode) {
+      it('should initialize with file parameter', function() {
+        return helper.asset('flames.png').then(function(f) {
+          f.name = 'file.png';
+          f.lastModifiedDate = new Date();
 
-        var file = new rootDb.File({data: f});
+          var file = new rootDb.File({data: f});
+          expect(file.id).eql('/file/www/' + file.key);
+          expect(file.key).eql('file.png');
+          expect(file.bucket).eql('www');
+          expect(file.parent).eql('/www');
+          expect(file.name).eql('file.png');
+          expect(file.acl).is.defined;
+          expect(file.acl.isPublicReadAllowed()).be.true;
+          expect(file.acl.isPublicWriteAllowed()).be.true;
+          expect(file.lastModified).be.undefined;
+          expect(file.eTag).be.undefined;
+          expect(file.mimeType).eql('image/png');
+        });
+      });
+    }
+
+    if (helper.isNode) {
+      it('should initialize with stream parameters', function() {
+        var fs = require('fs');
+
+        var file = new rootDb.File({name: 'test.png', data:
+            fs.createReadStream('spec/asset/flames.png'), type: 'stream', mimeType: 'image/png'});
+
         expect(file.id).eql('/file/www/' + file.key);
-        expect(file.key).eql('file.png');
+        expect(file.key).eql('test.png');
         expect(file.bucket).eql('www');
         expect(file.parent).eql('/www');
-        expect(file.name).eql('file.png');
+        expect(file.name).eql('test.png');
         expect(file.acl).is.defined;
         expect(file.acl.isPublicReadAllowed()).be.true;
         expect(file.acl.isPublicWriteAllowed()).be.true;
@@ -167,7 +191,7 @@ describe('Test file', function() {
         expect(file.eTag).be.undefined;
         expect(file.mimeType).eql('image/png');
       });
-    });
+    }
 
     it('should initialize with base64 parameter', function() {
       var file = new rootDb.File({data: svgBase64, type: 'base64', mimeType: 'image/svg+xml'});
@@ -414,15 +438,41 @@ describe('Test file', function() {
       });
     });
 
-    it('should upload blob format', function() {
+    it('should upload blob/buffer format', function() {
       var file = new rootDb.File({data: flames});
       return file.upload().then(function() {
         expect(file.eTag).is.defined;
         expect(file.lastModified).gt(new Date(Date.now() - 5 * 60 * 1000));
         expect(file.lastModified).lt(new Date(Date.now() + 5 * 60 * 1000));
         expect(file.mimeType).eql('image/png');
+        expect(file.size).eql(flames.size || flames.length);
       });
     });
+
+    if (helper.isNode) {
+      it('should upload stream format', function() {
+        var fs = require('fs');
+
+        var file = new rootDb.File({data: fs.createReadStream('spec/assets/flames.png'),
+          type: 'stream', mimeType: 'image/png', size: fs.statSync('spec/assets/flames.png').size});
+
+        return file.upload().then(function() {
+          expect(file.eTag).is.defined;
+          expect(file.lastModified).gt(new Date(Date.now() - 5 * 60 * 1000));
+          expect(file.lastModified).lt(new Date(Date.now() + 5 * 60 * 1000));
+          expect(file.mimeType).eql('image/png');
+        });
+      });
+
+      it('should reject stream format', function() {
+        var fs = require('fs');
+
+        var file = new rootDb.File({data: fs.createReadStream('spec/assets/flames.png'),
+          type: 'stream', mimeType: 'image/png'});
+
+        return expect(file.upload()).rejectedWith('');
+      });
+    }
 
     it('should upload json format', function() {
       var file = new rootDb.File({data: json});
@@ -500,11 +550,12 @@ describe('Test file', function() {
     it('should stored under specified name', function() {
       var file = new rootDb.File(pngFile.id);
       return file.download().then(function(data) {
-        expect(data).instanceof(Blob);
+        expect(data).instanceof(helper.isNode? Buffer: Blob);
         expect(file.eTag).eql(pngFile.eTag);
         expect(file.lastModified).gt(new Date(Date.now() - 5 * 60 * 1000));
         expect(file.lastModified).lt(new Date(Date.now() + 5 * 60 * 1000));
         expect(file.mimeType).eql('image/png');
+        expect(file.size).eql(pngFile.size);
         expect(file.acl.isPublicReadAllowed()).be.true;
         expect(file.acl.isPublicWriteAllowed()).be.true;
       });
@@ -516,23 +567,47 @@ describe('Test file', function() {
         file = new db.File(pngFile.id);
         return file.download();
       }).then(function(data) {
-        expect(data).instanceof(Blob);
+        expect(data).instanceof(helper.isNode? Buffer: Blob);
         expect(file.eTag).eql(pngFile.eTag);
         expect(file.lastModified).gt(new Date(Date.now() - 5 * 60 * 1000));
         expect(file.lastModified).lt(new Date(Date.now() + 5 * 60 * 1000));
         expect(file.mimeType).eql('image/png');
+        expect(file.size).eql(pngFile.size);
         expect(file.acl.isPublicReadAllowed()).be.true;
         expect(file.acl.isPublicWriteAllowed()).be.true;
       });
     });
 
-    it('should download blob format', function() {
+    it('should download blob/buffer format', function() {
       var file = new rootDb.File(pngFile.id);
       return file.download({type: 'blob'}).then(function(data) {
         expect(file.mimeType.toLowerCase()).eql('image/png');
         expect(data).eql(flames);
       });
     });
+
+    if (helper.isNode) {
+      it('should upload stream format', function() {
+        var fs = require('fs');
+
+        var file = new rootDb.File(pngFile.id);
+        return file.download({type: 'stream'}).then(function(stream) {
+          expect(file.mimeType.toLowerCase()).eql('image/png');
+
+          return new Promise(function(resolve) {
+            var chunks = [];
+            stream.on('data', function(chunk) {
+              chunks.push(chunk);
+            });
+            stream.on('end', function() {
+              resolve(Buffer.concat(chunks));
+            });
+          });
+        }).then(function(data) {
+          expect(data).eql(flames);
+        });
+      });
+    }
 
     it('should download json format', function() {
       var file = new rootDb.File(jsonFile.id);
@@ -605,6 +680,7 @@ describe('Test file', function() {
         expect(file.lastModified).gt(new Date(Date.now() - 5 * 60 * 1000));
         expect(file.lastModified).lt(new Date(Date.now() + 5 * 60 * 1000));
         expect(file.mimeType).eql('image/png');
+        expect(file.size).eql(pngFile.size);
         expect(file.acl.isPublicReadAllowed()).be.true;
         expect(file.acl.isPublicWriteAllowed()).be.true;
       });
@@ -763,7 +839,6 @@ describe('Test file', function() {
         }).then(function() {
           return rootDb.File.loadMetadata('www');
         }).then(function(acls) {
-          console.log(acls);
           expect(acls.insert.isPublicAllowed()).to.be.false;
           expect(acls.delete.isPublicAllowed()).to.be.false;
           expect(acls.query.isPublicAllowed()).to.be.false;
