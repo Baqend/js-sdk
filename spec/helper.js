@@ -57,7 +57,7 @@ var helper = {
   },
   file: function(path) {
     return new Promise(function(success, error) {
-      fs.readFile(path, (err, data) => {
+      fs.readFile(path, function(err, data) {
         if (err) error(err);
         success(data);
       });
