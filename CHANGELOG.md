@@ -1,3 +1,15 @@
+<a name="v2.2.1"></a>
+# v2.2.1 (2016-8-11)
+
+
+### Bug Fixes
+
+* Add missing File#size attribute
+
+### Features
+
+* The File API is now supported in node
+
 <a name="v2.2.0"></a>
 # v2.2.0 (2016-8-2)
 
