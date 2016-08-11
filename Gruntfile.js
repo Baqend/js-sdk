@@ -4,16 +4,11 @@ module.exports = function (grunt) {
   var banner = '/*! <%= pkg.name %> <%= pkg.version %> | <%= copyright %> | <%= pkg.license %> */\n';
   var longBanner = grunt.file.read('tpl/banner.tpl');
 
-  // redirect mocha node tests to the given xml
-  // @see https://github.com/peerigon/xunit-file/blob/master/lib/xunit-file.js
-  process.env.JUNIT_REPORT_PATH = 'build/test-results/node.xml';
-
-  var TEST = 'spec/{env.js,helper.js,**/*.spec.js}';
+  var TEST = 'spec/**/*.spec.js';
 
   var browserifyOptions = {
     builtins: [],
     detectGlobals: false,
-    //insertGlobalVars: ['global'],
     standalone: "DB"
   };
 
@@ -29,7 +24,13 @@ module.exports = function (grunt) {
     browserify: {
       options: {
         browserifyOptions: browserifyOptions,
-        banner: longBanner
+        banner: longBanner,
+        plugin: ['./scripts/babel-helper', 'bundle-collapser/plugin', 'browserify-derequire'],
+        transform: [
+          ['babelify', {
+            "plugins": ["external-helpers"]
+          }]
+        ]
       },
 
       debug: {
@@ -40,7 +41,9 @@ module.exports = function (grunt) {
           watch: true,
           keepAlive: true,
           browserifyOptions: Object.assign({debug: true}, browserifyOptions),
-          banner: ''
+          banner: '',
+          plugin: [],
+          transform: ['babelify']
         }
       },
 
@@ -123,7 +126,7 @@ module.exports = function (grunt) {
             timeout: 30000
           }
         },
-        browsers: ['PhantomJS', 'IE9-Win', 'Edge-Win', 'IE10-Win', 'IE11-Win', 'Firefox-Win', 'Chrome-Win', 'Chrome-Linux', 'Firefox-Linux', 'Safari-Mac'],
+        browsers: ['PhantomJS', 'Edge-Win', 'IE10-Win', 'IE11-Win', 'Firefox-Win', 'Chrome-Win', 'Chrome-Linux', 'Firefox-Linux', 'Safari-Mac'],
         reporters: ['junit'],
         singleRun: true,
         junitReporter: {
@@ -136,6 +139,12 @@ module.exports = function (grunt) {
       test: {
         options: {
           reporter: 'mocha-jenkins-reporter',
+          quiet: true,
+          reporterOptions: {
+            junit_report_name: "Node Tests",
+            junit_report_path: "build/test-results/node.xml",
+            junit_report_stack: 1
+          },
           timeout: 4000
         },
         src: [TEST]
@@ -159,19 +168,6 @@ module.exports = function (grunt) {
           'dist/baqend.min.js': 'dist/baqend.js'
         }
       }
-    },
-
-    jsdoc: {
-      dist: {
-        src: ['lib/**/*.js'],
-        options: {
-          destination: 'doc',
-          template : "tpl/theme",
-          configure : "tpl/jsdoc.conf.json",
-          private: undefined,
-          package: 'package.json'
-        }
-      }
     }
   });
 
@@ -183,7 +179,6 @@ module.exports = function (grunt) {
   grunt.loadNpmTasks('grunt-karma');
   grunt.loadNpmTasks('grunt-mocha-test');
   grunt.loadNpmTasks('grunt-run');
-  grunt.loadNpmTasks('grunt-jsdoc');
 
   grunt.registerTask('debug', [
     'template:debug',
@@ -194,8 +189,7 @@ module.exports = function (grunt) {
   grunt.registerTask('dist', [
     'clean:dist',
     'browserify:dist',
-    'uglify:dist',
-    'jsdoc:dist'
+    'uglify:dist'
   ]);
 
   grunt.registerTask('test', [

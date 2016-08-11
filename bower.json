@@ -24,7 +24,7 @@
     "*.iml",
     "node_modules",
     "spec",
-    "scripts",
+    "scripts/release.js",
     "tpl"
   ]
 }

@@ -26,7 +26,8 @@ describe('Test Acl', function() {
 
   after(function() {
     var user = db.User.me;
-    return user.delete();
+    if (user)
+      return user.delete();
   });
 
   function createUserDb() {
@@ -39,7 +40,7 @@ describe('Test Acl', function() {
   describe('Object', function() {
 
     it('should be created with an empty rule set', function() {
-      var acl = new db.AclPerson().acl;
+      var acl = (new db.AclPerson()).acl;
 
       expect(acl.isPublicReadAllowed()).be.true;
       expect(acl.isPublicWriteAllowed()).be.true;
@@ -276,10 +277,11 @@ describe('Test Acl', function() {
         id = obj.id;
         return db.AclPerson.load(id);
       }).then(function(obj) {
+        //use refresh to bypass the cache for the same object
         return Promise.all([
-          expect(db.AclPerson.load(id)).eventually.property('id', id),
-          expect(db2.AclPerson.load(id)).eventually.property('id', id),
-          expect(db3.AclPerson.load(id)).eventually.be.null
+          expect(db.AclPerson.load(id, {refresh: true})).eventually.property('id', id),
+          expect(db2.AclPerson.load(id, {refresh: true})).eventually.property('id', id),
+          expect(db3.AclPerson.load(id, {refresh: true})).eventually.be.null
         ]);
       });
     });
@@ -292,9 +294,9 @@ describe('Test Acl', function() {
       return obj.save().then(function() {
         id = obj.id;
         return Promise.all([
-          expect(db.AclPerson.load(id)).eventually.property('id', id),
-          expect(db2.AclPerson.load(id)).eventually.be.null,
-          expect(db3.AclPerson.load(id)).eventually.property('id', id)
+          expect(db.AclPerson.load(id, {refresh: true})).eventually.property('id', id),
+          expect(db2.AclPerson.load(id, {refresh: true})).eventually.be.null,
+          expect(db3.AclPerson.load(id, {refresh: true})).eventually.property('id', id)
         ]);
       });
     });
@@ -307,9 +309,9 @@ describe('Test Acl', function() {
       return obj.save().then(function() {
         id = obj.id;
         return Promise.all([
-          expect(db.AclPerson.load(id)).eventually.property('id', id),
-          expect(db2.AclPerson.load(id)).eventually.be.null,
-          expect(db3.AclPerson.load(id)).eventually.property('id', id)
+          expect(db.AclPerson.load(id, {refresh: true})).eventually.property('id', id),
+          expect(db2.AclPerson.load(id, {refresh: true})).eventually.be.null,
+          expect(db3.AclPerson.load(id, {refresh: true})).eventually.property('id', id)
         ]);
       });
     });
@@ -322,9 +324,9 @@ describe('Test Acl', function() {
       return obj.save().then(function() {
         id = obj.id;
         return Promise.all([
-          expect(db.AclPerson.load(id)).eventually.property('id', id),
-          expect(db2.AclPerson.load(id)).eventually.be.null,
-          expect(db3.AclPerson.load(id)).eventually.be.null
+          expect(db.AclPerson.load(id, {refresh: true})).eventually.property('id', id),
+          expect(db2.AclPerson.load(id, {refresh: true})).eventually.be.null,
+          expect(db3.AclPerson.load(id, {refresh: true})).eventually.be.null
         ]);
       });
     });

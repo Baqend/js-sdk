@@ -2,6 +2,7 @@
 'use strict';
 
 var doop = require('jsdoc/util/doop');
+var env = require('jsdoc/env');
 var fs = require('jsdoc/fs');
 var helper = require('jsdoc/util/templateHelper');
 var logger = require('jsdoc/util/logger');
@@ -11,7 +12,6 @@ var template = require('jsdoc/template');
 var util = require('util');
 
 var htmlsafe = helper.htmlsafe;
-var linkto = helper.linkto;
 var resolveAuthorLinks = helper.resolveAuthorLinks;
 var scopeToPunc = helper.scopeToPunc;
 var hasOwnProp = Object.prototype.hasOwnProperty;
@@ -20,6 +20,15 @@ var data;
 var view;
 
 var outdir = path.normalize(env.opts.destination);
+
+function linkto(longname, linkText, cssClass, fragmentId) {
+    //strip out generic params
+    longname = longname.replace(/\.?<.*$/, '');
+    if (linkText)
+        linkText = linkText.replace(/\.?<.*$/, '');
+
+    return helper.linkto(longname, linkText, cssClass, fragmentId);
+}
 
 function find(spec) {
     return helper.find(data, spec);
@@ -210,6 +219,7 @@ function generate(title, nav, docs, filename, resolveLinks) {
     resolveLinks = resolveLinks === false ? false : true;
 
     var docData = {
+        env: env,
         title: title,
         docs: docs,
         nav: nav,
@@ -222,7 +232,7 @@ function generate(title, nav, docs, filename, resolveLinks) {
     if (resolveLinks) {
         html = helper.resolveLinks(html); // turn {@link foo} into <a href="foodoc.html">foo</a>
     }
-
+    //strip out generics from file name
     fs.writeFileSync(outpath, html, 'utf8');
 }
 
@@ -316,7 +326,7 @@ function buildMemberNav(items, itemHeading, itemsSeen, linktoFn) {
 
 function addItem(links, items, itemHeading, itemsSeen, linktoFn) {
   items.forEach(function(item) {
-    var namespace = item.memberof || item.name;
+    var namespace = item.memberof || '';
 
     var namespaceLinks = links[namespace];
     if (namespaceLinks) {
@@ -348,7 +358,7 @@ function linktoExternal(longName, name) {
  * @return {string} The HTML for the navigation sidebar.
  */
 function buildNav(members) {
-    var links = {};
+    var links = {'': []};
 
     members.namespaces.forEach(function(item) {
       links[item.longname || item.name] = [];
@@ -487,7 +497,14 @@ exports.publish = function(taffyData, opts, tutorials) {
     }
     data().each(function(doclet) {
         var url = helper.createLink(doclet);
+        url = url.replace(/_.*_\.html/, '.html');
         helper.registerLink(doclet.longname, url);
+
+        //map generic links to they none generic form
+        var index = doclet.longname.indexOf('<');
+        if (index != -1 && doclet.longname.indexOf('#') == -1) {
+            helper.registerLink(doclet.longname.substring(0, index), url);
+        }
 
         // add a shortened version of the full path
         var docletPath;

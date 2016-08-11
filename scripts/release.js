@@ -1,22 +1,21 @@
 require('shelljs/global');
 var fs = require('fs');
 
-var versionArg = process.argv[2];
+var versionArg = process.env.VERSION || process.argv[2];
 if (!versionArg) {
   console.error('Missing version arg!');
   console.log('Usage npm run release <version> | major | minor | patch [--dry-run]');
   exit(1);
 }
 
-var changelogArg = process.argv[3];
+var changelogArg = process.env.CHANGELOG || process.argv[3];
 if (!changelogArg) {
   console.error('Missing changelog arg!');
   exit(1);
 }
 
 var date = new Date();
-var dateStr = date.toISOString();
-dateStr = dateStr.substring(0, dateStr.indexOf('T'));
+var dateStr = date.getFullYear() + '-' + (date.getMonth() + 1) + '-' + date.getDate();
 var pkg = JSON.parse(fs.readFileSync('package.json', 'utf-8'));
 
 var pushNPM = !pkg.private;
@@ -76,12 +75,10 @@ var version = versionCmd.output.trim();
 var changelog = fs.readFileSync('CHANGELOG.md'); //read existing contents into data
 var fd = fs.openSync('CHANGELOG.md', 'w+');
 fs.writeSync(fd, '<a name="' + version + '"></a>\n', 'utf8'); //write new data
-fs.writeSync(fd, '# ' + version.substring(1) + ' (' + dateStr + ')\n\n\n', 'utf8'); //write new data
+fs.writeSync(fd, '# ' + version + ' (' + dateStr + ')\n\n\n', 'utf8'); //write new data
 fs.writeSync(fd, changelogArg + '\n\n', 'utf8'); //write new data
 fs.writeSync(fd, changelog, 0, changelog.length); //append old data
 fs.close(fd);
-
-exit(0);
 
 var buildResult =
   exec('npm run dist').code ||

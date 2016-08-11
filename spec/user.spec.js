@@ -46,7 +46,7 @@ describe('Test user and roles', function() {
       var login = helper.makeLogin();
       return db.User.register(login, 'secret').then(function(user) {
         expect(user).be.ok;
-        expect(DB.binding.User.isInstance(user)).be.true;
+        expect(user instanceof DB.binding.User).be.true;
         expect(user.id).be.ok;
         expect(user.version).be.ok;
         expect(user._metadata.isPersistent).be.true;
@@ -121,7 +121,7 @@ describe('Test user and roles', function() {
         user = u;
 
         expect(user).be.ok;
-        expect(DB.binding.User.isInstance(user)).be.true;
+        expect(user instanceof DB.binding.User).be.true;
         expect(user.id).be.ok;
         expect(user.version).be.ok;
         expect(user._metadata.isPersistent).be.true;
@@ -263,12 +263,12 @@ describe('Test user and roles', function() {
         DB.connect(env.TEST_SERVER);
 
       return DB.ready().then(function() {
-        return DB.logout();
+        return DB.User.logout();
       });
     });
 
     afterEach(function() {
-      return DB.logout();
+      return DB.User.logout();
     });
 
     it('should remove token if password has been changed', function() {
@@ -282,12 +282,12 @@ describe('Test user and roles', function() {
       }).then(function() {
         return db.User.login(login, 'secret');
       }).then(function() {
-        return db.me.newPassword('secret', 'newSecret');
+        return db.User.me.newPassword('secret', 'newSecret');
       }).then(function() {
-        expect(DB.tokenStorage.get(DB._connector.origin)).be.ok;
+        expect(DB.tokenStorage.token).be.ok;
         return DB.renew();
       }).then(function() {
-        expect(DB.tokenStorage.get(DB._connector.origin)).be.null;
+        expect(DB.tokenStorage.token).be.null;
         expect(DB.User.me).be.null;
         expect(DB.token).be.null;
       });
@@ -296,13 +296,13 @@ describe('Test user and roles', function() {
     it('should remove token if token is invalid', function() {
       var login = helper.makeLogin();
       return DB.User.register(login, 'secret').then(function() {
-        var token = DB.tokenStorage.get(DB._connector.origin);
+        var token = DB.tokenStorage.token;
         expect(token).be.ok;
-        DB.tokenStorage.update(DB._connector.origin, token.replace(/.{1}$/, token.substr(token.length - 1, token.length) == '0'? '1': '0'));
+        DB.tokenStorage.update(token.replace(/.{1}$/, token.substr(token.length - 1, token.length) == '0'? '1': '0'));
         return DB.renew();
       }).then(function(user) {
         expect(user).be.null;
-        expect(DB.tokenStorage.get(DB._connector.origin)).be.null;
+        expect(DB.tokenStorage.token).be.null;
         expect(DB.User.me).be.null;
         expect(DB.token).be.null;
       });

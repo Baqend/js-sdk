@@ -96,6 +96,25 @@ describe('Test logging', function() {
     });
   });
 
+  it('should save additional array data', function() {
+    var msg = helper.randomize('my string ');
+    db.log('info', msg, [34, 'Test String']);
+
+    return findLogByMessage(msg).then(function(entry) {
+      expect(entry.message).equal(msg);
+      expect(entry.data).eql({data: [34, 'Test String']});
+    });
+  });
+
+  it('should save logs without message', function() {
+    db.log({value: 'Test String'});
+
+    return findLogByMessage('[no message]').then(function(entry) {
+      expect(entry.message).equal('[no message]');
+      expect(entry.data).eql({value: 'Test String'});
+    });
+  });
+
   it('should allow different log levels', function() {
     var msg = helper.randomize('my string ');
     db.log.level = 'debug';
