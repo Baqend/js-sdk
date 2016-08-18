@@ -21,15 +21,10 @@ module.exports.login = function(args, persist) {
 
   let inputPromise;
   if (args.username && args.password) {
-
     inputPromise = Promise.resolve([args.username, args.password]);
-
   } else if (persist) {
-
     inputPromise = readInputCredentials();
-
   } else {
-
     inputPromise = readFile().then((json) => {
       if (json[host] && json[host].password && json[host].username) {
         return [json[host].username, json[host].password];
@@ -37,7 +32,6 @@ module.exports.login = function(args, persist) {
         return readInputCredentials();
       }
     });
-
   }
 
   return inputPromise.then((credentials) => {
