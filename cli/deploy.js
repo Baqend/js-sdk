@@ -91,15 +91,17 @@ function uploadHandler(db, directoryName) {
   return readDirectory(`${codePath}/${directoryName}`).then((fileNames) => {
     return Promise.all(fileNames.map((fileName) => {
       let handlerType = fileName.replace(/.js$/, '');
-      if (handlerTypes.indexOf(handlerType) > -1) {
-        return readFile(`${codePath}/${directoryName}/${fileName}`)
-            .then((file) => {
-              return db.code.saveCode(bucket, handlerType, file)
-            })
-            .then(() => {
-              console.log(`${handlerType} handler for ${bucket} deployed.`);
-            });
-      }
+
+      if (handlerTypes.indexOf(handlerType) == -1)
+        return;
+
+      return readFile(`${codePath}/${directoryName}/${fileName}`)
+          .then((file) => {
+            return db.code.saveCode(bucket, handlerType, file)
+          })
+          .then(() => {
+            console.log(`${handlerType} handler for ${bucket} deployed.`);
+          });
     }));
   });
 }
