@@ -1,21 +1,18 @@
 "use strict";
 const fs = require('fs');
-const baqend = require('../lib/baqend');
 const glob = require("glob");
+const account = require('./account');
+const defaultGlob = 'www/**/*';
 
 module.exports = function(args) {
-  if (!args.app || !args.secret || !args.glob) {
+  if (!args.app && !args.host) {
     return false;
   } else {
-    const factory = new baqend.EntityManagerFactory({host: args.app, secure: true, tokenStorageFactory: {
-      create(origin) {
-        return new baqend.util.TokenStorage(origin, args.secret);
-      }
-    }});
+    let pattern = args.glob || defaultGlob;
 
-    factory.createEntityManager(true).ready().then((db) => {
+    account.login({ app: args.app, host: args.host }).then((db) => {
       return new Promise((resolve, reject) => {
-        glob(args.glob, {nodir: true}, (er, files) => {
+        glob(pattern, { nodir: true }, (er, files) => {
           if (er)
             reject(er);
           else
@@ -29,6 +26,8 @@ module.exports = function(args) {
 
   return true;
 };
+
+
 
 function uploadFiles(db, files) {
   let index = 0;
@@ -52,8 +51,12 @@ function uploadFiles(db, files) {
 function uploadFile(db, path) {
   let stat = fs.statSync(path);
 
-  var file = new db.File({path: "/www/" + path, data: fs.createReadStream(path), size: stat.size, type: 'stream'});
+  let pathPrefix = /^\.?\/?www\//.test('./www/')? '': 'www/';
+  path = path.replace(/\.\//g, '');
+
+  var file = new db.File({path: pathPrefix + path, data: fs.createReadStream(path), size: stat.size, type: 'stream'});
   return file.upload().catch(function(e) {
     console.error('Failed to upload file ' + path + ': ' + e.message);
   });
 }
+

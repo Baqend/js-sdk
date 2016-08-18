@@ -11,6 +11,12 @@ switch (argv._[0]) {
   case 'deploy':
     result = require('./deploy')(argv);
     break;
+  case 'login':
+    result = require('./account').login(argv, true);
+    break;
+  case 'logout':
+    result = require('./account').logout(argv);
+    break;
 }
 
 if (!result) {
@@ -19,4 +25,6 @@ if (!result) {
   console.log('baqend typings         - generates additional typings for your app');
   console.log('       --app appName   - The app name');
   console.log('       --dest          - The destination where the typings should be saved [default:typings/baqend-model.d.ts]');
+} else if(result.catch) {
+  result.catch((e) => console.log(e));
 }
