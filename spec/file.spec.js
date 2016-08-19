@@ -972,7 +972,12 @@ describe('Test file', function() {
       var file1 = new rootDb.File({parent: '/wwww', name: 'test.png', data: flames});
       var file2 = new rootDb.File({parent: '/wwww/images', name: 'test1.png', data: flames});
       var file3 = new rootDb.File({parent: '/wwww/images', name: 'test2.png', data: flames});
-      return Promise.all([file1.upload({force: true}), file2.upload({force: true}), file3.upload({force: true})]).then(function() {
+
+      return Promise.all([
+        file1.upload().catch(() => null),
+        file2.upload().catch(() => null),
+        file3.upload().catch(() => null)
+      ]).then(function() {
         var folder = new rootDb.File('/file/wwww/');
         return rootDb.File.listFiles(folder);
       }).then(function(files) {
