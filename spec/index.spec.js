@@ -18,7 +18,7 @@ describe("Test Index", function() {
     personType.addAttribute(new DB.metamodel.SingularAttribute("name", meta.baseType(String)));
     
     return meta.save().then(function() {
-      db = new DB.EntityManagerFactory(env.TEST_SERVER).createEntityManager();
+      db = new DB.EntityManagerFactory({host: env.TEST_SERVER, staleness: 0}).createEntityManager();
       return db.ready();
     });
   });

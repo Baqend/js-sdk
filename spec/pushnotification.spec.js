@@ -13,7 +13,7 @@ describe('Test Push Notifications', function() {
     this.timeout(40000);
 
     var retires = 0;
-    emf = new DB.EntityManagerFactory({ host: env.TEST_SERVER, tokenStorage: helper.rootTokenStorage });
+    emf = new DB.EntityManagerFactory({ host: env.TEST_SERVER, tokenStorage: helper.rootTokenStorage, staleness: 0 });
     return emf.ready().then(function() {
       if (!emf.metamodel.entity("Lock")) {
         var Lock = new DB.metamodel.EntityType("Lock", emf.metamodel.entity(Object));
