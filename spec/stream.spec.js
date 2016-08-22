@@ -110,7 +110,7 @@ describe("Streaming Queries", function() {
       received.forEach(function(result) {
         expect(result.type).to.be.equal("match");
         expect(objects).to.include(result.data);
-        expect(result.operation).to.be.equal("insert");
+        expect(result.operation).to.be.equal(null);
         expect(result.target).to.be.equal(stream);
         expect(result.date.getTime()).be.ok;
         expect(result.initial).be.true;
@@ -137,6 +137,113 @@ describe("Streaming Queries", function() {
       expect(result.date.getTime()).be.ok;
       expect(result.initial).be.false;
       expect(result.query).be.equal(stream.query);
+    });
+  });
+
+  it("should return ordered result", function() {
+    this.timeout(30000);
+    stream = db[bucket].find().equal("age", 49).limit(3).ascending("name").stream(false);
+
+    var results = [];
+    stream.on('all', function(e) {
+      results.push(e);
+    });
+
+    return helper.sleep(t).then(function() {
+      var al = new db[bucket]({
+        key: 'al',
+        name: 'Al',
+        age: 49
+      });
+      return al.save();
+    }).then(function() {
+      return helper.sleep(t).then(function() {
+        expect(results.length).to.be.equal(1);
+        expect(results[0].operation).to.be.equal("insert");
+        expect(results[0].type).to.be.equal("add");
+        expect(results[0].data.name).to.be.equal("Al");
+        expect(results[0].index).to.be.equal(0);
+        expect(results[0].lastIndex).to.be.equal(undefined);
+      });
+    }).then(function() {
+      return helper.sleep(t).then(function() {
+       var bob = new db[bucket]({
+          key: 'bob',
+          name: 'Bob',
+          age: 50
+        });
+        return bob.save();
+      });
+    }).then(function() {
+      return helper.sleep(t).then(function() {
+        expect(results.length).to.be.equal(1);
+        expect(results[0].operation).to.be.equal("insert");
+        expect(results[0].type).to.be.equal("add");
+        expect(results[0].data.name).to.be.equal("Al");
+        expect(results[0].index).to.be.equal(0);
+        expect(results[0].lastIndex).to.be.equal(undefined);
+      });
+    })
+        .then(function() {
+          return helper.sleep(t).then(function() {
+            var dave = new db[bucket]({
+              key: 'dave',
+              name: 'Dave',
+              age: 49
+            });
+            return dave.save();
+          });
+        }).then(function() {
+      return helper.sleep(t).then(function() {
+        expect(results.length).to.be.equal(2);
+        expect(results[1].operation).to.be.equal("insert");
+        expect(results[1].type).to.be.equal("add");
+        expect(results[1].data.name).to.be.equal("Dave");
+        expect(results[1].index).to.be.equal(1);
+        expect(results[1].lastIndex).to.be.equal(undefined);
+      });
+    }).then(function() {
+      return helper.sleep(t).then(function() {
+        var carl = new db[bucket]({
+          key: 'carl',
+          name: 'Carl',
+          age: 49
+        });
+        return carl.save();
+      });
+    }).then(function() {
+      return helper.sleep(t).then(function() {
+        expect(results.length).to.be.equal(3);
+        expect(results[2].operation).to.be.equal("insert");
+        expect(results[2].type).to.be.equal("add");
+        expect(results[2].data.name).to.be.equal("Carl");
+        expect(results[2].index).to.be.equal(1);
+        expect(results[2].lastIndex).to.be.equal(undefined);
+      });
+    }).then(function() {
+      return helper.sleep(t).then(function() {
+        var dan = new db[bucket]({
+          key: 'dan',
+          name: 'Dan',
+          age: 49
+        });
+        return dan.save();
+      });
+    }).then(function() {
+      return helper.sleep(t).then(function() {
+        expect(results.length).to.be.equal(5);
+        expect(results[3].operation).to.be.equal("insert");
+        expect(results[3].type).to.be.equal("remove");
+        expect(results[3].data.name).to.be.equal("Dave");
+        expect(results[3].index).to.be.equal(3);
+        expect(results[3].lastIndex).to.be.equal(2);
+        expect(results[3].update).to.be.equal(results[4].update);
+        expect(results[4].operation).to.be.equal("insert");
+        expect(results[4].type).to.be.equal("add");
+        expect(results[4].data.name).to.be.equal("Dan");
+        expect(results[4].index).to.be.equal(2);
+        expect(results[4].lastIndex).to.be.equal(undefined);
+      });
     });
   });
 
