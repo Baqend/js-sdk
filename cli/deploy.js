@@ -141,9 +141,9 @@ function uploadFile(db, filePath, cwd) {
 
   let stat = fs.statSync(fullFilePath);
 
-  var file = new db.File({path: `/www/${path}`, data: fs.createReadStream(fullFilePath), size: stat.size, type: 'stream'});
+  var file = new db.File({path: `/www/${filePath}`, data: fs.createReadStream(fullFilePath), size: stat.size, type: 'stream'});
   return file.upload({ force: true }).catch(function(e) {
-    console.error(`Failed to upload file ${path}: ${e.message}`);
+    console.error(`Failed to upload file ${filePath}: ${e.message}`);
   });
 }
 
