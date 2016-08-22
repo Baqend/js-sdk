@@ -3,6 +3,7 @@ const fs = require('fs');
 const glob = require("glob");
 const account = require('./account');
 const handlerTypes = ['update', 'insert', 'delete', 'validate'];
+const path = require('path');
 
 module.exports = function(args) {
   if (!args.app && !args.host) {
@@ -59,25 +60,25 @@ function deployCode(db, codePath) {
   });
 }
 
-function readStat(path) {
+function readStat(filePath) {
   return new Promise((resolve, reject) => {
-    fs.stat(path, (err, stat) => {
+    fs.stat(filePath, (err, stat) => {
       err ? reject(err) : resolve(stat);
     })
   });
 }
 
-function readDirectory(path) {
+function readDirectory(filePath) {
   return new Promise((resolve, reject) => {
-    fs.readdir(path, (err, fileNames) => {
+    fs.readdir(filePath, (err, fileNames) => {
       err ? reject(err) : resolve(fileNames);
     })
   })
 }
 
-function readFile(path) {
+function readFile(filePath) {
   return new Promise((resolve, reject) => {
-    fs.readFile(path, 'utf-8', (err, file) => {
+    fs.readFile(filePath, 'utf-8', (err, file) => {
       err ? reject(err) : resolve(file);
     })
   });
@@ -135,13 +136,12 @@ function uploadFiles(db, files, cwd) {
   }
 }
 
-function uploadFile(db, path, cwd) {
-  cwd = cwd.endsWith('/')? cwd: cwd + '/';
+function uploadFile(db, filePath, cwd) {
+  let fullFilePath = path.join(cwd, filePath);
 
-  let stat = fs.statSync(cwd + path);
+  let stat = fs.statSync(fullFilePath);
 
-
-  var file = new db.File({path: `/www/${path}`, data: fs.createReadStream(cwd + path), size: stat.size, type: 'stream'});
+  var file = new db.File({path: `/www/${path}`, data: fs.createReadStream(fullFilePath), size: stat.size, type: 'stream'});
   return file.upload({ force: true }).catch(function(e) {
     console.error(`Failed to upload file ${path}: ${e.message}`);
   });

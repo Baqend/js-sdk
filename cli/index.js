@@ -2,13 +2,13 @@
 "use strict";
 
 
-let account = require('./account');
-let deploy = require('./deploy');
-let typings = require('./typings');
+const account = require('./account');
+const deploy = require('./deploy');
+const typings = require('./typings');
 
 if (!module.parent) {
-  let program = require('commander');
-  let pjson = require('../package.json');
+  const program = require('commander');
+  const pjson = require('../package.json');
   let result = null;
 
   program
