@@ -29,6 +29,7 @@ module.exports.login = function(args, persist) {
       if (json[host] && json[host].password && json[host].username) {
         return [json[host].username, json[host].password];
       } else {
+        console.log('Baqend Login is required. You can skip this step by saving the Login credentials with "baqend login"');
         return readInputCredentials();
       }
     });

@@ -2,25 +2,22 @@
 const fs = require('fs');
 const glob = require("glob");
 const account = require('./account');
-const codePath = 'code';
 const handlerTypes = ['update', 'insert', 'delete', 'validate'];
-const defaultFilesGlob = 'www/**/*';
 
 module.exports = function(args) {
   if (!args.app && !args.host) {
     return false;
   } else {
-
     account.login({app: args.app, host: args.host}).then((db) => {
       if (!args.code && !args.files || args.code && args.files) {
         return Promise.all([
-          deployFiles(db, args.glob || defaultFilesGlob),
-          deployCode(db)
+          deployFiles(db, args.fileDir, args.fileGlob),
+          deployCode(db, args.codeDir)
         ]);
       } else if (args.code) {
-        return deployCode(db);
+        return deployCode(db, args.codeDir);
       } else if (args.files) {
-        return deployFiles(db, args.glob || defaultFilesGlob)
+        return deployFiles(db, args.fileDir, args.fileGlob);
       }
     }).catch((e) => console.error(e));
 
@@ -29,34 +26,34 @@ module.exports = function(args) {
   return true;
 };
 
-function deployFiles(db, pattern) {
+function deployFiles(db, cwd, pattern) {
   return new Promise((resolve, reject) => {
-    glob(pattern, {nodir: true}, (er, files) => {
+    glob(pattern, {nodir: true, cwd}, (er, files) => {
       if (er)
         reject(er);
       else
-        resolve(uploadFiles(db, files));
+        resolve(uploadFiles(db, files, cwd));
     });
   }).then(() => {
     console.log('Files upload completed.');
   })
 }
 
-function deployCode(db) {
+function deployCode(db, codePath) {
   return readDirectory(codePath).then((fileNames) => {
     return Promise.all(fileNames.map((fileName) => {
       return readStat(`${codePath}/${fileName}`).then((stat) => {
         if (stat.isDirectory()) {
-          return uploadHandler(db, fileName);
+          return uploadHandler(db, fileName, codePath);
         } else {
-          return uploadCode(db, fileName);
+          return uploadCode(db, fileName, codePath);
         }
       });
     }));
   }).then(() => {
     console.log('Code deployment completed.');
   }).catch((e) => {
-    if (e.errno === -4058) {
+    if (e.errno === -4058 || e.errno === -2) {
       console.log('Error: Code folder not found.')
     }
   });
@@ -80,13 +77,13 @@ function readDirectory(path) {
 
 function readFile(path) {
   return new Promise((resolve, reject) => {
-    fs.readFile(path, "utf-8", (err, file) => {
+    fs.readFile(path, 'utf-8', (err, file) => {
       err ? reject(err) : resolve(file);
     })
   });
 }
 
-function uploadHandler(db, directoryName) {
+function uploadHandler(db, directoryName, codePath) {
   let bucket = directoryName;
 
   if (!db[bucket])
@@ -110,7 +107,7 @@ function uploadHandler(db, directoryName) {
   });
 }
 
-function uploadCode(db, name) {
+function uploadCode(db, name, codePath) {
   let moduleName = name.replace(/.js$/, '');
   return readFile(`${codePath}/${name}`).then((file) => {
     return db.code.saveCode(moduleName, 'module', file);
@@ -119,7 +116,7 @@ function uploadCode(db, name) {
   });
 }
 
-function uploadFiles(db, files) {
+function uploadFiles(db, files, cwd) {
   let index = 0;
 
   var uploads = [];
@@ -133,19 +130,19 @@ function uploadFiles(db, files) {
     if (index < files.length) {
       console.log(`Uploading file ${(index + 1)} of ${files.length}`);
       var file = files[index++];
-      return uploadFile(db, file).then(upload);
+      return uploadFile(db, file, cwd).then(upload);
     }
   }
 }
 
-function uploadFile(db, path) {
-  let stat = fs.statSync(path);
+function uploadFile(db, path, cwd) {
+  cwd = cwd.endsWith('/')? cwd: cwd + '/';
 
-  let pathPrefix = /^\.?\/?www\//.test('./www/') ? '' : 'www/';
-  path = path.replace(/\.\//g, '');
+  let stat = fs.statSync(cwd + path);
 
-  var file = new db.File({path: pathPrefix + path, data: fs.createReadStream(path), size: stat.size, type: 'stream'});
-  return file.upload().catch(function(e) {
+
+  var file = new db.File({path: "/www/" + path, data: fs.createReadStream(cwd + path), size: stat.size, type: 'stream'});
+  return file.upload({ force: true }).catch(function(e) {
     console.error(`Failed to upload file ${path}: ${e.message}`);
   });
 }
