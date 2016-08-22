@@ -588,7 +588,7 @@ describe('Test Metamodel', function() {
     });
 
     it('should be accessible via db', function() {
-      var emf = new DB.EntityManagerFactory(env.TEST_SERVER);
+      var emf = new DB.EntityManagerFactory({host: env.TEST_SERVER, staleness: 0});
 
       return emf.createEntityManager().ready().then(function(db) {
         var loadType = db.metamodel.entity("jstest.Person");
@@ -687,9 +687,7 @@ describe('Test Metamodel', function() {
 
     function createUser(emf, username) {
       return emf.createEntityManager().ready().then(function(db) {
-        return db.User.register(username, 'secret').then(function(user) {
-          return db.User.logout().then(function() { return user });
-        });
+        return db.User.register(username, 'secret', db.User.LoginOption.NO_LOGIN);
       });
     }
 
@@ -728,7 +726,7 @@ describe('Test Metamodel', function() {
 
         return metamodel.save();
       }).then(function() {
-        emf = new DB.EntityManagerFactory(env.TEST_SERVER);
+        emf = new DB.EntityManagerFactory({host: env.TEST_SERVER, staleness: 0});
         //db and emf shares the same login credentials
         db = emf.createEntityManager(true);
         return db.ready().then(function() {
