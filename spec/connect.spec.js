@@ -21,7 +21,8 @@ describe('Test Connect', function() {
     var db = emf.createEntityManager(true);
 
     return db.ready().then(function() {
-      return db.User.login(user, 'secret');
+      if (!db.User.me)
+        return db.User.login(user, 'secret');
     });
   });
 

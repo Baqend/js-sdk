@@ -1,3 +1,16 @@
+<a name="v2.2.2"></a>
+# v2.2.2 (2016-8-22)
+
+
+### Bug Fixes
+
+* Prevent Webpack from using the node connector while building from sources
+* Handle the cache controll of the connect script correctly
+
+### Features
+
+* Introduce the Baqend CLI (login, deploy, typings)
+
 <a name="v2.2.1"></a>
 # v2.2.1 (2016-8-11)
 

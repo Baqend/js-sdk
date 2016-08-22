@@ -80,6 +80,7 @@ describe('Test crud', function() {
   describe('attach', function() {
     before(function() {
       if (!DB.isReady) {
+        DB.staleness = 0; //ensure a fresh schema
         return DB.connect(env.TEST_SERVER);
       }
     });

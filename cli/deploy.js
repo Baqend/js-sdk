@@ -55,6 +55,10 @@ function deployCode(db) {
     }));
   }).then(() => {
     console.log('Code deployment completed.');
+  }).catch((e) => {
+    if (e.errno === -4058) {
+      console.log('Error: Code folder not found.')
+    }
   });
 }
 
