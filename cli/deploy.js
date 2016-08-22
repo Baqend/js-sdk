@@ -47,7 +47,7 @@ function deployFiles(db, cwd, pattern) {
 function deployCode(db, codePath) {
   return readDirectory(codePath).then((fileNames) => {
     return Promise.all(fileNames.map((fileName) => {
-      return readStat(`${codePath}/${fileName}`).then((stat) => {
+      return readStat(path.join(codePath, fileName)).then((stat) => {
         if (stat.isDirectory()) {
           return uploadHandler(db, fileName, codePath);
         } else {
@@ -58,9 +58,7 @@ function deployCode(db, codePath) {
   }).then(() => {
     console.log('Code deployment completed.');
   }).catch((e) => {
-    if (e.errno === -4058 || e.errno === -2) {
-      console.error('Error: Code folder not found.')
-    }
+    console.error(`Failed to deploy code: ${e.message}`);
   });
 }
 
@@ -94,14 +92,14 @@ function uploadHandler(db, directoryName, codePath) {
   if (!db[bucket])
     return;
 
-  return readDirectory(`${codePath}/${directoryName}`).then((fileNames) => {
+  return readDirectory(path.join(codePath,directoryName)).then((fileNames) => {
     return Promise.all(fileNames.map((fileName) => {
       let handlerType = fileName.replace(/.js$/, '');
 
       if (handlerTypes.indexOf(handlerType) == -1)
         return;
 
-      return readFile(`${codePath}/${directoryName}/${fileName}`)
+      return readFile(path.join(codePath, directoryName, fileName))
           .then((file) => db.code.saveCode(bucket, handlerType, file))
           .then(() => console.log(`${handlerType} handler for ${bucket} deployed.`));
     }));
@@ -110,7 +108,7 @@ function uploadHandler(db, directoryName, codePath) {
 
 function uploadCode(db, name, codePath) {
   let moduleName = name.replace(/.js$/, '');
-  return readFile(`${codePath}/${name}`).then((file) => {
+  return readFile(path.join(codePath, name)).then((file) => {
     return db.code.saveCode(moduleName, 'module', file);
   }).then(() => {
     console.log(`Module ${moduleName} deployed.`);
