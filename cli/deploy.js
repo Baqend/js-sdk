@@ -35,8 +35,12 @@ function deployFiles(db, cwd, pattern) {
       else
         resolve(uploadFiles(db, files, cwd));
     });
-  }).then(() => {
-    console.log('Files upload completed.');
+  }).then((result) => {
+    if (result && result.length > 0) {
+      console.log('Files upload completed.');
+    } else {
+      console.error('No files found.');
+    }
   })
 }
 
@@ -55,7 +59,7 @@ function deployCode(db, codePath) {
     console.log('Code deployment completed.');
   }).catch((e) => {
     if (e.errno === -4058 || e.errno === -2) {
-      console.log('Error: Code folder not found.')
+      console.error('Error: Code folder not found.')
     }
   });
 }
@@ -98,12 +102,8 @@ function uploadHandler(db, directoryName, codePath) {
         return;
 
       return readFile(`${codePath}/${directoryName}/${fileName}`)
-          .then((file) => {
-            return db.code.saveCode(bucket, handlerType, file)
-          })
-          .then(() => {
-            console.log(`${handlerType} handler for ${bucket} deployed.`);
-          });
+          .then((file) => db.code.saveCode(bucket, handlerType, file))
+          .then(() => console.log(`${handlerType} handler for ${bucket} deployed.`));
     }));
   });
 }
@@ -121,7 +121,7 @@ function uploadFiles(db, files, cwd) {
   let index = 0;
 
   var uploads = [];
-  for (let i = 0; i < 10; ++i) {
+  for (let i = 0; i < 10 && i < files.length-1; ++i) {
     uploads.push(upload());
   }
 
