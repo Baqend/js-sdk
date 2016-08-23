@@ -90,7 +90,7 @@ exports.publish = function(data, opts, tutorials) {
   text += createNs(data, rootNs).join(os.EOL);
 
   fs.writeFileSync('index.d.ts', text);
-  fs.writeFileSync('doc.json', JSON.stringify(data().get(), null, '  '));
+  //fs.writeFileSync('doc.json', JSON.stringify(data().get(), null, '  '));
 
   return null;
 };

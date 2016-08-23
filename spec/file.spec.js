@@ -974,9 +974,9 @@ describe('Test file', function() {
       var file3 = new rootDb.File({parent: '/wwww/images', name: 'test2.png', data: flames});
 
       return Promise.all([
-        file1.upload().catch(() => null),
-        file2.upload().catch(() => null),
-        file3.upload().catch(() => null)
+        file1.upload().catch(function() {}),
+        file2.upload().catch(function() {}),
+        file3.upload().catch(function() {})
       ]).then(function() {
         var folder = new rootDb.File('/file/wwww/');
         return rootDb.File.listFiles(folder);
