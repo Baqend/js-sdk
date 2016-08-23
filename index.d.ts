@@ -34,6 +34,7 @@ export class Acl {
 }
 
 export interface baqend extends EntityManager {
+  configure(options: {tokenStorage?: util.TokenStorage, tokenStorageFactory?: util.TokenStorageFactory, staleness?: number}): baqend;
   connect(hostOrApp: string, secure?: boolean, doneCallback?: () => Promise<any>, failCallback?: () => Promise<any>): Promise<EntityManager>;
 }
 
@@ -92,13 +93,14 @@ export class EntityManager extends Lockable {
 }
 
 export class EntityManagerFactory extends Lockable {
-  constructor(options?: {host?: string, port?: number, secure?: boolean, basePath?: string, schema?: Object, global?: boolean, tokenStorage?: util.TokenStorage, tokenStorageFactory?: util.TokenStorageFactory, bloomFilterRefresh?: number})
+  constructor(options?: {host?: string, port?: number, secure?: boolean, basePath?: string, schema?: Object, tokenStorage?: util.TokenStorage, tokenStorageFactory?: util.TokenStorageFactory, staleness?: number})
   _connector: connector.Connector;
   metamodel: metamodel.Metamodel;
   code: util.Code;
-  tokenStorage: util.TokenStorage;
   tokenStorageFactory: util.TokenStorageFactory;
-  bloomFilterRefresh: number;
+  configure(options: {tokenStorage?: util.TokenStorage, tokenStorageFactory?: util.TokenStorageFactory, staleness?: number}): any;
+  tokenStorage: util.TokenStorage;
+  staleness: number;
   connect(hostOrApp: string, port?: number, secure?: boolean, basePath?: string): any;
   createMetamodel(): metamodel.Metamodel;
   createEntityManager(useSharedTokenStorage?: boolean): EntityManager;
@@ -189,6 +191,7 @@ export namespace binding {
 
   export class File {
     constructor(fileOptions: {id?: string, name?: string, parent?: string, path?: string, data: string|Blob|File|ArrayBuffer|json, type?: string, mimeType?: string, eTag?: string, lastModified?: string, acl?: Acl})
+    isFolder: boolean;
     id: string;
     url: string;
     name: string;
@@ -196,6 +199,7 @@ export namespace binding {
     acl: string;
     lastModified: string;
     eTag: string;
+    size: string;
     path: string;
     parent: string;
     isMetadataLoaded: boolean;
@@ -286,14 +290,15 @@ export namespace connector {
     constructor(host: string, port: number, secure: boolean, basePath: string)
     static create(host: string, port?: number, secure?: boolean, basePath?: string): connector.Connector;
     send(message: connector.Message): Promise<connector.Message>;
-    receive(message: connector.Message, resolve: Function, reject: Function, response: Object): any;
     doSend(message: connector.Message, request: Object, receive: Function): any;
     subscribe(topic: string|Object, cb: Function): any;
     unsubscribe(topic: string|Object, cb: Function): any;
     sendOverSocket(msg: {topic: string, token: string}): any;
     createWebSocket(destination: string): WebSocket;
-    prepareRequestEntity(message: connector.Message): any;
-    prepareResponseEntity(message: connector.Message, response: Object): any;
+    prepareRequest(message: connector.Message): any;
+    toFormat(message: connector.Message): any;
+    prepareResponse(message: connector.Message, response: Object): any;
+    fromFormat(response: Object, entity: any, type: string): any;
     static RESPONSE_HEADERS: Array<string>;
     static connectors: Array<connector.Connector>;
     static connections: ([string, connector.Connector]);
@@ -313,12 +318,15 @@ export namespace connector {
     header(name: string, value?: string): connector.Message|string;
     entity(data: any, type?: string): connector.Message;
     mimeType(mimeType?: string): connector.Message;
+    contentLength(contentLength?: number): connector.Message;
     ifMatch(eTag?: string): connector.Message;
     ifNoneMatch(eTag?: string): connector.Message;
     ifUnmodifiedSince(date?: Date): connector.Message;
+    noCache(): any;
+    cacheControl(value?: string): connector.Message;
     acl(acl?: Acl): connector.Message;
     accept(accept?: string): connector.Message;
-    responseType(type: string): connector.Message;
+    responseType(type?: string): connector.Message;
     addQueryString(query: string|Object): any;
     doReceive(response: Object): any;
     spec: Object;
