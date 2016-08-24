@@ -269,6 +269,49 @@ describe("Streaming Queries", function() {
     });
   });
 
+  it("should generate correct cacheable query strings", function() {
+    let s = db[bucket].find().stream(false);
+    [null, undefined, "{}", " {}", "{} ", "{ }", " { } "].forEach(function(query){
+      [null, undefined, "{}", " {}", "{} ", "{ }", " { } "].forEach(function(sort){
+        expect(s.getCachableQueryString(query, -1, -1,sort)).to.be.equal("{}");
+        expect(s.getCachableQueryString(query, 0, 0,sort)).to.be.equal("{}");
+        expect(s.getCachableQueryString(query, 1, 1,sort)).to.be.equal("{}&start=1&count=1");
+        expect(s.getCachableQueryString(query, -1, 1,sort)).to.be.equal("{}&count=1");
+        expect(s.getCachableQueryString(query, 0, -1,sort)).to.be.equal("{}");
+        expect(s.getCachableQueryString(query, 1, 0,sort)).to.be.equal("{}&start=1");
+        expect(s.getCachableQueryString(query, -1, 0,sort)).to.be.equal("{}");
+        expect(s.getCachableQueryString(query, 0, 1,sort)).to.be.equal("{}&count=1");
+        expect(s.getCachableQueryString(query, 1, -1,sort)).to.be.equal("{}&start=1");
+      });
+    });
+    
+    let query = "{name:'Bob'}";
+    let sort = null;
+    expect(s.getCachableQueryString(query, -1, -1,sort)).to.be.equal("{name:'Bob'}");
+    expect(s.getCachableQueryString(query, 0, 0,sort)).to.be.equal("{name:'Bob'}");
+    expect(s.getCachableQueryString(query, 1, 1,sort)).to.be.equal("{name:'Bob'}&start=1&count=1");
+    expect(s.getCachableQueryString(query, -1, 1,sort)).to.be.equal("{name:'Bob'}&count=1");
+    expect(s.getCachableQueryString(query, 0, -1,sort)).to.be.equal("{name:'Bob'}");
+    expect(s.getCachableQueryString(query, 1, 0,sort)).to.be.equal("{name:'Bob'}&start=1");
+    expect(s.getCachableQueryString(query, -1, 0,sort)).to.be.equal("{name:'Bob'}");
+    expect(s.getCachableQueryString(query, 0, 1,sort)).to.be.equal("{name:'Bob'}&count=1");
+    expect(s.getCachableQueryString(query, 1, -1,sort)).to.be.equal("{name:'Bob'}&start=1");
+
+    query = null;
+    sort = "{name:1}";
+    expect(s.getCachableQueryString(query, -1, -1,sort)).to.be.equal("{}&sort={name:1}");
+    expect(s.getCachableQueryString(query, 0, 0,sort)).to.be.equal("{}&sort={name:1}");
+    expect(s.getCachableQueryString(query, 1, 1,sort)).to.be.equal("{}&start=1&count=1&sort={name:1}");
+    expect(s.getCachableQueryString(query, -1, 1,sort)).to.be.equal("{}&count=1&sort={name:1}");
+    expect(s.getCachableQueryString(query, 0, -1,sort)).to.be.equal("{}&sort={name:1}");
+    expect(s.getCachableQueryString(query, 1, 0,sort)).to.be.equal("{}&start=1&sort={name:1}");
+    expect(s.getCachableQueryString(query, -1, 0,sort)).to.be.equal("{}&sort={name:1}");
+    expect(s.getCachableQueryString(query, 0, 1,sort)).to.be.equal("{}&count=1&sort={name:1}");
+    expect(s.getCachableQueryString(query, 1, -1,sort)).to.be.equal("{}&start=1&sort={name:1}");
+  });
+  
+  
+
   it("should return removed object", function() {
     stream = db[bucket].find().equal("name", "franzi").stream(false);
 
