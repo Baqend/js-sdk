@@ -28,7 +28,7 @@ if (!module.parent) {
       .option('-C, --code', 'deploy code')
       .option('-f, --file-dir <dir>', 'path to file directory', 'www')
       .option('-g, --file-glob <pattern>', 'pattern to match files', '**/*')
-      .option('-c, --code-dir <dir>', 'path to code directory', 'code')
+      .option('-c, --code-dir <dir>', 'path to code directory', 'baqend')
       .action(options => result = deploy(options));
 
   program
