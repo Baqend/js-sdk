@@ -1,3 +1,18 @@
+<a name="v2.2.3"></a>
+# v2.2.3 (2016-8-24)
+
+
+### Bug Fixes
+
+#### CLI
+* Fixed upload of non default file and code folder
+
+### Features
+
+#### CLI
+* Using 'baqend' instead of 'code' as default folder
+* Switched to commander as argument parser
+
 <a name="v2.2.2"></a>
 # v2.2.2 (2016-8-22)
 
