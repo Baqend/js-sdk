@@ -17,7 +17,7 @@ describe("Streaming Queries", function() {
   before(function() {
 
     var personType, addressType;
-    emf = new DB.EntityManagerFactory({ host: env.TEST_SERVER, schema: {}, tokenStorage: helper.rootTokenStorage });
+    emf = new DB.EntityManagerFactory({host: env.TEST_SERVER, schema: {}, tokenStorage: helper.rootTokenStorage});
     metamodel = emf.metamodel;
 
     metamodel.addType(personType = new DB.metamodel.EntityType(bucket, metamodel.entity(Object)));
@@ -167,7 +167,7 @@ describe("Streaming Queries", function() {
       });
     }).then(function() {
       return helper.sleep(t).then(function() {
-       var bob = new db[bucket]({
+        var bob = new db[bucket]({
           key: 'bob',
           name: 'Bob',
           age: 50
@@ -194,57 +194,57 @@ describe("Streaming Queries", function() {
             return dave.save();
           });
         }).then(function() {
-      return helper.sleep(t).then(function() {
-        expect(results.length).to.be.equal(2);
-        expect(results[1].operation).to.be.equal("insert");
-        expect(results[1].type).to.be.equal("add");
-        expect(results[1].data.name).to.be.equal("Dave");
-        expect(results[1].index).to.be.equal(1);
-        expect(results[1].lastIndex).to.be.equal(undefined);
-      });
-    }).then(function() {
-      return helper.sleep(t).then(function() {
-        var carl = new db[bucket]({
-          key: 'carl',
-          name: 'Carl',
-          age: 49
+          return helper.sleep(t).then(function() {
+            expect(results.length).to.be.equal(2);
+            expect(results[1].operation).to.be.equal("insert");
+            expect(results[1].type).to.be.equal("add");
+            expect(results[1].data.name).to.be.equal("Dave");
+            expect(results[1].index).to.be.equal(1);
+            expect(results[1].lastIndex).to.be.equal(undefined);
+          });
+        }).then(function() {
+          return helper.sleep(t).then(function() {
+            var carl = new db[bucket]({
+              key: 'carl',
+              name: 'Carl',
+              age: 49
+            });
+            return carl.save();
+          });
+        }).then(function() {
+          return helper.sleep(t).then(function() {
+            expect(results.length).to.be.equal(3);
+            expect(results[2].operation).to.be.equal("insert");
+            expect(results[2].type).to.be.equal("add");
+            expect(results[2].data.name).to.be.equal("Carl");
+            expect(results[2].index).to.be.equal(1);
+            expect(results[2].lastIndex).to.be.equal(undefined);
+          });
+        }).then(function() {
+          return helper.sleep(t).then(function() {
+            var dan = new db[bucket]({
+              key: 'dan',
+              name: 'Dan',
+              age: 49
+            });
+            return dan.save();
+          });
+        }).then(function() {
+          return helper.sleep(t).then(function() {
+            expect(results.length).to.be.equal(5);
+            expect(results[3].operation).to.be.equal("insert");
+            expect(results[3].type).to.be.equal("remove");
+            expect(results[3].data.name).to.be.equal("Dave");
+            expect(results[3].index).to.be.equal(3);
+            expect(results[3].lastIndex).to.be.equal(2);
+            expect(results[3].update).to.be.equal(results[4].update);
+            expect(results[4].operation).to.be.equal("insert");
+            expect(results[4].type).to.be.equal("add");
+            expect(results[4].data.name).to.be.equal("Dan");
+            expect(results[4].index).to.be.equal(2);
+            expect(results[4].lastIndex).to.be.equal(undefined);
+          });
         });
-        return carl.save();
-      });
-    }).then(function() {
-      return helper.sleep(t).then(function() {
-        expect(results.length).to.be.equal(3);
-        expect(results[2].operation).to.be.equal("insert");
-        expect(results[2].type).to.be.equal("add");
-        expect(results[2].data.name).to.be.equal("Carl");
-        expect(results[2].index).to.be.equal(1);
-        expect(results[2].lastIndex).to.be.equal(undefined);
-      });
-    }).then(function() {
-      return helper.sleep(t).then(function() {
-        var dan = new db[bucket]({
-          key: 'dan',
-          name: 'Dan',
-          age: 49
-        });
-        return dan.save();
-      });
-    }).then(function() {
-      return helper.sleep(t).then(function() {
-        expect(results.length).to.be.equal(5);
-        expect(results[3].operation).to.be.equal("insert");
-        expect(results[3].type).to.be.equal("remove");
-        expect(results[3].data.name).to.be.equal("Dave");
-        expect(results[3].index).to.be.equal(3);
-        expect(results[3].lastIndex).to.be.equal(2);
-        expect(results[3].update).to.be.equal(results[4].update);
-        expect(results[4].operation).to.be.equal("insert");
-        expect(results[4].type).to.be.equal("add");
-        expect(results[4].data.name).to.be.equal("Dan");
-        expect(results[4].index).to.be.equal(2);
-        expect(results[4].lastIndex).to.be.equal(undefined);
-      });
-    });
   });
 
   it("should return inserted object", function() {
@@ -271,46 +271,60 @@ describe("Streaming Queries", function() {
 
   it("should generate correct cacheable query strings", function() {
     let s = db[bucket].find().stream(false);
-    [null, undefined, "{}", " {}", "{} ", "{ }", " { } "].forEach(function(query){
-      [null, undefined, "{}", " {}", "{} ", "{ }", " { } "].forEach(function(sort){
-        expect(s.getCachableQueryString(query, -1, -1,sort)).to.be.equal("{}");
-        expect(s.getCachableQueryString(query, 0, 0,sort)).to.be.equal("{}");
-        expect(s.getCachableQueryString(query, 1, 1,sort)).to.be.equal("{}&start=1&count=1");
-        expect(s.getCachableQueryString(query, -1, 1,sort)).to.be.equal("{}&count=1");
-        expect(s.getCachableQueryString(query, 0, -1,sort)).to.be.equal("{}");
-        expect(s.getCachableQueryString(query, 1, 0,sort)).to.be.equal("{}&start=1");
-        expect(s.getCachableQueryString(query, -1, 0,sort)).to.be.equal("{}");
-        expect(s.getCachableQueryString(query, 0, 1,sort)).to.be.equal("{}&count=1");
-        expect(s.getCachableQueryString(query, 1, -1,sort)).to.be.equal("{}&start=1");
+    let empty = [null, undefined, "", " ", "   ", "{}", " {}", "{} ", "{ }", " { } "];
+    empty.forEach(function(query) {
+      empty.forEach(function(sort) {
+        expect(s.getCachableQueryString(query, -1, -1, sort)).to.be.equal("{}");
+        expect(s.getCachableQueryString(query, 0, 0, sort)).to.be.equal("{}");
+        expect(s.getCachableQueryString(query, 1, 1, sort)).to.be.equal("{}&start=1&count=1");
+        expect(s.getCachableQueryString(query, -1, 1, sort)).to.be.equal("{}&count=1");
+        expect(s.getCachableQueryString(query, 0, -1, sort)).to.be.equal("{}");
+        expect(s.getCachableQueryString(query, 1, 0, sort)).to.be.equal("{}&start=1");
+        expect(s.getCachableQueryString(query, -1, 0, sort)).to.be.equal("{}");
+        expect(s.getCachableQueryString(query, 0, 1, sort)).to.be.equal("{}&count=1");
+        expect(s.getCachableQueryString(query, 1, -1, sort)).to.be.equal("{}&start=1");
       });
     });
-    
-    let query = "{name:'Bob'}";
-    let sort = null;
-    expect(s.getCachableQueryString(query, -1, -1,sort)).to.be.equal("{name:'Bob'}");
-    expect(s.getCachableQueryString(query, 0, 0,sort)).to.be.equal("{name:'Bob'}");
-    expect(s.getCachableQueryString(query, 1, 1,sort)).to.be.equal("{name:'Bob'}&start=1&count=1");
-    expect(s.getCachableQueryString(query, -1, 1,sort)).to.be.equal("{name:'Bob'}&count=1");
-    expect(s.getCachableQueryString(query, 0, -1,sort)).to.be.equal("{name:'Bob'}");
-    expect(s.getCachableQueryString(query, 1, 0,sort)).to.be.equal("{name:'Bob'}&start=1");
-    expect(s.getCachableQueryString(query, -1, 0,sort)).to.be.equal("{name:'Bob'}");
-    expect(s.getCachableQueryString(query, 0, 1,sort)).to.be.equal("{name:'Bob'}&count=1");
-    expect(s.getCachableQueryString(query, 1, -1,sort)).to.be.equal("{name:'Bob'}&start=1");
 
-    query = null;
-    sort = "{name:1}";
-    expect(s.getCachableQueryString(query, -1, -1,sort)).to.be.equal("{}&sort={name:1}");
-    expect(s.getCachableQueryString(query, 0, 0,sort)).to.be.equal("{}&sort={name:1}");
-    expect(s.getCachableQueryString(query, 1, 1,sort)).to.be.equal("{}&start=1&count=1&sort={name:1}");
-    expect(s.getCachableQueryString(query, -1, 1,sort)).to.be.equal("{}&count=1&sort={name:1}");
-    expect(s.getCachableQueryString(query, 0, -1,sort)).to.be.equal("{}&sort={name:1}");
-    expect(s.getCachableQueryString(query, 1, 0,sort)).to.be.equal("{}&start=1&sort={name:1}");
-    expect(s.getCachableQueryString(query, -1, 0,sort)).to.be.equal("{}&sort={name:1}");
-    expect(s.getCachableQueryString(query, 0, 1,sort)).to.be.equal("{}&count=1&sort={name:1}");
-    expect(s.getCachableQueryString(query, 1, -1,sort)).to.be.equal("{}&start=1&sort={name:1}");
+    empty.forEach(function(sort) {
+      let query = "{name:'Bob'}";
+      expect(s.getCachableQueryString(query, -1, -1, sort)).to.be.equal("{name:'Bob'}");
+      expect(s.getCachableQueryString(query, 0, 0, sort)).to.be.equal("{name:'Bob'}");
+      expect(s.getCachableQueryString(query, 1, 1, sort)).to.be.equal("{name:'Bob'}&start=1&count=1");
+      expect(s.getCachableQueryString(query, -1, 1, sort)).to.be.equal("{name:'Bob'}&count=1");
+      expect(s.getCachableQueryString(query, 0, -1, sort)).to.be.equal("{name:'Bob'}");
+      expect(s.getCachableQueryString(query, 1, 0, sort)).to.be.equal("{name:'Bob'}&start=1");
+      expect(s.getCachableQueryString(query, -1, 0, sort)).to.be.equal("{name:'Bob'}");
+      expect(s.getCachableQueryString(query, 0, 1, sort)).to.be.equal("{name:'Bob'}&count=1");
+      expect(s.getCachableQueryString(query, 1, -1, sort)).to.be.equal("{name:'Bob'}&start=1");
+    });
+
+    empty.forEach(function(query) {
+      let sort = "{name:1}";
+      expect(s.getCachableQueryString(query, -1, -1, sort)).to.be.equal("{}&sort={name:1}");
+      expect(s.getCachableQueryString(query, 0, 0, sort)).to.be.equal("{}&sort={name:1}");
+      expect(s.getCachableQueryString(query, 1, 1, sort)).to.be.equal("{}&start=1&count=1&sort={name:1}");
+      expect(s.getCachableQueryString(query, -1, 1, sort)).to.be.equal("{}&count=1&sort={name:1}");
+      expect(s.getCachableQueryString(query, 0, -1, sort)).to.be.equal("{}&sort={name:1}");
+      expect(s.getCachableQueryString(query, 1, 0, sort)).to.be.equal("{}&start=1&sort={name:1}");
+      expect(s.getCachableQueryString(query, -1, 0, sort)).to.be.equal("{}&sort={name:1}");
+      expect(s.getCachableQueryString(query, 0, 1, sort)).to.be.equal("{}&count=1&sort={name:1}");
+      expect(s.getCachableQueryString(query, 1, -1, sort)).to.be.equal("{}&start=1&sort={name:1}");
+    });
+
+    let query = "{name:'Bob'}";
+    let sort = "{name:1}";
+    expect(s.getCachableQueryString(query, -1, -1, sort)).to.be.equal("{name:'Bob'}&sort={name:1}");
+    expect(s.getCachableQueryString(query, 0, 0, sort)).to.be.equal("{name:'Bob'}&sort={name:1}");
+    expect(s.getCachableQueryString(query, 1, 1, sort)).to.be.equal("{name:'Bob'}&start=1&count=1&sort={name:1}");
+    expect(s.getCachableQueryString(query, -1, 1, sort)).to.be.equal("{name:'Bob'}&count=1&sort={name:1}");
+    expect(s.getCachableQueryString(query, 0, -1, sort)).to.be.equal("{name:'Bob'}&sort={name:1}");
+    expect(s.getCachableQueryString(query, 1, 0, sort)).to.be.equal("{name:'Bob'}&start=1&sort={name:1}");
+    expect(s.getCachableQueryString(query, -1, 0, sort)).to.be.equal("{name:'Bob'}&sort={name:1}");
+    expect(s.getCachableQueryString(query, 0, 1, sort)).to.be.equal("{name:'Bob'}&count=1&sort={name:1}");
+    expect(s.getCachableQueryString(query, 1, -1, sort)).to.be.equal("{name:'Bob'}&start=1&sort={name:1}");
   });
-  
-  
+
 
   it("should return removed object", function() {
     stream = db[bucket].find().equal("name", "franzi").stream(false);
