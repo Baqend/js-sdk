@@ -270,8 +270,8 @@ describe("Streaming Queries", function() {
   });
 
   it("should generate correct cacheable query strings", function() {
-    let s = db[bucket].find().stream(false);
-    let empty = [null, undefined, "", " ", "   ", "{}", " {}", "{} ", "{ }", " { } "];
+    var s = db[bucket].find().stream(false);
+    var empty = [null, undefined, "", " ", "   ", "{}", " {}", "{} ", "{ }", " { } "];
     empty.forEach(function(query) {
       empty.forEach(function(sort) {
         expect(s.getCachableQueryString(query, -1, -1, sort)).to.be.equal("{}");
@@ -287,7 +287,7 @@ describe("Streaming Queries", function() {
     });
 
     empty.forEach(function(sort) {
-      let query = "{name:'Bob'}";
+      var query = "{name:'Bob'}";
       expect(s.getCachableQueryString(query, -1, -1, sort)).to.be.equal("{name:'Bob'}");
       expect(s.getCachableQueryString(query, 0, 0, sort)).to.be.equal("{name:'Bob'}");
       expect(s.getCachableQueryString(query, 1, 1, sort)).to.be.equal("{name:'Bob'}&start=1&count=1");
@@ -300,7 +300,7 @@ describe("Streaming Queries", function() {
     });
 
     empty.forEach(function(query) {
-      let sort = "{name:1}";
+      var sort = "{name:1}";
       expect(s.getCachableQueryString(query, -1, -1, sort)).to.be.equal("{}&sort={name:1}");
       expect(s.getCachableQueryString(query, 0, 0, sort)).to.be.equal("{}&sort={name:1}");
       expect(s.getCachableQueryString(query, 1, 1, sort)).to.be.equal("{}&start=1&count=1&sort={name:1}");
@@ -312,8 +312,8 @@ describe("Streaming Queries", function() {
       expect(s.getCachableQueryString(query, 1, -1, sort)).to.be.equal("{}&start=1&sort={name:1}");
     });
 
-    let query = "{name:'Bob'}";
-    let sort = "{name:1}";
+    var query = "{name:'Bob'}";
+    var sort = "{name:1}";
     expect(s.getCachableQueryString(query, -1, -1, sort)).to.be.equal("{name:'Bob'}&sort={name:1}");
     expect(s.getCachableQueryString(query, 0, 0, sort)).to.be.equal("{name:'Bob'}&sort={name:1}");
     expect(s.getCachableQueryString(query, 1, 1, sort)).to.be.equal("{name:'Bob'}&start=1&count=1&sort={name:1}");
