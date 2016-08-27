@@ -39,19 +39,8 @@ var helper = {
         }
       });
     } else {
-      return helper.req("/spec/assets/" + src).then(function(file) {
-        if (type == 'arraybuffer') {
-          return new Promise(function(resolve, reject) {
-            var fileReader = new FileReader();
-            fileReader.onload = function() {
-              resolve(this.result);
-            };
-            fileReader.onerror = reject;
-            fileReader.readAsArrayBuffer(file);
-          });
-        } else {
-          return file;
-        }
+      return helper.req("/spec/assets/" + src, type).then(function(file) {
+        return file;
       });
     }
   },
