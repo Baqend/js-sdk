@@ -26,7 +26,7 @@ describe('Test file', function() {
     return Promise.all([
       helper.asset('flames.png'),
       helper.asset('rocket.jpg'),
-      helper.asset('rocket.jpg', 'arraybuffer'),
+      helper.asset('flames.png', 'arraybuffer'),
     ]).then(function(data) {
       flames = data[0];
       rocket = data[1];
@@ -654,7 +654,7 @@ describe('Test file', function() {
       var file = new rootDb.File(pngFile.id);
       return file.download({type: 'arraybuffer'}).then(function(data) {
         expect(file.mimeType).eql('image/png');
-        expect(data).eql(arrayBuffer);
+        expect(data.byteLength).eql(arrayBuffer.byteLength);
       });
     });
   });

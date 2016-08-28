@@ -112,12 +112,6 @@ module.exports = function (grunt) {
       dev: {
         configFile: 'karma.conf.js'
       },
-      internal: {
-        hostname: 'fb.baqend.com',
-        configFile: 'karma.conf.js',
-        browsers: ['Chrome-Linux'],
-        singleRun: true
-      },
       test: {
         hostname: 'jenkins.baqend.com',
         configFile: 'karma.conf.js',

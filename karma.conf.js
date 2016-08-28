@@ -58,6 +58,9 @@ module.exports = function(config) {
     // enable / disable watching file and executing tests whenever any file changes
     autoWatch: false,
 
+    // How many browsers Karma launches in parallel.
+    concurrency: 4,
+
     // Start these browsers, currently available:
     // - Chrome
     // - ChromeCanary
@@ -153,6 +156,6 @@ module.exports = function(config) {
 
     // Continuous Integration mode
     // if true, it capture browsers, run tests and exit
-    singleRun: true
+    singleRun: false
   });
 };
