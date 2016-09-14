@@ -33,11 +33,6 @@ export class Acl {
   fromJSON(json: json): any;
 }
 
-export interface baqend extends EntityManager {
-  configure(options: {tokenStorage?: util.TokenStorage, tokenStorageFactory?: util.TokenStorageFactory, staleness?: number}): baqend;
-  connect(hostOrApp: string, secure?: boolean, doneCallback?: () => Promise<any>, failCallback?: () => Promise<any>): Promise<EntityManager>;
-}
-
 export class EntityManager extends Lockable {
   constructor(entityManagerFactory: EntityManagerFactory)
   log: util.Logger;
@@ -127,6 +122,11 @@ export class GeoPoint {
   static EARTH_RADIUS_IN_MILES: number;
 }
 
+export interface baqend extends EntityManager {
+  configure(options: {tokenStorage?: util.TokenStorage, tokenStorageFactory?: util.TokenStorageFactory, staleness?: number}): baqend;
+  connect(hostOrApp: string, secure?: boolean, doneCallback?: () => Promise<any>, failCallback?: () => Promise<any>): Promise<EntityManager>;
+}
+
 export class GlobalStorage {
   constructor()
   _saveToken(): any;
@@ -135,6 +135,144 @@ export class GlobalStorage {
 export class WebStorage {
   constructor()
   _saveToken(): any;
+}
+
+export namespace util {
+    export function uuid(): string;
+
+  export class Code {
+    constructor(metamodel: metamodel.Metamodel)
+    entityManagerFactory: EntityManagerFactory;
+    functionToString(fn: Function): string;
+    stringToFunction(signature: Array<string>, code: string): Function;
+    loadModules(): Promise<Array<string>>;
+    loadCode(type: metamodel.ManagedType|string, codeType: string, asFunction?: boolean): Promise<(string|Function)>;
+    saveCode(type: metamodel.ManagedType|string, codeType: string, fn: string|Function): Promise<(string|Function)>;
+    deleteCode(type: metamodel.ManagedType|string, codeType: string): Promise<any>;
+  }
+
+  export class Lockable {
+    constructor()
+    isReady: boolean;
+    ready(doneCallback?: () => Promise<any>, failCallback?: () => Promise<any>): Promise<util.Lockable>;
+    withLock(callback: () => Promise<any>, critical?: boolean): Promise<util.Lockable>;
+  }
+
+  export class Logger {
+    constructor()
+    level: string;
+    log(message: string, ...args: Array<any>): any;
+    log(message: string, data?: ([string, any])): any;
+    log(level: string, message: string, ...args: Array<any>): any;
+    log(level: string, message: string, data?: ([string, any])): any;
+    entityManager: EntityManager;
+    trace(message: string, ...args: Array<any>): any;
+    trace(message: string, data?: ([string, any])): any;
+    debug(message: string, ...args: Array<any>): any;
+    debug(message: string, data?: ([string, any])): any;
+    info(message: string, ...args: Array<any>): any;
+    info(message: string, data?: ([string, any])): any;
+    warn(message: string, ...args: Array<any>): any;
+    warn(message: string, data?: ([string, any])): any;
+    error(message: string, ...args: Array<any>): any;
+    error(message: string, data?: ([string, any])): any;
+  }
+
+  export class Metadata extends Lockable {
+    constructor(entity: binding.Entity, type: metamodel.ManagedType)
+    id: string;
+    version: number;
+    type: metamodel.ManagedType;
+    acl: Acl;
+    static get(managed: binding.Managed): util.Metadata;
+    db: EntityManager;
+    bucket: string;
+    key: string;
+    isAttached: boolean;
+    isAvailable: boolean;
+    isPersistent: boolean;
+    isDirty: boolean;
+    readAccess(): any;
+    writeAccess(): any;
+    setUnavailable(): any;
+    setPersistent(): any;
+    setDirty(): any;
+    setRemoved(): any;
+    setJsonMetadata(json: Object): any;
+    getJson(excludeMetadata?: boolean): json;
+  }
+
+  export class Modules {
+    constructor(entityManager: EntityManager, connector: connector.Connector)
+    _entityManager: EntityManager;
+    _connector: connector.Connector;
+    get(bucket: string, query: Object|string, options?: {responseType?: string}, doneCallback?: Function, failCallback?: Function): Promise<Object>;
+    post(bucket: string, body: string|Blob|File|ArrayBuffer|FormData|json, options?: {requestType?: string, mimeType?: string, responseType?: string}, doneCallback?: Function, failCallback?: Function): Promise<Object>;
+  }
+
+  export class Permission {
+    constructor(metadata: util.Metadata)
+    _rules: ([string, string]);
+    _metadata: util.Metadata;
+    allRules(): Array<string>;
+    clear(): any;
+    isPublicAllowed(): boolean;
+    setPublicAllowed(): any;
+    getRule(userOrRole: model.User|model.Role): string;
+    isAllowed(userOrRole: model.User|model.Role): any;
+    isDenied(userOrRole: model.User|model.Role): any;
+    allowAccess(userOrRole: model.User|model.Role): util.Permission;
+    denyAccess(userOrRole: model.User|model.Role): util.Permission;
+    deleteAccess(userOrRole: model.User|model.Role): util.Permission;
+    toJSON(): json;
+    fromJSON(json: json): any;
+    static fromJSON(json: json): util.Permission;
+  }
+
+  export class PushMessage {
+    constructor(devices?: Set<binding.Entity>|Array<binding.Entity>, message?: string, subject?: string, sound?: string, badge?: number, data?: Object)
+    devices: Set<binding.Entity>;
+    message: string;
+    subject: string;
+    sound: string;
+    badge: number;
+    data: json;
+    addDevice(device: binding.Entity): any;
+  }
+
+  export interface TokenStorageFactory {
+    create(origin: string): Promise<TokenStorage>;
+  }
+
+  export class TokenStorage {
+    constructor()
+    temporary: boolean;
+    _saveToken(origin: string, token: string, temporary: boolean): any;
+    update(token: String): any;
+    signPath(resource: string): string;
+    static GLOBAL: util.TokenStorageFactory;
+    static WEB_STORAGE: util.TokenStorageFactory;
+  }
+
+  export class ValidationResult {
+    constructor()
+  }
+
+  export class Validator {
+    constructor()
+    key: string;
+    static compile(managedType: metamodel.ManagedType, validationCode: string): any;
+    is(fn: Function): util.Validator;
+    is(error: string, fn: Function): util.Validator;
+  }
+
+  export namespace Metadata {
+    export enum Type {
+      UNAVAILABLE = -1,
+      PERSISTENT = 0,
+      DIRTY = 1
+    }
+  }
 }
 
 export namespace binding {
@@ -361,143 +499,6 @@ export namespace connector {
       TYPE_ALREADY_EXISTS = 473,
       TYPE_STILL_REFERENCED = 474,
       SCRIPT_ABORTION = 475
-    }
-  }
-}
-
-export namespace util {
-
-  export class Code {
-    constructor(metamodel: metamodel.Metamodel)
-    entityManagerFactory: EntityManagerFactory;
-    functionToString(fn: Function): string;
-    stringToFunction(signature: Array<string>, code: string): Function;
-    loadModules(): Promise<Array<string>>;
-    loadCode(type: metamodel.ManagedType|string, codeType: string, asFunction?: boolean): Promise<(string|Function)>;
-    saveCode(type: metamodel.ManagedType|string, codeType: string, fn: string|Function): Promise<(string|Function)>;
-    deleteCode(type: metamodel.ManagedType|string, codeType: string): Promise<any>;
-  }
-
-  export class Lockable {
-    constructor()
-    isReady: boolean;
-    ready(doneCallback?: () => Promise<any>, failCallback?: () => Promise<any>): Promise<util.Lockable>;
-    withLock(callback: () => Promise<any>, critical?: boolean): Promise<util.Lockable>;
-  }
-
-  export class Logger {
-    constructor()
-    level: string;
-    log(message: string, ...args: Array<any>): any;
-    log(message: string, data?: ([string, any])): any;
-    log(level: string, message: string, ...args: Array<any>): any;
-    log(level: string, message: string, data?: ([string, any])): any;
-    entityManager: EntityManager;
-    trace(message: string, ...args: Array<any>): any;
-    trace(message: string, data?: ([string, any])): any;
-    debug(message: string, ...args: Array<any>): any;
-    debug(message: string, data?: ([string, any])): any;
-    info(message: string, ...args: Array<any>): any;
-    info(message: string, data?: ([string, any])): any;
-    warn(message: string, ...args: Array<any>): any;
-    warn(message: string, data?: ([string, any])): any;
-    error(message: string, ...args: Array<any>): any;
-    error(message: string, data?: ([string, any])): any;
-  }
-
-  export class Metadata extends Lockable {
-    constructor(entity: binding.Entity, type: metamodel.ManagedType)
-    id: string;
-    version: number;
-    type: metamodel.ManagedType;
-    acl: Acl;
-    static get(managed: binding.Managed): util.Metadata;
-    db: EntityManager;
-    bucket: string;
-    key: string;
-    isAttached: boolean;
-    isAvailable: boolean;
-    isPersistent: boolean;
-    isDirty: boolean;
-    readAccess(): any;
-    writeAccess(): any;
-    setUnavailable(): any;
-    setPersistent(): any;
-    setDirty(): any;
-    setRemoved(): any;
-    setJsonMetadata(json: Object): any;
-    getJson(excludeMetadata?: boolean): json;
-  }
-
-  export class Modules {
-    constructor(entityManager: EntityManager, connector: connector.Connector)
-    _entityManager: EntityManager;
-    _connector: connector.Connector;
-    get(bucket: string, query: Object|string, options?: {responseType?: string}, doneCallback?: Function, failCallback?: Function): Promise<Object>;
-    post(bucket: string, body: string|Blob|File|ArrayBuffer|FormData|json, options?: {requestType?: string, mimeType?: string, responseType?: string}, doneCallback?: Function, failCallback?: Function): Promise<Object>;
-  }
-
-  export class Permission {
-    constructor(metadata: util.Metadata)
-    _rules: ([string, string]);
-    _metadata: util.Metadata;
-    allRules(): Array<string>;
-    clear(): any;
-    isPublicAllowed(): boolean;
-    setPublicAllowed(): any;
-    getRule(userOrRole: model.User|model.Role): string;
-    isAllowed(userOrRole: model.User|model.Role): any;
-    isDenied(userOrRole: model.User|model.Role): any;
-    allowAccess(userOrRole: model.User|model.Role): util.Permission;
-    denyAccess(userOrRole: model.User|model.Role): util.Permission;
-    deleteAccess(userOrRole: model.User|model.Role): util.Permission;
-    toJSON(): json;
-    fromJSON(json: json): any;
-    static fromJSON(json: json): util.Permission;
-  }
-
-  export class PushMessage {
-    constructor(devices?: Set<binding.Entity>|Array<binding.Entity>, message?: string, subject?: string, sound?: string, badge?: number, data?: Object)
-    devices: Set<binding.Entity>;
-    message: string;
-    subject: string;
-    sound: string;
-    badge: number;
-    data: json;
-    addDevice(device: binding.Entity): any;
-  }
-
-  export interface TokenStorageFactory {
-    create(origin: string): Promise<TokenStorage>;
-  }
-
-  export class TokenStorage {
-    constructor()
-    temporary: boolean;
-    _saveToken(origin: string, token: string, temporary: boolean): any;
-    update(token: String): any;
-    signPath(resource: string): string;
-    static GLOBAL: util.TokenStorageFactory;
-    static WEB_STORAGE: util.TokenStorageFactory;
-  }
-
-  export class ValidationResult {
-    constructor()
-  }
-
-  export class Validator {
-    constructor()
-    key: string;
-    static compile(managedType: metamodel.ManagedType, validationCode: string): any;
-    is(fn: Function): util.Validator;
-    is(error: string, fn: Function): util.Validator;
-  }
-
-  export namespace Metadata {
-    export enum Type {
-      UNAVAILABLE = -1,
-      PERSISTENT = 0,
-      DIRTY = 1
     }
   }
 }
