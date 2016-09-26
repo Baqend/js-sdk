@@ -13,6 +13,7 @@ describe('Test file', function() {
   var flames, rocket, emf, rootDb;
   var dataBase64 = 'data:image/gif;base64,R0lGODlhDAAeALMAAGUJC/SHGvJZI18NDP347fifGeyqlfqqFdjHx/FhIu98HuLY1/NwHvN5G2AMDP///yH5BAAAAAAALAAAAAAMAB4AAARM8MlJ63SWOpzf3t3HVSKolab0qel6mS7LxR6I0OuCw2k9967dj+cYvFAUAJKEGnkKh0OJQggEHgSaRNHoPBheSsJrEIQf5nD6zKZEAAA7';
   var dataSvg = 'data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%201%201%22%3E%3Cpath%20d%3D%22m0%2C0v1h1V0%22%2F%3E%3C%2Fsvg%3E';
+  var dataSvgTotal = 86;
   var svgBase64 = 'PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxIDEiPjxwYXRoIGQ9Im0wLDB2MWgxVjAiLz48L3N2Zz4=';
   var html = '<html><head><title>Hallo World</title></head><body>Hallo World</body></html>';
   var json = {
@@ -524,6 +525,20 @@ describe('Test file', function() {
       }).then(function(data) {
         expect(file.mimeType).string('image/svg+xml');
         expect(data).eql(svgBase64);
+      });
+    });
+
+    it('should have a progress callback which gets called', function () {
+      var calls = 0;
+      var file = new rootDb.File({data: dataSvg});
+      var cb = function (event) {
+        expect(event.lengthComputable).to.be.true;
+        expect(event.loaded).to.be.within(0, dataSvgTotal);
+        expect(event.total).to.equal(dataSvgTotal);
+        calls += 1;
+      };
+      return file.upload({ progress: cb }).then(function () {
+        expect(calls).to.be.above(0);
       });
     });
   });
