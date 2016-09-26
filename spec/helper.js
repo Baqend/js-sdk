@@ -34,6 +34,8 @@ var helper = {
       return helper.file("spec/assets/" + src).then(function(file) {
         if (type == 'arraybuffer') {
           return file.buffer.slice(file.byteOffset, file.byteOffset + file.byteLength);
+        } else if (type == 'text') {
+          return file.toString();
         } else {
           return file;
         }

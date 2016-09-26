@@ -18,12 +18,22 @@
 
   <script src="../build/baqend.js"></script>
   <script src="../spec/env.js"></script>
+
+  <script>
+    var server = location.search.match(/server=([^&]+)/);
+    env.TEST_SERVER = server? decodeURIComponent(server[1]): env.TEST_SERVER;
+  </script>
+
   <script src="../spec/helper.js"></script>
 
   <% _.forEach(scripts, function(src) { %><script type="text/javascript" src="../<%- src %>"></script><% }); %>
 
   <script>
     onload = function(){
+      document.getElementById('server').value = env.TEST_SERVER;
+      var grep = location.search.match(/grep=([^&]+)/);
+      document.getElementById('grep').value = grep? decodeURIComponent(grep[1]): '';
+
       mocha.checkLeaks();
       mocha.globals(['jQuery', 'ms__*', '$*']);
       mocha.run();
@@ -31,6 +41,12 @@
   </script>
 </head>
 <body>
+<form action="">
+  <label for="server">Server: </label>
+  <input id="server" type="text" name="server">
+  <input id="grep" type="hidden" name="grep">
+  <button type="submit">Change Server</button>
+</form>
 <div id="mocha"></div>
 </body>
 </html>
