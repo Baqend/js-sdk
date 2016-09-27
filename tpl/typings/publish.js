@@ -337,9 +337,10 @@ function createType(typeSpec) {
         type = type.replace(/\*/g, 'any');
         type = type.replace(/\.</g, '<');
       }
-      
-      if (type.startsWith('Object<')) {
-        type = '([' + type.substring('Object<'.length, type.length - 1) + '])';
+
+      let matches;
+      if (matches = type.match(/^Object\.?<([^,]+),\s*([^>]+)>$/)) {
+        type = '{ [key: ' + matches[1] + ']: ' + matches[2] + ' }';
       }
       
       return type;
