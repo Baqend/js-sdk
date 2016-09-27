@@ -528,19 +528,21 @@ describe('Test file', function() {
       });
     });
 
-    it('should have a progress callback which gets called', function () {
-      var calls = 0;
-      var file = new rootDb.File({data: dataSvg});
-      var cb = function (event) {
-        expect(event.lengthComputable).to.be.true;
-        expect(event.loaded).to.be.within(0, dataSvgTotal);
-        expect(event.total).to.equal(dataSvgTotal);
-        calls += 1;
-      };
-      return file.upload({ progress: cb }).then(function () {
-        expect(calls).to.be.above(0);
+    if (!helper.isNode) {
+      it('should have a progress callback which gets called', function () {
+        var calls = 0;
+        var file = new rootDb.File({data: dataSvg});
+        var cb = function (event) {
+          expect(event.lengthComputable).to.be.true;
+          expect(event.loaded).to.be.within(0, dataSvgTotal);
+          expect(event.total).to.equal(dataSvgTotal);
+          calls += 1;
+        };
+        return file.upload({ progress: cb }).then(function () {
+          expect(calls).to.be.above(0);
+        });
       });
-    });
+    }
   });
 
   describe('download', function() {
