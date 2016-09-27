@@ -263,11 +263,11 @@ function createParams(member) {
 
   let params = {};
 
-  member.params.forEach(function(param, index) {
-    let names = param.name.split('.');
-    let name = names[0];
+  member.params.forEach((param) => {
+    const names = param.name.split('.');
+    const name = names[0];
 
-    let type = createType(param.type);
+    const type = createType(param.type);
     if (names.length > 1) {
       let obj = params[name];
       if (typeof obj != "object") {
@@ -327,23 +327,23 @@ function createType(typeSpec) {
   if (!typeSpec) {
     console.log(typeSpec)
     return 'unknown'
-  } else {
-    return typeSpec.names.map((name) => {
-      let type = typeDefs[name];
-      if (!type) {
-        type = name;
-        type = type.replace(/function/g, 'Function');
-        type = type.replace(/Function\(\)/g, 'Function');
-        type = type.replace(/\*/g, 'any');
-        type = type.replace(/\.</g, '<');
-      }
-
-      let matches;
-      if (matches = type.match(/^Object\.?<([^,]+),\s*([^>]+)>$/)) {
-        type = '{ [key: ' + matches[1] + ']: ' + matches[2] + ' }';
-      }
-      
-      return type;
-    }).join('|');
   }
+
+  return typeSpec.names.map((name) => {
+    let type = typeDefs[name];
+    if (!type) {
+      type = name;
+      type = type.replace(/function/g, 'Function');
+      type = type.replace(/Function\(\)/g, 'Function');
+      type = type.replace(/\*/g, 'any');
+      type = type.replace(/\.</g, '<');
+    }
+
+    let matches;
+    if (matches = type.match(/^Object\.?<([^,]+),\s*([^>]+)>$/)) {
+      type = '{ [key: ' + matches[1] + ']: ' + matches[2] + ' }';
+    }
+
+    return type;
+  }).join('|');
 }
