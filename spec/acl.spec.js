@@ -189,8 +189,10 @@ describe('Test Acl', function() {
       var acl1 = (new db.AclPerson()).acl;
       var acl2 = (new db.AclPerson()).acl;
 
-      acl1.denyAccess(db.User.me);
-      acl2.allowAccess(db.User.me);
+      acl1.read.denyAccess(db.User.me);
+      acl2.read.allowAccess(db.User.me);
+      acl1.write.denyAccess(db.User.me);
+      acl2.write.allowAccess(db.User.me);
 
       acl1.read._metadata.setPersistent();
       acl1.write._metadata.setPersistent();
