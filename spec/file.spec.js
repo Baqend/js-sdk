@@ -28,10 +28,12 @@ describe('Test file', function() {
       helper.asset('flames.png'),
       helper.asset('rocket.jpg'),
       helper.asset('flames.png', 'arraybuffer'),
+      helper.asset('test.json', 'text'),
     ]).then(function(data) {
       flames = data[0];
       rocket = data[1];
       arrayBuffer = data[2];
+      json = data[3];
     }).then(function() {
       return emf.createEntityManager().ready().then(function(em) {
         return em.User.login('root', 'root').then(function() {
@@ -550,7 +552,7 @@ describe('Test file', function() {
 
     before(function() {
       pngFile = new rootDb.File({data: flames});
-      jsonFile = new rootDb.File({data: json});
+      jsonFile = new rootDb.File({data: json, mimeType: 'application/json'});
       htmlFile = new rootDb.File({data: html, mimeType: 'text/html;charset=utf-8'});
       gifFile = new rootDb.File({data: dataBase64, type: 'data-url'});
       svgFile = new rootDb.File({data: dataSvg, type: 'data-url'});
@@ -681,13 +683,14 @@ describe('Test file', function() {
 
     before(function() {
       pngFile = new rootDb.File({parent: bucket, data: flames});
-      jsonFile = new rootDb.File({data: json});
+      jsonFile = new rootDb.File({parent: bucket, data: json, mimeType: 'application/json'});
 
-      return Promise.all([
-        pngFile.upload(),
-        jsonFile.upload(),
-        rootDb.File.saveMetadata(bucket, {})
-      ]);
+      return rootDb.File.saveMetadata(bucket, {}).then(function() {
+        return Promise.all([
+          pngFile.upload(),
+          jsonFile.upload()
+        ]);
+      });
     });
 
     it('should be loaded', function() {
@@ -698,6 +701,20 @@ describe('Test file', function() {
         expect(file.lastModified).lt(new Date(Date.now() + 5 * 60 * 1000));
         expect(file.mimeType).eql('image/png');
         expect(file.size).eql(pngFile.size);
+        expect(file.acl.isPublicReadAllowed()).be.true;
+        expect(file.acl.isPublicWriteAllowed()).be.true;
+      });
+    });
+
+    it('should be loaded by download', function() {
+      var file = new rootDb.File(jsonFile.id);
+      return file.download().then(function() {
+        expect(file.eTag).not.contains('--gzip');
+        expect(file.eTag).eql(jsonFile.eTag);
+        expect(file.lastModified).gt(new Date(Date.now() - 5 * 60 * 1000));
+        expect(file.lastModified).lt(new Date(Date.now() + 5 * 60 * 1000));
+        expect(file.mimeType).eql('application/json; charset=UTF-8');
+        expect(file.size).eql(jsonFile.size);
         expect(file.acl.isPublicReadAllowed()).be.true;
         expect(file.acl.isPublicWriteAllowed()).be.true;
       });
