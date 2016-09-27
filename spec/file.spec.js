@@ -681,13 +681,14 @@ describe('Test file', function() {
 
     before(function() {
       pngFile = new rootDb.File({parent: bucket, data: flames});
-      jsonFile = new rootDb.File({data: json, mimeType: 'application/json'});
+      jsonFile = new rootDb.File({parent: bucket, data: json, mimeType: 'application/json'});
 
-      return Promise.all([
-        pngFile.upload(),
-        jsonFile.upload(),
-        rootDb.File.saveMetadata(bucket, {})
-      ]);
+      return rootDb.File.saveMetadata(bucket, {}).then(function() {
+        return Promise.all([
+          pngFile.upload(),
+          jsonFile.upload()
+        ]);
+      });
     });
 
     it('should be loaded', function() {
