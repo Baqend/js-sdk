@@ -183,6 +183,40 @@ describe('Test Acl', function() {
       acl.clear();
       expect(person._metadata.isDirty).be.true;
     });
+
+
+    it('should be copyable', function() {
+      var acl1 = (new db.AclPerson()).acl;
+      var acl2 = (new db.AclPerson()).acl;
+
+      acl1.denyAccess(db.User.me);
+      acl2.allowAccess(db.User.me);
+
+      acl1.read._metadata.setPersistent();
+      acl1.write._metadata.setPersistent();
+      acl2.read._metadata.setPersistent();
+      acl2.write._metadata.setPersistent();
+
+      expect(acl1.read._metadata.isDirty).be.false;
+      expect(acl1.write._metadata.isDirty).be.false;
+      expect(acl2.read._metadata.isDirty).be.false;
+      expect(acl2.write._metadata.isDirty).be.false;
+      expect(acl1.isReadAllowed(db.User.me)).to.be.false;
+      expect(acl1.isWriteAllowed(db.User.me)).to.be.false;
+      expect(acl2.isReadAllowed(db.User.me)).to.be.true;
+      expect(acl2.isWriteAllowed(db.User.me)).to.be.true;
+
+      expect(acl1.copy(acl2)).to.equal(acl1);
+
+      expect(acl1.read._metadata.isDirty).be.true;
+      expect(acl1.write._metadata.isDirty).be.true;
+      expect(acl2.read._metadata.isDirty).be.false;
+      expect(acl2.write._metadata.isDirty).be.false;
+      expect(acl1.isReadAllowed(db.User.me)).to.be.true;
+      expect(acl1.isWriteAllowed(db.User.me)).to.be.true;
+      expect(acl2.isReadAllowed(db.User.me)).to.be.true;
+      expect(acl2.isWriteAllowed(db.User.me)).to.be.true;
+    });
   });
 
   describe('save and load', function() {
