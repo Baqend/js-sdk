@@ -16,9 +16,7 @@ describe('Test file', function() {
   var dataSvgTotal = 86;
   var svgBase64 = 'PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxIDEiPjxwYXRoIGQ9Im0wLDB2MWgxVjAiLz48L3N2Zz4=';
   var html = '<html><head><title>Hallo World</title></head><body>Hallo World</body></html>';
-  var json = {
-    'Hallo': 'World'
-  };
+  var json;
   var arrayBuffer;
 
   before(function() {
@@ -33,7 +31,7 @@ describe('Test file', function() {
       flames = data[0];
       rocket = data[1];
       arrayBuffer = data[2];
-      json = data[3];
+      json = JSON.parse(data[3]);
     }).then(function() {
       return emf.createEntityManager().ready().then(function(em) {
         return em.User.login('root', 'root').then(function() {
@@ -683,7 +681,7 @@ describe('Test file', function() {
 
     before(function() {
       pngFile = new rootDb.File({parent: bucket, data: flames});
-      jsonFile = new rootDb.File({parent: bucket, data: json, mimeType: 'application/json'});
+      jsonFile = new rootDb.File({data: json, mimeType: 'application/json'});
 
       return rootDb.File.saveMetadata(bucket, {}).then(function() {
         return Promise.all([
@@ -1072,10 +1070,11 @@ describe('Test file', function() {
       return;
     }
 
-    var uploadFile, db, jsonBlob = new Blob(['{"Hallo":"World"}'], {type: 'application/json'});
+    var uploadFile, db, jsonBlob;
 
     before(function() {
       db = emf.createEntityManager();
+      jsonBlob = new Blob([JSON.stringify(json)], {type: 'application/json'});
 
       var rootEmf = new DB.EntityManagerFactory({host: env.TEST_SERVER, tokenStorage: helper.rootTokenStorage});
       rootEmf.ready().then(function() {
