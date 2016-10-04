@@ -1,3 +1,20 @@
+<a name="v2.3.0"></a>
+# v2.3.0 (2016-10-4)
+
+
+### Bug Fixes
+
+* Handle etags of gzipped content correctly
+* let newPromise return the user object
+* do not use iframe connections on same domain
+* Some doc fixes
+
+### Features
+
+* Introduce a progress callback for file uploads
+* acle methods are variadic now
+* update core-js to 2.4.1 and validate to 4.9.0
+
 <a name="v2.2.3"></a>
 # v2.2.3 (2016-8-24)
 
