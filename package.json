@@ -20,7 +20,6 @@
     "crypto-js": "^3.1.6",
     "glob": "^7.0.6",
     "node-uuid": "^1.4.7",
-    "shelljs": "^0.7.4",
     "validator": "^4.9.0"
   },
   "peerDependencies": {
@@ -79,6 +78,7 @@
     "mocha": "^3.0.2",
     "mocha-jenkins-reporter": "^0.2.4",
     "phantomjs-prebuilt": "^2.1.12",
+    "shelljs": "^0.7.4",
     "through2": "^2.0.1",
     "typescript": "^1.8.10",
     "uglify-js": "^2.7.3"
