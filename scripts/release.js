@@ -24,14 +24,14 @@ var requiredNPMUser = 'info@baqend.com';
 var gitAdd = 'dist doc';
 
 console.log('Check npm user.');
-var user = exec('npm config get email', {silent: true}).output.trim();
+var user = exec('npm config get email', {silent: true}).stdout.trim();
 if (user != requiredNPMUser) {
   console.error('Not logged in as npm user ' + requiredNPMUser);
   exit(1);
 }
 
 console.log('Check correct branch.');
-var branch = exec('git rev-parse --abbrev-ref HEAD', {silent: true}).output.trim();
+var branch = exec('git rev-parse --abbrev-ref HEAD', {silent: true}).stdout.trim();
 if (branch != requiredBranch) {
   console.error('Not on required branch ' + requiredBranch);
   exit(1);
@@ -45,7 +45,7 @@ if (fetchCode != 0) {
 }
 
 console.log('Check project is clean.');
-var statusLines = exec('git status -sb', {silent: true}).output.trim().split('\n');
+var statusLines = exec('git status -sb', {silent: true}).stdout.trim().split('\n');
 var ahead = /.*ahead (\d+).*/.exec(statusLines[0]);
 var behind = /.*behind (\d+).*/.exec(statusLines[0]);
 if (ahead) {
@@ -70,7 +70,7 @@ var versionCmd = exec('npm version --no-git-tag-version ' + versionArg);
 if (versionCmd.code != 0) {
   exit(1);
 }
-var version = versionCmd.output.trim();
+var version = versionCmd.stdout.trim();
 
 var changelog = fs.readFileSync('CHANGELOG.md'); //read existing contents into data
 var fd = fs.openSync('CHANGELOG.md', 'w+');
@@ -102,7 +102,7 @@ if (pushNPM)
 exec('npm publish');
 
 console.log('Postrelease:');
-var devVersion = exec('npm version --no-git-tag-version prerelease').output.trim();
+var devVersion = exec('npm version --no-git-tag-version prerelease').stdout.trim();
 (gitAdd && exec('git rm --cached -r ' + gitAdd, {silent: true}).code) ||
 exec('git add package.json').code ||
 exec('git commit -m "new development version ' + devVersion + ' [ci skip]"').code ||
