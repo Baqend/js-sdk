@@ -1,0 +1,1056 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>Baqend JavaScript SDK 2.3.1 - Class: Lockable</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+
+    <link rel="shortcut icon" type="image/x-icon" href="img/favicon.ico">
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/bootstrap-baqend.min.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<nav class="navbar navbar-default navbar-fixed-top" role="navigation">
+    <div class="container">
+
+        <!-- Collapsed navigation -->
+        <div class="navbar-header">
+            <!-- Expander button -->
+            <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+
+            <!-- Main title -->
+            <a class="navbar-brand" href="/"><img src="img/baqend_logo.svg"></a>
+        </div>
+
+        <!-- Expanded navigation -->
+        <div id="nav" class="navbar-collapse collapse">
+            <!-- Main navigation -->
+            <ul class="nav navbar-nav">
+                <li>
+                    <a href="http://www.baqend.com/guide/index.html">Guide</a>
+                </li>
+                <li class="active">
+                    <a href="baqend.html">JS API</a>
+                </li>
+                <li>
+                    <a href="http://www.baqend.com/#tutorial">Tutorial</a>
+                </li>
+                <li>
+                    <a href="http://dashboard.baqend.com/">Dashboard</a>
+                </li>
+                <li>
+                    <a href="https://community.baqend.com/">Community <span class="visible-lg-inline">Forum</span></a>
+                </li>
+            </ul>
+        </div>
+    </div>
+</nav>
+
+
+<div class="container">
+  <div class="row">
+    <div class="col-md-3">
+        <div class="bs-sidebar hidden-print fixed affix" role="complementary">
+            <input class="filter form-control input-sm" type="text" placeholder="FILTER"/>
+
+            <ul class="nav bs-sidenav">
+            
+            
+                
+                    
+                        <li class=""><a href="Acl.html" class="nav-name">Acl</a></li>
+                    
+                        <li class=""><a href="EntityManager.html" class="nav-name">EntityManager</a></li>
+                    
+                        <li class=""><a href="EntityManagerFactory.html" class="nav-name">EntityManagerFactory</a></li>
+                    
+                        <li class=""><a href="EntityTransaction.html" class="nav-name">EntityTransaction</a></li>
+                    
+                        <li class=""><a href="GeoPoint.html" class="nav-name">GeoPoint</a></li>
+                    
+                        <li class=""><a href="baqend.html" class="nav-name">baqend</a></li>
+                    
+                
+            
+                
+                    <li class="">
+                        <a href="binding.html" class="nav-name">binding</a>
+                        <ul class="nav">
+                          
+                            <li class=""><a href="binding.Accessor.html" class="nav-name">Accessor</a></li>
+                          
+                            <li class=""><a href="binding.DeviceFactory.html" class="nav-name">DeviceFactory</a></li>
+                          
+                            <li class=""><a href="binding.Enhancer.html" class="nav-name">Enhancer</a></li>
+                          
+                            <li class=""><a href="binding.Entity.html" class="nav-name">Entity</a></li>
+                          
+                            <li class=""><a href="binding.EntityFactory.html" class="nav-name">EntityFactory</a></li>
+                          
+                            <li class=""><a href="binding.Factory.html" class="nav-name">Factory</a></li>
+                          
+                            <li class=""><a href="binding.File.html" class="nav-name">File</a></li>
+                          
+                            <li class=""><a href="binding.FileFactory.html" class="nav-name">FileFactory</a></li>
+                          
+                            <li class=""><a href="binding.Managed.html" class="nav-name">Managed</a></li>
+                          
+                            <li class=""><a href="binding.ManagedFactory.html" class="nav-name">ManagedFactory</a></li>
+                          
+                            <li class=""><a href="binding.Role.html" class="nav-name">Role</a></li>
+                          
+                            <li class=""><a href="binding.User.html" class="nav-name">User</a></li>
+                          
+                            <li class=""><a href="binding.UserFactory.html" class="nav-name">UserFactory</a></li>
+                          
+                        </ul>
+                    </li>
+                
+            
+                
+                    <li class="">
+                        <a href="caching.html" class="nav-name">caching</a>
+                        <ul class="nav">
+                          
+                            <li class=""><a href="caching.BloomFilter.html" class="nav-name">BloomFilter</a></li>
+                          
+                        </ul>
+                    </li>
+                
+            
+                
+                    <li class="">
+                        <a href="connector.html" class="nav-name">connector</a>
+                        <ul class="nav">
+                          
+                            <li class=""><a href="connector.Connector.html" class="nav-name">Connector</a></li>
+                          
+                            <li class=""><a href="connector.IFrameConnector.html" class="nav-name">IFrameConnector</a></li>
+                          
+                            <li class=""><a href="connector.Message.html" class="nav-name">Message</a></li>
+                          
+                            <li class=""><a href="connector.NodeConnector.html" class="nav-name">NodeConnector</a></li>
+                          
+                            <li class=""><a href="connector.XMLHttpConnector.html" class="nav-name">XMLHttpConnector</a></li>
+                          
+                        </ul>
+                    </li>
+                
+            
+                
+                    <li class="">
+                        <a href="error.html" class="nav-name">error</a>
+                        <ul class="nav">
+                          
+                            <li class=""><a href="error.CommunicationError.html" class="nav-name">CommunicationError</a></li>
+                          
+                            <li class=""><a href="error.EntityExistsError.html" class="nav-name">EntityExistsError</a></li>
+                          
+                            <li class=""><a href="error.IllegalEntityError.html" class="nav-name">IllegalEntityError</a></li>
+                          
+                            <li class=""><a href="error.PersistentError.html" class="nav-name">PersistentError</a></li>
+                          
+                            <li class=""><a href="error.RollbackError.html" class="nav-name">RollbackError</a></li>
+                          
+                        </ul>
+                    </li>
+                
+            
+                
+                    <li class="">
+                        <a href="metamodel.html" class="nav-name">metamodel</a>
+                        <ul class="nav">
+                          
+                            <li class=""><a href="metamodel.Attribute.html" class="nav-name">Attribute</a></li>
+                          
+                            <li class=""><a href="metamodel.BasicType.html" class="nav-name">BasicType</a></li>
+                          
+                            <li class=""><a href="metamodel.CollectionAttribute.html" class="nav-name">CollectionAttribute</a></li>
+                          
+                            <li class=""><a href="metamodel.DbIndex.html" class="nav-name">DbIndex</a></li>
+                          
+                            <li class=""><a href="metamodel.EmbeddableType.html" class="nav-name">EmbeddableType</a></li>
+                          
+                            <li class=""><a href="metamodel.EntityType.html" class="nav-name">EntityType</a></li>
+                          
+                            <li class=""><a href="metamodel.ListAttribute.html" class="nav-name">ListAttribute</a></li>
+                          
+                            <li class=""><a href="metamodel.ManagedType.html" class="nav-name">ManagedType</a></li>
+                          
+                            <li class=""><a href="metamodel.MapAttribute.html" class="nav-name">MapAttribute</a></li>
+                          
+                            <li class=""><a href="metamodel.Metamodel.html" class="nav-name">Metamodel</a></li>
+                          
+                            <li class=""><a href="metamodel.ModelBuilder.html" class="nav-name">ModelBuilder</a></li>
+                          
+                            <li class=""><a href="metamodel.PluralAttribute.html" class="nav-name">PluralAttribute</a></li>
+                          
+                            <li class=""><a href="metamodel.SetAttribute.html" class="nav-name">SetAttribute</a></li>
+                          
+                            <li class=""><a href="metamodel.SingularAttribute.html" class="nav-name">SingularAttribute</a></li>
+                          
+                            <li class=""><a href="metamodel.Type.html" class="nav-name">Type</a></li>
+                          
+                        </ul>
+                    </li>
+                
+            
+                
+                    <li class="">
+                        <a href="model.html" class="nav-name">model</a>
+                        <ul class="nav">
+                          
+                            <li class=""><a href="model.Device.html" class="nav-name">Device</a></li>
+                          
+                            <li class=""><a href="model.Role.html" class="nav-name">Role</a></li>
+                          
+                            <li class=""><a href="model.User.html" class="nav-name">User</a></li>
+                          
+                        </ul>
+                    </li>
+                
+            
+                
+                    <li class="">
+                        <a href="query.html" class="nav-name">query</a>
+                        <ul class="nav">
+                          
+                            <li class=""><a href="query.Builder.html" class="nav-name">Builder</a></li>
+                          
+                            <li class=""><a href="query.Condition.html" class="nav-name">Condition</a></li>
+                          
+                            <li class=""><a href="query.Filter.html" class="nav-name">Filter</a></li>
+                          
+                            <li class=""><a href="query.Node.html" class="nav-name">Node</a></li>
+                          
+                            <li class=""><a href="query.Operator.html" class="nav-name">Operator</a></li>
+                          
+                            <li class=""><a href="query.Query.html" class="nav-name">Query</a></li>
+                          
+                            <li class=""><a href="query.Stream.html" class="nav-name">Stream</a></li>
+                          
+                        </ul>
+                    </li>
+                
+            
+                
+                    <li class="active">
+                        <a href="util.html" class="nav-name">util</a>
+                        <ul class="nav">
+                          
+                            <li class=""><a href="util.Code.html" class="nav-name">Code</a></li>
+                          
+                            <li class="active"><a href="util.Lockable.html" class="nav-name">Lockable</a></li>
+                          
+                            <li class=""><a href="util.Logger.html" class="nav-name">Logger</a></li>
+                          
+                            <li class=""><a href="util.Metadata.html" class="nav-name">Metadata</a></li>
+                          
+                            <li class=""><a href="util.Modules.html" class="nav-name">Modules</a></li>
+                          
+                            <li class=""><a href="util.Permission.html" class="nav-name">Permission</a></li>
+                          
+                            <li class=""><a href="util.PushMessage.html" class="nav-name">PushMessage</a></li>
+                          
+                            <li class=""><a href="util.TokenStorage.html" class="nav-name">TokenStorage</a></li>
+                          
+                            <li class=""><a href="util.ValidationResult.html" class="nav-name">ValidationResult</a></li>
+                          
+                            <li class=""><a href="util.Validator.html" class="nav-name">Validator</a></li>
+                          
+                            <li class=""><a href="util.TokenStorageFactory.html" class="nav-name">TokenStorageFactory</a></li>
+                          
+                        </ul>
+                    </li>
+                
+            
+            </ul>
+        </div>
+    </div>
+    <div class="col-md-9" id="main">
+      <h1 class="page-title">Class: Lockable</h1>
+
+      
+
+
+
+
+<section>
+
+<header>
+    
+        <h2>
+            <span class="ancestors"><a href="util.html">util</a>.</span>Lockable</h2>
+        
+            <div class="class-description"><p>This base class provides an lock interface to execute exclusive operations</p></div>
+        
+    
+</header>
+
+<article>
+    <div class="container-overview">
+    
+        
+
+    
+    <h2>Constructor</h2>
+    
+
+    <h4 class="name" id="Lockable"><span class="type-signature"></span>new Lockable<span class="signature">()</span><span class="type-signature"></span></h4>
+
+    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="util_Lockable.js.html">util/Lockable.js</a>, <a href="util_Lockable.js.html#line7">line 7</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    
+    </div>
+
+    
+
+    
+
+    
+
+     
+
+    
+
+    
+        <h3 class="subsection-title">Members</h3>
+
+        
+            
+<h4 class="name" id="isReady"><span class="type-signature"></span>isReady<span class="type-signature"> :boolean</span></h4>
+
+
+
+
+<div class="description">
+    <p>Indicates if there is currently no exclusive operation executed<br><code>true</code> If no exclusive lock is hold</p>
+</div>
+
+
+
+    <h5>Type:</h5>
+    <ul>
+        <li>
+            
+<span class="param-type">boolean</span>
+
+
+        </li>
+    </ul>
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="util_Lockable.js.html">util/Lockable.js</a>, <a href="util_Lockable.js.html#line36">line 36</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+        
+    
+
+    
+        <h3 class="subsection-title">Methods</h3>
+
+        
+            
+
+    
+
+    <h4 class="name" id="ready"><span class="type-signature"></span>ready<span class="signature">(doneCallback<span class="signature-attributes">opt</span>, failCallback<span class="signature-attributes">opt</span>)</span><span class="type-signature"> &rarr; {Promise.&lt;util.Lockable>}</span></h4>
+
+    
+
+
+
+<div class="description">
+    <p>Waits on the previously requested operation and calls the doneCallback if the operation is fulfilled</p>
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params table">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+        <th>Attributes</th>
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>doneCallback</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><a href="util.Lockable.html#~callback">Lockable~callback</a></span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last"><p>The callback which will be invoked when the previously<br>operations on this object is completed.</p></td>
+        </tr>
+        
+
+
+    
+
+        <tr>
+            
+                <td class="name"><code>failCallback</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><a href="util.Lockable.html#~callback">Lockable~callback</a></span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last"><p>When the lock can't be released caused by a none<br>recoverable error</p></td>
+        </tr>
+        
+
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="util_Lockable.js.html">util/Lockable.js</a>, <a href="util_Lockable.js.html#line49">line 49</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+
+        
+<div class="param-desc">
+    <p>A promise which completes successfully, when the previously requested<br>operation completes</p>
+</div>
+
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">Lockable></span>
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+        
+            
+
+    
+
+    <h4 class="name" id="withLock"><span class="type-signature">(protected) </span>withLock<span class="signature">(callback, critical<span class="signature-attributes">opt</span>)</span><span class="type-signature"> &rarr; {Promise.&lt;util.Lockable>}</span></h4>
+
+    
+
+
+
+<div class="description">
+    <p>Try to aquire an exclusive lock and executes the given callback.</p>
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params table">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+        <th>Attributes</th>
+        
+
+        
+        <th>Default</th>
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>callback</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><a href="util.Lockable.html#~callback">Lockable~callback</a></span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+
+                
+
+                
+                </td>
+            
+
+            
+                <td class="default">
+                
+                </td>
+            
+
+            <td class="description last"><p>The exclusive operation to execute</p></td>
+        </tr>
+        
+
+
+    
+
+        <tr>
+            
+                <td class="name"><code>critical</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">boolean</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+                <td class="default">
+                
+                    false
+                
+                </td>
+            
+
+            <td class="description last"><p>Indicates if the operation is critical. If the operation is critical and the<br>operation fails, then the lock will not be released</p></td>
+        </tr>
+        
+
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="util_Lockable.js.html">util/Lockable.js</a>, <a href="util_Lockable.js.html#line62">line 62</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+<h5>Throws:</h5>
+
+        
+
+<dl>
+    <dt>
+        <div class="param-desc">
+        <p>If the lock can't be aquired</p>
+        </div>
+    </dt>
+    <dd></dd>
+    <dt>
+        <dl>
+            <dt>
+                Type
+            </dt>
+            <dd>
+                
+<span class="param-type">Error</span>
+
+
+            </dd>
+        </dl>
+    </dt>
+    <dd></dd>
+</dl>
+
+
+    
+
+
+<h5>Returns:</h5>
+
+        
+<div class="param-desc">
+    <p>A promise</p>
+</div>
+
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">Lockable></span>
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+        
+    
+
+    
+        <h3 class="subsection-title">Type Definitions</h3>
+
+        
+                
+
+    
+
+    <h4 class="name" id="~callback"><span class="type-signature"></span>callback<span class="signature">()</span><span class="type-signature"> &rarr; {Promise.&lt;*>}</span></h4>
+
+    
+
+
+
+<div class="description">
+    <p>The operation callback is used by the <a href="util.Lockable.html#withLock"><code>util.Lockable#withLock</code></a> method,<br>to perform an exclusive operation on the</p>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="util_Lockable.js.html">util/Lockable.js</a>, <a href="util_Lockable.js.html#line100">line 100</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+
+        
+<div class="param-desc">
+    <p>A Promise, which reflects the result of the operation</p>
+</div>
+
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">&lt;*></span>
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+            
+    
+
+    
+</article>
+
+</section>
+
+
+
+
+
+      <footer>
+        Baqend JavaScript SDK 2.3.1 &copy 2015 Baqend GmbH<br>
+        Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.2</a> on Thu, 13 Oct 2016 14:59:26 GMT
+      </footer>
+    </div>
+  </div>
+</div>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+<script src="scripts/filter.js"> </script>
+</body>
+</html>

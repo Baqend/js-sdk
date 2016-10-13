@@ -1,0 +1,489 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>Baqend JavaScript SDK 2.3.1 - Source: query/Query.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+
+    <link rel="shortcut icon" type="image/x-icon" href="img/favicon.ico">
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/bootstrap-baqend.min.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<nav class="navbar navbar-default navbar-fixed-top" role="navigation">
+    <div class="container">
+
+        <!-- Collapsed navigation -->
+        <div class="navbar-header">
+            <!-- Expander button -->
+            <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+
+            <!-- Main title -->
+            <a class="navbar-brand" href="/"><img src="img/baqend_logo.svg"></a>
+        </div>
+
+        <!-- Expanded navigation -->
+        <div id="nav" class="navbar-collapse collapse">
+            <!-- Main navigation -->
+            <ul class="nav navbar-nav">
+                <li>
+                    <a href="http://www.baqend.com/guide/index.html">Guide</a>
+                </li>
+                <li class="active">
+                    <a href="baqend.html">JS API</a>
+                </li>
+                <li>
+                    <a href="http://www.baqend.com/#tutorial">Tutorial</a>
+                </li>
+                <li>
+                    <a href="http://dashboard.baqend.com/">Dashboard</a>
+                </li>
+                <li>
+                    <a href="https://community.baqend.com/">Community <span class="visible-lg-inline">Forum</span></a>
+                </li>
+            </ul>
+        </div>
+    </div>
+</nav>
+
+
+<div class="container">
+  <div class="row">
+    <div class="col-md-3">
+        <div class="bs-sidebar hidden-print fixed affix" role="complementary">
+            <input class="filter form-control input-sm" type="text" placeholder="FILTER"/>
+
+            <ul class="nav bs-sidenav">
+            
+            
+                
+                    
+                        <li class=""><a href="Acl.html" class="nav-name">Acl</a></li>
+                    
+                        <li class=""><a href="EntityManager.html" class="nav-name">EntityManager</a></li>
+                    
+                        <li class=""><a href="EntityManagerFactory.html" class="nav-name">EntityManagerFactory</a></li>
+                    
+                        <li class=""><a href="EntityTransaction.html" class="nav-name">EntityTransaction</a></li>
+                    
+                        <li class=""><a href="GeoPoint.html" class="nav-name">GeoPoint</a></li>
+                    
+                        <li class=""><a href="baqend.html" class="nav-name">baqend</a></li>
+                    
+                
+            
+                
+                    <li class="">
+                        <a href="binding.html" class="nav-name">binding</a>
+                        <ul class="nav">
+                          
+                            <li class=""><a href="binding.Accessor.html" class="nav-name">Accessor</a></li>
+                          
+                            <li class=""><a href="binding.DeviceFactory.html" class="nav-name">DeviceFactory</a></li>
+                          
+                            <li class=""><a href="binding.Enhancer.html" class="nav-name">Enhancer</a></li>
+                          
+                            <li class=""><a href="binding.Entity.html" class="nav-name">Entity</a></li>
+                          
+                            <li class=""><a href="binding.EntityFactory.html" class="nav-name">EntityFactory</a></li>
+                          
+                            <li class=""><a href="binding.Factory.html" class="nav-name">Factory</a></li>
+                          
+                            <li class=""><a href="binding.File.html" class="nav-name">File</a></li>
+                          
+                            <li class=""><a href="binding.FileFactory.html" class="nav-name">FileFactory</a></li>
+                          
+                            <li class=""><a href="binding.Managed.html" class="nav-name">Managed</a></li>
+                          
+                            <li class=""><a href="binding.ManagedFactory.html" class="nav-name">ManagedFactory</a></li>
+                          
+                            <li class=""><a href="binding.Role.html" class="nav-name">Role</a></li>
+                          
+                            <li class=""><a href="binding.User.html" class="nav-name">User</a></li>
+                          
+                            <li class=""><a href="binding.UserFactory.html" class="nav-name">UserFactory</a></li>
+                          
+                        </ul>
+                    </li>
+                
+            
+                
+                    <li class="">
+                        <a href="caching.html" class="nav-name">caching</a>
+                        <ul class="nav">
+                          
+                            <li class=""><a href="caching.BloomFilter.html" class="nav-name">BloomFilter</a></li>
+                          
+                        </ul>
+                    </li>
+                
+            
+                
+                    <li class="">
+                        <a href="connector.html" class="nav-name">connector</a>
+                        <ul class="nav">
+                          
+                            <li class=""><a href="connector.Connector.html" class="nav-name">Connector</a></li>
+                          
+                            <li class=""><a href="connector.IFrameConnector.html" class="nav-name">IFrameConnector</a></li>
+                          
+                            <li class=""><a href="connector.Message.html" class="nav-name">Message</a></li>
+                          
+                            <li class=""><a href="connector.NodeConnector.html" class="nav-name">NodeConnector</a></li>
+                          
+                            <li class=""><a href="connector.XMLHttpConnector.html" class="nav-name">XMLHttpConnector</a></li>
+                          
+                        </ul>
+                    </li>
+                
+            
+                
+                    <li class="">
+                        <a href="error.html" class="nav-name">error</a>
+                        <ul class="nav">
+                          
+                            <li class=""><a href="error.CommunicationError.html" class="nav-name">CommunicationError</a></li>
+                          
+                            <li class=""><a href="error.EntityExistsError.html" class="nav-name">EntityExistsError</a></li>
+                          
+                            <li class=""><a href="error.IllegalEntityError.html" class="nav-name">IllegalEntityError</a></li>
+                          
+                            <li class=""><a href="error.PersistentError.html" class="nav-name">PersistentError</a></li>
+                          
+                            <li class=""><a href="error.RollbackError.html" class="nav-name">RollbackError</a></li>
+                          
+                        </ul>
+                    </li>
+                
+            
+                
+                    <li class="">
+                        <a href="metamodel.html" class="nav-name">metamodel</a>
+                        <ul class="nav">
+                          
+                            <li class=""><a href="metamodel.Attribute.html" class="nav-name">Attribute</a></li>
+                          
+                            <li class=""><a href="metamodel.BasicType.html" class="nav-name">BasicType</a></li>
+                          
+                            <li class=""><a href="metamodel.CollectionAttribute.html" class="nav-name">CollectionAttribute</a></li>
+                          
+                            <li class=""><a href="metamodel.DbIndex.html" class="nav-name">DbIndex</a></li>
+                          
+                            <li class=""><a href="metamodel.EmbeddableType.html" class="nav-name">EmbeddableType</a></li>
+                          
+                            <li class=""><a href="metamodel.EntityType.html" class="nav-name">EntityType</a></li>
+                          
+                            <li class=""><a href="metamodel.ListAttribute.html" class="nav-name">ListAttribute</a></li>
+                          
+                            <li class=""><a href="metamodel.ManagedType.html" class="nav-name">ManagedType</a></li>
+                          
+                            <li class=""><a href="metamodel.MapAttribute.html" class="nav-name">MapAttribute</a></li>
+                          
+                            <li class=""><a href="metamodel.Metamodel.html" class="nav-name">Metamodel</a></li>
+                          
+                            <li class=""><a href="metamodel.ModelBuilder.html" class="nav-name">ModelBuilder</a></li>
+                          
+                            <li class=""><a href="metamodel.PluralAttribute.html" class="nav-name">PluralAttribute</a></li>
+                          
+                            <li class=""><a href="metamodel.SetAttribute.html" class="nav-name">SetAttribute</a></li>
+                          
+                            <li class=""><a href="metamodel.SingularAttribute.html" class="nav-name">SingularAttribute</a></li>
+                          
+                            <li class=""><a href="metamodel.Type.html" class="nav-name">Type</a></li>
+                          
+                        </ul>
+                    </li>
+                
+            
+                
+                    <li class="">
+                        <a href="model.html" class="nav-name">model</a>
+                        <ul class="nav">
+                          
+                            <li class=""><a href="model.Device.html" class="nav-name">Device</a></li>
+                          
+                            <li class=""><a href="model.Role.html" class="nav-name">Role</a></li>
+                          
+                            <li class=""><a href="model.User.html" class="nav-name">User</a></li>
+                          
+                        </ul>
+                    </li>
+                
+            
+                
+                    <li class="">
+                        <a href="query.html" class="nav-name">query</a>
+                        <ul class="nav">
+                          
+                            <li class=""><a href="query.Builder.html" class="nav-name">Builder</a></li>
+                          
+                            <li class=""><a href="query.Condition.html" class="nav-name">Condition</a></li>
+                          
+                            <li class=""><a href="query.Filter.html" class="nav-name">Filter</a></li>
+                          
+                            <li class=""><a href="query.Node.html" class="nav-name">Node</a></li>
+                          
+                            <li class=""><a href="query.Operator.html" class="nav-name">Operator</a></li>
+                          
+                            <li class=""><a href="query.Query.html" class="nav-name">Query</a></li>
+                          
+                            <li class=""><a href="query.Stream.html" class="nav-name">Stream</a></li>
+                          
+                        </ul>
+                    </li>
+                
+            
+                
+                    <li class="">
+                        <a href="util.html" class="nav-name">util</a>
+                        <ul class="nav">
+                          
+                            <li class=""><a href="util.Code.html" class="nav-name">Code</a></li>
+                          
+                            <li class=""><a href="util.Lockable.html" class="nav-name">Lockable</a></li>
+                          
+                            <li class=""><a href="util.Logger.html" class="nav-name">Logger</a></li>
+                          
+                            <li class=""><a href="util.Metadata.html" class="nav-name">Metadata</a></li>
+                          
+                            <li class=""><a href="util.Modules.html" class="nav-name">Modules</a></li>
+                          
+                            <li class=""><a href="util.Permission.html" class="nav-name">Permission</a></li>
+                          
+                            <li class=""><a href="util.PushMessage.html" class="nav-name">PushMessage</a></li>
+                          
+                            <li class=""><a href="util.TokenStorage.html" class="nav-name">TokenStorage</a></li>
+                          
+                            <li class=""><a href="util.ValidationResult.html" class="nav-name">ValidationResult</a></li>
+                          
+                            <li class=""><a href="util.Validator.html" class="nav-name">Validator</a></li>
+                          
+                            <li class=""><a href="util.TokenStorageFactory.html" class="nav-name">TokenStorageFactory</a></li>
+                          
+                        </ul>
+                    </li>
+                
+            
+            </ul>
+        </div>
+    </div>
+    <div class="col-md-9" id="main">
+      <h1 class="page-title">Source: query/Query.js</h1>
+
+      
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>"use strict";
+
+/**
+ * @alias query.Query&lt;T>
+ */
+class Query {
+  constructor(entityManager, resultClass) {
+    /**
+     * The owning EntityManager of this query
+     * @type EntityManager
+     */
+    this.entityManager = entityManager;
+
+    /**
+     * The result class of this query
+     * @type Class&lt;T>
+     */
+    this.resultClass = resultClass;
+  }
+
+  /**
+   * Add an ascending sort for the specified field to this query
+   * @param {string} field The field to sort
+   * @return {query.Query&lt;T>} The resulting Query
+   */
+  ascending(field) {
+    return this._addOrder(field, 1);
+  }
+
+  /**
+   * Add an decending sort for the specified field to this query
+   * @param {string} field The field to sort
+   * @return {query.Query&lt;T>} The resulting Query
+   */
+  descending(field) {
+    return this._addOrder(field, -1);
+  }
+
+  /**
+   * Sets the sort of the query and discard all existing paramaters
+   * @param {Object} sort The new sort of the query
+   * @return {query.Query&lt;T>} The resulting Query
+   *
+   * @see http://docs.mongodb.org/manual/reference/method/cursor.sort/
+   */
+  sort(sort) {
+    if (!(sort instanceof Object) || Object.getPrototypeOf(sort) != Object.prototype)
+      throw new Error('sort must be an object.');
+
+    return this._addOrder(sort);
+  }
+
+  /**
+   * Sets the offset of the query, i.e. how many elements should be skipped
+   * @param {number} offset The offset of this query
+   * @return {query.Query&lt;T>} The resulting Query
+   *
+   * @see http://docs.mongodb.org/manual/reference/method/cursor.skip/
+   */
+  offset(offset) {
+    if (offset &lt; 0)
+      throw new Error("The offset can't be nagative.");
+
+    return this._addOffset(offset);
+  }
+
+  /**
+   * Sets the limit of this query, i.e hox many objects should be returnd
+   * @param {number} limit The limit of this query
+   * @return {query.Query&lt;T>} The resulting Query
+   *
+   * @see http://docs.mongodb.org/manual/reference/method/cursor.limit/
+   */
+  limit(limit) {
+    if (limit &lt; 0)
+      throw new Error("The limit can't be nagative.");
+
+    return this._addLimit(limit);
+  }
+
+  /**
+   * Execute the query and return the query results as a List.
+   * Note: All local unsaved changes on matching objects, will be discarded.
+   * @param {Object} [options] The query options
+   * @param {number|boolean} [options.depth=0] The object depth which will be loaded. Depth 0 load only the found
+   * objects, &lt;code>true&lt;/code> loads the objects by reachability.
+   * @param {query.Query~resultListCallback=} doneCallback Called when the operation succeed.
+   * @param {query.Query~failCallback=} failCallback Called when the operation failed.
+   * @return {Promise&lt;Array&lt;T>>} A promise that will be resolved with the query result as a list
+   */
+  resultList(options, doneCallback, failCallback) {}
+
+  /**
+   * Execute the query and return the query results as a List.
+   * Note: All local unsaved changes on matching objects, will be discarded.
+   * @param {query.Query~resultListCallback=} doneCallback Called when the operation succeed.
+   * @param {query.Query~failCallback=} failCallback Called when the operation failed.
+   * @return {Promise&lt;Array&lt;T>>} A promise that will be resolved with the query result as a list
+   * @name resultList
+   * @memberOf query.Query&lt;T>.prototype
+   * @method
+   */
+
+  /**
+   * Execute the query that returns a single result.
+   * Note: All local unsaved changes on the matched object, will be discarded.
+   * @param {Object} [options] The query options
+   * @param {number|boolean} [options.depth=0] The object depth which will be loaded. Depth 0 load only the found
+   * object, &lt;code>true&lt;/code> loads the objects by reachability.
+   * @param {query.Query~singleResultCallback=} doneCallback Called when the operation succeed.
+   * @param {query.Query~failCallback=} failCallback Called when the operation failed.
+   * @return {Promise&lt;T>} A promise that will be resolved with the query result as a single result
+   */
+  singleResult(options, doneCallback, failCallback) {}
+
+  /**
+   * Execute the query that returns a single result.
+   * Note: All local unsaved changes on the matched object, will be discarded.
+   * @param {query.Query~singleResultCallback=} doneCallback Called when the operation succeed.
+   * @param {query.Query~failCallback=} failCallback Called when the operation failed.
+   * @return {Promise&lt;T>} A promise that will be resolved with the query result as a single result
+   * @name singleResult
+   * @memberOf query.Query&lt;T>.prototype
+   * @method
+   */
+
+  /**
+   * Execute the query and returns a stream based representation of the query
+   * @param {boolean} fetchQuery &lt;code>true&lt;/code> to initialy fetch the query result
+   * @return {query.Stream&lt;T>} The query result as a live updating stream
+   */
+  stream(fetchQuery) {}
+
+  /**
+   * Execute the query that returns the matching objects count.
+   * @param {query.Query~countCallback=} doneCallback Called when the operation succeed.
+   * @param {query.Query~failCallback=} failCallback Called when the operation failed.
+   * @return {Promise&lt;number>} The total number of matched objects
+   */
+  count(doneCallback, failCallback) {}
+}
+
+Query.MAX_URI_SIZE = 2000;
+
+Query.varargs = function varargs(offset, args) {
+  return Array.prototype.concat.apply([], Array.prototype.slice.call(args, offset));
+};
+
+module.exports = Query;
+
+/**
+ * The resultList callback is called, when the asynchronous query operation completes successfully
+ * @callback query.Query~resultListCallback
+ * @param {Array&lt;T>} result The query result list, an empty list if no match was found
+ * @return {Promise&lt;*>|*} A Promise, result or undefined
+ */
+
+/**
+ * The singleResult callback is called, when the asynchronous query operation completes successfully
+ * @callback query.Query~singleResultCallback
+ * @param {T} entity The matching object or null id no matching object was found
+ * @return {Promise&lt;*>|*} A Promise, result or undefined
+ */
+
+/**
+ * The count callback is called, when the asynchronous query operation completes successfully
+ * @callback query.Query~countCallback
+ * @param {number} count the matching object count
+ * @return {Promise&lt;*>|*} A Promise, result or undefined
+ */
+
+/**
+ * The fail callback is called, when the asynchronous query operation is rejected by an error
+ * @callback query.Query~failCallback
+ * @param {error.PersistentError} error The error which reject the operation
+ * @return {Promise&lt;*>|*} A Promise, result or undefined
+ */</code></pre>
+        </article>
+    </section>
+
+
+
+
+
+      <footer>
+        Baqend JavaScript SDK 2.3.1 &copy 2015 Baqend GmbH<br>
+        Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.2</a> on Thu, 13 Oct 2016 14:59:22 GMT
+      </footer>
+    </div>
+  </div>
+</div>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+<script src="scripts/filter.js"> </script>
+</body>
+</html>

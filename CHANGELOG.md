@@ -1,3 +1,11 @@
+<a name="v2.3.1"></a>
+# v2.3.1 (2016-10-13)
+
+
+### Bug Fixes
+
+* Fixed login and register in safari incognito mode 
+
 <a name="v2.3.0"></a>
 # v2.3.0 (2016-10-4)
 
