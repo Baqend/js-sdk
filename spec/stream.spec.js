@@ -108,8 +108,8 @@ describe("Streaming Queries", function() {
 
     return promise.then(function() {
       received.forEach(function(result) {
-        expect(result.type).to.be.equal("match");
-        expect(objects).to.include(result.data);
+        expect(result.matchType).to.be.equal("match");
+        expect(objects).to.include(result.object);
         expect(result.operation).to.be.equal(null);
         expect(result.target).to.be.equal(stream);
         expect(result.date.getTime()).be.ok;
@@ -130,8 +130,8 @@ describe("Streaming Queries", function() {
       p1.name = "Felix";
       return helper.sleep(t, p1.save());
     }).then(function() {
-      expect(result.type).to.be.equal("match");
-      expect(result.data).to.be.equal(p1);
+      expect(result.matchType).to.be.equal("match");
+      expect(result.object).to.be.equal(p1);
       expect(result.operation).to.be.equal("update");
       expect(result.target).to.be.equal(stream);
       expect(result.date.getTime()).be.ok;
@@ -160,10 +160,9 @@ describe("Streaming Queries", function() {
       return helper.sleep(t).then(function() {
         expect(results.length).to.be.equal(1);
         expect(results[0].operation).to.be.equal("insert");
-        expect(results[0].type).to.be.equal("add");
-        expect(results[0].data.name).to.be.equal("Al");
+        expect(results[0].matchType).to.be.equal("add");
+        expect(results[0].object.name).to.be.equal("Al");
         expect(results[0].index).to.be.equal(0);
-        expect(results[0].lastIndex).to.be.equal(undefined);
       });
     }).then(function() {
       return helper.sleep(t).then(function() {
@@ -178,10 +177,9 @@ describe("Streaming Queries", function() {
       return helper.sleep(t).then(function() {
         expect(results.length).to.be.equal(1);
         expect(results[0].operation).to.be.equal("insert");
-        expect(results[0].type).to.be.equal("add");
-        expect(results[0].data.name).to.be.equal("Al");
+        expect(results[0].matchType).to.be.equal("add");
+        expect(results[0].object.name).to.be.equal("Al");
         expect(results[0].index).to.be.equal(0);
-        expect(results[0].lastIndex).to.be.equal(undefined);
       });
     })
         .then(function() {
@@ -197,10 +195,9 @@ describe("Streaming Queries", function() {
           return helper.sleep(t).then(function() {
             expect(results.length).to.be.equal(2);
             expect(results[1].operation).to.be.equal("insert");
-            expect(results[1].type).to.be.equal("add");
-            expect(results[1].data.name).to.be.equal("Dave");
+            expect(results[1].matchType).to.be.equal("add");
+            expect(results[1].object.name).to.be.equal("Dave");
             expect(results[1].index).to.be.equal(1);
-            expect(results[1].lastIndex).to.be.equal(undefined);
           });
         }).then(function() {
           return helper.sleep(t).then(function() {
@@ -215,10 +212,9 @@ describe("Streaming Queries", function() {
           return helper.sleep(t).then(function() {
             expect(results.length).to.be.equal(3);
             expect(results[2].operation).to.be.equal("insert");
-            expect(results[2].type).to.be.equal("add");
-            expect(results[2].data.name).to.be.equal("Carl");
+            expect(results[2].matchType).to.be.equal("add");
+            expect(results[2].object.name).to.be.equal("Carl");
             expect(results[2].index).to.be.equal(1);
-            expect(results[2].lastIndex).to.be.equal(undefined);
           });
         }).then(function() {
           return helper.sleep(t).then(function() {
@@ -232,17 +228,15 @@ describe("Streaming Queries", function() {
         }).then(function() {
           return helper.sleep(t).then(function() {
             expect(results.length).to.be.equal(5);
-            expect(results[3].operation).to.be.equal("insert");
-            expect(results[3].type).to.be.equal("remove");
-            expect(results[3].data.name).to.be.equal("Dave");
+            expect(results[3].operation).to.be.equal(null); //transitive remove --> the was no operation on this objects
+            expect(results[3].matchType).to.be.equal("remove");
+            expect(results[3].object.name).to.be.equal("Dave");
             expect(results[3].index).to.be.equal(3);
-            expect(results[3].lastIndex).to.be.equal(2);
             expect(results[3].update).to.be.equal(results[4].update);
             expect(results[4].operation).to.be.equal("insert");
-            expect(results[4].type).to.be.equal("add");
-            expect(results[4].data.name).to.be.equal("Dan");
+            expect(results[4].matchType).to.be.equal("add");
+            expect(results[4].object.name).to.be.equal("Dan");
             expect(results[4].index).to.be.equal(2);
-            expect(results[4].lastIndex).to.be.equal(undefined);
           });
         });
   });
@@ -259,13 +253,59 @@ describe("Streaming Queries", function() {
       object.name = "franz";
       return helper.sleep(t, object.insert());
     }).then(function() {
-      expect(result.type).to.be.equal("match");
-      expect(result.data.name).to.be.equal("franz");
+      expect(result.matchType).to.be.equal("match");
+      expect(result.object.name).to.be.equal("franz");
       expect(result.operation).to.be.equal("insert");
       expect(result.target).to.be.equal(stream);
       expect(result.date.getTime()).be.ok;
       expect(result.query).be.equal(stream.query);
       expect(result.initial).be.false;
+    });
+  });
+
+  it("should resolve references from real-time matches", function() {
+    this.timeout(30000);
+    var franz, otherfranz;
+
+    stream = db[bucket].find().stream(false);
+    stream.on('all', function(e) {
+      franz = e.object;
+    });
+
+    var otherdb = emf.createEntityManager();
+    var otherstream = otherdb[bucket].find().stream(false);
+    otherstream.on('all', function(e) {
+      otherfranz = e.object;
+    });
+
+    return helper.sleep(t).then(function() {
+      var object = db[bucket].fromJSON(p3.toJSON(true));
+      object.name = "franz";
+      return helper.sleep(t, object.insert());
+    }).then(function() {
+      expect(franz.name).to.be.equal("franz");
+      expect(franz.name).to.be.equal(otherfranz.name);
+    }).then(function() {// update
+      franz.name = "franzl";
+      return helper.sleep(t, franz.update());
+    }).then(function() {
+      expect(franz.name).to.be.equal("franzl");
+      expect(otherfranz.name).to.be.equal("franzl");
+      expect(franz.version).to.be.equal(2);
+      expect(otherfranz.version).to.be.equal(2);
+    }).then(function() {// update the other way around
+      otherfranz.name = "franzler";
+      return helper.sleep(t, otherfranz.update());
+    }).then(function() {
+      expect(otherfranz.name).to.be.equal("franzler");
+      expect(otherfranz.version).to.be.equal(3);
+      expect(franz.name).to.be.equal("franzler");
+      expect(franz.version).to.be.equal(3);
+    }).then(function() {// delete
+      return helper.sleep(t, otherfranz.delete());
+    }).then(function() {
+      expect(otherfranz.version).to.be.equal(-1);
+      expect(franz.version).to.be.equal(-1);
     });
   });
 
@@ -342,15 +382,14 @@ describe("Streaming Queries", function() {
     }).then(function() {
       return helper.sleep(t, object.delete());
     }).then(function() {
-      expect(result.data.id).to.be.equal(object.id);
-      expect(result.type).to.be.equal("remove");
+      expect(result.object.id).to.be.equal(object.id);
+      expect(result.matchType).to.be.equal("remove");
       expect(result.operation).to.be.equal("delete");
       expect(result.target).to.be.equal(stream);
       expect(result.date.getTime()).be.ok;
       expect(result.query).be.equal(stream.query);
       expect(result.initial).be.false;
     });
-
   });
 
   it("should return all changes", function() {
@@ -381,7 +420,7 @@ describe("Streaming Queries", function() {
         expect(results[0].operation).to.be.equal("insert");
         expect(results[1].operation).to.be.equal("update");
         expect(results[2].operation).to.be.equal("delete");
-        expect(results[2].data.id).to.be.equal(object.id);
+        expect(results[2].object.id).to.be.equal(object.id);
       });
     });
   });
@@ -394,7 +433,7 @@ describe("Streaming Queries", function() {
     stream = db[bucket].find().stream(false);
     var listener = function(e) {
       received.push(e);
-      expect(e.data.id).to.be.equal(insert.id);
+      expect(e.object.id).to.be.equal(insert.id);
     };
     stream.on('match', listener);
     stream.on('match', listener);
@@ -408,6 +447,65 @@ describe("Streaming Queries", function() {
       expect(received.length).to.be.equal(4);
     });
   });
+
+  /*
+  it("should do RXjs-ey stuff", function() {
+    this.timeout(30000);
+    stream = db[bucket].find().stream(false);
+
+    var next = 0;
+    var errors = 0;
+    var completions = 0;
+
+    var onNext=function(match) { // onNext
+      next++;
+    };
+    var onError= function(error) { // onError
+      errors++;
+    };
+    var onCompleted=  function() {// onCompleted
+      completions++;
+    };
+
+    var subscription = stream.observable('all');
+
+    subscription.subscribe(onNext, onError, onCompleted);
+
+    var insert;
+    return helper.sleep(t).then(function() {
+      expect(next).to.be.equal(0);
+      expect(errors).to.be.equal(0);
+      expect(completions).to.be.equal(0);
+
+      insert = db[bucket].fromJSON(p1.toJSON(true));
+      return helper.sleep(t, insert.insert());
+    }).then(function() {
+      expect(next).to.be.equal(1);
+      expect(errors).to.be.equal(0);
+      expect(completions).to.be.equal(0);
+
+      insert = db[bucket].fromJSON(p2.toJSON(true));
+      return helper.sleep(t, insert.insert());
+    }).then(function() {
+      expect(next).to.be.equal(1);
+      expect(errors).to.be.equal(0);
+      expect(completions).to.be.equal(0);
+
+      subscription.dispose();
+
+      expect(next).to.be.equal(1);
+      expect(errors).to.be.equal(0);
+      expect(completions).to.be.equal(1);
+
+      insert = db[bucket].fromJSON(p3.toJSON(true));
+      return helper.sleep(t, insert.insert());
+    }).then(function() {
+      expect(next).to.be.equal(1);
+      expect(errors).to.be.equal(0);
+      expect(completions).to.be.equal(1);
+    });
+  });
+  */
 
   it("should allow to unregister", function() {
     var calls = 0;
