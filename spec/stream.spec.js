@@ -264,7 +264,7 @@ describe("Streaming Queries", function() {
   });
 
   it("should resolve references from real-time matches", function() {
-    this.timeout(30000);
+    this.timeout(6000);
     var franz, otherfranz;
 
     stream = db[bucket].find().stream(false);
@@ -285,27 +285,34 @@ describe("Streaming Queries", function() {
     }).then(function() {
       expect(franz.name).to.be.equal("franz");
       expect(franz.name).to.be.equal(otherfranz.name);
-    }).then(function() {// update
+
+      // update
       franz.name = "franzl";
+      expect(franz.name).to.be.equal("franzl");
+      expect(otherfranz.name).to.be.equal("franz");
       return helper.sleep(t, franz.update());
     }).then(function() {
       expect(franz.name).to.be.equal("franzl");
-      expect(otherfranz.name).to.be.equal("franzl");
+      expect(franz.name).to.be.equal(otherfranz.name);
       expect(franz.version).to.be.equal(2);
-      expect(otherfranz.version).to.be.equal(2);
-    }).then(function() {// update the other way around
+      expect(franz.version).to.be.equal(otherfranz.version);
+
+      // update the other way around
       otherfranz.name = "franzler";
+      expect(otherfranz.name).to.be.equal("franzler");
+      expect(franz.name).to.be.equal("franzl");
       return helper.sleep(t, otherfranz.update());
     }).then(function() {
       expect(otherfranz.name).to.be.equal("franzler");
+      expect(franz.name).to.be.equal(otherfranz.name);
       expect(otherfranz.version).to.be.equal(3);
-      expect(franz.name).to.be.equal("franzler");
-      expect(franz.version).to.be.equal(3);
-    }).then(function() {// delete
+      expect(otherfranz.version).to.be.equal(franz.version);
+
+      // delete
       return helper.sleep(t, otherfranz.delete());
     }).then(function() {
-      expect(otherfranz.version).to.be.equal(-1);
-      expect(franz.version).to.be.equal(-1);
+      expect(otherfranz.version).to.be.equal(null);
+      expect(otherfranz.version).to.be.equal(franz.version);
     });
   });
 
@@ -447,66 +454,64 @@ describe("Streaming Queries", function() {
       expect(received.length).to.be.equal(4);
     });
   });
+/*
+   it("should do RXjs-ey stuff", function() {
+   this.timeout(30000);
+   stream = db[bucket].find().stream(false);
 
-  /*
-  it("should do RXjs-ey stuff", function() {
-    this.timeout(30000);
-    stream = db[bucket].find().stream(false);
+   var next = 0;
+   var errors = 0;
+   var completions = 0;
 
-    var next = 0;
-    var errors = 0;
-    var completions = 0;
+   var onNext=function(match) { // onNext
+   next++;
+   };
+   var onError= function(error) { // onError
+   errors++;
+   };
+   var onCompleted=  function() {// onCompleted
+   completions++;
+   };
 
-    var onNext=function(match) { // onNext
-      next++;
-    };
-    var onError= function(error) { // onError
-      errors++;
-    };
-    var onCompleted=  function() {// onCompleted
-      completions++;
-    };
+   var subscription = stream.observable('all');
 
-    var subscription = stream.observable('all');
+   subscription.subscribe(onNext, onError, onCompleted);
 
-    subscription.subscribe(onNext, onError, onCompleted);
+   var insert;
+   return helper.sleep(t).then(function() {
+   expect(next).to.be.equal(0);
+   expect(errors).to.be.equal(0);
+   expect(completions).to.be.equal(0);
 
-    var insert;
-    return helper.sleep(t).then(function() {
-      expect(next).to.be.equal(0);
-      expect(errors).to.be.equal(0);
-      expect(completions).to.be.equal(0);
+   insert = db[bucket].fromJSON(p1.toJSON(true));
+   return helper.sleep(t, insert.insert());
+   }).then(function() {
+   expect(next).to.be.equal(1);
+   expect(errors).to.be.equal(0);
+   expect(completions).to.be.equal(0);
 
-      insert = db[bucket].fromJSON(p1.toJSON(true));
-      return helper.sleep(t, insert.insert());
-    }).then(function() {
-      expect(next).to.be.equal(1);
-      expect(errors).to.be.equal(0);
-      expect(completions).to.be.equal(0);
+   insert = db[bucket].fromJSON(p2.toJSON(true));
+   return helper.sleep(t, insert.insert());
+   }).then(function() {
+   expect(next).to.be.equal(1);
+   expect(errors).to.be.equal(0);
+   expect(completions).to.be.equal(0);
 
-      insert = db[bucket].fromJSON(p2.toJSON(true));
-      return helper.sleep(t, insert.insert());
-    }).then(function() {
-      expect(next).to.be.equal(1);
-      expect(errors).to.be.equal(0);
-      expect(completions).to.be.equal(0);
+   subscription.dispose();
 
-      subscription.dispose();
+   expect(next).to.be.equal(1);
+   expect(errors).to.be.equal(0);
+   expect(completions).to.be.equal(1);
 
-      expect(next).to.be.equal(1);
-      expect(errors).to.be.equal(0);
-      expect(completions).to.be.equal(1);
-
-      insert = db[bucket].fromJSON(p3.toJSON(true));
-      return helper.sleep(t, insert.insert());
-    }).then(function() {
-      expect(next).to.be.equal(1);
-      expect(errors).to.be.equal(0);
-      expect(completions).to.be.equal(1);
-    });
-  });
-  */
-
+   insert = db[bucket].fromJSON(p3.toJSON(true));
+   return helper.sleep(t, insert.insert());
+   }).then(function() {
+   expect(next).to.be.equal(1);
+   expect(errors).to.be.equal(0);
+   expect(completions).to.be.equal(1);
+   });
+   });
+*/
   it("should allow to unregister", function() {
     var calls = 0;
     stream = db[bucket].find().stream(false);
