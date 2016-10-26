@@ -77,11 +77,11 @@ describe("Streaming Queries", function() {
   afterEach(function() {
     //Unregister Streams
     if (stream){
-      stream.dispose();
+      stream.unsubscribe();
       stream = undefined;
     }
     if (otherstream){
-      otherstream.dispose();
+      otherstream.unsubscribe();
       otherstream = undefined;
     }
     //Remove excess objects
@@ -441,7 +441,7 @@ describe("Streaming Queries", function() {
     }).then(function() {
       expect(received.length).to.be.equal(4);
     });
-    otherstream.dispose();
+    otherstream.unsubscribe();
   });
 
   it("RXjs: should cancel subscription", function() {
@@ -487,7 +487,7 @@ describe("Streaming Queries", function() {
       expect(errors).to.be.equal(0);
       expect(completions).to.be.equal(0);
 
-      subscription.dispose();
+      subscription.unsubscribe();
 
       expect(next).to.be.equal(2);
       expect(errors).to.be.equal(0);
@@ -517,7 +517,7 @@ describe("Streaming Queries", function() {
       insert.name = "franz";
       return helper.sleep(t, insert.insert());
     }).then(function() {
-      stream.dispose();
+      stream.unsubscribe();
       insert.name = "";
       return helper.sleep(t, insert.save())
     }).then(function() {
