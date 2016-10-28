@@ -1,5 +1,6 @@
 "use strict";
-var Metadata = require('../util/Metadata');
+var Metadata = require('../../lib/util/Metadata');
+var WebSocketConnector = require('../connector/WebSocketConnector');
 /**
  * @alias query.Stream
  * @alias query.Stream<T>
@@ -29,7 +30,7 @@ class Stream {
    * @param {boolean} fetchQuery true if the query result should be fetched
    * @param {number} sort
    * @param {number} limit
-   * @param {Node} target the target of the stream
+   * @param target the target of the stream
    */
   constructor(entityManager, bucket, query, fetchQuery, sort, limit, target) {
     this.entityManager = entityManager;
@@ -43,15 +44,15 @@ class Stream {
     this.fetchQuery = fetchQuery;
     this.callbacks = [];
     this.topic = null;
-    this.queryAlias = null; // TODO Required for what exactly?
     this.target = target;
+    this.socket = WebSocketConnector.create(entityManager._connector);
   }
 
   on(matchType, callback) {
     this.query.matchTypes = [matchType];
-    this.topic = [this.query.bucket, this.getCachableQueryString(this.query.query, 0, this.query.count, this.query.sort), matchType, "any"].join("/");
+    this.topic = [this.query.bucket, Stream.getCachableQueryString(this.query.query, 0, this.query.count, this.query.sort), matchType, "any"].join("/");
     var wrappedCallback = this._wrapQueryCallback(callback);
-    this.entityManager._subscribe(this.topic, wrappedCallback);
+    this.socket.subscribe(this.topic, wrappedCallback);
 
     var queryMessage = {
       register: true,
@@ -63,7 +64,7 @@ class Stream {
       queryMessage.fromstart = true;
     }
 
-    this.entityManager._sendOverSocket(queryMessage);
+    this.socket.sendOverSocket(queryMessage);
 
     this.callbacks.push({
       matchType: matchType,
@@ -74,9 +75,9 @@ class Stream {
     });
   }
 
-  getCachableQueryString(query, start, count, sort) {
+  static getCachableQueryString(query, start, count, sort) {
     var queryID = query;
-    if (this.isEmptyJSONString(query)) {
+    if (Stream.isEmptyJSONString(query)) {
       queryID = "{}";
     }
     if (start > 0) {
@@ -85,22 +86,22 @@ class Stream {
     if (count > 0) {
       queryID += "&count=" + count;
     }
-    if (!this.isEmptyJSONString(sort)) {
+    if (!Stream.isEmptyJSONString(sort)) {
       queryID += "&sort=" + sort;
     }
     return queryID;
   }
 
-  isEmptyJSONString(string) {
+  static isEmptyJSONString(string) {
     return string === undefined || string === null || /^\s*(\{\s*\})?\s*$/.test(string);
   }
 
   off(matchType, callback) {
     this.callbacks = this.callbacks.reduce((keep, el) => {
       if ((!callback || el.callback == callback) && (!matchType || el.matchType == matchType)) {
-        this.entityManager._unsubscribe(el.topic, el.wrappedCallback);
+        this.socket.unsubscribe(el.topic, el.wrappedCallback);
         el.queryMessage.register = false;
-        this.entityManager._sendOverSocket(el.queryMessage);
+        this.socket.sendOverSocket(el.queryMessage);
       } else {
         keep.push(el);
       }
@@ -118,11 +119,7 @@ class Stream {
 
   _wrapQueryCallback(cb) {
     return function(msg) {
-      if (this.queryAlias === null) {
-        this.queryAlias = msg.queryAlias;
-      } else {
         msg.query = this.query;
-      }
 
       if (msg.result) { //Initial result received
         msg.result.forEach((obj)=> {
@@ -174,5 +171,7 @@ class Stream {
     return entity;
   }
 }
+
+
 
 module.exports = Stream;

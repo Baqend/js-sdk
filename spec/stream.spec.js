@@ -1,6 +1,8 @@
+
 if (typeof DB == 'undefined') {
   require('./node');
   DB = require('../lib');
+  Stream = require('../streaming');
 }
 
 describe("Streaming Queries", function() {
@@ -308,7 +310,7 @@ describe("Streaming Queries", function() {
   });
 
   it("should generate correct cacheable query strings", function() {
-    var s = db[bucket].find().stream(false);
+    var s = Stream;
     var empty = [null, undefined, "", " ", "   ", "{}", " {}", "{} ", "{ }", " { } "];
     empty.forEach(function(query) {
       empty.forEach(function(sort) {
@@ -506,7 +508,6 @@ describe("Streaming Queries", function() {
   it("should allow to unregister", function() {
     var calls = 0;
     var listener = function(e) {
-      console.log(calls);
       expect(++calls).to.be.at.most(1);
     };
     stream = db[bucket].find().stream(false,'match').subscribe(listener);
@@ -545,6 +546,5 @@ describe("Streaming Queries", function() {
       expect(calls).to.be.equal(1);
     });
   });
-
 });
 
