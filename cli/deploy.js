@@ -9,7 +9,7 @@ module.exports = function(args) {
   if (!args.app && !args.host) {
     return false;
   } else {
-    account.login({app: args.app, host: args.host}).then((db) => {
+    return account.login({app: args.app, host: args.host}).then((db) => {
       if (!args.code && !args.files || args.code && args.files) {
         return Promise.all([
           deployFiles(db, args.fileDir, args.fileGlob),
@@ -20,11 +20,8 @@ module.exports = function(args) {
       } else if (args.files) {
         return deployFiles(db, args.fileDir, args.fileGlob);
       }
-    }).catch((e) => console.error(e));
-
+    });
   }
-
-  return true;
 };
 
 function deployFiles(db, cwd, pattern) {

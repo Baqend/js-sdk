@@ -24,15 +24,14 @@ module.exports = function(args) {
   if (!args.app) {
     return false;
   } else {
-    createTypings(args.app, args.dest);
-    return true;
+    return createTypings(args.app, args.dest);
   }
 };
 
 function createTypings(app, dest) {
   const factory = new baqend.EntityManagerFactory({host: app});
 
-  factory.ready().then(() => {
+  return factory.ready().then(() => {
     let typings = typingsFromMetamodel(factory.metamodel);
     dest = dest || 'typings';
 
@@ -41,8 +40,7 @@ function createTypings(app, dest) {
     }
 
     fs.writeFileSync(dest + '/baqend-model.d.ts', typings.join(os.EOL));
-  }).catch((e) => {
-    console.error(e.stack)
+    console.log("Typings successfully saved to: " + dest + '/baqend-model.d.ts')
   });
 }
 
