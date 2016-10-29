@@ -1,8 +1,6 @@
-
 if (typeof DB == 'undefined') {
   require('./node');
   DB = require('../lib');
-  Stream = require('../streaming');
 }
 
 describe("Streaming Queries", function() {
@@ -11,9 +9,10 @@ describe("Streaming Queries", function() {
     return;
   }
 
+  var Stream = DB.query.Stream;
   var t = 400;
   var bucket = helper.randomize("StreamingQueryPerson");
-  var emf, metamodel, db, stream,otherstream;
+  var emf, metamodel, db, stream, otherstream;
   var p0, p1, p2, p3, objects;
 
   before(function() {
@@ -78,16 +77,16 @@ describe("Streaming Queries", function() {
 
   afterEach(function() {
     //Unregister Streams
-    if (stream){
+    if (stream) {
       stream.unsubscribe();
       stream = undefined;
     }
-    if (otherstream){
+    if (otherstream) {
       otherstream.unsubscribe();
       otherstream = undefined;
     }
     //Remove excess objects
-    return helper.sleep(t).then(()=>{
+    return helper.sleep(t).then(()=> {
       //TODO: fix this when ids are handled correctly in queries
       return db[bucket].find().notIn("id", [p0.id, p1.id, p2.id, p3.id]).resultList(function(result) {
         return Promise.all(result.map(function(person) {
@@ -121,7 +120,7 @@ describe("Streaming Queries", function() {
   it("should return updated object", function() {
     var result;
     var query = db[bucket].find();
-    stream = query.stream(false, 'match').subscribe(function(e) {
+    stream = query.stream({initial: false, matchTypes: 'match'}).subscribe(function(e) {
       result = e;
     });
 
@@ -141,7 +140,10 @@ describe("Streaming Queries", function() {
   it("should return ordered result", function() {
     this.timeout(10000);
     var results = [];
-    stream = db[bucket].find().equal("age", 49).limit(3).ascending("name").stream(false, 'all').subscribe(function(e) {
+    stream = db[bucket].find().equal("age", 49).limit(3).ascending("name").stream({
+      initial: false,
+      matchTypes: 'all'
+    }).subscribe(function(e) {
       results.push(e);
     });
 
@@ -239,8 +241,8 @@ describe("Streaming Queries", function() {
 
   it("should return inserted object", function() {
     var result;
-    var query=db[bucket].find().equal("name", "franz");
-    stream = query.stream(false,'match').subscribe(function(e) {
+    var query = db[bucket].find().equal("name", "franz");
+    stream = query.stream({initial: false, matchTypes: 'match'}).subscribe(function(e) {
       result = e;
     });
 
@@ -262,12 +264,12 @@ describe("Streaming Queries", function() {
     this.timeout(6000);
     var franz, otherfranz;
 
-    stream = db[bucket].find().stream(false,'all').subscribe(function(e) {
+    stream = db[bucket].find().stream({initial: false, matchTypes: 'all'}).subscribe(function(e) {
       franz = e.data;
     });
 
     var otherdb = emf.createEntityManager();
-    otherstream = otherdb[bucket].find().stream(false,'all').subscribe(function(e) {
+    otherstream = otherdb[bucket].find().stream({initial: false, matchTypes: 'all'}).subscribe(function(e) {
       otherfranz = e.data;
     });
 
@@ -309,67 +311,236 @@ describe("Streaming Queries", function() {
     });
   });
 
+  it("should parse options correctly", function() {
+
+    // check default values
+    [//
+      {initial: true, matchTypes: ['all'], operations: ['any']},//
+      {initial: null, matchTypes: 'all', operations: ['any']},//
+      {initial: undefined, matchTypes: ['all'], operations: 'any'},//
+      {initial: true, matchTypes: ['all','add'], operations: ['any','insert']},//
+      {initial: true, matchTypes: ['all','add','match'], operations: ['any','insert','update']},//
+      {initial: true, matchTypes: undefined, operations: undefined},//
+      {initial: true, matchTypes: null, operations: null},//
+      {initial: true, matchTypes: ['all']},//
+      {initial: true,  operations: ['any']},//
+      {matchTypes: ['all'], operations: ['any']},//
+      {},//
+      null,//
+      undefined//
+    ].forEach(function(options) {
+      expect(Stream.parseOptions(options)).to.be.eql({initial: true, matchTypes: ['all'], operations: ['any']});
+    });
+
+    // Operations and match type should be provide-able as item AND list
+        [//
+        {matchTypes: ['match']},//
+        {matchTypes: 'match'},//
+        ].forEach(function(options) {
+      expect(Stream.parseOptions(options)).to.be.eql({initial: true, matchTypes: ['match'], operations: ['any']});
+    });
+    [//
+      {operations: 'insert'},//
+      {operations: ['insert']}//
+    ].forEach(function(options) {
+      expect(Stream.parseOptions(options)).to.be.eql({initial: true, matchTypes: ['all'], operations: ['insert']});
+    });
+
+    // Operations and match type must not be provided both, UNLESS one of them listens to everything anyways
+    [//
+      {initial: true, matchTypes: ['match'], operations: ['any','insert']},//
+      {initial: true, matchTypes: ['match'], operations: ['any']},//
+      {initial: true, matchTypes: ['match'], operations: 'any'},//
+      {initial: true, matchTypes: 'match', operations: null},//
+      {matchTypes: 'match'}//
+    ].forEach(function(options) {
+      expect(Stream.parseOptions(options)).to.be.eql({initial: true, matchTypes: ['match'], operations: ['any']});
+    });
+    [//
+      {initial: true, matchTypes: ['all'], operations: ['insert']},//
+      {initial: true, matchTypes: 'all', operations: 'insert'},//
+      {initial: true, matchTypes: null, operations: 'insert'},//
+      {initial: true, matchTypes: undefined, operations: 'insert'},//
+      {operations: ['insert']}//
+    ].forEach(function(options) {
+      expect(Stream.parseOptions(options)).to.be.eql({initial: true, matchTypes: ['all'], operations: ['insert']});
+    });
+    [//
+      {matchTypes: ['match'], operations: ['insert']},//
+      {matchTypes: 'remove', operations: 'updates'},//
+      {matchTypes: 1, operations: 5},//
+      {initial:2}//
+    ].forEach(function(options) {var exceptions = 0;
+      try {//Should raise an error
+        Stream.parseOptions(options);
+        console.log('should not have been parsed: '+JSON.stringify(options));
+      } catch (e) {
+        exceptions++;
+      }
+      expect(exceptions).to.be.equal(1);
+    });
+  });
+
+  it("should normalize match type list", function() {
+    var randomIterations = 100;
+
+    var full = ['add', 'change', 'changeIndex', 'match', 'remove', 'all'];
+
+    for (var i = 0; i < randomIterations; i++) {
+      //Everything with all Should result in ['all']
+      expect(Stream.normalizeMatchTypes(shuffle(full))).to.be.eql(['all']);
+      expect(Stream.normalizeMatchTypes(shuffle(['all', 'change', 'changeIndex', 'match', 'add', 'remove']))).to.be.eql(['all']);
+      expect(Stream.normalizeMatchTypes(shuffle(['change', 'match', 'remove', 'changeIndex', 'all']))).to.be.eql(['all']);
+      expect(Stream.normalizeMatchTypes(shuffle(['add', 'changeIndex', 'match', 'all', 'remove']))).to.be.eql(['all']);
+      expect(Stream.normalizeMatchTypes(shuffle(['add', 'change', 'all', 'changeIndex']))).to.be.eql(['all']);
+
+      // duplicates should be removed
+      expect(Stream.normalizeMatchTypes(shuffle(['add', 'change', 'changeIndex', 'add', 'change', 'changeIndex', 'match', 'remove', 'all']))).to.be.eql(['all']);
+      expect(Stream.normalizeMatchTypes(shuffle(['add', 'add']))).to.be.eql(['add']);
+      expect(Stream.normalizeMatchTypes(shuffle(['add', 'change', 'add', 'change', 'changeIndex', 'changeIndex']))).to.be.eql(['add', 'change', 'changeIndex']);
+
+      // undefined and empty lists should result in undefined
+      expect(Stream.normalizeMatchTypes(undefined)).to.be.eql(undefined);
+      expect(Stream.normalizeMatchTypes(null)).to.be.eql(undefined);
+      expect(Stream.normalizeMatchTypes([])).to.be.eql(undefined);
+
+      ['Banana', 'error', null, undefined].forEach(function(invalid) {
+        [[invalid], [invalid, 'change', 'add'], [invalid, 'change', 'add', 'add'], ['add', 'change', null]].forEach(function(list) {
+          var exceptions = 0;
+          try {//Should raise an error
+            Stream.normalizeMatchTypes(shuffle(list));
+          } catch (e) {
+            exceptions++;
+          }
+          expect(exceptions).to.be.equal(1);
+        });
+      });
+    }
+  });
+
+  it("should normalize operation list", function() {
+    var randomIterations = 100;
+
+    var full = ['insert', 'update', 'delete', 'any'];
+
+    for (var i = 0; i < randomIterations; i++) {
+      //Everything with all Should result in ['any']
+      expect(Stream.normalizeOperations(shuffle(full))).to.be.eql(['any']);
+      expect(Stream.normalizeOperations(shuffle(['insert', 'update', 'any']))).to.be.eql(['any']);
+      expect(Stream.normalizeOperations(shuffle(['update', 'delete', 'any']))).to.be.eql(['any']);
+      expect(Stream.normalizeOperations(shuffle(['insert', 'any', 'delete']))).to.be.eql(['any']);
+      expect(Stream.normalizeOperations(shuffle(['insert', 'update', 'any']))).to.be.eql(['any']);
+      expect(Stream.normalizeOperations(shuffle(['insert', 'any']))).to.be.eql(['any']);
+
+      // duplicates should be removed
+      expect(Stream.normalizeOperations(shuffle(['insert', 'update', 'insert', 'update', 'delete', 'any']))).to.be.eql(['any']);
+      expect(Stream.normalizeOperations(shuffle(['insert', 'insert']))).to.be.eql(['insert']);
+      expect(Stream.normalizeOperations(shuffle(['insert', 'update', 'insert', 'update']))).to.be.eql(['insert', 'update']);
+      expect(Stream.normalizeOperations(shuffle(['insert', 'update', 'delete']))).to.be.eql(['delete', 'insert', 'update']);
+      expect(Stream.normalizeOperations(shuffle(['insert', 'delete']))).to.be.eql(['delete', 'insert']);
+
+      // undefined and empty lists should result in undefined
+      expect(Stream.normalizeOperations(undefined)).to.be.eql(undefined);
+      expect(Stream.normalizeOperations(null)).to.be.eql(undefined);
+      expect(Stream.normalizeOperations([])).to.be.eql(undefined);
+
+      ['Banana', 'error', null, undefined].forEach(function(invalid) {
+        [[invalid], [invalid, 'update', 'insert'], [invalid, 'update', 'insert', 'insert'], ['insert', 'update', null]].forEach(function(list) {
+          var exceptions = 0;
+          try {//Should raise an error
+            Stream.normalizeOperations(shuffle(list));
+          } catch (e) {
+            exceptions++;
+          }
+          expect(exceptions).to.be.equal(1);
+        });
+      });
+    }
+  });
+
+  it("should generate correct topic strings", function() {
+
+    var topic = Stream.getTopic("bucket", "{name:'Bob'}", 2, 5, "{name:1}", Stream.normalizeMatchTypes(['changeIndex', 'add']), Stream.normalizeOperations(['insert', 'delete']));
+    var expected = "bucket/{name:'Bob'}&start=2&count=5&sort={name:1}/add_changeIndex/delete_insert";
+    expect(topic).to.be.equal(expected);
+
+    topic = Stream.getTopic("bucket", "{name:'Bob'}", 2, 5, "{name:1}", Stream.normalizeMatchTypes(['changeIndex', 'change']), Stream.normalizeOperations(['insert']));
+    expected = "bucket/{name:'Bob'}&start=2&count=5&sort={name:1}/change_changeIndex/insert";
+    expect(topic).to.be.equal(expected);
+
+    topic = Stream.getTopic("bucket", "{name:'Bob'}", 2, 5, "{name:1}", Stream.normalizeMatchTypes(['add']), Stream.normalizeOperations(['insert']));
+    expected = "bucket/{name:'Bob'}&start=2&count=5&sort={name:1}/add/insert";
+    expect(topic).to.be.equal(expected);
+
+    var exceptions = 0;
+    try {//Should raise an error
+      Stream.getTopic("bucket", "{name:'Bob'}", 2, 5, "{name:1}", Stream.normalizeMatchTypes(['error', 'add']), Stream.normalizeOperations(['insert']));
+    } catch (e) {
+      exceptions++;
+    }
+    expect(exceptions).to.be.equal(1);
+  });
+
   it("should generate correct cacheable query strings", function() {
-    var s = Stream;
     var empty = [null, undefined, "", " ", "   ", "{}", " {}", "{} ", "{ }", " { } "];
     empty.forEach(function(query) {
       empty.forEach(function(sort) {
-        expect(s.getCachableQueryString(query, -1, -1, sort)).to.be.equal("{}");
-        expect(s.getCachableQueryString(query, 0, 0, sort)).to.be.equal("{}");
-        expect(s.getCachableQueryString(query, 1, 1, sort)).to.be.equal("{}&start=1&count=1");
-        expect(s.getCachableQueryString(query, -1, 1, sort)).to.be.equal("{}&count=1");
-        expect(s.getCachableQueryString(query, 0, -1, sort)).to.be.equal("{}");
-        expect(s.getCachableQueryString(query, 1, 0, sort)).to.be.equal("{}&start=1");
-        expect(s.getCachableQueryString(query, -1, 0, sort)).to.be.equal("{}");
-        expect(s.getCachableQueryString(query, 0, 1, sort)).to.be.equal("{}&count=1");
-        expect(s.getCachableQueryString(query, 1, -1, sort)).to.be.equal("{}&start=1");
+        expect(Stream.getCachableQueryString(query, -1, -1, sort)).to.be.equal("{}");
+        expect(Stream.getCachableQueryString(query, 0, 0, sort)).to.be.equal("{}");
+        expect(Stream.getCachableQueryString(query, 1, 1, sort)).to.be.equal("{}&start=1&count=1");
+        expect(Stream.getCachableQueryString(query, -1, 1, sort)).to.be.equal("{}&count=1");
+        expect(Stream.getCachableQueryString(query, 0, -1, sort)).to.be.equal("{}");
+        expect(Stream.getCachableQueryString(query, 1, 0, sort)).to.be.equal("{}&start=1");
+        expect(Stream.getCachableQueryString(query, -1, 0, sort)).to.be.equal("{}");
+        expect(Stream.getCachableQueryString(query, 0, 1, sort)).to.be.equal("{}&count=1");
+        expect(Stream.getCachableQueryString(query, 1, -1, sort)).to.be.equal("{}&start=1");
       });
     });
 
     empty.forEach(function(sort) {
       var query = "{name:'Bob'}";
-      expect(s.getCachableQueryString(query, -1, -1, sort)).to.be.equal("{name:'Bob'}");
-      expect(s.getCachableQueryString(query, 0, 0, sort)).to.be.equal("{name:'Bob'}");
-      expect(s.getCachableQueryString(query, 1, 1, sort)).to.be.equal("{name:'Bob'}&start=1&count=1");
-      expect(s.getCachableQueryString(query, -1, 1, sort)).to.be.equal("{name:'Bob'}&count=1");
-      expect(s.getCachableQueryString(query, 0, -1, sort)).to.be.equal("{name:'Bob'}");
-      expect(s.getCachableQueryString(query, 1, 0, sort)).to.be.equal("{name:'Bob'}&start=1");
-      expect(s.getCachableQueryString(query, -1, 0, sort)).to.be.equal("{name:'Bob'}");
-      expect(s.getCachableQueryString(query, 0, 1, sort)).to.be.equal("{name:'Bob'}&count=1");
-      expect(s.getCachableQueryString(query, 1, -1, sort)).to.be.equal("{name:'Bob'}&start=1");
+      expect(Stream.getCachableQueryString(query, -1, -1, sort)).to.be.equal("{name:'Bob'}");
+      expect(Stream.getCachableQueryString(query, 0, 0, sort)).to.be.equal("{name:'Bob'}");
+      expect(Stream.getCachableQueryString(query, 1, 1, sort)).to.be.equal("{name:'Bob'}&start=1&count=1");
+      expect(Stream.getCachableQueryString(query, -1, 1, sort)).to.be.equal("{name:'Bob'}&count=1");
+      expect(Stream.getCachableQueryString(query, 0, -1, sort)).to.be.equal("{name:'Bob'}");
+      expect(Stream.getCachableQueryString(query, 1, 0, sort)).to.be.equal("{name:'Bob'}&start=1");
+      expect(Stream.getCachableQueryString(query, -1, 0, sort)).to.be.equal("{name:'Bob'}");
+      expect(Stream.getCachableQueryString(query, 0, 1, sort)).to.be.equal("{name:'Bob'}&count=1");
+      expect(Stream.getCachableQueryString(query, 1, -1, sort)).to.be.equal("{name:'Bob'}&start=1");
     });
 
     empty.forEach(function(query) {
       var sort = "{name:1}";
-      expect(s.getCachableQueryString(query, -1, -1, sort)).to.be.equal("{}&sort={name:1}");
-      expect(s.getCachableQueryString(query, 0, 0, sort)).to.be.equal("{}&sort={name:1}");
-      expect(s.getCachableQueryString(query, 1, 1, sort)).to.be.equal("{}&start=1&count=1&sort={name:1}");
-      expect(s.getCachableQueryString(query, -1, 1, sort)).to.be.equal("{}&count=1&sort={name:1}");
-      expect(s.getCachableQueryString(query, 0, -1, sort)).to.be.equal("{}&sort={name:1}");
-      expect(s.getCachableQueryString(query, 1, 0, sort)).to.be.equal("{}&start=1&sort={name:1}");
-      expect(s.getCachableQueryString(query, -1, 0, sort)).to.be.equal("{}&sort={name:1}");
-      expect(s.getCachableQueryString(query, 0, 1, sort)).to.be.equal("{}&count=1&sort={name:1}");
-      expect(s.getCachableQueryString(query, 1, -1, sort)).to.be.equal("{}&start=1&sort={name:1}");
+      expect(Stream.getCachableQueryString(query, -1, -1, sort)).to.be.equal("{}&sort={name:1}");
+      expect(Stream.getCachableQueryString(query, 0, 0, sort)).to.be.equal("{}&sort={name:1}");
+      expect(Stream.getCachableQueryString(query, 1, 1, sort)).to.be.equal("{}&start=1&count=1&sort={name:1}");
+      expect(Stream.getCachableQueryString(query, -1, 1, sort)).to.be.equal("{}&count=1&sort={name:1}");
+      expect(Stream.getCachableQueryString(query, 0, -1, sort)).to.be.equal("{}&sort={name:1}");
+      expect(Stream.getCachableQueryString(query, 1, 0, sort)).to.be.equal("{}&start=1&sort={name:1}");
+      expect(Stream.getCachableQueryString(query, -1, 0, sort)).to.be.equal("{}&sort={name:1}");
+      expect(Stream.getCachableQueryString(query, 0, 1, sort)).to.be.equal("{}&count=1&sort={name:1}");
+      expect(Stream.getCachableQueryString(query, 1, -1, sort)).to.be.equal("{}&start=1&sort={name:1}");
     });
 
     var query = "{name:'Bob'}";
     var sort = "{name:1}";
-    expect(s.getCachableQueryString(query, -1, -1, sort)).to.be.equal("{name:'Bob'}&sort={name:1}");
-    expect(s.getCachableQueryString(query, 0, 0, sort)).to.be.equal("{name:'Bob'}&sort={name:1}");
-    expect(s.getCachableQueryString(query, 1, 1, sort)).to.be.equal("{name:'Bob'}&start=1&count=1&sort={name:1}");
-    expect(s.getCachableQueryString(query, -1, 1, sort)).to.be.equal("{name:'Bob'}&count=1&sort={name:1}");
-    expect(s.getCachableQueryString(query, 0, -1, sort)).to.be.equal("{name:'Bob'}&sort={name:1}");
-    expect(s.getCachableQueryString(query, 1, 0, sort)).to.be.equal("{name:'Bob'}&start=1&sort={name:1}");
-    expect(s.getCachableQueryString(query, -1, 0, sort)).to.be.equal("{name:'Bob'}&sort={name:1}");
-    expect(s.getCachableQueryString(query, 0, 1, sort)).to.be.equal("{name:'Bob'}&count=1&sort={name:1}");
-    expect(s.getCachableQueryString(query, 1, -1, sort)).to.be.equal("{name:'Bob'}&start=1&sort={name:1}");
+    expect(Stream.getCachableQueryString(query, -1, -1, sort)).to.be.equal("{name:'Bob'}&sort={name:1}");
+    expect(Stream.getCachableQueryString(query, 0, 0, sort)).to.be.equal("{name:'Bob'}&sort={name:1}");
+    expect(Stream.getCachableQueryString(query, 1, 1, sort)).to.be.equal("{name:'Bob'}&start=1&count=1&sort={name:1}");
+    expect(Stream.getCachableQueryString(query, -1, 1, sort)).to.be.equal("{name:'Bob'}&count=1&sort={name:1}");
+    expect(Stream.getCachableQueryString(query, 0, -1, sort)).to.be.equal("{name:'Bob'}&sort={name:1}");
+    expect(Stream.getCachableQueryString(query, 1, 0, sort)).to.be.equal("{name:'Bob'}&start=1&sort={name:1}");
+    expect(Stream.getCachableQueryString(query, -1, 0, sort)).to.be.equal("{name:'Bob'}&sort={name:1}");
+    expect(Stream.getCachableQueryString(query, 0, 1, sort)).to.be.equal("{name:'Bob'}&count=1&sort={name:1}");
+    expect(Stream.getCachableQueryString(query, 1, -1, sort)).to.be.equal("{name:'Bob'}&start=1&sort={name:1}");
   });
 
 
   it("should return removed object", function() {
     var result;
     var query = db[bucket].find().equal("name", "franzi");
-    stream = query.stream(false, 'remove').subscribe(function(e) {
+    stream = query.stream({initial: false, matchTypes: 'remove'}).subscribe(function(e) {
       result = e;
     });
 
@@ -392,7 +563,7 @@ describe("Streaming Queries", function() {
 
   it("should return all changes", function() {
     var results = [];
-    stream = db[bucket].find().equal("age", 23).stream(false,'all').subscribe(function(e) {
+    stream = db[bucket].find().equal("age", 23).stream({initial: false, matchTypes: 'all'}).subscribe(function(e) {
       results.push(e);
     });
 
@@ -426,7 +597,7 @@ describe("Streaming Queries", function() {
     var insert = db[bucket].fromJSON(p3.toJSON(true));
     insert.name = "franz";
 
-    var observable =db[bucket].find().stream(false, 'match');
+    var observable = db[bucket].find().stream({initial: false, matchTypes: 'match'});
 
     var listener = function(e) {
       received.push(e);
@@ -435,7 +606,7 @@ describe("Streaming Queries", function() {
     stream = observable.subscribe(listener);
     otherstream = observable.subscribe(listener);
 
-        return helper.sleep(t).then(function() {
+    return helper.sleep(t).then(function() {
       return insert.insert()
     }).then(function(obj) {
       obj.name = "frrrrranz";
@@ -463,7 +634,7 @@ describe("Streaming Queries", function() {
       completions++;
     };
 
-    var observable =  db[bucket].find().stream(false, 'all');
+    var observable = db[bucket].find().stream({initial: false, matchTypes: 'all'});
 
     var subscription, insert;
 
@@ -510,7 +681,7 @@ describe("Streaming Queries", function() {
     var listener = function(e) {
       expect(++calls).to.be.at.most(1);
     };
-    stream = db[bucket].find().stream(false,'match').subscribe(listener);
+    stream = db[bucket].find().stream({initial: false, matchTypes: 'match'}).subscribe(listener);
 
     var insert;
     return helper.sleep(t).then(function() {
@@ -532,7 +703,7 @@ describe("Streaming Queries", function() {
     var listener = function(e) {
       expect(++calls).to.be.at.most(1);
     };
-    stream = db[bucket].find().stream(false,'match').first().subscribe(listener);
+    stream = db[bucket].find().stream({initial: false, matchTypes: 'match'}).first().subscribe(listener);
 
     var insert;
     return helper.sleep(t).then(function() {
@@ -546,5 +717,24 @@ describe("Streaming Queries", function() {
       expect(calls).to.be.equal(1);
     });
   });
+
+  function shuffle(array) {
+    var currentIndex = array.length, temporaryValue, randomIndex;
+
+    // While there remain elements to shuffle...
+    while (0 !== currentIndex) {
+
+      // Pick a remaining element...
+      randomIndex = Math.floor(Math.random() * currentIndex);
+      currentIndex -= 1;
+
+      // And swap it with the current element.
+      temporaryValue = array[currentIndex];
+      array[currentIndex] = array[randomIndex];
+      array[randomIndex] = temporaryValue;
+    }
+
+    return array;
+  }
 });
 
