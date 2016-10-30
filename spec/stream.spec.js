@@ -72,7 +72,7 @@ describe("Streaming Queries", function() {
       });
       objects = [p0, p1, p2, p3];
       return Promise.all([p0.save({force: true}), p1.save({force: true}), p2.save({force: true}), p3.save({force: true})]);
-    }).then(helper.sleep(t));
+    }).then(()=>helper.sleep(t));
   });
 
   afterEach(function() {
@@ -93,9 +93,8 @@ describe("Streaming Queries", function() {
           return person.delete();
         }));
       })
-    }).then(helper.sleep(t));
+    }).then(()=>helper.sleep(t));
   });
-
 
   it("should return the initial result", function() {
     var received = [];
@@ -135,6 +134,79 @@ describe("Streaming Queries", function() {
       expect(result.date.getTime()).be.ok;
       expect(result.initial).be.false;
     });
+  });
+
+  it("should maintain offset", function() {
+    this.timeout(10000);
+    var results = [];
+    stream = db[bucket].find().equal("age", 49).limit(2).offset(1).ascending("surname").stream({
+      initial: true
+    }).subscribe(function(e) {
+      results.push(e);
+    });
+
+    var al = new db[bucket]({
+      key: 'al',
+      name: 'Al',
+      surname: 'Smith',
+      age: 49
+    });
+
+    return helper.sleep(t, al.save())// result: Al, [ ]
+        .then(function() {
+          expect(results.length).to.be.equal(0);  // nothing, yet
+
+          var bob = new db[bucket]({
+            key: 'bob',
+            name: 'Bob',
+            surname: 'Thomas',
+            age: 49
+          });
+          return helper.sleep(t, bob.save());// result: Al, [ Bob ]
+        }).then(function() {
+          expect(results.length).to.be.equal(1);
+          expect(results[0].operation).to.be.equal("insert");
+          expect(results[0].matchType).to.be.equal("add");
+          expect(results[0].data.name).to.be.equal("Bob");
+          expect(results[0].index).to.be.equal(1);
+
+          var dave = new db[bucket]({
+            key: 'dave',
+            name: 'Dave',
+            surname: 'Vito',
+            age: 49
+          });
+          return helper.sleep(t, dave.save());// result: Al, [ Bob, Dave ]
+        }).then(function() {
+          expect(results.length).to.be.equal(2);
+          expect(results[1].operation).to.be.equal("insert");
+          expect(results[1].matchType).to.be.equal("add");
+          expect(results[1].data.name).to.be.equal("Dave");
+          expect(results[1].index).to.be.equal(2);
+
+          var carl = new db[bucket]({
+            key: 'carl',
+            name: 'Carl',
+            surname: 'Underhill',
+            age: 49
+          });
+          return helper.sleep(t, carl.save());// result: Al, [ Bob, Carl ], Dave
+        }).then(function() {
+          expect(results.length).to.be.equal(4);
+          expect(results[2].operation).to.be.equal(null);
+          expect(results[2].matchType).to.be.equal("remove");
+          expect(results[2].data.name).to.be.equal("Dave");
+          expect(results[2].index).to.be.equal(3);
+          expect(results[3].operation).to.be.equal("insert");
+          expect(results[3].matchType).to.be.equal("add");
+          expect(results[3].data.name).to.be.equal("Carl");
+          expect(results[3].index).to.be.equal(2);
+        }).then(function() {
+          al.name = "Alvin";
+          return helper.sleep(t, al.save());// result: Al, [ Bob, Carl ], Dave   | Updated in offset--> No notification
+        }).then(function() {
+          expect(results.length).to.be.equal(4);
+        });
   });
 
   it("should return ordered result", function() {
@@ -318,12 +390,12 @@ describe("Streaming Queries", function() {
       {initial: true, matchTypes: ['all'], operations: ['any']},//
       {initial: null, matchTypes: 'all', operations: ['any']},//
       {initial: undefined, matchTypes: ['all'], operations: 'any'},//
-      {initial: true, matchTypes: ['all','add'], operations: ['any','insert']},//
-      {initial: true, matchTypes: ['all','add','match'], operations: ['any','insert','update']},//
+      {initial: true, matchTypes: ['all', 'add'], operations: ['any', 'insert']},//
+      {initial: true, matchTypes: ['all', 'add', 'match'], operations: ['any', 'insert', 'update']},//
       {initial: true, matchTypes: undefined, operations: undefined},//
       {initial: true, matchTypes: null, operations: null},//
       {initial: true, matchTypes: ['all']},//
-      {initial: true,  operations: ['any']},//
+      {initial: true, operations: ['any']},//
       {matchTypes: ['all'], operations: ['any']},//
       {},//
       null,//
@@ -333,10 +405,10 @@ describe("Streaming Queries", function() {
     });
 
     // Operations and match type should be provide-able as item AND list
-        [//
-        {matchTypes: ['match']},//
-        {matchTypes: 'match'},//
-        ].forEach(function(options) {
+    [//
+      {matchTypes: ['match']},//
+      {matchTypes: 'match'},//
+    ].forEach(function(options) {
       expect(Stream.parseOptions(options)).to.be.eql({initial: true, matchTypes: ['match'], operations: ['any']});
     });
     [//
@@ -348,7 +420,7 @@ describe("Streaming Queries", function() {
 
     // Operations and match type must not be provided both, UNLESS one of them listens to everything anyways
     [//
-      {initial: true, matchTypes: ['match'], operations: ['any','insert']},//
+      {initial: true, matchTypes: ['match'], operations: ['any', 'insert']},//
       {initial: true, matchTypes: ['match'], operations: ['any']},//
       {initial: true, matchTypes: ['match'], operations: 'any'},//
       {initial: true, matchTypes: 'match', operations: null},//
@@ -369,11 +441,12 @@ describe("Streaming Queries", function() {
       {matchTypes: ['match'], operations: ['insert']},//
       {matchTypes: 'remove', operations: 'updates'},//
       {matchTypes: 1, operations: 5},//
-      {initial:2}//
-    ].forEach(function(options) {var exceptions = 0;
+      {initial: 2}//
+    ].forEach(function(options) {
+      var exceptions = 0;
       try {//Should raise an error
         Stream.parseOptions(options);
-        console.log('should not have been parsed: '+JSON.stringify(options));
+        console.log('should not have been parsed: ' + JSON.stringify(options));
       } catch (e) {
         exceptions++;
       }
@@ -536,7 +609,6 @@ describe("Streaming Queries", function() {
     expect(Stream.getCachableQueryString(query, 1, -1, sort)).to.be.equal("{name:'Bob'}&start=1&sort={name:1}");
   });
 
-
   it("should return removed object", function() {
     var result;
     var query = db[bucket].find().equal("name", "franzi");
@@ -675,7 +747,6 @@ describe("Streaming Queries", function() {
     });
   });
 
-
   it("should allow to unregister", function() {
     var calls = 0;
     var listener = function(e) {
@@ -696,7 +767,6 @@ describe("Streaming Queries", function() {
       expect(calls).to.be.equal(1);
     });
   });
-
 
   it("should only be called once", function() {
     var calls = 0;
