@@ -58,6 +58,12 @@ module.exports.logout = function(args) {
 };
 
 function readInputCredentials() {
+  console.log('If you have created your Baqend Account with OAuth:');
+  console.log(' 1. Login to the dashboard with OAuth.');
+  console.log(' 2. Go to your account settings (top right corner)');
+  console.log(' 3. Add a password to your account, which you can then use to login with the CLI.');
+  console.log('');
+
   return readInput('Username: ')
       .then((username) => {
         return readInput('Password: ', true).then((password) => {
