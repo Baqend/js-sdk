@@ -15,7 +15,7 @@ describe("Streaming Queries", function() {
   var emf, metamodel, db, stream, otherstream;
   var p0, p1, p2, p3, objects;
 
-  before(function() {
+  beforeEach(function() {
 
     var personType, addressType;
     emf = new DB.EntityManagerFactory({host: env.TEST_SERVER, schema: {}, tokenStorage: helper.rootTokenStorage});
@@ -88,7 +88,7 @@ describe("Streaming Queries", function() {
     //Remove excess objects
     return helper.sleep(t).then(()=> {
       //TODO: fix this when ids are handled correctly in queries
-      return db[bucket].find().notIn("id", [p0.id, p1.id, p2.id, p3.id]).resultList(function(result) {
+      return db[bucket].find().resultList(function(result) {
         return Promise.all(result.map(function(person) {
           return person.delete();
         }));
