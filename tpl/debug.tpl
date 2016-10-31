@@ -18,6 +18,7 @@
 
   <script src="../build/baqend.js"></script>
   <script src="../spec/env.js"></script>
+  <script src="../Rx.js"></script>
 
   <script>
     var server = location.search.match(/server=([^&]+)/);
