@@ -33,7 +33,6 @@ function createTypings(app, dest) {
 
   return factory.ready().then(() => {
     let typings = typingsFromMetamodel(factory.metamodel);
-    dest = dest || 'typings';
 
     if (!fs.existsSync(dest)){
       fs.mkdirSync(dest);

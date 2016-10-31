@@ -4,6 +4,7 @@ const glob = require("glob");
 const account = require('./account');
 const handlerTypes = ['update', 'insert', 'delete', 'validate'];
 const path = require('path');
+const readline = require('readline');
 
 module.exports = function(args) {
   if (!args.app && !args.host) {
@@ -34,9 +35,9 @@ function deployFiles(db, cwd, pattern) {
     });
   }).then((result) => {
     if (result && result.length > 0) {
-      console.log('Files upload completed.');
+      console.log('File deployment completed.');
     } else {
-      console.error('No files found.');
+      console.warn('No files where uploaded.');
     }
   })
 }
@@ -51,11 +52,13 @@ function deployCode(db, codePath) {
           return uploadCode(db, fileName, codePath);
         }
       });
-    }));
-  }).then(() => {
-    console.log('Code deployment completed.');
-  }).catch((e) => {
-    console.error(`Failed to deploy code: ${e.message}`);
+    })).then(() => {
+      console.log('Code deployment completed.');
+    }).catch((e) => {
+      console.error(`Failed to deploy code: ${e.message}`);
+    });
+  }).catch(() => {
+    console.warn(`Code deployment skipped, the code folder ${codePath} does not exists.`);
   });
 }
 
@@ -113,6 +116,7 @@ function uploadCode(db, name, codePath) {
 }
 
 function uploadFiles(db, files, cwd) {
+  let isTty = process.stdout.isTTY;
   let index = 0;
 
   var uploads = [];
@@ -120,12 +124,28 @@ function uploadFiles(db, files, cwd) {
     uploads.push(upload());
   }
 
+  if (!isTty) {
+    console.log(`Uploading ${files.length} files.`)
+  }
+
   return Promise.all(uploads);
 
   function upload() {
     if (index < files.length) {
-      console.log(`Uploading file ${(index + 1)} of ${files.length}`);
+      if (isTty) {
+        if (index > 0) {
+          readline.clearLine(process.stdout, 0);
+          readline.cursorTo(process.stdout, 0);
+        }
+        process.stdout.write(`Uploading file ${(index + 1)} of ${files.length}`);
+      }
+
       var file = files[index++];
+
+      if (isTty && index == files.length) {
+        console.log(''); //add a final linebreak
+      }
+
       return uploadFile(db, file, cwd).then(upload);
     }
   }

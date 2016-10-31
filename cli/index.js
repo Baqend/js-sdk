@@ -41,7 +41,7 @@ if (!module.parent) {
   program
       .command('typings <app>')
       .description('Generates additional typings (TypeScript support)')
-      .option('-d, --dest <dir>', 'The destination where the typings should be saved', 'typings')
+      .option('-d, --dest <dir>', 'The destination where the typings should be saved', '.')
       .action((app, options) => typings(Object.assign({app: app}, options)));
 
   program
