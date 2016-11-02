@@ -74,23 +74,23 @@ function readInputCredentials() {
 }
 
 function encrypt(input) {
-  var cipher = crypto.createCipher(algorithm, password);
-  var encrypted = cipher.update(input, 'utf8', 'base64');
+  let cipher = crypto.createCipher(algorithm, password);
+  let encrypted = cipher.update(input, 'utf8', 'base64');
   encrypted += cipher.final('base64');
   return encrypted;
 }
 
 function decrypt(input) {
-  var decipher = crypto.createDecipher(algorithm, password);
-  var decrypted = decipher.update(input, 'base64', 'utf8');
+  let decipher = crypto.createDecipher(algorithm, password);
+  let decrypted = decipher.update(input, 'base64', 'utf8');
   decrypted += decipher.final('utf8');
   return decrypted;
 }
 
 function readInput(question, hidden) {
-  var Writable = require('stream').Writable;
+  let Writable = require('stream').Writable;
 
-  var mutableStdout = new Writable({
+  let mutableStdout = new Writable({
     write: function(chunk, encoding, callback) {
       if (!this.muted) {
         process.stdout.write(chunk, encoding);
@@ -149,13 +149,10 @@ function saveCredentials(username, password) {
 }
 
 function login(username, password) {
-  return baqend.connect(host, true).then((db) => {
-    return db.login(username, password).then(() => db);
-  }).then((db) => {
-    return isBbq() && app? bbqAppLogin(db): db;
-  }).catch(() => {
-    throw new Error('Login denied');
-  });
+  return baqend.connect(host, true)
+      .then(db => db.login(username, password).then(() => db))
+      .then(db => isBbq() && app? bbqAppLogin(db): db)
+      .catch(() => console.error('Login denied'));
 }
 
 function bbqAppLogin(db) {

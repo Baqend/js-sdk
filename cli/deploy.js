@@ -119,7 +119,7 @@ function uploadFiles(db, files, cwd) {
   let isTty = process.stdout.isTTY;
   let index = 0;
 
-  var uploads = [];
+  let uploads = [];
   for (let i = 0; i < 10 && i < files.length-1; ++i) {
     uploads.push(upload());
   }
@@ -156,7 +156,7 @@ function uploadFile(db, filePath, cwd) {
 
   let stat = fs.statSync(fullFilePath);
 
-  var file = new db.File({path: `/www/${filePath}`, data: fs.createReadStream(fullFilePath), size: stat.size, type: 'stream'});
+  let file = new db.File({path: `/www/${filePath}`, data: fs.createReadStream(fullFilePath), size: stat.size, type: 'stream'});
   return file.upload({ force: true }).catch(function(e) {
     console.error(`Failed to upload file ${filePath}: ${e.message}`);
   });
