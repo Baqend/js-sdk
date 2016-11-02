@@ -92,7 +92,7 @@
     "karma-ci": "karma start karma.ci.conf.js",
     "dist": "grunt dist && npm run typings && npm run jsdoc",
     "release": "node scripts/release",
-    "typings": "jsdoc -t tpl/typings -r lib && tsc --target es6 --noImplicitAny spec-ts/typings.spec.ts",
+    "typings": "jsdoc -t tpl/typings -r lib -r streaming && tsc --target es6 --noImplicitAny spec-ts/typings.spec.ts",
     "jsdoc": "jsdoc -t tpl/theme -r lib -c tpl/jsdoc.conf.json --package package.json -d doc",
     "baqend": "node cli/index.js"
   },
