@@ -94,7 +94,7 @@ class Stream {
   }
 
   static getTopic(bucket, query, start, count, sort, matchTypes, operations) {
-    return [bucket, Stream.getCachableQueryString(query, start, count, sort), matchTypes.join("_"), operations.join("_")].join("/");
+    return [bucket, Stream.getCachableQueryString(query, start, count, sort), Stream.normalizeMatchTypes(matchTypes).join("_"), Stream.normalizeOperations(operations).join("_")].join("/");
   }
 
   static isEmptyJSONString(string) {
@@ -120,9 +120,9 @@ class Stream {
 
     if (provided) {
       if (provided.initial !== null && provided.initial !== undefined) {
-        if(typeof(provided.initial) === "boolean"){
+        if (typeof(provided.initial) === "boolean") {
           verified.initial = provided.initial;
-        }else {
+        } else {
           throw new Error('Option "initial" only permits Boolean values!!');
         }
       }
@@ -137,7 +137,7 @@ class Stream {
         verified.matchTypes = Stream.normalizeMatchTypes(verified.matchTypes);
       }
 
-      if (provided.operations) {
+      if (provided.operations !== undefined) {
         if (Object.prototype.toString.call(provided.operations) === '[object Array]') {
           verified.operations = provided.operations;
         } else {
@@ -147,7 +147,7 @@ class Stream {
         verified.operations = Stream.normalizeOperations(verified.operations);
       }
 
-      if (provided.matchTypes &&!provided.matchTypes.includes('all') && provided.operations&& !provided.operations.includes('any')) {
+      if (verified.matchTypes && !verified.matchTypes.includes('all') && verified.operations && !verified.operations.includes('any')) {
         throw new Error('Only subscriptions for either operations or matchTypes are allowed. You cannot subscribe to a query using matchTypes and operations at the same time!');
       }
     }
@@ -173,7 +173,18 @@ class Stream {
   }
 
   static normalizeOperations(list) {
-    return Stream.normalizeSortedSet(list, 'any', "operations", ['insert', 'update', 'delete']);
+    if (list) {
+      // convert null to 'null'
+      for (var i = list.length - 1; i >= 0; i--) {
+        if (list[i] === null) {
+          list[i] = 'null';
+        }
+      }
+    } else if (list === null) {
+      list = ['null'];
+    }
+    list = Stream.normalizeSortedSet(list, 'any', "operations", ['delete', 'insert', 'null', 'update']);
+    return list;
   }
 
   static normalizeSortedSet(list, wildcard, itemType, allowedItems) {
@@ -183,12 +194,12 @@ class Stream {
 
     // sort, remove duplicates and check whether all values are allowed
     list.sort();
-    var item = null;
-    var lastItem = null;
+    var item = undefined;
+    var lastItem = undefined;
     for (var i = list.length - 1; i >= 0; i--) {
       item = list[i];
-      if (!item) {//undefined or null item in the list --> invalid!
-        throw new Error('null and undefined not allowed!');
+      if (!item) {//undefined and null item in the list --> invalid!
+        throw new Error('undefined and null not allowed!');
       }
       if (item === lastItem) {//remove duplicates
         list.splice(i, 1);
@@ -197,7 +208,7 @@ class Stream {
         return [wildcard];
       }
       if (!allowedItems.includes(item)) {//raise error on invalid elements
-        throw new Error(item + 'not allowed for ' + itemType + '! (permitted: ' + allowedItems + '.)');
+        throw new Error(item + ' not allowed for ' + itemType + '! (permitted: ' + allowedItems + '.)');
       }
       lastItem = item;
     }
@@ -223,9 +234,14 @@ class Stream {
       msg.query = this.query;
 
       if (msg.result) { //Initial result received
+        var basicMatch = {matchType: "match", operation: null};
+        var index = 0;
         msg.result.forEach((obj)=> {
           var entity = this._createObject(obj, false);
-          var callback = this.createCallback(msg, {matchType: "match", operation: null}, entity, true);
+          if (msg.ordered) {
+            basicMatch.index = index++;
+          }
+          var callback = this.createCallback(msg, basicMatch, entity, true);
           cb(callback);
         }, this);
       }
