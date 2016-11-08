@@ -7,6 +7,10 @@ var WebSocketConnector = require('../connector/WebSocketConnector');
  */
 class Stream {
 
+  /**
+   *
+   * @returns {Observable}
+   */
   observable() {
     return Rx.Observable.create(observer => {
       var callback = (e) => {
@@ -123,7 +127,7 @@ class Stream {
         if (typeof(provided.initial) === "boolean") {
           verified.initial = provided.initial;
         } else {
-          throw new Error('Option "initial" only permits Boolean values!!');
+          throw new Error('Option "initial" only permits Boolean values!');
         }
       }
 
@@ -137,7 +141,7 @@ class Stream {
         verified.matchTypes = Stream.normalizeMatchTypes(verified.matchTypes);
       }
 
-      if (provided.operations !== undefined) {
+      if (provided.operations) {
         if (Object.prototype.toString.call(provided.operations) === '[object Array]') {
           verified.operations = provided.operations;
         } else {
@@ -173,18 +177,7 @@ class Stream {
   }
 
   static normalizeOperations(list) {
-    if (list) {
-      // convert null to 'null'
-      for (var i = list.length - 1; i >= 0; i--) {
-        if (list[i] === null) {
-          list[i] = 'null';
-        }
-      }
-    } else if (list === null) {
-      list = ['null'];
-    }
-    list = Stream.normalizeSortedSet(list, 'any', "operations", ['delete', 'insert', 'null', 'update']);
-    return list;
+    return Stream.normalizeSortedSet(list, 'any', "operations", ['delete', 'insert', 'none', 'update']);
   }
 
   static normalizeSortedSet(list, wildcard, itemType, allowedItems) {
@@ -194,7 +187,7 @@ class Stream {
 
     // sort, remove duplicates and check whether all values are allowed
     list.sort();
-    var item = undefined;
+    var item;
     var lastItem = undefined;
     for (var i = list.length - 1; i >= 0; i--) {
       item = list[i];
@@ -234,7 +227,7 @@ class Stream {
       msg.query = this.query;
 
       if (msg.result) { //Initial result received
-        var basicMatch = {matchType: "match", operation: null};
+        var basicMatch = {matchType: "match", operation: 'none'};
         var index = 0;
         msg.result.forEach((obj)=> {
           var entity = this._createObject(obj, false);

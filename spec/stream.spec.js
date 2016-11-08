@@ -12,7 +12,7 @@ describe("Streaming Queries", function() {
   var Stream = DB.query.Stream;
   var t = 400;
   var bucket = helper.randomize("StreamingQueryPerson");
-  var emf, metamodel, db, stream, otherstream;
+  var emf, metamodel, db, stream, otherstream, subscription, othersubscription;
   var p0, p1, p2, p3, objects;
 
   beforeEach(function() {
@@ -76,30 +76,40 @@ describe("Streaming Queries", function() {
   });
 
   afterEach(function() {
-    //Unregister Streams
-    if (stream) {
-      stream.unsubscribe();
-      stream = undefined;
-    }
-    if (otherstream) {
-      otherstream.unsubscribe();
-      otherstream = undefined;
-    }
+    this.timeout(5000);
     //Remove excess objects
     return helper.sleep(t).then(()=> {
-      //TODO: fix this when ids are handled correctly in queries
+      //Unregister subscriptions and streams
+      if (subscription) {
+        subscription.unsubscribe();
+        subscription = undefined;
+      }
+      if (othersubscription) {
+        othersubscription.unsubscribe();
+        othersubscription = undefined;
+      }
+      if (stream) {
+        // stream.unsubscribe();
+        stream = undefined;
+      }
+      if (otherstream) {
+        // otherstream.unsubscribe();
+        otherstream = undefined;
+      }
+    }).then(()=> {
       return db[bucket].find().resultList(function(result) {
         return Promise.all(result.map(function(person) {
           return person.delete();
         }));
-      })
+      });
     }).then(()=>helper.sleep(t));
   });
 
   it("should return the initial result", function() {
     var received = [];
     var query = db[bucket].find().limit(3);
-    stream = query.stream().subscribe(function(e) {
+    stream = query.stream();
+    subscription = stream.subscribe(function(e) {
       received.push(e);
     });
 
@@ -108,7 +118,7 @@ describe("Streaming Queries", function() {
       received.forEach(function(result) {
         expect(result.matchType).to.be.equal("match");
         expect(objects).to.include(result.data);
-        expect(result.operation).to.be.equal(null);
+        expect(result.operation).to.be.equal('none');
         expect(result.target).to.be.equal(query);
         expect(result.date.getTime()).be.ok;
         expect(result.initial).be.true;
@@ -119,7 +129,8 @@ describe("Streaming Queries", function() {
   it("should return updated object", function() {
     var result;
     var query = db[bucket].find();
-    stream = query.stream({initial: false, matchTypes: 'match'}).subscribe(function(e) {
+    stream = query.stream({initial: false, matchTypes: 'match'});
+    subscription = stream.subscribe(function(e) {
       result = e;
     });
 
@@ -141,7 +152,8 @@ describe("Streaming Queries", function() {
     var results = [];
     stream = db[bucket].find().equal("age", 49).limit(2).offset(1).ascending("surname").stream({
       initial: true
-    }).subscribe(function(e) {
+    });
+    subscription = stream.subscribe(function(e) {
       results.push(e);
     });
 
@@ -193,10 +205,10 @@ describe("Streaming Queries", function() {
           return helper.sleep(t, carl.save());// result: Al, [ Bob, Carl ], Dave
         }).then(function() {
           expect(results.length).to.be.equal(4);
-          expect(results[2].operation).to.be.equal(null);
+          expect(results[2].operation).to.be.equal('none');
           expect(results[2].matchType).to.be.equal("remove");
           expect(results[2].data.name).to.be.equal("Dave");
-          expect(results[2].index).to.be.equal(3);
+          expect(results[2].index).to.be.equal(undefined);
           expect(results[3].operation).to.be.equal("insert");
           expect(results[3].matchType).to.be.equal("add");
           expect(results[3].data.name).to.be.equal("Carl");
@@ -215,7 +227,8 @@ describe("Streaming Queries", function() {
     stream = db[bucket].find().equal("age", 49).limit(3).ascending("name").stream({
       initial: false,
       matchTypes: 'all'
-    }).subscribe(function(e) {
+    });
+    subscription = stream.subscribe(function(e) {
       results.push(e);
     });
 
@@ -298,10 +311,10 @@ describe("Streaming Queries", function() {
         }).then(function() {
           return helper.sleep(t).then(function() {
             expect(results.length).to.be.equal(5);
-            expect(results[3].operation).to.be.equal(null); //transitive remove --> the was no operation on this objects
+            expect(results[3].operation).to.be.equal('none'); //transitive remove --> the was no operation on this objects
             expect(results[3].matchType).to.be.equal("remove");
             expect(results[3].data.name).to.be.equal("Dave");
-            expect(results[3].index).to.be.equal(3);
+            expect(results[3].index).to.be.equal(undefined);
             expect(results[4].operation).to.be.equal("insert");
             expect(results[4].matchType).to.be.equal("add");
             expect(results[4].data.name).to.be.equal("Dan");
@@ -310,7 +323,7 @@ describe("Streaming Queries", function() {
         });
   });
 
-  it("should return null-operation matches", function() {
+  it("should return 'none'-operation matches", function() {
     this.timeout(10000);
     var results = [];
 
@@ -329,15 +342,16 @@ describe("Streaming Queries", function() {
       return helper.sleep(t).then(function() {
         stream = db[bucket].find().equal("age", 49).limit(3).ascending("name").stream({
           initial: true,
-          operations: null
-        }).subscribe(function(e) {
+          operations: 'none'
+        });
+        subscription = stream.subscribe(function(e) {
           results.push(e);
         });
       });
     }).then(function() {
       return helper.sleep(t).then(function() {
         expect(results.length).to.be.equal(1);
-        expect(results[0].operation).to.be.equal(null); //transitive remove --> the was no operation on this objects
+        expect(results[0].operation).to.be.equal('none'); //transitive remove --> the was no operation on this objects
         expect(results[0].matchType).to.be.equal("match");
         expect(results[0].data.name).to.be.equal("Al");
         expect(results[0].index).to.be.equal(0);
@@ -392,10 +406,10 @@ describe("Streaming Queries", function() {
         }).then(function() {
           return helper.sleep(t).then(function() {
             expect(results.length).to.be.equal(2);
-            expect(results[1].operation).to.be.equal(null); //transitive remove --> the was no operation on this objects
+            expect(results[1].operation).to.be.equal('none'); //transitive remove --> the was no operation on this objects
             expect(results[1].matchType).to.be.equal("remove");
             expect(results[1].data.name).to.be.equal("Dave");
-            expect(results[1].index).to.be.equal(3);
+            expect(results[1].index).to.be.equal(undefined);
           });
         });
   });
@@ -403,7 +417,8 @@ describe("Streaming Queries", function() {
   it("should return inserted object", function() {
     var result;
     var query = db[bucket].find().equal("name", "franz");
-    stream = query.stream({initial: false, matchTypes: 'match'}).subscribe(function(e) {
+    stream = query.stream({initial: false, matchTypes: 'match'});
+    subscription = stream.subscribe(function(e) {
       result = e;
     });
 
@@ -425,12 +440,14 @@ describe("Streaming Queries", function() {
     this.timeout(6000);
     var franz, otherfranz;
 
-    stream = db[bucket].find().stream({initial: false, matchTypes: 'all'}).subscribe(function(e) {
+    stream = db[bucket].find().stream({initial: false, matchTypes: 'all'});
+    subscription = stream.subscribe(function(e) {
       franz = e.data;
     });
 
     var otherdb = emf.createEntityManager();
-    otherstream = otherdb[bucket].find().stream({initial: false, matchTypes: 'all'}).subscribe(function(e) {
+    otherstream = otherdb[bucket].find().stream({initial: false, matchTypes: 'all'});
+    othersubscription = otherstream.subscribe(function(e) {
       otherfranz = e.data;
     });
 
@@ -482,7 +499,7 @@ describe("Streaming Queries", function() {
       {initial: true, matchTypes: ['all', 'add'], operations: ['any', 'insert']},//
       {initial: true, matchTypes: ['all', 'add', 'match'], operations: ['any', 'insert', 'update']},//
       {initial: true, matchTypes: undefined, operations: undefined},//
-      {initial: true, matchTypes: null, operations: undefined},//
+      {initial: true, matchTypes: null, operations: null},//
       {initial: true, matchTypes: ['all']},//
       {initial: true, operations: ['any']},//
       {matchTypes: ['all'], operations: ['any']},//
@@ -512,6 +529,7 @@ describe("Streaming Queries", function() {
       {initial: true, matchTypes: ['match'], operations: ['any', 'insert']},//
       {initial: true, matchTypes: ['match'], operations: ['any']},//
       {initial: true, matchTypes: ['match'], operations: 'any'},//
+      {initial: true, matchTypes: 'match', operations: null},//
       {initial: true, matchTypes: 'match', operations: undefined},//
       {matchTypes: 'match'}//
     ].forEach(function(options) {
@@ -526,12 +544,13 @@ describe("Streaming Queries", function() {
     ].forEach(function(options) {
       expect(Stream.parseOptions(options)).to.be.eql({initial: true, matchTypes: ['all'], operations: ['insert']});
     });
-    [//
+    [ //should to raise an error
       {matchTypes: ['match'], operations: ['insert']},//
       {matchTypes: 'remove', operations: 'update'},//
       {matchTypes: 1, operations: 5},//
-      {initial: true, matchTypes: 'match', operations: null},//
-      {initial: 2}//
+      {initial: true, matchTypes: 'match', operations: 'none'},//
+      {initial: 2},//
+      {initial: 'true'}//
     ].forEach(function(options) {
       var exceptions = 0;
       try {//Should raise an error
@@ -599,17 +618,16 @@ describe("Streaming Queries", function() {
       expect(Stream.normalizeOperations(shuffle(['insert', 'update', 'insert', 'update', 'delete', 'any']))).to.be.eql(['any']);
       expect(Stream.normalizeOperations(shuffle(['insert', 'insert']))).to.be.eql(['insert']);
       expect(Stream.normalizeOperations(shuffle(['insert', 'update', 'insert', 'update']))).to.be.eql(['insert', 'update']);
-      expect(Stream.normalizeOperations(shuffle(['insert','null', 'update', 'insert', 'update']))).to.be.eql(['insert','null', 'update']);
-      expect(Stream.normalizeOperations(shuffle(['insert',null, 'update', 'insert', 'update']))).to.be.eql(['insert','null', 'update']);
+      expect(Stream.normalizeOperations(shuffle(['insert', 'none', 'update', 'insert', 'update']))).to.be.eql(['insert', 'none', 'update']);
       expect(Stream.normalizeOperations(shuffle(['insert', 'update', 'delete']))).to.be.eql(['delete', 'insert', 'update']);
       expect(Stream.normalizeOperations(shuffle(['insert', 'delete']))).to.be.eql(['delete', 'insert']);
 
       // undefined and empty lists should result in undefined
       expect(Stream.normalizeOperations(undefined)).to.be.eql(undefined);
-      expect(Stream.normalizeOperations(null)).to.be.eql(['null']);
+      expect(Stream.normalizeOperations(null)).to.be.eql(undefined);
       expect(Stream.normalizeOperations([])).to.be.eql(undefined);
 
-      ['Banana', 'error', undefined].forEach(function(invalid) {
+      ['Banana', 'error', null, undefined].forEach(function(invalid) {
         [[invalid], [invalid, 'update', 'insert'], [invalid, 'update', 'insert', 'insert']].forEach(function(list) {
           var exceptions = 0;
           try {//Should raise an error
@@ -637,8 +655,8 @@ describe("Streaming Queries", function() {
     expected = "bucket/{name:'Bob'}&start=2&count=5&sort={name:1}/add/insert";
     expect(topic).to.be.equal(expected);
 
-    topic = Stream.getTopic("bucket", "{name:'Bob'}", 2, 5, "{name:1}", Stream.normalizeMatchTypes(['add']), Stream.normalizeOperations(['insert','null']));
-    expected = "bucket/{name:'Bob'}&start=2&count=5&sort={name:1}/add/insert_null";
+    topic = Stream.getTopic("bucket", "{name:'Bob'}", 2, 5, "{name:1}", Stream.normalizeMatchTypes(['add']), Stream.normalizeOperations(['insert', 'none']));
+    expected = "bucket/{name:'Bob'}&start=2&count=5&sort={name:1}/add/insert_none";
     expect(topic).to.be.equal(expected);
 
     var exceptions = 0;
@@ -708,7 +726,8 @@ describe("Streaming Queries", function() {
   it("should return removed object", function() {
     var result;
     var query = db[bucket].find().equal("name", "franzi");
-    stream = query.stream({initial: false, matchTypes: 'remove'}).subscribe(function(e) {
+    stream = query.stream({initial: false, matchTypes: 'remove'});
+    subscription = stream.subscribe(function(e) {
       result = e;
     });
 
@@ -731,7 +750,8 @@ describe("Streaming Queries", function() {
 
   it("should return all changes", function() {
     var results = [];
-    stream = db[bucket].find().equal("age", 23).stream({initial: false, matchTypes: 'all'}).subscribe(function(e) {
+    stream = db[bucket].find().equal("age", 23).stream({initial: false, matchTypes: 'all'});
+    subscription = stream.subscribe(function(e) {
       results.push(e);
     });
 
@@ -765,14 +785,14 @@ describe("Streaming Queries", function() {
     var insert = db[bucket].fromJSON(p3.toJSON(true));
     insert.name = "franz";
 
-    var observable = db[bucket].find().stream({initial: false, matchTypes: 'match'});
+    stream = db[bucket].find().stream({initial: false, matchTypes: 'match'});
 
     var listener = function(e) {
       received.push(e);
       expect(e.data.id).to.be.equal(insert.id);
     };
-    stream = observable.subscribe(listener);
-    otherstream = observable.subscribe(listener);
+    subscription = stream.subscribe(listener);
+    othersubscription = stream.subscribe(listener);
 
     return helper.sleep(t).then(function() {
       return insert.insert()
@@ -782,7 +802,6 @@ describe("Streaming Queries", function() {
     }).then(function() {
       expect(received.length).to.be.equal(4);
     });
-    otherstream.unsubscribe();
   });
 
   it("RXjs: should cancel subscription", function() {
@@ -802,12 +821,12 @@ describe("Streaming Queries", function() {
       completions++;
     };
 
-    var observable = db[bucket].find().stream({initial: false, matchTypes: 'all'});
+    stream = db[bucket].find().stream({initial: false, matchTypes: 'all'});
 
     var subscription, insert;
 
     return helper.sleep(1000).then(function() {
-      subscription = observable.subscribe(onNext, onError, onCompleted);
+      subscription = stream.subscribe(onNext, onError, onCompleted);
       return helper.sleep(t);
     }).then(function() {
       expect(next).to.be.equal(0);
@@ -843,12 +862,13 @@ describe("Streaming Queries", function() {
     });
   });
 
-  it("should allow to unregister", function() {
+  it("should allow to unregister by unsubscribing RxJS subscription", function() {
     var calls = 0;
     var listener = function(e) {
       expect(++calls).to.be.at.most(1);
     };
-    stream = db[bucket].find().stream({initial: false, matchTypes: 'match'}).subscribe(listener);
+    stream = db[bucket].find().stream({initial: false, matchTypes: 'match'});
+    subscription = stream.subscribe(listener);
 
     var insert;
     return helper.sleep(t).then(function() {
@@ -856,7 +876,7 @@ describe("Streaming Queries", function() {
       insert.name = "franz";
       return helper.sleep(t, insert.insert());
     }).then(function() {
-      stream.unsubscribe();
+      subscription.unsubscribe();
       insert.name = "";
       return helper.sleep(t, insert.save())
     }).then(function() {
@@ -869,7 +889,8 @@ describe("Streaming Queries", function() {
     var listener = function(e) {
       expect(++calls).to.be.at.most(1);
     };
-    stream = db[bucket].find().stream({initial: false, matchTypes: 'match'}).first().subscribe(listener);
+    stream = db[bucket].find().stream({initial: false, matchTypes: 'match'});
+    subscription = stream.first().subscribe(listener);
 
     var insert;
     return helper.sleep(t).then(function() {
@@ -885,49 +906,38 @@ describe("Streaming Queries", function() {
     });
   });
 
-  it("should compute rolling average", function() {
+  it("should compute aggregate: average", function() {
     this.timeout(6000);
 
-    var initialAccumulator ={count: 0, value: 0, matches: {}};
-    var maintain = (accumulator, match) => {
-      var currentValue = match.matchType === 'remove' ? undefined : match.data.age;
-      var oldValue = accumulator.matches[match.data.id];
+    var stream = db[bucket].find().stream({initial: false});
 
-      var hasValue = currentValue !== undefined && currentValue !== null;
-      if (!hasValue) {
-        currentValue = 0;
-      }
+    var initialAccumulator = {
+      contributors: {}, // individual activity counts go here
+      count: 0, // result set cardinality
+      value: 0, // overall number of activities in the result
+      aggregate: undefined // value divided by count
+    };
+    var maintain = (accumulator, event) => {
+      var newValue = event.matchType === 'remove' ? undefined : event.data.age;
+      var oldValue = accumulator.contributors[event.data.id];
 
-      var count = 0;
-      if (oldValue) {
-        if (!hasValue) {
-          count = -1;
-        }
+      if (newValue) {
+        accumulator.contributors[event.data.id] = newValue;
       } else {
-        oldValue = 0;
-        if (hasValue) {
-          count = 1;
-        }
+        delete accumulator.contributors[event.data.id];
       }
-
-      if (hasValue) {
-        accumulator.matches[match.data.id] = currentValue;
-      } else {
-        delete accumulator.matches[match.data.id];
-      }
-
-      accumulator.count += count;
-      accumulator.value += currentValue - oldValue;
+      accumulator.value += (newValue ? newValue : 0) - (oldValue ? oldValue : 0);
+      accumulator.count += event.matchType === 'remove' ? -1 : event.initial || event.matchType === 'add' ? 1 : 0;
+      accumulator.aggregate = accumulator.count > 0 ? accumulator.value / accumulator.count : undefined;
       return accumulator;
     };
-    var compute = accumulator=>accumulator.count > 0 ? accumulator.value / accumulator.count : '?';
 
     var average;
-    stream = db[bucket].find().stream({initial: false}).scan(maintain, initialAccumulator).map(compute).subscribe(e=>average = e);
+    subscription = stream.scan(maintain, initialAccumulator).map(accumulator=>accumulator.aggregate).subscribe(e=>average = e);
 
     var person;
     return helper.sleep(t).then(function() {
-      console.log ("no matching person --> average age: "+ average);
+      console.log("no matching person --> average age: " + average);
       expect(average).to.be.equal(undefined);
       person = new db[bucket]({
         key: 'albert',
@@ -936,7 +946,7 @@ describe("Streaming Queries", function() {
       });
       return helper.sleep(t, person.save());
     }).then(function() {
-      console.log ("new match: Albert (49) --> average age: "+ average);
+      console.log("new match: Albert (49) --> average age: " + average);
       expect(average).to.be.equal(49);
       person = new db[bucket]({
         key: 'bob',
@@ -945,7 +955,7 @@ describe("Streaming Queries", function() {
       });
       return helper.sleep(t, person.save());
     }).then(function() {
-      console.log ("new match: Bob (51) --> average age: "+ average);
+      console.log("new match: Bob (51) --> average age: " + average);
       expect(average).to.be.equal(50);
       person = new db[bucket]({
         key: 'carl',
@@ -954,11 +964,11 @@ describe("Streaming Queries", function() {
       });
       return helper.sleep(t, person.save());
     }).then(function() {
-      console.log ("new match: Carl (59) --> average age: "+ average);
+      console.log("new match: Carl (59) --> average age: " + average);
       expect(average).to.be.equal(53);
       return helper.sleep(t, person.delete());
     }).then(helper.sleep(t)).then(function() {
-      console.log ("new MISmatch: Carl (59) --> average age: "+ average);
+      console.log("new MISmatch: Carl (59) --> average age: " + average);
       expect(average).to.be.equal(50);
     });
   });
