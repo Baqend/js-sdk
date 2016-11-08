@@ -18,6 +18,11 @@ try {
  */
 class Stream {
 
+  /**
+   * Returns an RxJS observable.
+   *
+   * @returns {Observable} an RxJS observable
+   */
   observable() {
     return Observable.create(observer => {
       var callback = (e) => {
@@ -40,9 +45,10 @@ class Stream {
    * @param {string} bucket The Bucket on which the streaming query is performed
    * @param {string} query The serialized query
    * @param {Object} options an object containing parameters
-   * @param {number} sort
-   * @param {number} limit
-   * @param {Object} target the target of the stream
+   * @param {string} sort the sort string
+   * @param {number} limit the count, i.e. the number of items in the result
+   * @param {number} offset offset, i.e. the number of items to skip
+   * @param {Node} target the target of the stream
    */
   constructor(entityManager, bucket, query, options, sort, limit, offset, target) {
     var verifiedOptions = Stream.parseOptions(options);
@@ -62,6 +68,7 @@ class Stream {
     this.target = target;
     this.socket = WebSocketConnector.create(entityManager._connector);
   }
+
 
   on(matchTypes, callback) {
     var wrappedCallback = this._wrapQueryCallback(callback);
@@ -106,7 +113,7 @@ class Stream {
   }
 
   static getTopic(bucket, query, start, count, sort, matchTypes, operations) {
-    return [bucket, Stream.getCachableQueryString(query, start, count, sort), matchTypes.join("_"), operations.join("_")].join("/");
+    return [bucket, Stream.getCachableQueryString(query, start, count, sort), Stream.normalizeMatchTypes(matchTypes).join("_"), Stream.normalizeOperations(operations).join("_")].join("/");
   }
 
   static isEmptyJSONString(string) {
@@ -131,10 +138,10 @@ class Stream {
 
     if (provided) {
       if (provided.initial !== null && provided.initial !== undefined) {
-        if(typeof(provided.initial) === "boolean"){
+        if (typeof(provided.initial) === "boolean") {
           verified.initial = provided.initial;
-        }else {
-          throw new Error('Option "initial" only permits Boolean values!!');
+        } else {
+          throw new Error('Option "initial" only permits Boolean values!');
         }
       }
 
@@ -158,7 +165,7 @@ class Stream {
         verified.operations = Stream.normalizeOperations(verified.operations);
       }
 
-      if (provided.matchTypes &&!provided.matchTypes.includes('all') && provided.operations&& !provided.operations.includes('any')) {
+      if (verified.matchTypes && !verified.matchTypes.includes('all') && verified.operations && !verified.operations.includes('any')) {
         throw new Error('Only subscriptions for either operations or matchTypes are allowed. You cannot subscribe to a query using matchTypes and operations at the same time!');
       }
     }
@@ -184,7 +191,7 @@ class Stream {
   }
 
   static normalizeOperations(list) {
-    return Stream.normalizeSortedSet(list, 'any', "operations", ['insert', 'update', 'delete']);
+    return Stream.normalizeSortedSet(list, 'any', "operations", ['delete', 'insert', 'none', 'update']);
   }
 
   static normalizeSortedSet(list, wildcard, itemType, allowedItems) {
@@ -194,12 +201,12 @@ class Stream {
 
     // sort, remove duplicates and check whether all values are allowed
     list.sort();
-    var item = null;
-    var lastItem = null;
+    var item;
+    var lastItem = undefined;
     for (var i = list.length - 1; i >= 0; i--) {
       item = list[i];
-      if (!item) {//undefined or null item in the list --> invalid!
-        throw new Error('null and undefined not allowed!');
+      if (!item) {//undefined and null item in the list --> invalid!
+        throw new Error('undefined and null not allowed!');
       }
       if (item === lastItem) {//remove duplicates
         list.splice(i, 1);
@@ -208,7 +215,7 @@ class Stream {
         return [wildcard];
       }
       if (!allowedItems.includes(item)) {//raise error on invalid elements
-        throw new Error(item + 'not allowed for ' + itemType + '! (permitted: ' + allowedItems + '.)');
+        throw new Error(item + ' not allowed for ' + itemType + '! (permitted: ' + allowedItems + '.)');
       }
       lastItem = item;
     }
@@ -234,9 +241,14 @@ class Stream {
       msg.query = this.query;
 
       if (msg.result) { //Initial result received
+        var basicMatch = {matchType: "match", operation: 'none'};
+        var index = 0;
         msg.result.forEach((obj)=> {
           var entity = this._createObject(obj, false);
-          var callback = this.createCallback(msg, {matchType: "match", operation: null}, entity, true);
+          if (msg.ordered) {
+            basicMatch.index = index++;
+          }
+          var callback = this.createCallback(msg, basicMatch, entity, true);
           cb(callback);
         }, this);
       }

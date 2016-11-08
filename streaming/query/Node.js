@@ -4,10 +4,14 @@ var Stream = require('./Stream');
 var Node = require('../../lib/query/Node');
 
 /**
- * @inheritDoc
+ * @private
+ *
+ * @param {Object} options
+ * @param {query.Node<T>} target
+ * @returns {Observable<T>} an RxJS observable
  * @memberOf query.Node<T>.prototype
  */
-Node.prototype.stream = function(options, target) {
+Node.prototype._stream = function(options, target) {
   var type = this.resultClass ? this.entityManager.metamodel.entity(this.resultClass) : null;
   if (!type) {
     throw new Error('Only typed queries can be executed.');
