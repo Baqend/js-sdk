@@ -241,7 +241,7 @@ class Stream {
       msg.query = this.query;
 
       if (msg.result) { //Initial result received
-        var basicMatch = {matchType: "match", operation: 'none'};
+        var basicMatch = {matchType: "add", operation: 'none'};
         var index = 0;
         msg.result.forEach((obj)=> {
           var entity = this._createObject(obj, false);
