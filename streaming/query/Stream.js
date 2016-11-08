@@ -13,13 +13,13 @@ class Stream {
    */
   observable() {
     return Rx.Observable.create(observer => {
-      var callback = (e) => {
+      let callback = (e) => {
         if (e.matchType === 'error') {
           observer.error(e);
         } else {
           observer.next(e);
         }
-      }
+      };
       this.on(this.query.matchTypes, callback);
       return () => {
         this.off(this.query.matchTypes, callback);
@@ -34,7 +34,8 @@ class Stream {
    * @param {Object} options an object containing parameters
    * @param {number} sort
    * @param {number} limit
-   * @param target the target of the stream
+   * @param {number} offset
+   * @param {Object} target the target of the stream
    */
   constructor(entityManager, bucket, query, options, sort, limit, offset, target) {
     var verifiedOptions = Stream.parseOptions(options);
@@ -115,9 +116,8 @@ class Stream {
    </ul>
    *
    *
-   * @param provided object containing options
-   * @returns {{}} an object containing VALID options
-   * @constructor
+   * @param {Object} provided object containing options
+   * @returns {Object} an object containing VALID options
    */
   static parseOptions(provided) {
     var verified = {};

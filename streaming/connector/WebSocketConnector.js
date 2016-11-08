@@ -2,6 +2,9 @@
 var Connector = require('../../lib/connector/Connector');
 var message = require('../../lib/message');
 
+/**
+ * @alias connector.WebSocketConnector
+ */
 class WebSocketConnector {
 
 
