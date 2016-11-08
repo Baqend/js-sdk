@@ -1,3 +1,5 @@
+import {Observable} from 'rxjs/Observable';
+
 declare type json = Object|Array<any>;
 
 declare interface Class<T> {
