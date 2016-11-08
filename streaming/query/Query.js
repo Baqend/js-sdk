@@ -1,4 +1,7 @@
 /**
+ * @class
+ * @name query.Query<T>
+ *   
  * Returns an RxJS observable that receives events for streaming query.
  *
  * @param {Object} [options] options on whether an initial result and what kind of events (w.r.t. match types and operations) are requested

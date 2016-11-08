@@ -95,8 +95,10 @@
     "karma-ci": "karma start karma.ci.conf.js",
     "dist": "grunt dist && npm run typings && npm run jsdoc",
     "release": "node scripts/release",
-    "typings": "jsdoc -t tpl/typings -r lib -d index.d.ts && jsdoc -t tpl/typings -r streaming -d streaming.d.ts && tsc --target es6 --noImplicitAny spec-ts/typings.spec.ts",
-    "jsdoc": "jsdoc -t tpl/theme -r lib -c tpl/jsdoc.conf.json --package package.json -d doc",
+    "typings": "npm run typings-generate && npm run typings-test",
+    "typings-generate": "jsdoc -t tpl/typings -r lib -d index.d.ts && jsdoc -t tpl/typings -r streaming -d streaming.d.ts",
+    "typings-test": "tsc --target es6 --noImplicitAny -m commonjs spec-ts/streaming.spec.ts spec-ts/streaming.spec.ts ",
+    "jsdoc": "jsdoc -t tpl/theme -r lib streaming -c tpl/jsdoc.conf.json --package package.json -d doc",
     "baqend": "node cli/index.js"
   },
   "engines": {

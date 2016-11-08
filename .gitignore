@@ -5,6 +5,7 @@
 /dist
 /doc
 /spec-ts/*.js
-/index.d.ts
+*.d.ts
+!/spec-ts/*.d.ts
 .DS_Store
 *.iml

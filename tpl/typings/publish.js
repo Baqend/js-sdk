@@ -85,8 +85,8 @@ exports.publish = function(data, opts, tutorials) {
       push(ns.body, lines);
     }
   });
-  
-  let text = fs.readFileSync(__dirname + '/head.d.tpl');
+
+  let text = fs.readFileSync(__dirname + '/' + opts.destination.replace('.ts', '.tpl'));
   text += createNs(data, rootNs).join(os.EOL);
 
   fs.writeFileSync(opts.destination, text);
