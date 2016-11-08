@@ -32,7 +32,9 @@ describe("Guide Examples", function() {
 
     return metamodel.save().then(function() {
       return db = emf.createEntityManager();
-    }).then(()=>helper.sleep(t));
+    }).then(function() {
+      return helper.sleep(t);
+    });
   });
 
   afterEach(function() {
@@ -45,13 +47,15 @@ describe("Guide Examples", function() {
       stream = undefined;
     }
     //Remove excess objects
-    return helper.sleep(t).then(()=> {
+    return helper.sleep(t).then(function() {
       return db[bucket].find().resultList(function(result) {
         return Promise.all(result.map(function(person) {
           return person.delete();
         }));
       })
-    }).then(()=>helper.sleep(t));
+    }).then(function() {
+      return helper.sleep(t);
+    });
   });
 
 
@@ -61,8 +65,8 @@ describe("Guide Examples", function() {
     stream = db[bucket].find().stream();
     var aggregate; // aggregate value goes here!
     var initialAccumulator = {aggregate: 0}; // we only need to maintain a counter
-    var maintainAggregate = (accumulator, event) => {
-      if (event.initial || event.matchType === 'add') { // entering item: count + 1
+    var maintainAggregate = function(accumulator, event) {
+      if (event.matchType === 'add') { // entering item: count + 1
         accumulator.aggregate = accumulator.aggregate + 1;
       } else if (event.matchType === 'remove') { // leaving item: count - 1
         accumulator.aggregate = accumulator.aggregate - 1;
@@ -80,8 +84,12 @@ describe("Guide Examples", function() {
       console.log("subscribing --> count: " + aggregate);
       expect(aggregate).to.be.equal(undefined);
       subscription = stream.scan(maintainAggregate, initialAccumulator) // update accumulator
-          .map(accumulator => accumulator.aggregate) // extract aggrregate
-          .subscribe(value => aggregate = value); // output aggregate value
+          .map(function(accumulator) {
+            return accumulator.aggregate;
+          }) // extract aggrregate
+          .subscribe(function(value) {
+            return aggregate = value;
+          }); // output aggregate value
       return helper.sleep(t);
     }).then(function() {
       console.log("subscribed --> count: " + aggregate);
@@ -118,7 +126,7 @@ describe("Guide Examples", function() {
       aggregate: undefined // computed as: sum/count
     };
 
-    var maintainAggregate = (accumulator, event) => {
+    var maintainAggregate = function(accumulator, event) {
       var newValue = event.matchType === 'remove' || !event.data.activities ? undefined : event.data.activities.length;
       var oldValue = accumulator.contributors[event.data.id];
 
@@ -128,7 +136,7 @@ describe("Guide Examples", function() {
         delete accumulator.contributors[event.data.id];
       }
       accumulator.sum += (newValue ? newValue : 0) - (oldValue ? oldValue : 0);
-      accumulator.count += event.matchType === 'remove' ? -1 : event.initial || event.matchType === 'add' ? 1 : 0;
+      accumulator.count += event.matchType === 'remove' ? -1 : event.matchType === 'add' ? 1 : 0;
       accumulator.aggregate = accumulator.count > 0 ? accumulator.sum / accumulator.count : undefined;
       return accumulator;
     };
@@ -147,8 +155,12 @@ describe("Guide Examples", function() {
       console.log("saved: " + print(todo1) + "\n --> average: " + aggregate);
       expect(aggregate).to.be.equal(undefined);
       subscription = stream.scan(maintainAggregate, initialAccumulator) // update accumulator
-          .map(accumulator => accumulator.aggregate) // extract aggrregate
-          .subscribe(value => aggregate = value); // output aggregate value
+          .map(function(accumulator) {
+            return accumulator.aggregate;
+          }) // extract aggrregate
+          .subscribe(function(value) {
+            return aggregate = value;
+          }); // output aggregate value
       return helper.sleep(t);
     }).then(function() {
       console.log("subscribed --> average: " + aggregate);
@@ -215,11 +227,13 @@ describe("Guide Examples", function() {
       console.log("\t\t\t User 2 saved " + print(todo1));
       expect(result.length).to.be.equal(0);
       console.log("User 1 subscribed --> result size: " + result.length);
-      subscription = stream.subscribe((event) => {
+      subscription = stream.subscribe(function(event) {
         events.push(event);
         maintainResult(result, event);
         console.log('User 1 received: ' + event.matchType + '/' + event.operation + ': ' + event.data.name + ' is now at index ' + event.index);
-        console.log('\t\t result: [ ' + result.map(match =>match.name).join(', ') + ']');
+        console.log('\t\t result: [ ' + result.map(function(match) {
+              return match.name;
+            }).join(', ') + ']');
       });
       return helper.sleep(t);
     }).then(function() {
@@ -321,14 +335,14 @@ describe("Guide Examples", function() {
     var errors = 0;
     var completions = 0;
 
-    var onNext = match=> { // onNext
+    var onNext = function(match) { // onNext
       next++;
     };
-    var onError = error=> { // onError
+    var onError = function(error) { // onError
       errors++;
       console.log('name');
     };
-    onError = error=> { // onError
+    onError = function(error) { // onError
       errors++;
     };
 
@@ -354,7 +368,9 @@ describe("Guide Examples", function() {
     var counter = 0;
     stream = db[bucket].find().matches('name', /^My Todo/).sort({'name': 1, 'active': -1}).limit(5).stream();
 
-    subscription = stream.subscribe(value => counter++);
+    subscription = stream.subscribe(function(value) {
+      return counter++;
+    });
 
     return helper.sleep(t).then(function() {
       var todo1 = new db[bucket]({name: 'My Todo: groceries'});
@@ -373,7 +389,9 @@ describe("Guide Examples", function() {
     // stream = db[bucket].find().sort({'name': 1, 'active': -1}).stream();
     stream = db[bucket].find().sort({'name': 1, 'active': -1}).limit(5).stream();
 
-    subscription = stream.subscribe(value => counter++);
+    subscription = stream.subscribe(function(value) {
+      return counter++;
+    });
 
     return helper.sleep(t).then(function() {
       var todo1 = new db[bucket]({name: 'My Todo: groceries'});
@@ -384,12 +402,22 @@ describe("Guide Examples", function() {
     });
   });
 
+  // TODO
+  // it("should order by date", function() {
+  //   expect(false);
+  // });
+
+  // TODO 
+  // it("should give same result: static and streaming query", function() {
+  //   expect(false);
+  // });
+
   function print(object) {
     return object.name + ' (' + (object.activities ? object.activities.length : 0) + ' activities)';
   };
 
   function maintainResult(result, event) {
-    if (event.matchType === 'add' || event.initial) { // add
+    if (event.matchType === 'add') { // add
       result.splice(event.index, 0, event.data);
     } else if (event.matchType === 'remove') { // remove
       var index = result.indexOf(event.data);

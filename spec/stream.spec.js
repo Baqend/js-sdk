@@ -72,13 +72,15 @@ describe("Streaming Queries", function() {
       });
       objects = [p0, p1, p2, p3];
       return Promise.all([p0.save({force: true}), p1.save({force: true}), p2.save({force: true}), p3.save({force: true})]);
-    }).then(()=>helper.sleep(t));
+    }).then(function() {
+      return helper.sleep(t);
+    });
   });
 
   afterEach(function() {
     this.timeout(5000);
     //Remove excess objects
-    return helper.sleep(t).then(()=> {
+    return helper.sleep(t).then(function() {
       //Unregister subscriptions and streams
       if (subscription) {
         subscription.unsubscribe();
@@ -88,15 +90,17 @@ describe("Streaming Queries", function() {
         othersubscription.unsubscribe();
         othersubscription = undefined;
       }
-        stream = undefined;
-        otherstream = undefined;
-    }).then(()=> {
+      stream = undefined;
+      otherstream = undefined;
+    }).then(function() {
       return db[bucket].find().resultList(function(result) {
         return Promise.all(result.map(function(person) {
           return person.delete();
         }));
       });
-    }).then(()=>helper.sleep(t));
+    }).then(function() {
+      return helper.sleep(t);
+    });
   });
 
   it("should return the initial result", function() {
@@ -910,7 +914,7 @@ describe("Streaming Queries", function() {
       value: 0, // overall number of activities in the result
       aggregate: undefined // value divided by count
     };
-    var maintain = (accumulator, event) => {
+    var maintain = function(accumulator, event) {
       var newValue = event.matchType === 'remove' ? undefined : event.data.age;
       var oldValue = accumulator.contributors[event.data.id];
 
@@ -920,13 +924,17 @@ describe("Streaming Queries", function() {
         delete accumulator.contributors[event.data.id];
       }
       accumulator.value += (newValue ? newValue : 0) - (oldValue ? oldValue : 0);
-      accumulator.count += event.matchType === 'remove' ? -1 : event.initial || event.matchType === 'add' ? 1 : 0;
+      accumulator.count += event.matchType === 'remove' ? -1 : event.matchType === 'add' ? 1 : 0;
       accumulator.aggregate = accumulator.count > 0 ? accumulator.value / accumulator.count : undefined;
       return accumulator;
     };
 
     var average;
-    subscription = stream.scan(maintain, initialAccumulator).map(accumulator=>accumulator.aggregate).subscribe(e=>average = e);
+    subscription = stream.scan(maintain, initialAccumulator).map(function(accumulator) {
+      return accumulator.aggregate;
+    }).subscribe(function(e) {
+      return average = e;
+    });
 
     var person;
     return helper.sleep(t).then(function() {
