@@ -407,7 +407,7 @@ describe("Guide Examples", function() {
   //   expect(false);
   // });
 
-  // TODO 
+  // TODO
   // it("should give same result: static and streaming query", function() {
   //   expect(false);
   // });

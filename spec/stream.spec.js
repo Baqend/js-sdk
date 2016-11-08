@@ -114,7 +114,7 @@ describe("Streaming Queries", function() {
     return helper.sleep(t).then(function() {
       expect(received.length).to.be.equal(3);
       received.forEach(function(result) {
-        expect(result.matchType).to.be.equal("match");
+        expect(result.matchType).to.be.equal("add");
         expect(objects).to.include(result.data);
         expect(result.operation).to.be.equal('none');
         expect(result.target).to.be.equal(query);
