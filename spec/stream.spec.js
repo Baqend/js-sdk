@@ -1,6 +1,10 @@
-if (typeof DB == 'undefined') {
+var DB;
+if (typeof module != 'undefined') {
   require('./node');
   DB = require('../streaming');
+  require('rxjs/add/operator/first');
+  require('rxjs/add/operator/scan');
+  require('rxjs/add/operator/map');
 }
 
 describe("Streaming Queries", function() {
