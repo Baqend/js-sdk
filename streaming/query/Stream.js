@@ -8,8 +8,9 @@ var WebSocketConnector = require('../connector/WebSocketConnector');
 class Stream {
 
   /**
+   * Returns an RxJS observable.
    *
-   * @returns {Observable}
+   * @returns {Observable} an RxJS observable
    */
   observable() {
     return Rx.Observable.create(observer => {
@@ -32,10 +33,10 @@ class Stream {
    * @param {string} bucket The Bucket on which the streaming query is performed
    * @param {string} query The serialized query
    * @param {Object} options an object containing parameters
-   * @param {number} sort
-   * @param {number} limit
-   * @param {number} offset
-   * @param {Object} target the target of the stream
+   * @param {string} sort the sort string
+   * @param {number} limit the count, i.e. the number of items in the result
+   * @param {number} offset offset, i.e. the number of items to skip
+   * @param {Node} target the target of the stream
    */
   constructor(entityManager, bucket, query, options, sort, limit, offset, target) {
     var verifiedOptions = Stream.parseOptions(options);
@@ -55,6 +56,7 @@ class Stream {
     this.target = target;
     this.socket = WebSocketConnector.create(entityManager._connector);
   }
+
 
   on(matchTypes, callback) {
     var wrappedCallback = this._wrapQueryCallback(callback);
