@@ -1,6 +1,6 @@
 /// <reference path="./types.d.ts" />
 
-import {binding, query, model, baqend} from '../streaming';
+import {binding, query, model, baqend, StreamingEvent} from '../streaming';
 import {db} from '../streaming';
 import {Observable} from 'rxjs/Observable';
 
@@ -20,10 +20,19 @@ db.User.find()
         user.username;
     });
 
-let stream:Observable<model.Test> = db.Test.find()
+let stream:Observable<StreamingEvent<model.Test>> = db.Test.find()
+    .equal("myProp", "test")
     .stream();
 
-stream.subscribe(test => {
-    test.myProp;
+stream.subscribe(event => {
+    var question = event.data;
+
+    if (event.matchType == 'add' || event.initial) {
+        //add something
+    } else if (event.matchType == 'remove') {
+        //remove something
+    }
+
+    question.myProp;
 });
 

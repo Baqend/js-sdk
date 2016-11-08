@@ -21,7 +21,7 @@ class Stream {
   /**
    * Returns an RxJS observable.
    *
-   * @returns {Observable} an RxJS observable
+   * @returns {Observable<T>} an RxJS observable
    */
   observable() {
     return Observable.create(observer => {

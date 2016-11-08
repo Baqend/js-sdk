@@ -4,7 +4,7 @@ var Stream = require('./Stream');
 var Node = require('../../lib/query/Node');
 
 /**
- * @private
+ * @ignore
  *
  * @param {Object} options
  * @param {query.Node<T>} target

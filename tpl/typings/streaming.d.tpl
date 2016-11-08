@@ -1,6 +1,5 @@
-import {EntityManager} from "./index";
 import {Observable} from 'rxjs/Observable';
-import {connector} from "./index";
-import {query} from "./index";
+import {EntityManager} from './index';
+import {connector} from './index';
 
-export * from "./index";
+export * from './index';

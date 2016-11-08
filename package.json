@@ -11,7 +11,7 @@
   "main": "index.js",
   "browser": {
     "./index.js": "./dist/baqend.js",
-    "./streaming.js": "./dist/streaming.js",
+    "./streaming.js": "./dist/baqend-streaming.js",
     "./lib/util/util.js": "./lib/util/util-browser.js",
     "./streaming/connector/websocket.js": "./streaming/connector/websocket-browser.js"
   },
@@ -85,7 +85,7 @@
     "phantomjs-prebuilt": "^2.1.12",
     "shelljs": "^0.7.4",
     "through2": "^2.0.1",
-    "typescript": "^1.8.10",
+    "typescript": "^2.0.8",
     "uglify-js": "^2.7.3"
   },
   "scripts": {
