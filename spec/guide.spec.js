@@ -299,7 +299,7 @@ describe("Guide Examples", function() {
       console.log("checking event attributes");
       //
       expect(events[0].index).to.be.equal(0);
-      expect(events[0].matchType).to.be.equal('match');
+      expect(events[0].matchType).to.be.equal('add');
       expect(events[0].operation).to.be.equal('none');
       expect(!events[0].initial);
       expect(events[1].index).to.be.equal(1);

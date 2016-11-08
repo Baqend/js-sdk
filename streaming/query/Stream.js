@@ -1,17 +1,7 @@
 "use strict";
 var Metadata = require('../../lib/util/Metadata');
 var WebSocketConnector = require('../connector/WebSocketConnector');
-var Observable;
-
-try {
-  Observable = require('rxjs/Observable').Observable;
-} catch (e) {
-  if (typeof Rx !== 'undefined') {
-    Observable = Rx.Observable;
-  } else {
-    throw e;
-  }
-}
+var lib = require('../../lib');
 
 /**
  * @alias query.Stream<T>
@@ -24,7 +14,7 @@ class Stream {
    * @returns {Observable<T>} an RxJS observable
    */
   observable() {
-    return Observable.create(observer => {
+    return new lib.Observable(observer => {
       var callback = (e) => {
         if (e.matchType === 'error') {
           observer.error(e);

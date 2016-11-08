@@ -65,8 +65,8 @@ Baqend Streaming SDK
 If you want to use the realtime streaming queries, you have to either use `baqend-streaming.js` or 
 `baqend-streaming.min.js` for production.
 
-In Addition, you must include [Rx.js](https://github.com/ReactiveX/rxjs) v5 into your project. 
-As minimal setup, the rxjs Observable is required.
+In Addition, you can include [Rx.js](https://github.com/ReactiveX/rxjs) v5 into your project, for many advanced 
+Observable features.
 You can use the unpkg CDN:
 
 ```html
@@ -74,6 +74,12 @@ You can use the unpkg CDN:
 <!-- include the SDK after rxjs -->
 <script type="text/javascript" src="//www.baqend.com/js-sdk/latest/baqend-streaming.js"></script>
 ```
+
+The SDK is shipped with the core-js Observable shim per default. 
+If you include Rx.js globally, it will be detected and used by the SDK automatically.
+You can also set the Observable implementation which the SDK will use, 
+by setting the `require('baqend/streaming').Observable = Observable` afterwards.
+
 
 Usage in Node.js
 ----------------
