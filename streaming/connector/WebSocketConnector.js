@@ -1,6 +1,7 @@
 "use strict";
 var Connector = require('../../lib/connector/Connector');
 var message = require('../../lib/message');
+var WebSocket = require('./websocket').WebSocket;
 
 /**
  * @alias connector.WebSocketConnector
@@ -16,12 +17,11 @@ class WebSocketConnector {
     if (!connector)
       throw new Error('No connector was provided, but connector is required for websocket connection!');
 
-    var url = Connector.toUri(connector.host, connector.port, connector.secure, connector.basePath);
-    var websocket = this.websockets[url];
+    var websocket = this.websockets[connector.origin];
 
     if (!websocket) {
       websocket = new WebSocketConnector(connector);
-      this.websockets[url] = websocket;
+      this.websockets[connector.origin] = websocket;
     }
 
     return websocket;
@@ -128,11 +128,6 @@ class WebSocketConnector {
   }
 
   createWebSocket(destination) {
-    var WebSocket = require('../../lib/util').WebSocket;
-
-    if (!WebSocket)
-      console.warn('Optional websocket module is not installed. Therefore, real-time communication is not available.');
-
     return new WebSocket(destination);
   }
 

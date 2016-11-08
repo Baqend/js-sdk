@@ -5,6 +5,7 @@ var Node = require('../../lib/query/Node');
 
 /**
  * @inheritDoc
+ * @memberOf query.Node<T>.prototype
  */
 Node.prototype.stream = function(options, target) {
   var type = this.resultClass ? this.entityManager.metamodel.entity(this.resultClass) : null;

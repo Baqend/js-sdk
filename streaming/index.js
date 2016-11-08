@@ -1,3 +1,7 @@
+var db = require('../lib');
 
-require('./connector/WebSocketConnector');
-require('./query');
+module.exports = exports = db;
+
+exports.connector.WebSocketConnector = require('./connector/WebSocketConnector');
+exports.query.Node = require('./query/Node');
+exports.query.Stream = require('./query/Stream');

@@ -26,6 +26,7 @@ module.exports = function (grunt) {
         browserifyOptions: browserifyOptions,
         banner: longBanner,
         plugin: ['./scripts/babel-helper', 'bundle-collapser/plugin', 'browserify-derequire'],
+        exclude: ['rxjs'],
         transform: [
           ['babelify', {
             "plugins": ["external-helpers"]
@@ -35,7 +36,7 @@ module.exports = function (grunt) {
 
       debug: {
         files: {
-          'build/baqend.js': ['lib/index.js']
+          'build/baqend.js': ['polyfills/index.js', 'streaming/index.js']
         },
         options: {
           watch: true,
@@ -49,13 +50,14 @@ module.exports = function (grunt) {
 
       test: {
         files: {
-          'build/baqend.js': ['lib/index.js']
+          'build/baqend.js': ['polyfills/index.js', 'streaming/index.js']
         }
       },
 
       dist: {
         files: {
-          'dist/baqend.js': ['lib/index.js']
+          'dist/baqend.js': ['polyfills/index.js', 'lib/index.js'],
+          'dist/baqend-streaming.js': ['polyfills/index.js', 'streaming/index.js']
         }
       }
     },
@@ -159,7 +161,8 @@ module.exports = function (grunt) {
 
       dist: {
         files: {
-          'dist/baqend.min.js': 'dist/baqend.js'
+          'dist/baqend.min.js': 'dist/baqend.js',
+          'dist/baqend-streaming.min.js': 'dist/baqend-streaming.js'
         }
       }
     }

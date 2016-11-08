@@ -89,7 +89,7 @@ exports.publish = function(data, opts, tutorials) {
   let text = fs.readFileSync(__dirname + '/head.d.tpl');
   text += createNs(data, rootNs).join(os.EOL);
 
-  fs.writeFileSync('index.d.ts', text);
+  fs.writeFileSync(opts.destination, text);
   //fs.writeFileSync('doc.json', JSON.stringify(data().get(), null, '  '));
 
   return null;
@@ -325,7 +325,7 @@ function createReturn(member) {
 
 function createType(typeSpec) {
   if (!typeSpec) {
-    console.log(typeSpec)
+    console.warn("Unknown type spec");
     return 'unknown'
   }
 

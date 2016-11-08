@@ -1,6 +1,6 @@
 if (typeof DB == 'undefined') {
   require('./node');
-  DB = require('../lib');
+  DB = require('../streaming');
 }
 
 describe("Streaming Queries", function() {
@@ -779,90 +779,12 @@ describe("Streaming Queries", function() {
     return helper.sleep(t).then(function() {
       insert = db[bucket].fromJSON(p3.toJSON(true));
       insert.name = "franz";
-      return helper.sleep(t, insert.insert());
+      return insert.insert();
     }).then(function() {
       insert.name = "";
-      ;
-      return helper.sleep(t, insert.save());
+      return helper.sleep(t, insert.save())
     }).then(function() {
       expect(calls).to.be.equal(1);
-    });
-  });
-
-  it("should compute rolling average", function() {
-    this.timeout(6000);
-
-    var average;
-    stream = db[bucket].find().stream({initial: false}).scan((accumulator, match) => {
-      var value = match.matchType === 'remove' ? undefined : match.data.age;
-      var count = 0;
-      var hasValue = value !== undefined && value !== null;
-      if (!hasValue) {
-        value = 0;
-      }
-
-      var accValue = accumulator.matches[match.data.id];
-      if (accValue) {
-        if (!hasValue) {
-          count = -1;
-        }
-      } else {
-        accValue = 0;
-        if (hasValue) {
-          count = 1;
-        }
-      }
-
-      if (hasValue) {
-        accumulator.matches[match.data.id] = value;
-      } else {
-        delete accumulator.matches[match.data.id];
-      }
-
-      accumulator.count += count;
-      accumulator.value += value - accValue;
-      return accumulator;
-    }, {count: 0, value: 0, matches: {}}).map(function(accumulator) {
-      return accumulator.count > 0 ? accumulator.value / accumulator.count : '?';
-    }).subscribe(function(e) {
-      return average = e;
-    });
-
-    var person;
-    return helper.sleep(t).then(function() {
-      console.log ("no matching person --> average age: "+ average);
-      expect(average).to.be.equal(undefined);
-      person = new db[bucket]({
-        key: 'albert',
-        name: 'Albert',
-        age: 49
-      });
-      return helper.sleep(t, person.save());
-    }).then(function() {
-      console.log ("new match:Albert (49) --> average age: "+ average);
-      expect(average).to.be.equal(49);
-      person = new db[bucket]({
-        key: 'bob',
-        name: 'Bob',
-        age: 51
-      });
-      return helper.sleep(t, person.save());
-    }).then(function() {
-      console.log ("new match: Bob (51) --> average age: "+ average);
-      expect(average).to.be.equal(50);
-      person = new db[bucket]({
-        key: 'carl',
-        name: 'Carl',
-        age: 59
-      });
-      return helper.sleep(t, person.save());
-    }).then(function() {
-      console.log ("new match: Carl (59) --> average age: "+ average);
-      expect(average).to.be.equal(53);
-      return helper.sleep(t, person.delete());
-    }).then(helper.sleep(t)).then(function() {
-      console.log ("new MISmatch: Carl (59) --> average age: "+ average);
-      expect(average).to.be.equal(50);
     });
   });
 

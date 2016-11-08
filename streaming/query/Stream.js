@@ -1,21 +1,33 @@
 "use strict";
 var Metadata = require('../../lib/util/Metadata');
 var WebSocketConnector = require('../connector/WebSocketConnector');
+var Observable;
+
+try {
+  Observable = require('rxjs/Observable').Observable;
+} catch (e) {
+  if (typeof Rx !== 'undefined') {
+    Observable = Rx.Observable;
+  } else {
+    throw e;
+  }
+}
+
 /**
- * @alias query.Stream
  * @alias query.Stream<T>
  */
 class Stream {
 
   observable() {
-    return Rx.Observable.create(observer => {
-      let callback = (e) => {
+    return Observable.create(observer => {
+      var callback = (e) => {
         if (e.matchType === 'error') {
           observer.error(e);
         } else {
           observer.next(e);
         }
       };
+
       this.on(this.query.matchTypes, callback);
       return () => {
         this.off(this.query.matchTypes, callback);
@@ -30,7 +42,6 @@ class Stream {
    * @param {Object} options an object containing parameters
    * @param {number} sort
    * @param {number} limit
-   * @param {number} offset
    * @param {Object} target the target of the stream
    */
   constructor(entityManager, bucket, query, options, sort, limit, offset, target) {
@@ -273,6 +284,4 @@ class Stream {
   }
 }
 
-
-module
-    .exports = Stream;
+module.exports = Stream;
