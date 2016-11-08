@@ -21,9 +21,9 @@ Or [download the latest release](https://github.com/Baqend/js-sdk/releases/lates
 You can also include it from our CDN-Provider `fastly`.
 ```html
 <!-- for development -->
-<script type="text/javascript" src="//baqend.global.ssl.fastly.net/js-sdk/latest/baqend.js"></script>
+<script type="text/javascript" src="//www.baqend.com/js-sdk/latest/baqend.js"></script>
 <!-- for production -->
-<script type="text/javascript" src="//baqend.global.ssl.fastly.net/js-sdk/latest/baqend.min.js"></script>
+<script type="text/javascript" src="//www.baqend.com/js-sdk/latest/baqend.min.js"></script>
 ```
 
 The Baqend SDK provides a global `DB` variable by default.
@@ -60,6 +60,21 @@ DB.ready(function() {
 </script>
 ```
 
+Baqend Streaming SDK
+
+If you want to use the realtime streaming queries, you have to either use `baqend-streaming.js` or 
+`baqend-streaming.min.js` for production.
+
+In Addition, you must include [Rx.js](https://github.com/ReactiveX/rxjs) v5 into your project. 
+As minimal setup, the rxjs Observable is required.
+You can use the unpkg CDN:
+
+```html
+<script type="text/javascript" src="//unpkg.com/@reactivex/rxjs@5.0.0-rc.2/dist/global/Rx.js"></script>
+<!-- include the SDK after rxjs -->
+<script type="text/javascript" src="//www.baqend.com/js-sdk/latest/baqend-streaming.js"></script>
+```
+
 Usage in Node.js
 ----------------
 
@@ -78,6 +93,11 @@ DB.ready(function() {
         ...
 });
 ```
+
+Note: The Baqend Streaming SDK can be required with `var DB = require('baqend/streaming');`, ensure that you only 
+require either the Baqend SDK or the Baqend Streaming SDK and not both.
+
+
 
 Building with [browserify](http://browserify.org/)
 --------------------------------------------------
@@ -98,6 +118,9 @@ DB.ready(function() {
         ...
 });
 ```
+
+Note: The Baqend Streaming SDK can be required with `var DB = require('baqend/streaming');`, ensure that you only 
+require either the Baqend SDK or the Baqend Streaming SDK and not both.
 
 Type `browserify scripts/main.js > scripts/bundle.js` to build your main.js script.
 For more advanced building steps visit the [browserify Documentation](https://github.com/substack/node-browserify#usage).

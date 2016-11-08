@@ -354,7 +354,7 @@ describe("Streaming Queries", function() {
       return helper.sleep(t).then(function() {
         expect(results.length).to.be.equal(1);
         expect(results[0].operation).to.be.equal('none'); //transitive remove --> the was no operation on this objects
-        expect(results[0].matchType).to.be.equal("match");
+        expect(results[0].matchType).to.be.equal("add");
         expect(results[0].data.name).to.be.equal("Al");
         expect(results[0].index).to.be.equal(0);
 
