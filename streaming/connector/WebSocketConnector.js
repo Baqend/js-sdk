@@ -11,7 +11,7 @@ class WebSocketConnector {
 
   /**
    * @param {connector.Connector} connector a connector
-   * @return {connector.WebSocketConnector} a websocket connection
+   * @return {WebSocketConnector} a websocket connection
    */
   static create(connector) {
     if (!connector)
