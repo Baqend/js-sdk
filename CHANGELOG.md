@@ -1,3 +1,17 @@
+<a name="v2.4.0"></a>
+# v2.4.0 (2016-11-8)
+
+
+### Bug Fixes
+
+* Add missing typings declarations
+
+### Features
+
+* The Baqend CLI is production-ready
+* Split the SDK in Core and Streaming parts
+* Introduce the new Streaming API based on Rx.js
+
 <a name="v2.3.1"></a>
 # v2.3.1 (2016-10-13)
 
