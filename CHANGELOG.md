@@ -1,3 +1,12 @@
+<a name="v2.4.2"></a>
+# v2.4.2 (2016-11-9)
+
+
+### Bug Fixes
+
+* Readd missing CLI dependencies
+* Better Observable fallback handling for the streaming SDK
+
 <a name="v2.4.1"></a>
 # v2.4.1 (2016-11-9)
 
