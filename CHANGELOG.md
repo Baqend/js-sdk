@@ -1,3 +1,13 @@
+<a name="v2.4.1"></a>
+# v2.4.1 (2016-11-9)
+
+
+### Bug Fixes
+
+* DB was not properly exposed in the SDK distribution 
+* include an observable shim as fallback and make the used implementation configurable
+
+
 <a name="v2.4.0"></a>
 # v2.4.0 (2016-11-8)
 
