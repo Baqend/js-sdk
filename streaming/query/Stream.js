@@ -48,7 +48,7 @@ class Stream {
    * @param {string} sort the sort string
    * @param {number} limit the count, i.e. the number of items in the result
    * @param {number} offset offset, i.e. the number of items to skip
-   * @param {Node} target the target of the stream
+   * @param {query.Node<T>} target the target of the stream
    */
   constructor(entityManager, bucket, query, options, sort, limit, offset, target) {
     var verifiedOptions = Stream.parseOptions(options);
@@ -134,7 +134,10 @@ class Stream {
    * @returns {Object} an object containing VALID options
    */
   static parseOptions(provided) {
-    var verified = {};
+    var verified = {
+      matchTypes: ['all'],
+      operations: ['any']
+    };
 
     if (provided) {
       if (provided.initial !== null && provided.initial !== undefined) {
@@ -146,7 +149,7 @@ class Stream {
       }
 
       if (provided.matchTypes) {
-        if (Object.prototype.toString.call(provided.matchTypes) === '[object Array]') {
+        if (Array.isArray(provided.matchTypes)) {
           verified.matchTypes = provided.matchTypes;
         } else {
           verified.matchTypes = [provided.matchTypes];
@@ -156,7 +159,7 @@ class Stream {
       }
 
       if (provided.operations) {
-        if (Object.prototype.toString.call(provided.operations) === '[object Array]') {
+        if (Array.isArray(provided.operations)) {
           verified.operations = provided.operations;
         } else {
           verified.operations = [provided.operations];
@@ -165,7 +168,7 @@ class Stream {
         verified.operations = Stream.normalizeOperations(verified.operations);
       }
 
-      if (verified.matchTypes && !verified.matchTypes.includes('all') && verified.operations && !verified.operations.includes('any')) {
+      if (verified.matchTypes.indexOf('all') == -1 && verified.operations.indexOf('any') == -1) {
         throw new Error('Only subscriptions for either operations or matchTypes are allowed. You cannot subscribe to a query using matchTypes and operations at the same time!');
       }
     }
@@ -214,7 +217,7 @@ class Stream {
       if (item === wildcard) {
         return [wildcard];
       }
-      if (!allowedItems.includes(item)) {//raise error on invalid elements
+      if (allowedItems.indexOf(item) == -1) {//raise error on invalid elements
         throw new Error(item + ' not allowed for ' + itemType + '! (permitted: ' + allowedItems + '.)');
       }
       lastItem = item;

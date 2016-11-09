@@ -96,7 +96,7 @@
     "dist": "grunt dist && npm run typings && npm run jsdoc",
     "release": "node scripts/release",
     "typings": "npm run typings-generate && npm run typings-test",
-    "typings-generate": "jsdoc -t tpl/typings -r lib -d index.d.ts && jsdoc -t tpl/typings -r streaming -d streaming.d.ts",
+    "typings-generate": "jsdoc -t tpl/typings -r lib streaming -d index.d.ts",
     "typings-test": "tsc --target es6 --noImplicitAny -m commonjs spec-ts/streaming.spec.ts spec-ts/streaming.spec.ts ",
     "jsdoc": "jsdoc -t tpl/theme -r lib streaming -c tpl/jsdoc.conf.json --package package.json -d doc",
     "baqend": "node cli/index.js"

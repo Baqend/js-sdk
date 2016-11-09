@@ -26,7 +26,7 @@ module.exports = function (grunt) {
         browserifyOptions: browserifyOptions,
         banner: longBanner,
         plugin: ['./scripts/babel-helper', 'bundle-collapser/plugin', 'browserify-derequire'],
-        exclude: ['rxjs'],
+        exclude: ['rxjs/Observable'],
         transform: [
           ['babelify', {
             "plugins": ["external-helpers"]

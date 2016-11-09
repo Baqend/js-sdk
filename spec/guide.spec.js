@@ -1,6 +1,9 @@
-if (typeof DB == 'undefined') {
+var DB;
+if (typeof module != 'undefined') {
   require('./node');
-  DB = require('../lib');
+  DB = require('../streaming');
+  require('rxjs/add/operator/scan');
+  require('rxjs/add/operator/map');
 }
 
 describe("Guide Examples", function() {

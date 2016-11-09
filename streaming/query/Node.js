@@ -23,3 +23,5 @@ Node.prototype._stream = function(options, target) {
 
   return new Stream(this.entityManager, type.name, this._serializeQuery(), options, this._serializeSort(), this.maxResults, this.firstResult, target).observable();
 };
+
+module.exports = Node;
