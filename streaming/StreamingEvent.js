@@ -59,3 +59,11 @@
  * @name index
  * @type {number}
  */
+
+/**
+ * server-time from the instant at which the event was generated
+ *
+ * @memberOf StreamingEvent<T>.prototype
+ * @name date
+ * @type {Date}
+ */
