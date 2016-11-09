@@ -405,6 +405,82 @@ describe("Guide Examples", function() {
     });
   });
 
+  it("should maintain a result", function() {
+    this.timeout(6000);
+
+    var urgent = [];
+    stream = db[bucket].find().matches('name', /^result/).sort({'name': 1}).limit(2).stream();
+
+
+    var todo0, todo1, todo2, todo3;
+    return helper.sleep(t).then(function() {
+      console.log("result: " + result);
+      expect(result.length).to.be.equal(0);
+      todo1 = new db[bucket]({name: 'result 1'});
+      return helper.sleep(t, todo1.save());
+    }).then(function() {
+      console.log("result: " + result);
+      console.log("\t\t\t User 2 saved " + print(todo1));
+      expect(result.length).to.be.equal(0);
+      console.log("User 1 subscribed --> result size: " + result.length);
+      subscription = stream.scan(maintainResult,[]).subscribe(function(result) {
+        urgent = result;
+      });
+      return helper.sleep(t);
+    }).then(function() {
+      console.log("result: " + result);
+      todo2 = new db[bucket]({name: 'result 2'});
+      console.log("\t\t\t User 2 saved " + print(todo2));
+      expect(result.length).to.be.equal(1);
+      expect(result[0]).to.be.equal(todo1);
+      return helper.sleep(t, todo2.save());
+    }).then(function() {
+      console.log("result: " + result);
+      expect(result.length).to.be.equal(2);
+      expect(events[0].index).to.be.equal(0);
+      expect(result[0]).to.be.equal(todo1);
+      expect(result[1]).to.be.equal(todo2);
+      todo3 = new db[bucket]({name: 'result 3'});
+      console.log("\t\t\t User 2 saved " + print(todo3));
+      return helper.sleep(t, todo3.save());
+    }).then(function() {
+      console.log("result: " + result);
+      expect(result.length).to.be.equal(3);
+      expect(result[0]).to.be.equal(todo1);
+      expect(result[1]).to.be.equal(todo2);
+      expect(result[2]).to.be.equal(todo3);
+      todo3.name = 'result 1b (former 3)';
+      console.log("\t\t\t User 2 updated " + print(todo3));
+      return helper.sleep(t, todo3.save());
+    }).then(function() {
+      console.log("result: " + result);
+      expect(result.length).to.be.equal(3);
+      expect(result[0]).to.be.equal(todo1);
+      expect(result[1]).to.be.equal(todo3);
+      expect(result[2]).to.be.equal(todo2);
+      todo0 = new db[bucket]({name: 'result 0'});
+      console.log("\t\t\t User 2 saved " + print(todo0));
+      return helper.sleep(t, todo0.save());
+    }).then(function() {
+      console.log("result: " + result);
+      expect(result.length).to.be.equal(3);
+      expect(result[0]).to.be.equal(todo0);
+      expect(result[1]).to.be.equal(todo1);
+      expect(result[2]).to.be.equal(todo3);
+      todo3.name = 'result 3';
+      console.log("\t\t\t User 2 updated " + print(todo3));
+      return helper.sleep(t, todo3.save());
+    }).then(function() {
+      console.log("result: " + result);
+      expect(result.length).to.be.equal(3);
+      expect(result[0]).to.be.equal(todo0);
+      expect(result[1]).to.be.equal(todo1);
+      expect(result[2]).to.be.equal(todo2);
+      console.log("\t\t\t User 2 deleted " + print(todo3));
+      return helper.sleep(t, todo3.delete());
+    });
+  });
+
   // TODO
   // it("should order by date", function() {
   //   expect(false);
@@ -420,18 +496,20 @@ describe("Guide Examples", function() {
   };
 
   function maintainResult(result, event) {
-    if (event.matchType === 'add') { // add
+    if (event.matchType === 'add') { // add new item
       result.splice(event.index, 0, event.data);
-    } else if (event.matchType === 'remove') { // remove
+    } else if (event.matchType === 'remove'
+        || event.matchType === 'changeIndex') {
       var index = result.indexOf(event.data);
-      if (index > -1) {
+      if (index > -1) { // remove leaving or moved item
         result.splice(index, 1);
       }
-    } else if (event.matchType === 'changeIndex') { // changed position
-      var index = result.indexOf(event.data);
-      result.splice(index, 1);
-      result.splice(event.index, 0, event.data);
+      if (event.matchType === 'changeIndex') {
+        // add moved item on new position
+        result.splice(event.index, 0, event.data);
+      }
     }
+    return result;
   }
 });
 
