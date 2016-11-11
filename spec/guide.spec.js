@@ -67,15 +67,6 @@ describe("Guide Examples", function() {
 
     stream = db[bucket].find().stream();
     var aggregate; // aggregate value goes here!
-    var initialAccumulator = {aggregate: 0}; // we only need to maintain a counter
-    var maintainAggregate = function(accumulator, event) {
-      if (event.matchType === 'add') { // entering item: count + 1
-        accumulator.aggregate = accumulator.aggregate + 1;
-      } else if (event.matchType === 'remove') { // leaving item: count - 1
-        accumulator.aggregate = accumulator.aggregate - 1;
-      }
-      return accumulator;
-    };
 
     var todo1, todo2, todo3;
     return helper.sleep(t).then(function() {
@@ -86,10 +77,7 @@ describe("Guide Examples", function() {
     }).then(function() {
       console.log("subscribing --> count: " + aggregate);
       expect(aggregate).to.be.equal(undefined);
-      subscription = stream.scan(maintainAggregate, initialAccumulator) // update accumulator
-          .map(function(accumulator) {
-            return accumulator.aggregate;
-          }) // extract aggrregate
+      subscription = stream.scan(maintainCardinality, 0) // update counter
           .subscribe(function(value) {
             return aggregate = value;
           }); // output aggregate value
@@ -122,33 +110,12 @@ describe("Guide Examples", function() {
 
     stream = db[bucket].find().stream();
     var aggregate; // aggregate value goes here!
-    var initialAccumulator = {
-      contributors: {}, // individual activity counts go here
-      count: 0, // result set cardinality
-      sum: 0, // overall number of activities in the result
-      aggregate: undefined // computed as: sum/count
-    };
-
-    var maintainAggregate = function(accumulator, event) {
-      var newValue = event.matchType === 'remove' || !event.data.activities ? undefined : event.data.activities.length;
-      var oldValue = accumulator.contributors[event.data.id];
-
-      if (newValue) { // remember new value
-        accumulator.contributors[event.data.id] = newValue;
-      } else { // forget old value
-        delete accumulator.contributors[event.data.id];
-      }
-      accumulator.sum += (newValue ? newValue : 0) - (oldValue ? oldValue : 0);
-      accumulator.count += event.matchType === 'remove' ? -1 : event.matchType === 'add' ? 1 : 0;
-      accumulator.aggregate = accumulator.count > 0 ? accumulator.sum / accumulator.count : undefined;
-      return accumulator;
-    };
 
     var todo1, todo2, todo3;
     return helper.sleep(t).then(function() {
       console.log("count: " + aggregate);
       expect(aggregate).to.be.equal(undefined);
-      todo1 = new db[bucket]({name: 'My Todo: groceries'});
+      todo1 = new db[bucket]({name: 'My Todo: groceries', activities: []});
       todo1.activities = [//
         new db.Activity({name: 'cabbage'})//
         , new db.Activity({name: 'beer'})//
@@ -157,10 +124,10 @@ describe("Guide Examples", function() {
     }).then(function() {
       console.log("saved: " + print(todo1) + "\n --> average: " + aggregate);
       expect(aggregate).to.be.equal(undefined);
-      subscription = stream.scan(maintainAggregate, initialAccumulator) // update accumulator
+      subscription = stream.scan(maintainAverage, initialAccumulatorAverage)//update counter
           .map(function(accumulator) {
-            return accumulator.aggregate;
-          }) // extract aggrregate
+            return accumulator.average;
+          })//extract average
           .subscribe(function(value) {
             return aggregate = value;
           }); // output aggregate value
@@ -170,12 +137,12 @@ describe("Guide Examples", function() {
       expect(aggregate).to.be.equal(2);
       return helper.sleep(t);
     }).then(function() {
-      todo2 = new db[bucket]({name: 'My Todo: dinner'});
+      todo2 = new db[bucket]({name: 'My Todo: dinner', activities: []});
       return helper.sleep(t, todo2.save());
     }).then(function() {
       console.log("saved: " + print(todo2) + "\n --> average: " + aggregate);
       expect(aggregate).to.be.equal(1);
-      todo3 = new db[bucket]({name: 'My Todo: write invitations'});
+      todo3 = new db[bucket]({name: 'My Todo: write invitations', activities: []});
       todo3.activities = [//
         new db.Activity({name: 'Alice'})//
         , new db.Activity({name: 'Bob'})//
@@ -202,7 +169,7 @@ describe("Guide Examples", function() {
       return helper.sleep(t, todo3.delete());
     }).then(helper.sleep(t)).then(function() {
       console.log(" removed: " + print(todo3) + "\n --> average: " + aggregate);
-      expect(aggregate).to.be.equal(undefined);
+      expect(aggregate).to.be.equal(0);
     });
   });
 
@@ -333,38 +300,6 @@ describe("Guide Examples", function() {
     });
   });
 
-  it("should raise error on subscription", function() {
-    var next = 0;
-    var errors = 0;
-    var completions = 0;
-
-    var onNext = function(match) { // onNext
-      next++;
-    };
-    var onError = function(error) { // onError
-      errors++;
-      console.log('name');
-    };
-    onError = function(error) { // onError
-      errors++;
-    };
-
-    stream = db[bucket].find()
-        .matches('name', /^My Todo/)
-        .ascending('name')
-        .stream();
-
-    return helper.sleep(1000).then(function() {
-      subscription = stream.subscribe(onNext, onError);
-      return helper.sleep(t);
-    }).then(function() {
-      expect(next).to.be.equal(0);
-      expect(errors).to.be.equal(1);
-
-      return helper.sleep(t, insert.insert());
-    });
-  });
-
   it("should use sort predicate for sorting query", function() {
     this.timeout(6000);
 
@@ -405,79 +340,165 @@ describe("Guide Examples", function() {
     });
   });
 
-  it("should maintain a result", function() {
+  it("should maintain ordered result", function() {
     this.timeout(6000);
 
     var urgent = [];
-    stream = db[bucket].find().matches('name', /^result/).sort({'name': 1}).limit(2).stream();
+    stream = db[bucket].find().matches('name', /^result/)
+        .ascending('name')
+        .descending('active')
+        .limit(3).stream();
 
 
     var todo0, todo1, todo2, todo3;
     return helper.sleep(t).then(function() {
-      console.log("result: " + result);
-      expect(result.length).to.be.equal(0);
+      console.log("result: " + urgent);
+      expect(urgent.length).to.be.equal(0);
       todo1 = new db[bucket]({name: 'result 1'});
       return helper.sleep(t, todo1.save());
     }).then(function() {
-      console.log("result: " + result);
+      console.log("result: " + urgent);
       console.log("\t\t\t User 2 saved " + print(todo1));
-      expect(result.length).to.be.equal(0);
-      console.log("User 1 subscribed --> result size: " + result.length);
-      subscription = stream.scan(maintainResult,[]).subscribe(function(result) {
+      expect(urgent.length).to.be.equal(0);
+      console.log("User 1 subscribed --> result size: " + urgent.length);
+      subscription = stream.scan(maintainResult, []).subscribe(function(result) {
         urgent = result;
       });
       return helper.sleep(t);
     }).then(function() {
-      console.log("result: " + result);
+      console.log("result: " + urgent);
       todo2 = new db[bucket]({name: 'result 2'});
       console.log("\t\t\t User 2 saved " + print(todo2));
-      expect(result.length).to.be.equal(1);
-      expect(result[0]).to.be.equal(todo1);
+      expect(urgent.length).to.be.equal(1);
+      expect(urgent[0]).to.be.equal(todo1);
       return helper.sleep(t, todo2.save());
     }).then(function() {
-      console.log("result: " + result);
-      expect(result.length).to.be.equal(2);
-      expect(events[0].index).to.be.equal(0);
-      expect(result[0]).to.be.equal(todo1);
-      expect(result[1]).to.be.equal(todo2);
+      console.log("result: " + urgent);
+      expect(urgent.length).to.be.equal(2);
+      expect(urgent[0]).to.be.equal(todo1);
+      expect(urgent[1]).to.be.equal(todo2);
       todo3 = new db[bucket]({name: 'result 3'});
       console.log("\t\t\t User 2 saved " + print(todo3));
       return helper.sleep(t, todo3.save());
     }).then(function() {
-      console.log("result: " + result);
-      expect(result.length).to.be.equal(3);
-      expect(result[0]).to.be.equal(todo1);
-      expect(result[1]).to.be.equal(todo2);
-      expect(result[2]).to.be.equal(todo3);
+      console.log("result: " + urgent);
+      expect(urgent.length).to.be.equal(3);
+      expect(urgent[0]).to.be.equal(todo1);
+      expect(urgent[1]).to.be.equal(todo2);
+      expect(urgent[2]).to.be.equal(todo3);
       todo3.name = 'result 1b (former 3)';
       console.log("\t\t\t User 2 updated " + print(todo3));
       return helper.sleep(t, todo3.save());
     }).then(function() {
-      console.log("result: " + result);
-      expect(result.length).to.be.equal(3);
-      expect(result[0]).to.be.equal(todo1);
-      expect(result[1]).to.be.equal(todo3);
-      expect(result[2]).to.be.equal(todo2);
+      console.log("result: " + urgent);
+      expect(urgent.length).to.be.equal(3);
+      expect(urgent[0]).to.be.equal(todo1);
+      expect(urgent[1]).to.be.equal(todo3);
+      expect(urgent[2]).to.be.equal(todo2);
       todo0 = new db[bucket]({name: 'result 0'});
       console.log("\t\t\t User 2 saved " + print(todo0));
       return helper.sleep(t, todo0.save());
     }).then(function() {
-      console.log("result: " + result);
-      expect(result.length).to.be.equal(3);
-      expect(result[0]).to.be.equal(todo0);
-      expect(result[1]).to.be.equal(todo1);
-      expect(result[2]).to.be.equal(todo3);
+      console.log("result: " + urgent);
+      expect(urgent.length).to.be.equal(3);
+      expect(urgent[0]).to.be.equal(todo0);
+      expect(urgent[1]).to.be.equal(todo1);
+      expect(urgent[2]).to.be.equal(todo3);
       todo3.name = 'result 3';
       console.log("\t\t\t User 2 updated " + print(todo3));
       return helper.sleep(t, todo3.save());
     }).then(function() {
-      console.log("result: " + result);
-      expect(result.length).to.be.equal(3);
-      expect(result[0]).to.be.equal(todo0);
-      expect(result[1]).to.be.equal(todo1);
-      expect(result[2]).to.be.equal(todo2);
+      console.log("result: " + urgent);
+      expect(urgent.length).to.be.equal(3);
+      expect(urgent[0]).to.be.equal(todo0);
+      expect(urgent[1]).to.be.equal(todo1);
+      expect(urgent[2]).to.be.equal(todo2);
       console.log("\t\t\t User 2 deleted " + print(todo3));
       return helper.sleep(t, todo3.delete());
+    });
+  });
+
+  it("should maintain unordered result", function() {
+    this.timeout(6000);
+
+    var urgent = [];
+    stream = db[bucket].find().matches('name', /^result unordered/).stream();
+
+
+    var todo0, todo1, todo2, todo3;
+    return helper.sleep(t).then(function() {
+      console.log("result: " + urgent);
+      expect(urgent.length).to.be.equal(0);
+      todo1 = new db[bucket]({name: 'result unordered 1'});
+      return helper.sleep(t, todo1.save());
+    }).then(function() {
+      console.log("result: " + urgent);
+      console.log("\t\t\t User 2 saved " + print(todo1));
+      expect(urgent.length).to.be.equal(0);
+      console.log("User 1 subscribed --> result size: " + urgent.length);
+      subscription = stream.scan(maintainResult, []).subscribe(function(result) {
+        urgent = result;
+      });
+      return helper.sleep(t);
+    }).then(function() {
+      console.log("result: " + urgent);
+      todo2 = new db[bucket]({name: 'result unordered 2'});
+      console.log("\t\t\t User 2 saved " + print(todo2));
+      expect(urgent.length).to.be.equal(1);
+      expect(urgent.includes(todo1)).to.be.greaterThan(-1);
+      return helper.sleep(t, todo2.save());
+    }).then(function() {
+      console.log("result: " + urgent);
+      expect(urgent.length).to.be.equal(2);
+      expect(urgent.includes(todo1)).to.be.greaterThan(-1);
+      expect(urgent.includes(todo2)).to.be.greaterThan(-1);
+      todo3 = new db[bucket]({name: 'result unordered 3'});
+      console.log("\t\t\t User 2 saved " + print(todo3));
+      return helper.sleep(t, todo3.save());
+    }).then(function() {
+      console.log("result: " + urgent);
+      expect(urgent.length).to.be.equal(3);
+      expect(urgent.includes(todo1)).to.be.greaterThan(-1);
+      expect(urgent.includes(todo2)).to.be.greaterThan(-1);
+      expect(urgent.includes(todo3)).to.be.greaterThan(-1);
+      todo3.name = 'result unordered 1b (former 3)';
+      console.log("\t\t\t User 2 updated " + print(todo3));
+      return helper.sleep(t, todo3.save());
+    }).then(function() {
+      console.log("result: " + urgent);
+      expect(urgent.length).to.be.equal(3);
+      expect(urgent.includes(todo1)).to.be.greaterThan(-1);
+      expect(urgent.includes(todo2)).to.be.greaterThan(-1);
+      expect(urgent.includes(todo3)).to.be.greaterThan(-1);
+      todo0 = new db[bucket]({name: 'result unordered 0'});
+      console.log("\t\t\t User 2 saved " + print(todo0));
+      return helper.sleep(t, todo0.save());
+    }).then(function() {
+      console.log("result: " + urgent);
+      expect(urgent.length).to.be.equal(4);
+      expect(urgent.includes(todo0)).to.be.greaterThan(-1);
+      expect(urgent.includes(todo1)).to.be.greaterThan(-1);
+      expect(urgent.includes(todo2)).to.be.greaterThan(-1);
+      expect(urgent.includes(todo3)).to.be.greaterThan(-1);
+      todo3.name = 'result unordered 3';
+      console.log("\t\t\t User 2 updated " + print(todo3));
+      return helper.sleep(t, todo3.save());
+    }).then(function() {
+      console.log("result: " + urgent);
+      expect(urgent.length).to.be.equal(4);
+      expect(urgent.includes(todo0)).to.be.greaterThan(-1);
+      expect(urgent.includes(todo1)).to.be.greaterThan(-1);
+      expect(urgent.includes(todo2)).to.be.greaterThan(-1);
+      expect(urgent.includes(todo3)).to.be.greaterThan(-1);
+      console.log("\t\t\t User 2 deleted " + print(todo3));
+      return helper.sleep(t, todo3.delete());
+    }).then(function() {
+      console.log("result: " + urgent);
+      expect(urgent.length).to.be.equal(3);
+      expect(urgent.includes(todo0)).to.be.greaterThan(-1);
+      expect(urgent.includes(todo1)).to.be.greaterThan(-1);
+      expect(urgent.includes(todo2)).to.be.greaterThan(-1);
+      console.log("\t\t\t finished");
     });
   });
 
@@ -496,20 +517,52 @@ describe("Guide Examples", function() {
   };
 
   function maintainResult(result, event) {
-    if (event.matchType === 'add') { // add new item
-      result.splice(event.index, 0, event.data);
-    } else if (event.matchType === 'remove'
-        || event.matchType === 'changeIndex') {
+    if (event.matchType === 'add') {//new entity
+      result.splice(event.index || 0, 0, event.data);
+    } else if (event.matchType === 'remove') {//leaving entity
+      for (var i = 0; i < result.length; i++) {
+        if (result[i].id === event.data.id) {
+          result.splice(i, 1);
+          break;
+        }
+      }
+    } else if (event.matchType === 'changeIndex') {//updated position
       var index = result.indexOf(event.data);
-      if (index > -1) { // remove leaving or moved item
-        result.splice(index, 1);
-      }
-      if (event.matchType === 'changeIndex') {
-        // add moved item on new position
-        result.splice(event.index, 0, event.data);
-      }
+      result.splice(index, 1);
+      result.splice(event.index, 0, event.data);
     }
     return result;
-  }
+  };
+
+  var maintainCardinality = (counter, event) => {
+    if (event.matchType === 'add') {// entering item: count + 1
+      counter++;
+    } else if (event.matchType === 'remove') {// leaving item: count - 1
+      counter--;
+    }
+    return counter;
+  };
+
+  var initialAccumulatorAverage = {
+    contributors: {},// individual activity counts go here
+    count: 0,// result set cardinality
+    sum: 0,// overall number of activities in the result
+    average: 0// computed as: sum/count
+  };
+
+  function maintainAverage(accumulator, event) {
+    var newValue = event.matchType === 'remove' ? 0 : event.data.activities.length;
+    var oldValue = accumulator.contributors[event.data.id] || 0;//default: 0
+
+    if (newValue !== 0) {// remember new value
+      accumulator.contributors[event.data.id] = newValue;
+    } else {// forget old value
+      delete accumulator.contributors[event.data.id];
+    }
+    accumulator.sum += newValue - oldValue;
+    accumulator.count += event.matchType === 'remove' ? -1 : event.matchType === 'add' ? 1 : 0;
+    accumulator.average = accumulator.count > 0 ? accumulator.sum / accumulator.count : 0;
+    return accumulator;
+  };
 });
 

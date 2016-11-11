@@ -907,6 +907,36 @@ describe("Streaming Queries", function() {
     });
   });
 
+  it("should raise error on subscription", function() {
+    var next = 0;
+    var errors = 0;
+    var completions = 0;
+
+    var onNext = function(match) { // onNext
+      next++;
+    };
+    var onError = function(error) { // onError
+      errors++;
+      console.log('name');
+    };
+    onError = function(error) { // onError
+      errors++;
+    };
+
+    stream = db[bucket].find()
+        .matches('name', /^My Todo/)
+        .ascending('name')
+        .stream();
+
+    return helper.sleep(1000).then(function() {
+      subscription = stream.subscribe(onNext, onError);
+      return helper.sleep(t);
+    }).then(function() {
+      expect(next).to.be.equal(0);
+      expect(errors).to.be.equal(1);
+    });
+  });
+
   it("should compute aggregate: average", function() {
     this.timeout(6000);
 

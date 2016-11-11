@@ -16,7 +16,7 @@ class Stream {
   observable() {
     return new lib.Observable(observer => {
       var callback = (e) => {
-        if (e.matchType === 'error') {
+        if (e.errorMessage) {
           observer.error(e);
         } else {
           observer.next(e);
@@ -83,6 +83,19 @@ class Stream {
       wrappedCallback: wrappedCallback,
       queryMessage: queryMessage
     });
+  }
+
+  off(matchTypes, callback) {
+    this.callbacks = this.callbacks.reduce((keep, el) => {
+      if ((!callback || el.callback == callback) && (!matchTypes || el.matchTypes == matchTypes)) {
+        this.socket.unsubscribe(el.topic, el.wrappedCallback);
+        el.queryMessage.register = false;
+        this.socket.sendOverSocket(el.queryMessage);
+      } else {
+        keep.push(el);
+      }
+      return keep;
+    }, []);
   }
 
   static getCachableQueryString(query, start, count, sort) {
@@ -216,19 +229,6 @@ class Stream {
     return list;
   }
 
-  off(matchTypes, callback) {
-    this.callbacks = this.callbacks.reduce((keep, el) => {
-      if ((!callback || el.callback == callback) && (!matchTypes || el.matchTypes == matchTypes)) {
-        this.socket.unsubscribe(el.topic, el.wrappedCallback);
-        el.queryMessage.register = false;
-        this.socket.sendOverSocket(el.queryMessage);
-      } else {
-        keep.push(el);
-      }
-      return keep;
-    }, []);
-  }
-
   _wrapQueryCallback(cb) {
     return function(msg) {
       msg.query = this.query;
@@ -253,6 +253,11 @@ class Stream {
         var callback = this.createCallback(msg, msg.match, entity, false);
         cb(callback);
       }
+
+      if (msg.errorMessage) { //error message
+          var error = this.createError(msg);
+          cb(error);
+      }
     }.bind(this);
   }
 
@@ -269,6 +274,15 @@ class Stream {
       matchEvent.index = match.index;
     }
     return matchEvent;
+  }
+
+  createError(msg) {
+    var error = {
+      errorMessage: msg.errorMessage,
+      date: new Date(msg.date),
+      target: this.target
+    };
+    return  error;
   }
 
   _createObject(object, objectWasDeleted) {
