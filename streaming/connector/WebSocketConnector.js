@@ -1,136 +1,121 @@
 "use strict";
-var Connector = require('../../lib/connector/Connector');
-var message = require('../../lib/message');
+var CommunicationError = require('../../lib/error/CommunicationError');
 var WebSocket = require('./websocket').WebSocket;
+var lib = require('../../lib');
+var util = require('../../lib/util/util');
 
 /**
  * @alias connector.WebSocketConnector
  */
 class WebSocketConnector {
 
-
   /**
    * @param {connector.Connector} connector a connector
+   * @param {String=} url The websocket connect script url
    * @return {connector.WebSocketConnector} a websocket connection
    */
-  static create(connector) {
-    if (!connector)
-      throw new Error('No connector was provided, but connector is required for websocket connection!');
-
-    var websocket = this.websockets[connector.origin];
-
+  static create(url) {
+    var websocket = this.websockets[url];
     if (!websocket) {
-      websocket = new WebSocketConnector(connector);
-      this.websockets[connector.origin] = websocket;
+      websocket = new WebSocketConnector(url);
+      this.websockets[url] = websocket;
     }
-
     return websocket;
   }
 
   /**
-   * @param {connector.Connector} connector
+   * @param {String} url
    */
-  constructor(connector) {
-    this.host = connector.host;
-    this.port = connector.port;
-    this.secure = connector.secure;
-    this.basePath = connector.basePath;
-    this.connector = connector;
-    this.listeners = {};
+  constructor(url) {
+    this.observers = {};
+    this.socket = null;
+    this.url = url;
   }
 
-  /**
-   * Registers a handler for a topic.
-   * @param {string|Object} topic
-   * @param {Function} cb
-   */
-  subscribe(topic, cb) {
-    topic = Object(topic) instanceof String ? topic : JSON.stringify(topic);
-    if (!this.listeners[topic]) {
-      this.listeners[topic] = [cb];
-    } else if (this.listeners[topic].indexOf(cb) == -1) {
-      this.listeners[topic].push(cb);
-    }
-  }
+  open() {
+    if (!this.socket) {
+      const socket = new WebSocket(this.url);
+      let socketPromise;
 
-  /**
-   * Deregisters a handler.
-   * @param {string|Object} topic
-   * @param {Function} cb
-   */
-  unsubscribe(topic, cb) {
-    topic = Object(topic) instanceof String ? topic : JSON.stringify(topic);
-    if (this.listeners[topic]) {
-      var index = this.listeners[topic].indexOf(cb);
-      if (index != -1) {
-        this.listeners[topic].splice(index, 1);
-      }
-    }
-  }
+      var handleSocketCompletion = (error) => {
+        Object.keys(this.observers).forEach(id => {
+          error? this.observers[id].error(error): this.observers[id].complete();
+          delete this.observers[id];
+        });
+        if (this.socket == socketPromise)
+          this.socket = null;
+      };
 
-  socketListener(event) {
-    var message = JSON.parse(event.data);
-    var topic = message.topic;
-    topic = Object(topic) instanceof String ? topic : JSON.stringify(topic);
-    if (this.listeners[topic]) {
-      this.listeners[topic].forEach(function(listener) {
-        listener(message);
-      });
-    }
-  }
+      socket.onerror = handleSocketCompletion;
+      socket.onclose = handleSocketCompletion;
+      socket.onmessage = (event) => {
+        var message = JSON.parse(event.data);
+        message.date = new Date(message.date);
 
-  /**
-   * Sends a websocket message over a lazily initialized websocket connection.
-   * @param {Object} msg
-   * @param {string} msg.topic
-   * @param {string} msg.token
-   */
-  sendOverSocket(msg) {
-    //Lazy socket initialization
-    if (!this.socketOpen) {
-      //Resolve Promise on connect
-      this.socketOpen = new Promise((resolve, reject) => {
-        this.connector.send(new message.EventsUrl()).then((response) => {
-          return response.entity.urls;
-        }, () => null).then((urls) => {
-          let url;
-          if (urls) {
-            let prefix = this.secure ? "wss://" : "ws://";
-            urls = urls.filter((url) => {
-              return url.indexOf(prefix) == 0;
-            });
+        var id = message.id;
+        if (!id) {
+          if (message.type == 'error')
+            handleSocketCompletion(new CommunicationError(null, message));
+          return;
+        }
 
-            let len = urls.length;
-            url = urls[Math.floor(Math.random() * len)];
+        var observer = this.observers[id];
+        if (observer) {
+          if (message.type == "error") {
+            observer.error(new CommunicationError(null, message));
           } else {
-            url = (this.secure ? 'wss://' : 'ws://') + this.host + ':' + this.port + this.basePath + '/events'
+            observer.next(message);
           }
+        }
+      };
 
-          this.socket = this.createWebSocket(url);
-          this.socket.onmessage = this.socketListener.bind(this);
-
-          this.socket.onopen = resolve;
-          this.socket.onerror = reject;
-
-          //Reset socket on close
-          this.socket.onclose = () => {
-            this.socket = null;
-            this.socketOpen = null;
-          };
-        }).catch(reject);
+      socketPromise = this.socket = new Promise((resolve) => {
+        socket.onopen = resolve;
+      }).then(() => {
+        return socket;
       });
     }
 
-    this.socketOpen.then(() => {
-      var jsonMessage = JSON.stringify(msg);
-      this.socket.send(jsonMessage);
+    return this.socket;
+  }
+
+  close() {
+    if (this.socket) {
+      this.socket.then((socket) => {
+        socket.close();
+      });
+      this.socket = null;
+    }
+  }
+
+  /**
+   * @param {util.TokenStorage} tokenStorage
+   * @return ObservableStream<ChannelMessage> The channel fore sending and receiving messages
+   */
+  openStream(tokenStorage) {
+    let id = util.uuid();
+    let stream = new lib.Observable(observer => {
+      if (this.observers[id])
+        throw new Error("Only one subscription per stream is allowed.");
+
+      this.observers[id] = observer;
+      return () => {
+        delete this.observers[id];
+      }
     });
-  }
 
-  createWebSocket(destination) {
-    return new WebSocket(destination);
-  }
+    stream.send = (message) => {
+      this.open().then((socket) => {
+        message.id = id;
+        if (tokenStorage.token)
+          message.token = tokenStorage.token;
+        var jsonMessage = JSON.stringify(message);
+        socket.send(jsonMessage);
+      });
+    };
 
+    return stream;
+  }
 }
 
 Object.assign(WebSocketConnector,  /** @lends connector.WebSocketConnector */ {

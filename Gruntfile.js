@@ -36,7 +36,7 @@ module.exports = function (grunt) {
 
       debug: {
         files: {
-          'build/baqend.js': ['polyfills/index.js', 'streaming/index.js']
+          'build/baqend.js': ['streaming/index.js']
         },
         options: {
           watch: true,

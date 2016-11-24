@@ -4,123 +4,97 @@ var WebSocketConnector = require('../connector/WebSocketConnector');
 var lib = require('../../lib');
 
 /**
- * @alias query.Stream<T>
+ * @alias query.Stream
  */
 class Stream {
 
   /**
-   * Returns an RxJS observable.
-   *
-   * @returns {Observable<T>} an RxJS observable
-   */
-  observable() {
-    return new lib.Observable(observer => {
-      var callback = (e) => {
-        if (e.errorMessage) {
-          observer.error(e);
-        } else {
-          observer.next(e);
-        }
-      };
-
-      this.on(this.query.matchTypes, callback);
-      return () => {
-        this.off(this.query.matchTypes, callback);
-      };
-    });
-  }
-
-  /**
    * @param {EntityManager} entityManager The owning entity manager of this query
-   * @param {string} bucket The Bucket on which the streaming query is performed
-   * @param {string} query The serialized query
+   * @param {string} query The query options
+   * @param {string} query.query The serialized query
+   * @param {string} query.bucket The Bucket on which the streaming query is performed
+   * @param {string=} query.sort the sort string
+   * @param {number=} query.limit the count, i.e. the number of items in the result
+   * @param {number=} query.offset offset, i.e. the number of items to skip
+   * @param {boolean=} query.initial Indicates if the initial result should be returned
    * @param {Object} options an object containing parameters
-   * @param {string} sort the sort string
-   * @param {number} limit the count, i.e. the number of items in the result
-   * @param {number} offset offset, i.e. the number of items to skip
    * @param {query.Node<T>} target the target of the stream
    */
-  constructor(entityManager, bucket, query, options, sort, limit, offset, target) {
-    var verifiedOptions = Stream.parseOptions(options);
-    this.entityManager = entityManager;
-    this.query = {
-      bucket: bucket,
-      matchTypes: verifiedOptions.matchTypes,
-      operations: verifiedOptions.operations,
-      initial: verifiedOptions.initial,
-      query: query,
-      sort: sort,
-      start: offset,
-      count: limit
-    };
-    this.callbacks = [];
-    this.topic = Stream.getTopic(this.query.bucket, this.query.query, this.query.start, this.query.count, this.query.sort, this.query.matchTypes, this.query.operations);
-    this.target = target;
-    this.socket = WebSocketConnector.create(entityManager._connector);
-  }
+  static createStream(entityManager, query, options, target) {
+    options = Stream.parseOptions(options);
 
+    const socket = entityManager.entityManagerFactory.websocket;
+    const observable = new lib.Observable(observer => {
+      const stream = socket.openStream(entityManager.tokenStorage);
 
-  on(matchTypes, callback) {
-    var wrappedCallback = this._wrapQueryCallback(callback);
-    this.socket.subscribe(this.topic, wrappedCallback);
+      stream.send(Object.assign({
+        type: 'subscribe'
+      }, query, options));
 
-    var queryMessage = {
-      register: true,
-      topic: this.topic,
-      query: this.query
-    };
+      const subscription = stream.subscribe({
+        complete: observer.complete.bind(observer),
+        error: observer.error.bind(observer),
+        next: (msg) => {
+          msg.target = target;
 
-    if (this.query.initial === true) {
-      queryMessage.fromstart = true;
-    }
+          if (msg.type == 'result') {
+            const result = msg.data;
+            msg.result.forEach((obj, index) => {
+              const event = Object.assign({
+                type: 'match',
+                matchType: 'add',
+                operation: 'none',
+                initial: true
+              }, msg);
 
-    this.socket.sendOverSocket(queryMessage);
+              event.data = Stream._resolveObject(entityManager, obj);
+              if (query.sort)
+                event.index = index;
 
-    this.callbacks.push({
-      matchTypes: matchTypes,
-      callback: callback,
-      topic: this.topic,
-      wrappedCallback: wrappedCallback,
-      queryMessage: queryMessage
-    });
-  }
+              observer.next(event);
+            });
+          } else if (msg.type == 'match') {
+            msg.data = Stream._resolveObject(entityManager, msg.data);
+            observer.next(msg);
+          }
+        }
+      });
 
-  off(matchTypes, callback) {
-    this.callbacks = this.callbacks.reduce((keep, el) => {
-      if ((!callback || el.callback == callback) && (!matchTypes || el.matchTypes == matchTypes)) {
-        this.socket.unsubscribe(el.topic, el.wrappedCallback);
-        el.queryMessage.register = false;
-        this.socket.sendOverSocket(el.queryMessage);
-      } else {
-        keep.push(el);
+      return () => {
+        stream.send({type: 'unsubscribe'});
+        subscription.unsubscribe();
       }
-      return keep;
-    }, []);
+    });
+
+    return Stream.cachedObservable(observable);
   }
 
-  static getCachableQueryString(query, start, count, sort) {
-    var queryID = query;
-    if (Stream.isEmptyJSONString(query)) {
-      queryID = "{}";
-    }
-    if (start > 0) {
-      queryID += "&start=" + start;
-    }
-    if (count > 0) {
-      queryID += "&count=" + count;
-    }
-    if (!Stream.isEmptyJSONString(sort)) {
-      queryID += "&sort=" + sort;
-    }
-    return queryID;
-  }
-
-  static getTopic(bucket, query, start, count, sort, matchTypes, operations) {
-    return [bucket, Stream.getCachableQueryString(query, start, count, sort), Stream.normalizeMatchTypes(matchTypes).join("_"), Stream.normalizeOperations(operations).join("_")].join("/");
-  }
-
-  static isEmptyJSONString(string) {
-    return string === undefined || string === null || /^\s*(\{\s*\})?\s*$/.test(string);
+  static cachedObservable(observable) {
+    let subscription = null;
+    let observers = [];
+    return new lib.Observable(observer => {
+      if (!subscription) {
+        subscription = observable.subscribe({
+          next(msg) {
+            observers.forEach(o => o.next(msg))
+          },
+          error(e) {
+            observers.forEach(o => o.error(e))
+          },
+          complete() {
+            observers.forEach(o => o.complete())
+          }
+        });
+      }
+      observers.push(observer);
+      return () => {
+        observers.splice(observers.indexOf(observer), 1);
+        if (!observers.length) {
+          subscription.unsubscribe();
+          subscription = null;
+        }
+      }
+    });
   }
 
   /**
@@ -133,60 +107,20 @@ class Stream {
    </ul>
    *
    *
-   * @param {Object} provided object containing options
+   * @param {Object} options object containing options
    * @returns {Object} an object containing VALID options
    */
-  static parseOptions(provided) {
+  static parseOptions(options) {
+    options = options || {};
+
     var verified = {
-      matchTypes: ['all'],
-      operations: ['any']
+      initial: options.initial === undefined || !!options.initial,
+      matchTypes: Stream.normalizeMatchTypes(options.matchTypes),
+      operations: Stream.normalizeOperations(options.operations)
     };
 
-    if (provided) {
-      if (provided.initial !== null && provided.initial !== undefined) {
-        if (typeof(provided.initial) === "boolean") {
-          verified.initial = provided.initial;
-        } else {
-          throw new Error('Option "initial" only permits Boolean values!');
-        }
-      }
-
-      if (provided.matchTypes) {
-        if (Array.isArray(provided.matchTypes)) {
-          verified.matchTypes = provided.matchTypes;
-        } else {
-          verified.matchTypes = [provided.matchTypes];
-        }
-
-        verified.matchTypes = Stream.normalizeMatchTypes(verified.matchTypes);
-      }
-
-      if (provided.operations) {
-        if (Array.isArray(provided.operations)) {
-          verified.operations = provided.operations;
-        } else {
-          verified.operations = [provided.operations];
-        }
-
-        verified.operations = Stream.normalizeOperations(verified.operations);
-      }
-
-      if (verified.matchTypes.indexOf('all') == -1 && verified.operations.indexOf('any') == -1) {
-        throw new Error('Only subscriptions for either operations or matchTypes are allowed. You cannot subscribe to a query using matchTypes and operations at the same time!');
-      }
-    }
-
-    // Apply default values if missing
-    if (verified.initial === null || verified.initial === undefined) {
-      verified.initial = true;
-    }
-
-    if (!verified.matchTypes) {
-      verified.matchTypes = ['all'];
-    }
-
-    if (!verified.operations) {
-      verified.operations = ['any'];
+    if (verified.matchTypes.indexOf('all') == -1 && verified.operations.indexOf('any') == -1) {
+      throw new Error('Only subscriptions for either operations or matchTypes are allowed. You cannot subscribe to a query using matchTypes and operations at the same time!');
     }
 
     return verified;
@@ -201,8 +135,16 @@ class Stream {
   }
 
   static normalizeSortedSet(list, wildcard, itemType, allowedItems) {
-    if (!list || list.length == 0) {//undefined or empty list --> default value
-      return undefined;
+    if (!list) {
+      return [wildcard];
+    }
+
+    if (!Array.isArray(list)) {
+      list = [list];
+    }
+
+    if (list.length == 0) {//undefined or empty list --> default value
+      return [wildcard];
     }
 
     // sort, remove duplicates and check whether all values are allowed
@@ -229,75 +171,14 @@ class Stream {
     return list;
   }
 
-  _wrapQueryCallback(cb) {
-    return function(msg) {
-      msg.query = this.query;
-
-      if (msg.result) { //Initial result received
-        var basicMatch = {matchType: "add", operation: 'none'};
-        var index = 0;
-        msg.result.forEach((obj)=> {
-          var entity = this._createObject(obj, false);
-          if (msg.ordered) {
-            basicMatch.index = index++;
-          }
-          var callback = this.createCallback(msg, basicMatch, entity, true);
-          cb(callback);
-        }, this);
-      }
-      if (msg.match) {
-        //Single Match received, hollow object for deletes
-        var obj = msg.match.object;
-        var entity = this._createObject(obj, msg.match.operation === "delete");
-        //Call wrapped callback
-        var callback = this.createCallback(msg, msg.match, entity, false);
-        cb(callback);
-      }
-
-      if (msg.errorMessage) { //error message
-          var error = this.createError(msg);
-          cb(error);
-      }
-    }.bind(this);
-  }
-
-  createCallback(msg, match, entity, init) {
-    var matchEvent = {
-      matchType: match.matchType,
-      operation: match.operation,
-      data: entity,
-      date: new Date(msg.date),
-      target: this.target,
-      initial: init
-    };
-    if (match.index !== undefined) {
-      matchEvent.index = match.index;
-    }
-    return matchEvent;
-  }
-
-  createError(msg) {
-    var error = {
-      errorMessage: msg.errorMessage,
-      date: new Date(msg.date),
-      target: this.target
-    };
-    return  error;
-  }
-
-  _createObject(object, objectWasDeleted) {
-    var entity;
-    if (object) {
-      entity = this.entityManager.getReference(object.id);
-      if (entity.version < object.version || objectWasDeleted) {
-        var metadata = Metadata.get(entity);
-        if (objectWasDeleted) {
-          metadata.setRemoved();
-        } else {
-          metadata.setJson(object);
-          metadata.setPersistent();
-        }
-      }
+  static _resolveObject(entityManager, object) {
+    const entity  = entityManager.getReference(object.id);
+    const metadata = Metadata.get(entity);
+    if (!object.version) {
+      metadata.setRemoved();
+    } else if (entity.version < object.version) {
+      metadata.setJson(object);
+      metadata.setPersistent();
     }
     return entity;
   }

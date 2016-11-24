@@ -145,7 +145,7 @@ describe("Streaming Queries", function() {
       expect(result.operation).to.be.equal("update");
       expect(result.target).to.be.equal(query);
       expect(result.date.getTime()).be.ok;
-      expect(result.initial).be.false;
+      expect(result.initial).be.not.true;
     });
   });
 
@@ -434,7 +434,7 @@ describe("Streaming Queries", function() {
       expect(result.operation).to.be.equal("insert");
       expect(result.target).to.be.equal(query);
       expect(result.date.getTime()).be.ok;
-      expect(result.initial).be.false;
+      expect(result.initial).not.be.true;
     });
   });
 
@@ -496,7 +496,6 @@ describe("Streaming Queries", function() {
     // check default values
     [//
       {initial: true, matchTypes: ['all'], operations: ['any']},//
-      {initial: null, matchTypes: 'all', operations: ['any']},//
       {initial: undefined, matchTypes: ['all'], operations: 'any'},//
       {initial: true, matchTypes: ['all', 'add'], operations: ['any', 'insert']},//
       {initial: true, matchTypes: ['all', 'add', 'match'], operations: ['any', 'insert', 'update']},//
@@ -510,6 +509,12 @@ describe("Streaming Queries", function() {
       undefined//
     ].forEach(function(options) {
       expect(Stream.parseOptions(options)).to.be.eql({initial: true, matchTypes: ['all'], operations: ['any']});
+    });
+
+    [//
+      {initial: null, matchTypes: 'all', operations: ['any']},//
+    ].forEach(function(options) {
+      expect(Stream.parseOptions(options)).to.be.eql({initial: false, matchTypes: ['all'], operations: ['any']});
     });
 
     // Operations and match type should be provide-able as item AND list
@@ -551,8 +556,6 @@ describe("Streaming Queries", function() {
       {matchTypes: 'remove', operations: 'update'},//
       {matchTypes: 1, operations: 5},//
       {initial: true, matchTypes: 'match', operations: 'none'},//
-      {initial: 2},//
-      {initial: 'true'}//
     ].forEach(function(options) {
       var exceptions = 0;
       try {//Should raise an error
@@ -584,9 +587,9 @@ describe("Streaming Queries", function() {
       expect(Stream.normalizeMatchTypes(shuffle(['add', 'change', 'add', 'change', 'changeIndex', 'changeIndex']))).to.be.eql(['add', 'change', 'changeIndex']);
 
       // undefined and empty lists should result in undefined
-      expect(Stream.normalizeMatchTypes(undefined)).to.be.eql(undefined);
-      expect(Stream.normalizeMatchTypes(null)).to.be.eql(undefined);
-      expect(Stream.normalizeMatchTypes([])).to.be.eql(undefined);
+      expect(Stream.normalizeMatchTypes(undefined)).to.be.eql(['all']);
+      expect(Stream.normalizeMatchTypes(null)).to.be.eql(['all']);
+      expect(Stream.normalizeMatchTypes([])).to.be.eql(['all']);
 
       ['Banana', 'error', null, undefined].forEach(function(invalid) {
         [[invalid], [invalid, 'change', 'add'], [invalid, 'change', 'add', 'add'], ['add', 'change', null]].forEach(function(list) {
@@ -625,9 +628,9 @@ describe("Streaming Queries", function() {
       expect(Stream.normalizeOperations(shuffle(['insert', 'delete']))).to.be.eql(['delete', 'insert']);
 
       // undefined and empty lists should result in undefined
-      expect(Stream.normalizeOperations(undefined)).to.be.eql(undefined);
-      expect(Stream.normalizeOperations(null)).to.be.eql(undefined);
-      expect(Stream.normalizeOperations([])).to.be.eql(undefined);
+      expect(Stream.normalizeOperations(undefined)).to.be.eql(['any']);
+      expect(Stream.normalizeOperations(null)).to.be.eql(['any']);
+      expect(Stream.normalizeOperations([])).to.be.eql(['any']);
 
       ['Banana', 'error', null, undefined].forEach(function(invalid) {
         [[invalid], [invalid, 'update', 'insert'], [invalid, 'update', 'insert', 'insert']].forEach(function(list) {
@@ -641,88 +644,6 @@ describe("Streaming Queries", function() {
         });
       });
     }
-  });
-
-  it("should generate correct topic strings", function() {
-
-    var topic = Stream.getTopic("bucket", "{name:'Bob'}", 2, 5, "{name:1}", Stream.normalizeMatchTypes(['changeIndex', 'add']), Stream.normalizeOperations(['insert', 'delete']));
-    var expected = "bucket/{name:'Bob'}&start=2&count=5&sort={name:1}/add_changeIndex/delete_insert";
-    expect(topic).to.be.equal(expected);
-
-    topic = Stream.getTopic("bucket", "{name:'Bob'}", 2, 5, "{name:1}", Stream.normalizeMatchTypes(['changeIndex', 'change']), Stream.normalizeOperations(['insert']));
-    expected = "bucket/{name:'Bob'}&start=2&count=5&sort={name:1}/change_changeIndex/insert";
-    expect(topic).to.be.equal(expected);
-
-    topic = Stream.getTopic("bucket", "{name:'Bob'}", 2, 5, "{name:1}", Stream.normalizeMatchTypes(['add']), Stream.normalizeOperations(['insert']));
-    expected = "bucket/{name:'Bob'}&start=2&count=5&sort={name:1}/add/insert";
-    expect(topic).to.be.equal(expected);
-
-    topic = Stream.getTopic("bucket", "{name:'Bob'}", 2, 5, "{name:1}", Stream.normalizeMatchTypes(['add']), Stream.normalizeOperations(['insert', 'none']));
-    expected = "bucket/{name:'Bob'}&start=2&count=5&sort={name:1}/add/insert_none";
-    expect(topic).to.be.equal(expected);
-
-    var exceptions = 0;
-    try {//Should raise an error
-      Stream.getTopic("bucket", "{name:'Bob'}", 2, 5, "{name:1}", Stream.normalizeMatchTypes(['error', 'add']), Stream.normalizeOperations(['insert']));
-    } catch (e) {
-      exceptions++;
-    }
-    expect(exceptions).to.be.equal(1);
-  });
-
-  it("should generate correct cacheable query strings", function() {
-    var empty = [null, undefined, "", " ", "   ", "{}", " {}", "{} ", "{ }", " { } "];
-    empty.forEach(function(query) {
-      empty.forEach(function(sort) {
-        expect(Stream.getCachableQueryString(query, -1, -1, sort)).to.be.equal("{}");
-        expect(Stream.getCachableQueryString(query, 0, 0, sort)).to.be.equal("{}");
-        expect(Stream.getCachableQueryString(query, 1, 1, sort)).to.be.equal("{}&start=1&count=1");
-        expect(Stream.getCachableQueryString(query, -1, 1, sort)).to.be.equal("{}&count=1");
-        expect(Stream.getCachableQueryString(query, 0, -1, sort)).to.be.equal("{}");
-        expect(Stream.getCachableQueryString(query, 1, 0, sort)).to.be.equal("{}&start=1");
-        expect(Stream.getCachableQueryString(query, -1, 0, sort)).to.be.equal("{}");
-        expect(Stream.getCachableQueryString(query, 0, 1, sort)).to.be.equal("{}&count=1");
-        expect(Stream.getCachableQueryString(query, 1, -1, sort)).to.be.equal("{}&start=1");
-      });
-    });
-
-    empty.forEach(function(sort) {
-      var query = "{name:'Bob'}";
-      expect(Stream.getCachableQueryString(query, -1, -1, sort)).to.be.equal("{name:'Bob'}");
-      expect(Stream.getCachableQueryString(query, 0, 0, sort)).to.be.equal("{name:'Bob'}");
-      expect(Stream.getCachableQueryString(query, 1, 1, sort)).to.be.equal("{name:'Bob'}&start=1&count=1");
-      expect(Stream.getCachableQueryString(query, -1, 1, sort)).to.be.equal("{name:'Bob'}&count=1");
-      expect(Stream.getCachableQueryString(query, 0, -1, sort)).to.be.equal("{name:'Bob'}");
-      expect(Stream.getCachableQueryString(query, 1, 0, sort)).to.be.equal("{name:'Bob'}&start=1");
-      expect(Stream.getCachableQueryString(query, -1, 0, sort)).to.be.equal("{name:'Bob'}");
-      expect(Stream.getCachableQueryString(query, 0, 1, sort)).to.be.equal("{name:'Bob'}&count=1");
-      expect(Stream.getCachableQueryString(query, 1, -1, sort)).to.be.equal("{name:'Bob'}&start=1");
-    });
-
-    empty.forEach(function(query) {
-      var sort = "{name:1}";
-      expect(Stream.getCachableQueryString(query, -1, -1, sort)).to.be.equal("{}&sort={name:1}");
-      expect(Stream.getCachableQueryString(query, 0, 0, sort)).to.be.equal("{}&sort={name:1}");
-      expect(Stream.getCachableQueryString(query, 1, 1, sort)).to.be.equal("{}&start=1&count=1&sort={name:1}");
-      expect(Stream.getCachableQueryString(query, -1, 1, sort)).to.be.equal("{}&count=1&sort={name:1}");
-      expect(Stream.getCachableQueryString(query, 0, -1, sort)).to.be.equal("{}&sort={name:1}");
-      expect(Stream.getCachableQueryString(query, 1, 0, sort)).to.be.equal("{}&start=1&sort={name:1}");
-      expect(Stream.getCachableQueryString(query, -1, 0, sort)).to.be.equal("{}&sort={name:1}");
-      expect(Stream.getCachableQueryString(query, 0, 1, sort)).to.be.equal("{}&count=1&sort={name:1}");
-      expect(Stream.getCachableQueryString(query, 1, -1, sort)).to.be.equal("{}&start=1&sort={name:1}");
-    });
-
-    var query = "{name:'Bob'}";
-    var sort = "{name:1}";
-    expect(Stream.getCachableQueryString(query, -1, -1, sort)).to.be.equal("{name:'Bob'}&sort={name:1}");
-    expect(Stream.getCachableQueryString(query, 0, 0, sort)).to.be.equal("{name:'Bob'}&sort={name:1}");
-    expect(Stream.getCachableQueryString(query, 1, 1, sort)).to.be.equal("{name:'Bob'}&start=1&count=1&sort={name:1}");
-    expect(Stream.getCachableQueryString(query, -1, 1, sort)).to.be.equal("{name:'Bob'}&count=1&sort={name:1}");
-    expect(Stream.getCachableQueryString(query, 0, -1, sort)).to.be.equal("{name:'Bob'}&sort={name:1}");
-    expect(Stream.getCachableQueryString(query, 1, 0, sort)).to.be.equal("{name:'Bob'}&start=1&sort={name:1}");
-    expect(Stream.getCachableQueryString(query, -1, 0, sort)).to.be.equal("{name:'Bob'}&sort={name:1}");
-    expect(Stream.getCachableQueryString(query, 0, 1, sort)).to.be.equal("{name:'Bob'}&count=1&sort={name:1}");
-    expect(Stream.getCachableQueryString(query, 1, -1, sort)).to.be.equal("{name:'Bob'}&start=1&sort={name:1}");
   });
 
   it("should return removed object", function() {
@@ -746,7 +667,7 @@ describe("Streaming Queries", function() {
       expect(result.operation).to.be.equal("delete");
       expect(result.target).to.be.equal(query);
       expect(result.date.getTime()).be.ok;
-      expect(result.initial).be.false;
+      expect(result.initial).not.be.true;
     });
   });
 
@@ -799,10 +720,13 @@ describe("Streaming Queries", function() {
     return helper.sleep(t).then(function() {
       return insert.insert()
     }).then(function(obj) {
+      return helper.sleep(t, obj);
+    }).then(function(obj) {
       obj.name = "frrrrranz";
+      othersubscription.unsubscribe();
       return helper.sleep(t, obj.save());
     }).then(function() {
-      expect(received.length).to.be.equal(4);
+      expect(received.length).to.be.equal(3);
     });
   });
 
@@ -861,6 +785,54 @@ describe("Streaming Queries", function() {
       expect(next).to.be.equal(2);
       expect(errors).to.be.equal(0);
       expect(completions).to.be.equal(0);
+    });
+  });
+
+  it("should cancel serverside subscription", function() {
+    this.timeout(6000);
+
+    var next = 0;
+    var msg = 0;
+
+    var onNext = function(match) { // onNext
+      next++;
+    };
+
+    var stream1 = db[bucket].find().stream({initial: false, matchTypes: 'all'});
+    var stream2 = db[bucket].find().stream({initial: false, matchTypes: 'all'});
+    var subscription1, subscription2, socket, insert;
+
+    return db.entityManagerFactory.websocket.open().then(function(s) {
+      socket = s;
+      socket.addEventListener('message', function listener() {
+        msg++;
+        if (msg > 5) {
+          socket.removeEventListener('message', listener);
+        }
+      })
+    }).then(function() {
+      subscription1 = stream1.subscribe(onNext);
+      subscription2 = stream2.subscribe(onNext);
+      return helper.sleep(t);
+    }).then(function() {
+      expect(next).to.be.equal(0);
+      expect(msg).to.be.equal(2); //subscription messages
+
+      insert = db[bucket].fromJSON(p1.toJSON(true));
+      return helper.sleep(t, insert.insert());
+    }).then(function() {
+      expect(next).to.be.equal(2);
+      expect(msg).to.be.equal(4); //insert messages
+      subscription1.unsubscribe();
+      subscription2.unsubscribe();
+      return helper.sleep(t);
+    }).then(function() {
+      insert = db[bucket].fromJSON(p2.toJSON(true));
+      return helper.sleep(t, insert.insert());
+    }).then(function() {
+      expect(next).to.be.equal(2);
+      expect(msg).to.be.equal(4); //no insert message
+
     });
   });
 
@@ -1005,6 +977,13 @@ describe("Streaming Queries", function() {
     }).then(helper.sleep(t)).then(function() {
       console.log("new MISmatch: Carl (59) --> average age: " + average);
       expect(average).to.be.equal(50);
+    });
+  });
+
+  it("should use websocket configuration of the connect script", function() {
+    return new DB.EntityManagerFactory({host: env.TEST_SERVER, schema: {}, tokenStorage: helper.rootTokenStorage, websocket: '//events.localhost'}).createEntityManager().ready().then(function(db) {
+      var websocket = db.entityManagerFactory.websocket;
+      expect(websocket.url).equal('wss://events.localhost');
     });
   });
 
