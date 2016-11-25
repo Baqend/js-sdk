@@ -456,6 +456,23 @@ describe('Test entity type', function () {
       });
     });
 
+    it("should save empty list", function() {
+      obj[name] = DB.List.from(list);
+
+      var version = 0;
+      return obj.save().then(function() {
+        obj[name] = [];
+        version = obj.version;
+        return obj.save();
+      }).then(function() {
+        return obj.load({refresh: true});
+      }).then(function(obj) {
+        var newList = obj[name];
+        expect(obj.version).eql(version + 1);
+        expect(newList.length).eql(0);
+      });
+    });
+
     it("should track adds", function() {
       obj[name] = new DB.List();
 

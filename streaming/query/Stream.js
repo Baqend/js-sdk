@@ -294,7 +294,7 @@ class Stream {
         if (objectWasDeleted) {
           metadata.setRemoved();
         } else {
-          metadata.setJson(object);
+          metadata.setJson(object, true);
           metadata.setPersistent();
         }
       }
