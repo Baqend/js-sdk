@@ -534,7 +534,7 @@ describe("Guide Examples", function() {
     return result;
   };
 
-  var maintainCardinality = (counter, event) => {
+  var maintainCardinality = function(counter, event) {
     if (event.matchType === 'add') {// entering item: count + 1
       counter++;
     } else if (event.matchType === 'remove') {// leaving item: count - 1
