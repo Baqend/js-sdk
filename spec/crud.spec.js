@@ -173,6 +173,102 @@ describe('Test crud', function() {
       });
     });
 
+    it('should not save objects with persistent collections', function() {
+      var obj = new db.Person();
+
+      var child = new db.Child({
+        listSiblings: [obj],
+        setSiblings: new Set([obj]),
+        mapSiblings: new Map([[obj, obj]])
+      });
+
+      var version;
+      return child.save(function(saved) {
+        expect(saved.listSiblings.length).eql(1);
+        expect(saved.setSiblings.size).eql(1);
+        expect(saved.mapSiblings.size).eql(1);
+
+        version = child.version;
+        return db2.load(child.id);
+      }).then(function(loaded) {
+        return loaded.save();
+      }).then(function(saved) {
+        expect(saved.version).eq(version);
+      });
+    });
+
+    it('should save dirty objects with empty list', function() {
+      var obj = new db.Person();
+
+      var child = new db.Child({
+        listSiblings: [obj]
+      });
+
+      var version;
+      return child.save(function(saved) {
+        expect(saved.listSiblings.length).eql(1);
+        db.detach(child);
+
+        version = child.version;
+        return db2.load(child.id);
+      }).then(function(loaded) {
+        loaded.listSiblings = [];
+        return loaded.save();
+      }).then(function(saved) {
+        return db.Child.load(child.id, {refresh: true});
+      }).then(function(child) {
+        expect(child.listSiblings.length).eq(0);
+      });
+    });
+
+    it('should save dirty objects with empty set', function() {
+      var obj = new db.Person();
+
+      var child = new db.Child({
+        setSiblings: new Set([obj])
+      });
+
+      var version;
+      return child.save(function(saved) {
+        expect(saved.setSiblings.size).eql(1);
+        db.detach(child);
+
+        version = child.version;
+        return db2.load(child.id);
+      }).then(function(loaded) {
+        loaded.setSiblings.clear();
+        return loaded.save();
+      }).then(function(saved) {
+        return db.Child.load(child.id, {refresh: true});
+      }).then(function(child) {
+        expect(child.setSiblings.size).eq(0);
+      });
+    });
+
+    it('should save dirty objects with empty map', function() {
+      var obj = new db.Person();
+
+      var child = new db.Child({
+        mapSiblings: new Map([[obj, obj]])
+      });
+
+      var version;
+      return child.save(function(saved) {
+        expect(saved.mapSiblings.size).eql(1);
+        db.detach(child);
+
+        version = child.version;
+        return db2.load(child.id);
+      }).then(function(loaded) {
+        loaded.mapSiblings.clear();
+        return loaded.save();
+      }).then(function(saved) {
+        return db.Child.load(child.id, {refresh: true});
+      }).then(function(child) {
+        expect(child.mapSiblings.size).eq(0);
+      });
+    });
+
     it('should save existing object from JSON', function() {
       var json = {
         "id": "/db/Person/" + db.util.uuid(),
