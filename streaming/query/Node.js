@@ -11,13 +11,21 @@ var Node = require('../../lib/query/Node');
  * @returns {Observable<T>} an RxJS observable
  */
 Node.prototype.stream = function(options, target) {
+  if (!target) {
+    target = this;
+  }
+
+  return Stream.createStream(this.entityManager, this._createStreamingQuery(), options, target);
+};
+
+Node.prototype.streamResult = function(options) {
+  return Stream.createStreamResult(this.entityManager, this._createStreamingQuery(), options);
+};
+
+Node.prototype._createStreamingQuery = function() {
   var type = this.resultClass ? this.entityManager.metamodel.entity(this.resultClass) : null;
   if (!type) {
     throw new Error('Only typed queries can be executed.');
-  }
-
-  if (!target) {
-    target = this;
   }
 
   const query = {
@@ -36,7 +44,7 @@ Node.prototype.stream = function(options, target) {
   if (this.firstResult > 0)
     query.offset = this.firstResult;
 
-  return Stream.createStream(this.entityManager, query, options, target);
+  return query;
 };
 
 module.exports = Node;

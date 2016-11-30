@@ -8,6 +8,9 @@ if (typeof DB == 'undefined') {
 }
 
 var helper = {
+  modules: {
+    'Rx': 'https://unpkg.com/@reactivex/rxjs@5.0.0-rc.4/dist/global/Rx.js'
+  },
   rootTokenStorage: null,
   makeLogin: function() {
     var text = "";
@@ -89,6 +92,16 @@ var helper = {
         oReq.onerror = reject;
         oReq.send()
       }
+    });
+  },
+  load: function(module) {
+    return new Promise(function(success) {
+      var script = document.createElement('script');
+      script.onload = success;
+      script.src = helper.modules[module];
+      document.getElementsByTagName('head')[0].appendChild(script);
+    }).then(function() {
+      return window[module];
     });
   },
   isNode: typeof window == 'undefined',

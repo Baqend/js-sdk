@@ -21,6 +21,82 @@ class Stream {
    * @param {query.Node<T>} target the target of the stream
    */
   static createStream(entityManager, query, options, target) {
+    return Stream.streamObservable(entityManager, query, options, (msg, next) => {
+      msg.target = target;
+
+      if (msg.type == 'result') {
+        const result = msg.data;
+        msg.data.forEach((obj, index) => {
+          const event = Object.assign({
+            type: 'match',
+            matchType: 'add',
+            operation: 'none',
+            initial: true
+          }, msg);
+
+          event.data = Stream._resolveObject(entityManager, obj);
+          if (query.sort)
+            event.index = index;
+
+          next(event);
+        });
+      }
+
+      if (msg.type == 'match') {
+        msg.data = Stream._resolveObject(entityManager, msg.data);
+        next(msg);
+      }
+    });
+  }
+
+  /**
+   * @param {EntityManager} entityManager The owning entity manager of this query
+   * @param {string} query The query options
+   * @param {string} query.query The serialized query
+   * @param {string} query.bucket The Bucket on which the streaming query is performed
+   * @param {string=} query.sort the sort string
+   * @param {number=} query.limit the count, i.e. the number of items in the result
+   * @param {number=} query.offset offset, i.e. the number of items to skip
+   * @param {Object} options an object containing parameters
+   */
+  static createStreamResult(entityManager, query, options) {
+    options = options || {};
+    options.initial = true;
+    options.matchTypes = 'all';
+    options.operations = 'any';
+
+    let result, ordered = !!query.sort;
+    return Stream.streamObservable(entityManager, query, options, (event, next) => {
+      if (event.type == 'result') {
+        result = event.data.map(obj => Stream._resolveObject(entityManager, obj));
+        event.data = result.slice();
+        next(event);
+      }
+
+      if (event.type == 'match') {
+        if (event.matchType == 'remove' || event.matchType == 'changeIndex') {
+          //if we have removed the instance our self, we do not have the cached instances anymore
+          //therefore we can't find it anymore in the result by identity
+          for (let i = 0, len = result.length; i < len; ++i) {
+            if (result[i].id == event.data.id) {
+              result.splice(i, 1);
+              break;
+            }
+          }
+        }
+
+        if (event.matchType == 'add' || event.matchType == 'changeIndex') {
+          let obj = Stream._resolveObject(entityManager, event.data);
+          ordered? result.splice(event.index, 0, obj): result.push(obj);
+        }
+
+        event.data = result.slice();
+        next(event);
+      }
+    });
+  }
+
+  static streamObservable(entityManager, query, options, mapper) {
     options = Stream.parseOptions(options);
 
     const socket = entityManager.entityManagerFactory.websocket;
@@ -31,33 +107,11 @@ class Stream {
         type: 'subscribe'
       }, query, options));
 
+      const next = observer.next.bind(observer);
       const subscription = stream.subscribe({
         complete: observer.complete.bind(observer),
         error: observer.error.bind(observer),
-        next: (msg) => {
-          msg.target = target;
-
-          if (msg.type == 'result') {
-            const result = msg.data;
-            msg.result.forEach((obj, index) => {
-              const event = Object.assign({
-                type: 'match',
-                matchType: 'add',
-                operation: 'none',
-                initial: true
-              }, msg);
-
-              event.data = Stream._resolveObject(entityManager, obj);
-              if (query.sort)
-                event.index = index;
-
-              observer.next(event);
-            });
-          } else if (msg.type == 'match') {
-            msg.data = Stream._resolveObject(entityManager, msg.data);
-            observer.next(msg);
-          }
-        }
+        next: (msg) => mapper(msg, next)
       });
 
       return () => {

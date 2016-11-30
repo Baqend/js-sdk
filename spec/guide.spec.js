@@ -17,8 +17,13 @@ describe("Guide Examples", function() {
   var bucket = helper.randomize("Guide_StreamingQuery");
   var emf, metamodel, db, stream, subscription;
 
+  var _Observable = DB.Observable;
+
   before(function() {
 
+  });
+
+  before(function() {
     var todoType, activityType;
     emf = new DB.EntityManagerFactory({host: env.TEST_SERVER, schema: {}, tokenStorage: helper.rootTokenStorage});
     metamodel = emf.metamodel;
@@ -34,10 +39,22 @@ describe("Guide Examples", function() {
     activityType.addAttribute(new DB.metamodel.SingularAttribute("name", metamodel.baseType(String)));
 
     return metamodel.save().then(function() {
-      return db = emf.createEntityManager();
-    }).then(function() {
-      return helper.sleep(t);
+      return emf.createEntityManager().ready();
+    }).then(function(em) {
+      db = em;
+
+      if (!helper.isNode) {
+        return helper.load('Rx').then(function(Rx) {
+          DB.Observable = Rx.Observable;
+        });
+      }
     });
+  });
+
+  after(function() {
+    if (!helper.isNode) {
+      DB.Observable = _Observable;
+    }
   });
 
   afterEach(function() {
