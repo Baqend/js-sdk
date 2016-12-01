@@ -74,6 +74,8 @@ class Stream {
       }
 
       if (event.type == 'match') {
+        let obj = Stream._resolveObject(entityManager, event.data);
+
         if (event.matchType == 'remove' || event.matchType == 'changeIndex') {
           //if we have removed the instance our self, we do not have the cached instances anymore
           //therefore we can't find it anymore in the result by identity
@@ -86,7 +88,6 @@ class Stream {
         }
 
         if (event.matchType == 'add' || event.matchType == 'changeIndex') {
-          let obj = Stream._resolveObject(entityManager, event.data);
           ordered? result.splice(event.index, 0, obj): result.push(obj);
         }
 

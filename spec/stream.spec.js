@@ -298,18 +298,18 @@ describe("Streaming Queries", function() {
         result = e;
       });
 
-      return helper.sleep(t).then(function() {
-        p1.name = "Felix";
-        return helper.sleep(t, p1.save());
-      }).then(function() {
-        expect(result.matchType).to.be.equal("match");
-        expect(result.data).to.be.equal(p1);
-        expect(result.operation).to.be.equal("update");
-        expect(result.target).to.be.equal(query);
-        expect(result.date.getTime()).be.ok;
-        expect(result.initial).be.not.true;
-      });
+    return helper.sleep(t).then(function() {
+      p1.name = "Felix";
+      return p1.save();
+    }).then(helper.sleep(t),function() {
+      expect(result.matchType).to.be.equal("match");
+      expect(result.data).to.be.equal(p1);
+      expect(result.operation).to.be.equal("update");
+      expect(result.target).to.be.equal(query);
+      expect(result.date.getTime()).be.ok;
+      expect(result.initial).be.not.true;
     });
+  });
 
     it("should maintain offset", function() {
       this.timeout(10000);
@@ -1321,18 +1321,17 @@ describe("Streaming Queries", function() {
     }
 
     function update(obj) {
-      return obj.update().then(function() {
-        var index = expectedResult.indexOf(obj);
-        if (obj.age = 49) {
-          if (index == -1)
-            expectedResult.push(obj);
-        } else {
-          if (index != -1)
-            expectedResult.splice(index, 1);
-        }
-        sort();
-      });
-    }
+      var index = expectedResult.indexOf(obj);
+      if (obj.age == 49) {
+        if (index == -1)
+          expectedResult.push(obj);
+      } else {
+        if (index != -1)
+          expectedResult.splice(index, 1);
+      }
+      sort();
+      return obj.update();
+    };
 
     function remove(obj) {
       return obj.delete().then(function() {
