@@ -231,9 +231,9 @@ class Stream {
     const metadata = Metadata.get(entity);
     if (!object.version) {
       metadata.setRemoved();
+      entityManager.removeReference(entity);
     } else if (entity.version < object.version) {
-      metadata.setJson(object);
-      metadata.setPersistent();
+      metadata.setJson(object, true);
     }
     return entity;
   }
