@@ -20,12 +20,20 @@ describe('Test entity type', function () {
     "time": { type: metamodel.baseType('Time'), simple:true, values: [new Date("1970-01-01T00:00:00Z"), new Date("1970-01-01T17:33:14Z")] },
     "date": { type: metamodel.baseType('Date'), simple:true, values: [new Date("1970-01-01T00:00:00Z"), new Date("2013-11-22T00:00:00Z")] },
     "dateTime": { type: metamodel.baseType('DateTime'), simple:true, values: [new Date(), new Date("1970-01-01T17:33:14Z")] },
+    "file": { type: metamodel.baseType('File'), simple:false, values: function() { return [new em.File(), new em.File("/file/www/index.html"), new em.File("/file/test/myFile.png")]} },
     "geoPoint": { type: metamodel.baseType('GeoPoint'), values: [new DB.GeoPoint(34.5658, 110.4576), new DB.GeoPoint(0, 0)] },
     "jsonArray": { type: metamodel.baseType('JsonArray'), values: [[1,'string',{key:'value'}, [1,2,3]], [], [null, 0, false, '', [], {}]] },
     "jsonObject": { type: metamodel.baseType('JsonObject'), values: [
       {k1:1, k2:'string', k3:{key:'value'}, k4:[1,2,3]}, {}, {k1:3.4, k2:0, k3:false, k4:'', k5:[], k6:{}}
     ]}
   };
+
+  Object.keys(types).forEach(function(name) {
+    const vals = types[name].values;
+    if (Array.isArray(vals)){
+      types[name].values = function() {return vals;};
+    }
+  });
 
   for (var i = 0, type; type = [EntityType, EmbeddedType][i]; ++i) {
     for (var name in types) {
@@ -137,6 +145,37 @@ describe('Test entity type', function () {
     test("dateTime", new Date(0), new Date(), new Date("0000-01-01T00:00:00Z"));
   });
 
+  describe("file value", function() {
+    test("file");
+
+    it("should convert file references to ids", function() {
+      var ref = new em.File("/file/test/myFile.png");
+      obj.file = ref;
+
+      var json = state.getJson();
+      expect(ref.id).contain('/file/');
+      expect(json.file).be.ok;
+      expect(json.file).equals(ref.id);
+
+      state.setJson(json);
+      expect(obj.file).equals(ref);
+    });
+
+    it("should convert file ids to file references", function() {
+      var ref = new em.File("/file/test/myFile.png");
+      obj.file = ref;
+
+      return obj.save().then(function() {
+        obj.file = null;
+        return obj.load({refresh: true});
+      }).then(function() {
+        expect(obj.file.id).equals(ref.id);
+        expect(obj.file).not.equal(ref);
+        expect(obj.file instanceof em.File).to.be.true;
+      });
+    });
+  });
+
   describe("geoPoint value", function() {
     test("geoPoint", new DB.GeoPoint(), new DB.GeoPoint(34.5658, 110.4576), new DB.GeoPoint(-45.67, -177.45));
   });
@@ -173,77 +212,94 @@ describe('Test entity type', function () {
 
   Object.keys(types).forEach(function(name) {
     describe(name + "List value", function() {
-      var list = DB.List.from(types[name].values);
-      testList(name + "List", list);
+      testList(name + "List", function() {
+        return DB.List.from(types[name].values());
+      });
     });
   });
 
   describe("refList value", function() {
-    testList("refList", new DB.List(testObject(), testObject(), null, testObject()));
+    testList("refList", function() {
+      return new DB.List(testObject(), testObject(), null, testObject());
+    });
   });
 
   describe("embeddedList value", function() {
-    testList("embeddedList", new DB.List(embeddableObject(), embeddableObject(), null, embeddableObject()));
+    testList("embeddedList", function() {
+      return new DB.List(embeddableObject(), embeddableObject(), null, embeddableObject());
+    });
   });
 
-  for (name in types) {
+  Object.keys(types).forEach(function(name) {
     if (types[name].simple) {
       describe(name + "Set value", function() {
-        var set = new DB.Set(types[name].values);
-        testSet(name + "Set", set);
+        testSet(name + "Set", function() {
+          return new DB.Set(types[name].values());
+        });
       });
     }
-  }
+  });
 
   describe("refSet value", function() {
-    testSet("refSet", new DB.Set([testObject(), null, testObject(), testObject()]));
+    testSet("refSet", function() {
+      return new DB.Set([testObject(), null, testObject(), testObject()]);
+    });
   });
 
   describe("simpleMap value", function() {
-    var map = new DB.Map([
-      ["Test", true],
-      ["String", false]
-    ]);
-
-    testMap("simplebooleanMap", map);
+    testMap("simplebooleanMap", function() {
+      return new DB.Map([
+        ["Test", true],
+        ["String", false]
+      ]);
+    });
   });
 
   Object.keys(types).forEach(function(name) {
     describe("simple" + name + "Map value", function() {
-      var map = new DB.Map();
-      var vals = types[name].values;
-      for (var i = 0; i < vals.length; ++i) {
-        map.set("key" + i, vals[i]);
-      }
 
-      testMap("simple" + name + "Map", map);
+
+      testMap("simple" + name + "Map", function() {
+        var map = new DB.Map();
+        var vals = types[name].values();
+        for (var i = 0; i < vals.length; ++i) {
+          map.set("key" + i, vals[i]);
+        }
+        return map;
+      });
     });
 
     if (types[name].simple) {
       describe(name + "simpleMap value", function() {
-        var keys = types[name].values;
-        var map = new DB.Map();
-        for (var i = 0; i < keys.length; ++i) {
-          map.set(keys[i], "value" + i);
-        }
-
-        testMap(name + "simpleMap", map);
+        testMap(name + "simpleMap", function() {
+          var keys = types[name].values();
+          var map = new DB.Map();
+          for (var i = 0; i < keys.length; ++i) {
+            map.set(keys[i], "value" + i);
+          }
+          return map;
+        });
       });
     }
   });
 
   describe("simpleRefMap value", function() {
-    var map1 = new DB.Map([
-      ["Test", testObject()],
-      ["String", testObject()],
-      ["123", testObject()]
-    ]);
 
     //null values should be removed
-    testMap("simpleRefMap", map1);
+    testMap("simpleRefMap", function() {
+      return new DB.Map([
+        ["Test", testObject()],
+        ["String", testObject()],
+        ["123", testObject()]
+      ]);
+    });
 
     it("should remove null values", function() {
-      var map2 = new DB.Map(map1);
+      var map2 = new DB.Map([
+        ["Test", testObject()],
+        ["String", testObject()],
+        ["123", testObject()]
+      ]);
       map2.set("null", null);
 
       obj["simpleRefMap"] = map2;
@@ -255,16 +311,20 @@ describe('Test entity type', function () {
   });
 
   describe("refSimpleMap value", function() {
-    var map1 = new DB.Map([
-      [testObject(), "value1"],
-      [testObject(), "value2"]
-    ]);
 
-    testMap("refSimpleMap", map1);
+    testMap("refSimpleMap",  function() {
+      return new DB.Map([
+        [testObject(), "value1"],
+        [testObject(), "value2"]
+      ]);
+    });
 
     it("should remove null values", function() {
       var nullKey = testObject();
-      var map2 = new DB.Map(map1);
+      var map2 = new DB.Map([
+        [testObject(), "value1"],
+        [testObject(), "value2"]
+      ]);
       map2.set(nullKey, null);
 
       obj["refSimpleMap"] = map2;
@@ -276,16 +336,20 @@ describe('Test entity type', function () {
   });
 
   describe("refMap value", function() {
-    var map1 = new DB.Map([
-      [testObject(), testObject()],
-      [testObject(), testObject()]
-    ]);
 
-    testMap("refMap", map1);
+    testMap("refMap", function() {
+      return new DB.Map([
+        [testObject(), testObject()],
+        [testObject(), testObject()]
+      ]);
+    });
 
     it("should remove null values", function() {
       var nullKey = testObject();
-      var map2 = new DB.Map(map1);
+      var map2 = new DB.Map([
+        [testObject(), testObject()],
+        [testObject(), testObject()]
+      ]);
       map2.set(nullKey, null);
 
       obj["refMap"] = map2;
@@ -297,14 +361,18 @@ describe('Test entity type', function () {
   });
 
   describe("simpleEmbeddedMap value", function() {
-    var map1 = new DB.Map([
-      ["Test", embeddableObject()],
-      ["String", embeddableObject()]
-    ]);
-
-    testMap("simpleEmbeddedMap", map1);
+    testMap("simpleEmbeddedMap", function() {
+      return new DB.Map([
+        ["Test", embeddableObject()],
+        ["String", embeddableObject()]
+      ]);
+    });
 
     it("should keep embedded identity", function() {
+      var map1 = new DB.Map([
+        ["Test", embeddableObject()],
+        ["String", embeddableObject()]
+      ]);
       obj["simpleEmbeddedMap"] = new DB.Map(map1);
       return obj.save({refresh:true}).then(function() {
         var mapValue = obj["simpleEmbeddedMap"];
@@ -315,7 +383,10 @@ describe('Test entity type', function () {
 
     it("should remove null values", function() {
       var nullKey = "123";
-      var map2 = new DB.Map(map1);
+      var map2 = new DB.Map([
+        ["Test", embeddableObject()],
+        ["String", embeddableObject()]
+      ]);
       map2.set(nullKey, null);
 
       obj["simpleEmbeddedMap"] = map2;
@@ -327,14 +398,18 @@ describe('Test entity type', function () {
   });
 
   describe("dateTimeEmbeddedMap value", function() {
-    var map1 = new DB.Map([
-      [new Date("1970-01-01T00:00Z"), embeddableObject()],
-      [new Date(), embeddableObject()]
-    ]);
-
-    testMap("dateTimeEmbeddedMap", map1);
+    testMap("dateTimeEmbeddedMap", function() {
+      return new DB.Map([
+        [new Date("1970-01-01T00:00Z"), embeddableObject()],
+        [new Date(), embeddableObject()]
+      ]);
+    });
 
     it("should keep embedded identity", function() {
+      var map1 = new DB.Map([
+        [new Date("1970-01-01T00:00Z"), embeddableObject()],
+        [new Date(), embeddableObject()]
+      ]);
       obj["dateTimeEmbeddedMap"] = new DB.Map(map1);
       return obj.save({refresh:true}).then(function() {
         var mapValue = obj["dateTimeEmbeddedMap"];
@@ -345,7 +420,10 @@ describe('Test entity type', function () {
 
     it("should remove null values", function() {
       var nullKey = new Date("2015-01-01T00:00Z");
-      var map2 = new DB.Map(map1);
+      var map2 = new DB.Map([
+        [new Date("1970-01-01T00:00Z"), embeddableObject()],
+        [new Date(), embeddableObject()]
+      ]);
       map2.set(nullKey, null);
 
       obj["dateTimeEmbeddedMap"] = map2;
@@ -400,8 +478,13 @@ describe('Test entity type', function () {
     });
   }
 
-  function testList(name, list) {
+  function testList(name, listProvider) {
+    var list;
     test(name);
+
+    before(function() {
+      list = listProvider();
+    });
 
     it("should be saved with an empty list", function() {
       obj[name] = new DB.List();
@@ -518,28 +601,29 @@ describe('Test entity type', function () {
       });
     });
 
-    var args = Array.prototype.slice.call(arguments, 1);
-    args.forEach(function(arg) {
-      var value = arg;
+    it("should be saved and reloaded", function() {
+      var value = DB.List.from(list);
       var expectedValue = DB.List.from(value);
+      obj[name] = value;
 
-      it(arg + " should be saved and reloaded", function() {
-        obj[name] = value;
-
-        return obj.save({refresh: true}).then(function() {
-          var list = obj[name];
-          var len = expectedValue.length;
-          expect(list.length).eql(len);
-          for (var i = 0; i < len; ++i) {
-            expect(list[i]).eql(expectedValue[i]);
-          }
-        });
+      return obj.save({refresh: true}).then(function() {
+        var list = obj[name];
+        var len = expectedValue.length;
+        expect(list.length).eql(len);
+        for (var i = 0; i < len; ++i) {
+          expect(list[i]).eql(expectedValue[i]);
+        }
       });
     });
   }
 
-  function testSet(name, set) {
+  function testSet(name, setProvider) {
+    var set;
     test(name);
+
+    before(function() {
+      set = setProvider();
+    });
 
     it("should be saved with an empty set", function() {
       obj[name] = new DB.Set();
@@ -646,28 +730,30 @@ describe('Test entity type', function () {
       });
     });
 
-    var args = Array.prototype.slice.call(arguments, 1);
-    args.forEach(function(arg) {
-      var value = arg;
+
+    it("should be saved and reloaded", function() {
+      var value = new DB.Set(set);
       var expectedValue = new DB.Set(value);
+      obj[name] = value;
 
-      it(arg + " should be saved and reloaded", function() {
-        obj[name] = value;
-
-        return obj.save({refresh: true}).then(function() {
-          var set = obj[name];
-          var size = expectedValue.size;
-          expect(set.size).eql(size);
-          expectedValue.forEach(function(val) {
-            expect(set.has(val)).be.true;
-          });
+      return obj.save({refresh: true}).then(function() {
+        var set = obj[name];
+        var size = expectedValue.size;
+        expect(set.size).eql(size);
+        expectedValue.forEach(function(val) {
+          expect(set.has(val)).be.true;
         });
       });
     });
   }
 
-  function testMap(name, map) {
+  function testMap(name, mapProvider) {
+    var map;
     test(name);
+
+    before(function() {
+      map = mapProvider();
+    });
 
     it("should be saved with an empty map", function() {
       obj[name] = new DB.Map();
@@ -779,21 +865,17 @@ describe('Test entity type', function () {
       });
     });
 
-    var args = Array.prototype.slice.call(arguments, 1);
-    args.forEach(function(arg) {
-      var value = arg;
+    it(" should be saved and reloaded", function() {
+      var value = new DB.Map(map);
       var expectedValue = new DB.Map(value);
+      obj[name] = value;
 
-      it(arg + " should be saved and reloaded", function() {
-        obj[name] = value;
-
-        return obj.save({refresh: true}).then(function() {
-          var map = obj[name];
-          expect(map.size).eql(expectedValue.size);
-          for (var iter = expectedValue.entries(), item; !(item = iter.next()).done;) {
-            expect(map.get(item.value[0])).eqls(item.value[1]);
-          }
-        });
+      return obj.save({refresh: true}).then(function() {
+        var map = obj[name];
+        expect(map.size).eql(expectedValue.size);
+        for (var iter = expectedValue.entries(), item; !(item = iter.next()).done;) {
+          expect(map.get(item.value[0])).eqls(item.value[1]);
+        }
       });
     });
   }
