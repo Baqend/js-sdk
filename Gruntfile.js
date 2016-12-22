@@ -191,15 +191,12 @@ module.exports = function (grunt) {
 
   grunt.registerTask('test', [
     'browserify:test',
-    'run:server',
 
     // don't fail task when a test failed
     'force:on',
     'karma:test',
     'mochaTest:test',
-    'force:restore',
-
-    'stop:server'
+    'force:restore'
   ]);
 
   grunt.registerTask('default', 'debug');

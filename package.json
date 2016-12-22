@@ -62,7 +62,6 @@
     "grunt-contrib-watch": "^1.0.0",
     "grunt-karma": "^2.0.0",
     "grunt-mocha-test": "^0.12.7",
-    "grunt-run": "^0.6.0",
     "grunt-template": "^1.0.0",
     "jquery": "^3.1.0",
     "jsdoc": "^3.4.0",
@@ -89,10 +88,9 @@
     "uglify-js": "^2.7.3"
   },
   "scripts": {
-    "test": "npm run test",
+    "test": "grunt --no-color test",
     "mocha": "grunt mochaTest:test",
     "karma": "karma start karma.conf.js",
-    "karma-ci": "karma start karma.ci.conf.js",
     "dist": "grunt dist && npm run typings && npm run jsdoc",
     "release": "node scripts/release",
     "typings": "npm run typings-generate && npm run typings-test",
