@@ -1008,10 +1008,11 @@ describe("Streaming Queries", function() {
   });
 
   describe('streamResult', function() {
-    var sub, result, expectedResult = [], offset = 5, limit = 10;
+    var sub, result, expectedResult = [], offset = 5, limit = 10, db2;
 
     before(function() {
       db = emf.createEntityManager();
+      db2 = emf.createEntityManager();
 
       var inserts = 'abcdefghijklmnopqrst'.split('').map(function(char) {
         return insert(new db[bucket]({
@@ -1313,6 +1314,53 @@ describe("Streaming Queries", function() {
       return expect(waitOn('all')).rejectedWith('timed out');
     });
 
+    it('should stream external inserted object', function() {
+      var obj = new db2[bucket]({
+        age: 49,
+        name: 'Inserted',
+        surname: result[4].surname + 'k'
+      });
+
+      obj.save();
+
+      return waitOn('add').then(function(result) {
+        expect(result[5].name).eql('Inserted');
+
+        expectedResult.push(db.getReference(obj.id));
+        sort();
+
+        expectResult(result);
+      });
+    });
+
+    it('should stream external updated object', function() {
+      db2[bucket].load(result[2].id).then(function(obj) {
+        obj.name = 'TestName';
+        return obj.save();
+      });
+
+      return waitOn('change').then(function(result) {
+        expect(result[2].name).eql('TestName');
+        expectResult(result);
+      });
+    });
+
+    it('should stream external deleted object', function() {
+      var droppedObj = result[2];
+
+      db2[bucket].load(droppedObj.id).then(function(obj) {
+        return obj.delete();
+      });
+
+      return waitOn('add').then(function(result) {
+        expect(result).not.include(droppedObj);
+        expect(db.contains(droppedObj)).be.false;
+
+        expectedResult.splice(expectedResult.indexOf(droppedObj), 1);
+        expectResult(result);
+      });
+    });
+
     function insert(obj) {
       return obj.insert().then(function() {
         if (obj.age == 49) {
@@ -1333,7 +1381,7 @@ describe("Streaming Queries", function() {
       }
       sort();
       return obj.update();
-    };
+    }
 
     function remove(obj) {
       return obj.delete().then(function() {
