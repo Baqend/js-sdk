@@ -13,6 +13,7 @@ describe("Guide Examples", function() {
   }
 
   var Stream = DB.query.Stream;
+  var tautology= { $or: [ { value: { $exists: true } }, { value: { $exists: false } } ] };
   var t = 400;
   var bucket = helper.randomize("Guide_StreamingQuery");
   var emf, metamodel, db, stream, subscription;
@@ -82,7 +83,7 @@ describe("Guide Examples", function() {
   it("should compute aggregate: count", function() {
     this.timeout(6000);
 
-    stream = db[bucket].find().stream();
+    stream = db[bucket].find().where(tautology).stream();
     var aggregate; // aggregate value goes here!
 
     var todo1, todo2, todo3;
@@ -125,7 +126,7 @@ describe("Guide Examples", function() {
   it("should compute aggregate: average activity number", function() {
     this.timeout(6000);
 
-    stream = db[bucket].find().stream();
+    stream = db[bucket].find().where(tautology).stream();
     var aggregate; // aggregate value goes here!
 
     var todo1, todo2, todo3;
@@ -342,7 +343,7 @@ describe("Guide Examples", function() {
     var counter = 0;
 
     // stream = db[bucket].find().sort({'name': 1, 'active': -1}).stream();
-    stream = db[bucket].find().sort({'name': 1, 'active': -1}).limit(5).stream();
+    stream = db[bucket].find().where(tautology).sort({'name': 1, 'active': -1}).limit(5).stream();
 
     subscription = stream.subscribe(function(value) {
       return counter++;

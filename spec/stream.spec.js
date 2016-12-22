@@ -13,6 +13,7 @@ describe("Streaming Queries", function() {
     return;
   }
 
+  var tautology= { $or: [ { value: { $exists: true } }, { value: { $exists: false } } ] };
   var Stream = DB.query.Stream;
   var t = 400;
   var bucket = helper.randomize("StreamingQueryPerson");
@@ -271,7 +272,7 @@ describe("Streaming Queries", function() {
 
     it("should return the initial result", function() {
       var received = [];
-      var query = db[bucket].find().limit(3);
+      var query = db[bucket].find().where(tautology).limit(3);
       stream = query.stream();
       subscription = stream.subscribe(function(e) {
         received.push(e);
@@ -292,7 +293,7 @@ describe("Streaming Queries", function() {
 
     it("should return updated object", function() {
       var result;
-      var query = db[bucket].find();
+      var query = db[bucket].find().where(tautology);
       stream = query.stream({initial: false, matchTypes: 'match'});
       subscription = stream.subscribe(function(e) {
         result = e;
@@ -604,13 +605,13 @@ describe("Streaming Queries", function() {
       this.timeout(6000);
       var franz, otherfranz;
 
-      stream = db[bucket].find().stream({initial: false, matchTypes: 'all'});
+      stream = db[bucket].find().where(tautology).stream({initial: false, matchTypes: 'all'});
       subscription = stream.subscribe(function(e) {
         franz = e.data;
       });
 
       var otherdb = emf.createEntityManager();
-      otherstream = otherdb[bucket].find().stream({initial: false, matchTypes: 'all'});
+      otherstream = otherdb[bucket].find().where(tautology).stream({initial: false, matchTypes: 'all'});
       othersubscription = otherstream.subscribe(function(e) {
         otherfranz = e.data;
       });
@@ -715,7 +716,7 @@ describe("Streaming Queries", function() {
       var insert = db[bucket].fromJSON(p3.toJSON(true));
       insert.name = "franz";
 
-      stream = db[bucket].find().stream({initial: false, matchTypes: 'match'});
+      stream = db[bucket].find().where(tautology).stream({initial: false, matchTypes: 'match'});
 
       var listener = function(e) {
         received.push(e);
@@ -754,7 +755,7 @@ describe("Streaming Queries", function() {
         completions++;
       };
 
-      stream = db[bucket].find().stream({initial: false, matchTypes: 'all'});
+      stream = db[bucket].find().where(tautology).stream({initial: false, matchTypes: 'all'});
 
       var subscription, insert;
 
@@ -805,8 +806,8 @@ describe("Streaming Queries", function() {
         next++;
       };
 
-      var stream1 = db[bucket].find().stream({initial: false, matchTypes: 'all'});
-      var stream2 = db[bucket].find().stream({initial: false, matchTypes: 'all'});
+      var stream1 = db[bucket].find().where(tautology).stream({initial: false, matchTypes: 'all'});
+      var stream2 = db[bucket].find().where(tautology).stream({initial: false, matchTypes: 'all'});
       var subscription1, subscription2, socket, insert;
 
       return db.entityManagerFactory.websocket.open().then(function(s) {
@@ -848,7 +849,7 @@ describe("Streaming Queries", function() {
       var listener = function(e) {
         expect(++calls).to.be.at.most(1);
       };
-      stream = db[bucket].find().stream({initial: false, matchTypes: 'match'});
+      stream = db[bucket].find().where(tautology).stream({initial: false, matchTypes: 'match'});
       subscription = stream.subscribe(listener);
 
       var insert;
@@ -917,7 +918,7 @@ describe("Streaming Queries", function() {
         var listener = function(e) {
           expect(++calls).to.be.at.most(1);
         };
-        stream = db[bucket].find().stream({initial: false, matchTypes: 'match'});
+        stream = db[bucket].find().where(tautology).stream({initial: false, matchTypes: 'match'});
         subscription = stream.first().subscribe(listener);
 
         var insert;
@@ -936,7 +937,7 @@ describe("Streaming Queries", function() {
       it("should compute aggregate: average", function() {
         this.timeout(6000);
 
-        var stream = db[bucket].find().stream({initial: false});
+        var stream = db[bucket].find().where(tautology).stream({initial: false});
 
         var initialAccumulator = {
           contributors: {}, // individual activity counts go here
@@ -1131,6 +1132,7 @@ describe("Streaming Queries", function() {
         expect(result[0]).equal(newObj);
         expect(result).not.include(obj);
         expectResult(result);
+        expect(obj.version).to.not.be.null;
       })
     });
 
