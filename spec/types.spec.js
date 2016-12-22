@@ -29,7 +29,7 @@ describe('Test entity type', function () {
   };
 
   Object.keys(types).forEach(function(name) {
-    const vals = types[name].values;
+    var vals = types[name].values;
     if (Array.isArray(vals)){
       types[name].values = function() {return vals;};
     }
