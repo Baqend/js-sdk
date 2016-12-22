@@ -396,6 +396,21 @@ describe('Test file', function() {
       });
     });
 
+    it('should maintain createdAt', function() {
+      var file = new rootDb.File({data: flames});
+      var creationDate;
+      return file.upload().then(function() {
+        creationDate = file.lastModified;
+        expect(file.createdAt).eql(creationDate);
+        return helper.sleep(2000);
+      }).then(function() {
+        return file.upload({data: dataSvg, type: 'data-url'});
+      }).then(function() {
+        expect(file.createdAt.getTime()).equal(creationDate.getTime());
+        expect(file.createdAt.getTime()).not.equal(file.lastModified.getTime());
+      });
+    });
+
     it('should denied for anonymous', function() {
       var file;
       return expect(emf.createEntityManager().ready().then(function(db) {
@@ -565,6 +580,20 @@ describe('Test file', function() {
       ]);
     });
 
+    it('should load createdAt', function() {
+      var file = new rootDb.File({data: flames});
+      var creationDate;
+      var loadedFile;
+      return file.upload().then(function() {
+        creationDate = file.lastModified;
+        expect(file.createdAt.getTime()).equal(creationDate.getTime());
+        loadedFile = new rootDb.File(file.id);
+        return loadedFile.download();
+      }).then(function() {
+        expect(loadedFile.createdAt.getTime()).equal(creationDate.getTime());
+      });
+    });
+
     it('should stored under specified name', function() {
       var file = new rootDb.File(pngFile.id);
       return file.download().then(function(data) {
@@ -698,6 +727,8 @@ describe('Test file', function() {
         expect(file.eTag).eql(pngFile.eTag);
         expect(file.lastModified).gt(new Date(Date.now() - 5 * 60 * 1000));
         expect(file.lastModified).lt(new Date(Date.now() + 5 * 60 * 1000));
+        expect(file.createdAt).gt(new Date(Date.now() - 5 * 60 * 1000));
+        expect(file.createdAt).lt(new Date(Date.now() + 5 * 60 * 1000));
         expect(file.mimeType).eql('image/png');
         expect(file.size).eql(pngFile.size);
         expect(file.acl.isPublicReadAllowed()).be.true;
@@ -712,6 +743,8 @@ describe('Test file', function() {
         expect(file.eTag).eql(jsonFile.eTag);
         expect(file.lastModified).gt(new Date(Date.now() - 5 * 60 * 1000));
         expect(file.lastModified).lt(new Date(Date.now() + 5 * 60 * 1000));
+        expect(file.createdAt).gt(new Date(Date.now() - 5 * 60 * 1000));
+        expect(file.createdAt).lt(new Date(Date.now() + 5 * 60 * 1000));
         expect(file.mimeType).eql('application/json; charset=UTF-8');
         expect(file.size).eql(jsonFile.size);
         expect(file.acl.isPublicReadAllowed()).be.true;
@@ -724,13 +757,19 @@ describe('Test file', function() {
           .allowReadAccess(rootDb.User.me)
           .allowWriteAccess(rootDb.User.me);
       var file = new rootDb.File(pngFile.id);
+      var creationDate;
 
       return file.loadMetadata().then(function() {
+        creationDate = file.createdAt;
         file.acl.allowReadAccess(rootDb.User.me)
             .allowWriteAccess(rootDb.User.me);
+        return helper.sleep(2000);
+      }).then(function() {
         return file.saveMetadata();
       }).then(function() {
         expect(file.acl).eql(testAcls);
+        expect(file.createdAt.getTime()).equal(creationDate.getTime());
+        expect(file.createdAt.getTime()).not.equal(file.lastModified.getTime());
       });
     });
 

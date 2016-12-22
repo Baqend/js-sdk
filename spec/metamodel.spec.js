@@ -22,6 +22,7 @@ describe("Test metamodel classes", function () {
       expect(metamodel.baseType(DB.metamodel.BasicType.Integer.ref)).equals(DB.metamodel.BasicType.Integer);
       expect(metamodel.baseType(DB.metamodel.BasicType.String.ref)).equals(DB.metamodel.BasicType.String);
       expect(metamodel.baseType(DB.metamodel.BasicType.Time.ref)).equals(DB.metamodel.BasicType.Time);
+      expect(metamodel.baseType(DB.metamodel.BasicType.File.ref)).equals(DB.metamodel.BasicType.File);
       expect(metamodel.baseType(DB.metamodel.BasicType.GeoPoint.ref)).equals(DB.metamodel.BasicType.GeoPoint);
       expect(metamodel.baseType(DB.metamodel.BasicType.JsonArray.ref)).equals(DB.metamodel.BasicType.JsonArray);
       expect(metamodel.baseType(DB.metamodel.BasicType.JsonObject.ref)).equals(DB.metamodel.BasicType.JsonObject);
@@ -342,6 +343,7 @@ describe("Test metamodel classes", function () {
       expect(metamodel.baseType('Integer')).equals(DB.metamodel.BasicType.Integer);
       expect(metamodel.baseType('String')).equals(DB.metamodel.BasicType.String);
       expect(metamodel.baseType('Time')).equals(DB.metamodel.BasicType.Time);
+      expect(metamodel.baseType('File')).equals(DB.metamodel.BasicType.File);
       expect(metamodel.baseType('GeoPoint')).equals(DB.metamodel.BasicType.GeoPoint);
       expect(metamodel.baseType('JsonArray')).equals(DB.metamodel.BasicType.JsonArray);
       expect(metamodel.baseType('JsonObject')).equals(DB.metamodel.BasicType.JsonObject);

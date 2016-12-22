@@ -1,3 +1,16 @@
+<a name="v2.4.3"></a>
+# v2.4.3 (2016-11-28)
+
+
+### Bug Fixes
+
+* Fix change tracking of collections not working properly in some cases
+* Fix OAuth handling is sometimes broken in IE 11 when used via iframe
+
+### Features
+
+* Add `eq` and `ne` as new aliases for `equal` and `notEqual`
+
 <a name="v2.4.2"></a>
 # v2.4.2 (2016-11-9)
 

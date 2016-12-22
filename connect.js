@@ -10,15 +10,7 @@ function send(event) {
   msg.source = event.source;
 
   if (msg.method == 'OAUTH') {
-    addEventListener("storage", function handle(event) {
-      if (event.key == 'oauth-response') {
-        var response = JSON.parse(event.newValue);
-        receive(msg, response.status, response.headers, response.entity);
-        localStorage.removeItem('oauth-response');
-        removeEventListener("storage", handle, false);
-      }
-    }, false);
-    return;
+    return handleOAuth(msg);
   }
 
   var node = msg.method == 'GET' && document.getElementById(msg.path);
@@ -73,4 +65,34 @@ function getHeaders(node) {
   if (token)
     headers['baqend-authorization-token'] = token;
   return headers;
+}
+
+var oAuthHandle, oAuthInterval;
+function handleOAuth(msg) {
+  if (oAuthHandle)
+    oAuthHandle(409, {}, '{"message": "A new OAuth request was sent."}');
+
+  localStorage.removeItem('oauth-response');
+
+  var handler = function(event) {
+    if (event.key == 'oauth-response') {
+      var response = JSON.parse(event.newValue);
+      oAuthHandle(response.status, response.headers, response.entity);
+    }
+  };
+
+  oAuthHandle = function(status, headers, entity) {
+    receive(msg, status, headers, entity);
+    localStorage.removeItem('oauth-response');
+    removeEventListener("storage", handler, false);
+    clearTimeout(oAuthInterval);
+  };
+
+  addEventListener("storage", handler, false);
+  oAuthInterval = setInterval(function() {
+    var item = localStorage.getItem('oauth-response');
+    if (item) {
+      handler({key: 'oauth-response', newValue: item})
+    }
+  }, 500);
 }
