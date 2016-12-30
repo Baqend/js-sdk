@@ -9,6 +9,8 @@ var lib = require('../../lib');
 class Stream {
 
   /**
+   * Creates a live updating object stream for a query
+   * @alias query.Stream.createStream<T>
    * @param {EntityManager} entityManager The owning entity manager of this query
    * @param {string} query The query options
    * @param {string} query.query The serialized query
@@ -19,6 +21,7 @@ class Stream {
    * @param {boolean=} query.initial Indicates if the initial result should be returned
    * @param {Object} options an object containing parameters
    * @param {query.Node<T>} target the target of the stream
+   * @return {Observable<T>} The query result as a live updating stream of objects
    */
   static createStream(entityManager, query, options, target) {
     return Stream.streamObservable(entityManager, query, options, (msg, next) => {
@@ -50,6 +53,8 @@ class Stream {
   }
 
   /**
+   * Creates a live updating result stream for a query
+   * @alias query.Stream.createStreamResult<T>
    * @param {EntityManager} entityManager The owning entity manager of this query
    * @param {string} query The query options
    * @param {string} query.query The serialized query
@@ -58,6 +63,7 @@ class Stream {
    * @param {number=} query.limit the count, i.e. the number of items in the result
    * @param {number=} query.offset offset, i.e. the number of items to skip
    * @param {Object} options an object containing parameters
+   * @return {Observable<Array<T>>} The query result as a live updating query result
    */
   static createStreamResult(entityManager, query, options) {
     options = options || {};

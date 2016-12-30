@@ -90,7 +90,7 @@ class WebSocketConnector {
 
   /**
    * @param {util.TokenStorage} tokenStorage
-   * @return ObservableStream<ChannelMessage> The channel fore sending and receiving messages
+   * @return {connector.ObservableStream} The channel for sending and receiving messages
    */
   openStream(tokenStorage) {
     let id = util.uuid();
