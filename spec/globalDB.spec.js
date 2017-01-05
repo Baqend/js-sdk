@@ -4,20 +4,16 @@ if (typeof module != 'undefined') {
   DB = require('../lib');
 }
 
+before(function() {
+  return DB.connect(env.TEST_SERVER).then(function(localDb) {
+    expect(localDb).equal(DB);
+  });
+});
+
 describe('Test Global DB', function() {
-  before(function() {
+  it('should export global DB', function() {
     expect(DB).be.ok;
     expect(DB).instanceof(DB.EntityManager);
-
-    if (DB.isReady) {
-      expect(function() {
-        DB.connect(env.TEST_SERVER);
-      }).throw(Error);
-    } else {
-      return DB.connect(env.TEST_SERVER).then(function(localDb) {
-        expect(localDb).equal(DB);
-      });
-    }
   });
 
   it('should allow to add an callback to global DB object', function() {

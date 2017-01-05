@@ -107,7 +107,7 @@ describe("Streaming Queries", function() {
     });
   });
 
-  it("should return the initial result", function() {
+  xit("should return the initial result", function() {
     var received = [];
     var query = db[bucket].find().limit(3);
     stream = query.stream();
@@ -128,7 +128,7 @@ describe("Streaming Queries", function() {
     });
   });
 
-  it("should return updated object", function() {
+  xit("should return updated object", function() {
     var result;
     var query = db[bucket].find();
     stream = query.stream({initial: false, matchTypes: 'match'});
@@ -937,7 +937,7 @@ describe("Streaming Queries", function() {
     });
   });
 
-  it("should compute aggregate: average", function() {
+  xit("should compute aggregate: average", function() {
     this.timeout(6000);
 
     var stream = db[bucket].find().stream({initial: false});

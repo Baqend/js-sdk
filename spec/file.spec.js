@@ -5,8 +5,8 @@ if (typeof module != 'undefined') {
 }
 
 describe('Test file', function() {
-  //skip IE9
-  if (typeof Blob == 'undefined' && typeof Buffer == 'undefined')
+  //skip IE9 and IE11 multiple file uploads in one session crashes the ie
+  if (typeof Blob == 'undefined' && typeof Buffer == 'undefined' || helper.isIE11)
     return;
 
   this.timeout(20 * 1000);
@@ -402,7 +402,7 @@ describe('Test file', function() {
       return file.upload().then(function() {
         creationDate = file.lastModified;
         expect(file.createdAt).eql(creationDate);
-        return new Promise(resolve => setTimeout(resolve, 2000));
+        return helper.sleep(2000);
       }).then(function() {
         return file.upload({data: dataSvg, type: 'data-url'});
       }).then(function() {
@@ -763,7 +763,7 @@ describe('Test file', function() {
         creationDate = file.createdAt;
         file.acl.allowReadAccess(rootDb.User.me)
             .allowWriteAccess(rootDb.User.me);
-        return new Promise(resolve => setTimeout(resolve, 2000));
+        return helper.sleep(2000);
       }).then(function() {
         return file.saveMetadata();
       }).then(function() {
