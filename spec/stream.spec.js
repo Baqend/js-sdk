@@ -1391,7 +1391,7 @@ describe("Streaming Queries", function() {
 
     function expectResult(result) {
       var expected = expectedResult.slice(offset, offset + limit);
-      expected.forEach((obj, index) => {
+      expected.forEach(function(obj, index) {
         expect(result[index], "Object at " + index + " is not equal").equal(obj);
       });
     }
