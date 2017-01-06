@@ -1,3 +1,19 @@
+<a name="v2.5.0"></a>
+# v2.5.0 (2017-1-6)
+
+
+### Bug Fixes
+
+* API documentation and typing fixes
+* Replace deprecated node-uuid with uuid module 
+
+### Features
+
+* Add File as a new type in the schema
+* Introduce File#createdAt for files
+* Add db.User.loginWithToken to allow token based logins, when the token is provided externally
+* Add support for external OAuth login, useful for logins within native and hybrid Apps
+
 <a name="v2.4.3"></a>
 # v2.4.3 (2016-11-28)
 
