@@ -120,7 +120,7 @@ function uploadFiles(db, files, cwd) {
   let index = 0;
 
   let uploads = [];
-  for (let i = 0; i < 10 && i < files.length-1; ++i) {
+  for (let i = 0; i < 10 && i < files.length; ++i) {
     uploads.push(upload());
   }
 
