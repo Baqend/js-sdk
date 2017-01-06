@@ -8,7 +8,12 @@ module.exports = function (grunt) {
 
   var browserifyOptions = {
     builtins: [],
-    detectGlobals: false,
+    insertGlobalVars: {
+      Buffer: undefined,
+      __filename: undefined,
+      __dirname: undefined,
+      process: undefined
+    },
     standalone: "DB"
   };
 

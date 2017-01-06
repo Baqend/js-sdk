@@ -11,8 +11,8 @@
 * core.js - https://github.com/zloirock/core-js
 * Copyright (c) 2014-2016 Denis Pushkarev
 *
-* node-uuid - http://github.com/broofa/node-uuid
-* Copyright (c) 2010-2012 Robert Kieffer
+* uuid - http://github.com/broofa/node-uuid
+* Copyright (c) 2010-2016 Robert Kieffer and other contributors
 *
 * validator - http://github.com/chriso/validator.js
 * Copyright (c) 2015 Chris O'Hara <cohara87@gmail.com>
