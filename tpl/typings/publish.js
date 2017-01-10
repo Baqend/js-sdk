@@ -7,7 +7,6 @@ const rootNs = {
   longname: '',
   prefix: '',
   namespaces: {},
-  imports: [],
   body: []
 };
 
@@ -33,7 +32,6 @@ function getNamespaceOf(longname) {
       longname: (parentNamespace.lognname? parentNamespace + '.': '') + name,
       prefix: parentNamespace.prefix + '  ',
       namespaces: {},
-      imports: [],
       body: []
     };
   }
@@ -99,10 +97,6 @@ function createNs(data, namespace) {
   let lines = [];
   let prefix = namespace.prefix;
 
-  if (namespace.imports.length) {
-    push(lines, namespace.imports.map((imp => namespace.prefix + imp)));
-  }
-
   push(lines, namespace.body);
 
   Object.keys(namespace.namespaces).forEach((k) => {
@@ -141,16 +135,16 @@ function createClass(data, cls, ns) {
     if (isInterface) {
       classLine += ' extends ';
       classLine += [].concat(
-        (cls.augments || []).map(augment => importCls(ns, cls, augment)),
-        (cls.implements || []).map(iface => importCls(ns, cls, iface))
+        (cls.augments || []),
+        (cls.implements || [])
       ).join(', ');
     } else {
       if (cls.augments) {
-        classLine += ' extends ' + importCls(ns, cls, cls.augments[0]);
+        classLine += ' extends ' + cls.augments[0];
       }
 
       if (cls.implements) {
-        classLine += ' implements ' + cls.implements.map(iface => importCls(ns, cls, iface)).join(', ');
+        classLine += ' implements ' + cls.implements.join(', ');
       }
     }
   }
@@ -175,27 +169,6 @@ function createClass(data, cls, ns) {
 
   lines.push(ns.prefix + '}');
   return lines;
-}
-
-function importCls(ns, cls, parent) {
-  let generics = '';
-  let genericIndex = parent.indexOf('<');
-  if (genericIndex != -1) {
-    generics = parent.substring(genericIndex);
-    parent = parent.substring(0, genericIndex);
-  }
-
-  let extd = parent;
-  let parentNameSpace = getNamespaceOf(parent);
-
-  extd = extd.substring(extd.lastIndexOf('.') + 1); // split out namespace
-  if (parentNameSpace != ns && !cls.longname.startsWith(parentNameSpace.longname)) {
-    let importLine = 'import ' + extd + ' = ' + parent + ';';
-    if (ns.imports.indexOf(importLine) == -1)
-      ns.imports.push(importLine);
-  }
-
-  return extd + generics;
 }
 
 function createMembers(data, prefix, fullClassName, exportIt) {
