@@ -270,7 +270,7 @@ describe("Streaming Queries", function() {
       });
     });
 
-    it("should return the initial result", function() {
+    it("should return the initial result", function() {//TODO broken!
       var received = [];
       var query = db[bucket].find().where(tautology).limit(3);
       stream = query.stream();
@@ -291,7 +291,7 @@ describe("Streaming Queries", function() {
       });
     });
 
-    it("should return updated object", function() {
+    it("should return updated object", function() {//TODO broken!
       var result;
       var query = db[bucket].find().where(tautology);
       stream = query.stream({initial: false, matchTypes: 'match'});
@@ -934,7 +934,7 @@ describe("Streaming Queries", function() {
         });
       });
 
-      it("should compute aggregate: average", function() {
+      it("should compute aggregate: average", function() {//TODO broken!
         this.timeout(6000);
 
         var stream = db[bucket].find().where(tautology).stream({initial: false});

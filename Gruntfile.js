@@ -8,7 +8,12 @@ module.exports = function (grunt) {
 
   var browserifyOptions = {
     builtins: [],
-    detectGlobals: false,
+    insertGlobalVars: {
+      Buffer: undefined,
+      __filename: undefined,
+      __dirname: undefined,
+      process: undefined
+    },
     standalone: "DB"
   };
 
@@ -90,18 +95,6 @@ module.exports = function (grunt) {
       }
     },
 
-    run: {
-      server: {
-        cmd: process.platform === "win32"? "bin\\baqend.bat": "bin/baqend",
-        args: ["--config", "config.json"],
-        options: {
-          cwd: "build/baqend",
-          wait: false,
-          ready: 30000
-        }
-      }
-    },
-
     clean: {
       dist: {
         src: [
@@ -175,7 +168,6 @@ module.exports = function (grunt) {
   grunt.loadNpmTasks('grunt-template');
   grunt.loadNpmTasks('grunt-karma');
   grunt.loadNpmTasks('grunt-mocha-test');
-  grunt.loadNpmTasks('grunt-run');
 
   grunt.registerTask('debug', [
     'template:debug',

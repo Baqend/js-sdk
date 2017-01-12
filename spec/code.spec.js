@@ -392,7 +392,7 @@ describe('Test code', function() {
       });
     });
 
-    if (typeof Blob != "undefined") {
+    if (typeof Blob != "undefined" && !helper.isIE11) {
       it('should accept blob parameter', function() {
         var asset;
 

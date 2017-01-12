@@ -5,8 +5,8 @@ if (typeof module != 'undefined') {
 }
 
 describe('Test file', function() {
-  //skip IE9
-  if (typeof Blob == 'undefined' && typeof Buffer == 'undefined')
+  //skip IE9 and IE11 multiple file uploads in one session crashes the ie
+  if (typeof Blob == 'undefined' && typeof Buffer == 'undefined' || helper.isIE11)
     return;
 
   this.timeout(20 * 1000);

@@ -5,13 +5,15 @@ if (typeof module != 'undefined') {
 }
 
 describe('Test crud', function() {
-  var db, db2, personType, addressType, childType, emf, metamodel, streetType;
+  var db, db2, deviceType, personType, addressType, childType, emf, metamodel, streetType;
 
   before(function() {
     emf = new DB.EntityManagerFactory({host: env.TEST_SERVER, tokenStorage: helper.rootTokenStorage});
     metamodel = emf.metamodel;
 
     return emf.ready().then(function() {
+      deviceType = metamodel.entity("Device");
+
       if (!metamodel.entity("Person")) {
         metamodel.addType(personType = new DB.metamodel.EntityType("Person", metamodel.entity(Object)));
         metamodel.addType(childType = new DB.metamodel.EntityType("Child", personType));
@@ -79,13 +81,6 @@ describe('Test crud', function() {
   });
 
   describe('attach', function() {
-    before(function() {
-      if (!DB.isReady) {
-        DB.staleness = 0; //ensure a fresh schema
-        return DB.connect(env.TEST_SERVER);
-      }
-    });
-
     it('should implicit attach object to db', function() {
       var obj = new db.Person();
 
@@ -121,7 +116,8 @@ describe('Test crud', function() {
     });
 
     it('should attach implicit attached objects to same db', function() {
-      var obj = personType.create();
+      //use user type since the global db may not know our created person schema
+      var obj = deviceType.create();
       expect(obj._metadata.db).equals(DB);
       expect(DB.contains(obj)).be.false;
 
@@ -132,7 +128,8 @@ describe('Test crud', function() {
     });
 
     it('should not reattach implicit attached objects to another db', function() {
-      var obj = personType.create();
+      //use user type since the global db may not know our created person schema
+      var obj = deviceType.create();
       expect(obj._metadata.db).equals(DB);
 
       expect(function() {

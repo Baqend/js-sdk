@@ -107,6 +107,7 @@ var helper = {
   isNode: typeof window == 'undefined',
   isPhantomJS: typeof navigator != 'undefined' && navigator.userAgent.indexOf('PhantomJS') != -1,
   isIE: typeof navigator != 'undefined' && navigator.userAgent.indexOf('Trident') != -1,
+  isIE11: typeof navigator != 'undefined' && navigator.userAgent.indexOf('Trident/7.0') != -1,
   isIEdge: typeof navigator != 'undefined' && navigator.userAgent.indexOf('Edge') != -1
 };
 
