@@ -937,8 +937,7 @@ describe("Streaming Queries", function() {
       it("should compute aggregate: average", function() {//TODO broken!
         this.timeout(6000);
 
-        var stream = db[bucket].find().where(tautology).stream({initial: false});
-
+        stream = db[bucket].find().where(tautology).stream({initial: false});
         var initialAccumulator = {
           contributors: {}, // individual activity counts go here
           count: 0, // result set cardinality
