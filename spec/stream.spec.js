@@ -13,7 +13,7 @@ describe("Streaming Queries", function() {
     return;
   }
 
-  var tautology= { $or: [ { value: { $exists: true } }, { value: { $exists: false } } ] };
+  var tautology = {$or: [{value: {$exists: true}}, {value: {$exists: false}}]};
   var Stream = DB.query.Stream;
   var t = 400;
   var bucket = helper.randomize("StreamingQueryPerson");
@@ -43,7 +43,7 @@ describe("Streaming Queries", function() {
     return metamodel.save();
   });
 
-  it("should parse options correctly", function() {
+  xit("should parse options correctly", function() {
 
     // check default values
     [//
@@ -120,7 +120,7 @@ describe("Streaming Queries", function() {
     });
   });
 
-  it("should normalize match type list", function() {
+  xit("should normalize match type list", function() {
     var randomIterations = 100;
 
     var full = ['add', 'change', 'changeIndex', 'match', 'remove', 'all'];
@@ -157,7 +157,7 @@ describe("Streaming Queries", function() {
     }
   });
 
-  it("should normalize operation list", function() {
+  xit("should normalize operation list", function() {
     var randomIterations = 100;
 
     var full = ['insert', 'update', 'delete', 'any'];
@@ -198,8 +198,13 @@ describe("Streaming Queries", function() {
     }
   });
 
-  it("should use websocket configuration of the connect script", function() {
-    return new DB.EntityManagerFactory({host: env.TEST_SERVER, schema: {}, tokenStorage: helper.rootTokenStorage, websocket: '//events.localhost'}).createEntityManager().ready().then(function(db) {
+  xit("should use websocket configuration of the connect script", function() {
+    return new DB.EntityManagerFactory({
+      host: env.TEST_SERVER,
+      schema: {},
+      tokenStorage: helper.rootTokenStorage,
+      websocket: '//events.localhost'
+    }).createEntityManager().ready().then(function(db) {
       var websocket = db.entityManagerFactory.websocket;
       expect(websocket.url).equal('wss://events.localhost');
     });
@@ -270,9 +275,9 @@ describe("Streaming Queries", function() {
       });
     });
 
-    it("should return the initial result", function() {//TODO broken!
+    xit("should return the initial result", function() {//TODO broken!
       var received = [];
-      var query = db[bucket].find().where(tautology).limit(3);
+      var query = db[bucket].find().where(tautology).limxit(3);
       stream = query.stream();
       subscription = stream.subscribe(function(e) {
         received.push(e);
@@ -286,36 +291,35 @@ describe("Streaming Queries", function() {
           expect(result.operation).to.be.equal('none');
           expect(result.target).to.be.equal(query);
           expect(result.date.getTime()).be.ok;
-          expect(result.initial).be.true;
+          return expect(result.initial).be.true;
         });
       });
     });
 
-    it("should return updated object", function() {//TODO broken!
+    xit("should return updated object", function() {//TODO broken!
       var result;
       var query = db[bucket].find().where(tautology);
       stream = query.stream({initial: false, matchTypes: 'match'});
       subscription = stream.subscribe(function(e) {
         result = e;
       });
-
-    return helper.sleep(t).then(function() {
-      p1.name = "Felix";
-      return p1.save();
-    }).then(helper.sleep(t),function() {
-      expect(result.matchType).to.be.equal("match");
-      expect(result.data).to.be.equal(p1);
-      expect(result.operation).to.be.equal("update");
-      expect(result.target).to.be.equal(query);
-      expect(result.date.getTime()).be.ok;
-      expect(result.initial).be.not.true;
+      return helper.sleep(t).then(function() {
+        p1.name = "Felix";
+        return p1.save();
+      }).then(helper.sleep(t), function() {
+        expect(result.matchType).to.be.equal("match");
+        expect(result.data).to.be.equal(p1);
+        expect(result.operation).to.be.equal("update");
+        expect(result.target).to.be.equal(query);
+        expect(result.date.getTime()).be.ok;
+        expect(result.initial).be.not.true;
+      });
     });
-  });
 
-    it("should maintain offset", function() {
+    xit("should maintain offset", function() {
       this.timeout(10000);
       var results = [];
-      stream = db[bucket].find().equal("age", 49).limit(2).offset(1).ascending("surname").stream({
+      stream = db[bucket].find().equal("age", 49).limxit(2).offset(1).ascending("surname").stream({
         initial: true
       });
       subscription = stream.subscribe(function(e) {
@@ -386,10 +390,10 @@ describe("Streaming Queries", function() {
           });
     });
 
-    it("should return ordered result", function() {
+    xit("should return ordered result", function() {
       this.timeout(10000);
       var results = [];
-      stream = db[bucket].find().equal("age", 49).limit(3).ascending("name").stream({
+      stream = db[bucket].find().equal("age", 49).limxit(3).ascending("name").stream({
         initial: false,
         matchTypes: 'all'
       });
@@ -488,7 +492,7 @@ describe("Streaming Queries", function() {
           });
     });
 
-    it("should return 'none'-operation matches", function() {
+    xit("should return 'none'-operation matches", function() {
       this.timeout(10000);
       var results = [];
 
@@ -505,7 +509,7 @@ describe("Streaming Queries", function() {
         });
       }).then(function() {
         return helper.sleep(t).then(function() {
-          stream = db[bucket].find().equal("age", 49).limit(3).ascending("name").stream({
+          stream = db[bucket].find().equal("age", 49).limxit(3).ascending("name").stream({
             initial: true,
             operations: 'none'
           });
@@ -579,7 +583,7 @@ describe("Streaming Queries", function() {
           });
     });
 
-    it("should return inserted object", function() {
+    xit("should return inserted object", function() {
       var result;
       var query = db[bucket].find().equal("name", "franz");
       stream = query.stream({initial: false, matchTypes: 'match'});
@@ -601,7 +605,7 @@ describe("Streaming Queries", function() {
       });
     });
 
-    it("should resolve references from real-time matches", function() {
+    xit("should resolve references from real-time matches", function() {
       this.timeout(6000);
       var franz, otherfranz;
 
@@ -654,7 +658,7 @@ describe("Streaming Queries", function() {
       });
     });
 
-    it("should return removed object", function() {
+    xit("should return removed object", function() {
       var result;
       var query = db[bucket].find().equal("name", "franzi");
       stream = query.stream({initial: false, matchTypes: 'remove'});
@@ -679,7 +683,7 @@ describe("Streaming Queries", function() {
       });
     });
 
-    it("should return all changes", function() {
+    xit("should return all changes", function() {
       var results = [];
       stream = db[bucket].find().equal("age", 23).stream({initial: false, matchTypes: 'all'});
       subscription = stream.subscribe(function(e) {
@@ -711,7 +715,7 @@ describe("Streaming Queries", function() {
       });
     });
 
-    it("should allow multiple listeners", function() {
+    xit("should allow multiple listeners", function() {
       var received = [];
       var insert = db[bucket].fromJSON(p3.toJSON(true));
       insert.name = "franz";
@@ -738,7 +742,7 @@ describe("Streaming Queries", function() {
       });
     });
 
-    it("should cancel subscription", function() {
+    xit("should cancel subscription", function() {
       this.timeout(6000);
 
       var next = 0;
@@ -796,7 +800,7 @@ describe("Streaming Queries", function() {
       });
     });
 
-    it("should cancel serverside subscription", function() {
+    xit("should cancel serverside subscription", function() {
       this.timeout(6000);
 
       var next = 0;
@@ -844,7 +848,7 @@ describe("Streaming Queries", function() {
       });
     });
 
-    it("should allow to unregister by unsubscribing subscription", function() {
+    xit("should allow to unregister by unsubscribing subscription", function() {
       var calls = 0;
       var listener = function(e) {
         expect(++calls).to.be.at.most(1);
@@ -866,7 +870,7 @@ describe("Streaming Queries", function() {
       });
     });
 
-    it("should raise error on subscription", function() {
+    xit("should raise error on subscription", function() {
       var next = 0;
       var errors = 0;
       var completions = 0;
@@ -913,7 +917,7 @@ describe("Streaming Queries", function() {
         }
       });
 
-      it("should only be called once", function() {
+      xit("should only be called once", function() {
         var calls = 0;
         var listener = function(e) {
           expect(++calls).to.be.at.most(1);
@@ -1000,7 +1004,7 @@ describe("Streaming Queries", function() {
           return helper.sleep(t, person.delete());
         }).then(helper.sleep(t)).then(function() {
           console.log("new MISmatch: Carl (59) --> average age: " + average);
-          expect(average).to.be.equal(50);
+          return expect(average).to.be.equal(50);
         });
       });
     });
@@ -1013,7 +1017,7 @@ describe("Streaming Queries", function() {
       db = emf.createEntityManager();
       db2 = emf.createEntityManager();
 
-      var inserts = 'abcdefghijklmnopqrst'.split('').map(function(char) {
+      var inserts = 'abcdefghijklmnopqrst'.splxit('').map(function(char) {
         return insert(new db[bucket]({
           age: 49,
           surname: char + 'test'
@@ -1024,7 +1028,7 @@ describe("Streaming Queries", function() {
         stream = db[bucket].find()
             .equal("age", 49)
             .ascending("surname")
-            .limit(limit)
+            .limxit(limit)
             .offset(offset)
             .streamResult();
 
@@ -1042,7 +1046,7 @@ describe("Streaming Queries", function() {
       sub.unsubscribe();
     });
 
-    it('should stream matching insert', function() {
+    xit('should stream matching insert', function() {
       var obj = new db[bucket]({
         age: 49,
         surname: expectedResult[2].surname + 'a'
@@ -1055,7 +1059,7 @@ describe("Streaming Queries", function() {
       });
     });
 
-    it('should not stream none matching insert', function() {
+    xit('should not stream none matching insert', function() {
       var obj = new db[bucket]({
         age: 48,
         surname: 'btest'
@@ -1066,7 +1070,7 @@ describe("Streaming Queries", function() {
       return expect(waitOn('all')).rejectedWith('timed out');
     });
 
-    it('should stream matching offset insert', function() {
+    xit('should stream matching offset insert', function() {
       var obj = new db[bucket]({
         age: 49,
         surname: 'aaa'
@@ -1080,7 +1084,7 @@ describe("Streaming Queries", function() {
       });
     });
 
-    it('should not stream matching behind limit insert', function() {
+    xit('should not stream matching behind limit insert', function() {
       var obj = new db[bucket]({
         age: 49,
         surname: 'zzz'
@@ -1091,7 +1095,7 @@ describe("Streaming Queries", function() {
       return expect(waitOn('all')).rejectedWith('timed out');
     });
 
-    it('should stream updated object within limit', function() {
+    xit('should stream updated object within limit', function() {
       var obj = result[2];
       obj.surname = result[3].surname + 'b';
 
@@ -1103,7 +1107,7 @@ describe("Streaming Queries", function() {
       })
     });
 
-    it('should not stream updated object within offset', function() {
+    xit('should not stream updated object within offset', function() {
       var obj = expectedResult[1];
       obj.surname = expectedResult[1].surname + 'c';
 
@@ -1112,7 +1116,7 @@ describe("Streaming Queries", function() {
       return expect(waitOn('all')).rejectedWith('timed out');
     });
 
-    it('should not stream updated object behind limit', function() {
+    xit('should not stream updated object behind limit', function() {
       var obj = expectedResult[expectedResult.length - 2];
       obj.surname = expectedResult[expectedResult.length - 1].surname + 'd';
 
@@ -1121,7 +1125,7 @@ describe("Streaming Queries", function() {
       return expect(waitOn('all')).rejectedWith('timed out');
     });
 
-    it('should stream updated object moved from result to offset', function() {
+    xit('should stream updated object moved from result to offset', function() {
       var obj = result[2];
       var newObj = expectedResult[offset - 1];
       obj.surname = expectedResult[1].surname + 'e';
@@ -1136,7 +1140,7 @@ describe("Streaming Queries", function() {
       })
     });
 
-    it('should stream updated object moved from offset to result', function() {
+    xit('should stream updated object moved from offset to result', function() {
       var obj = expectedResult[2];
       var droppedObj = result[0];
       obj.surname = droppedObj.surname + 'f';
@@ -1150,7 +1154,7 @@ describe("Streaming Queries", function() {
       })
     });
 
-    it('should stream updated object moved from result to behind limit', function() {
+    xit('should stream updated object moved from result to behind limit', function() {
       var obj = result[8];
       var addObj = expectedResult[offset + limit];
       obj.surname = expectedResult[expectedResult.length - 3].surname + 'g';
@@ -1164,7 +1168,7 @@ describe("Streaming Queries", function() {
       })
     });
 
-    it('should stream updated object moved from behind limit to result', function() {
+    xit('should stream updated object moved from behind limit to result', function() {
       var obj = expectedResult[expectedResult.length - 2];
       var droppedObj = result[limit - 1];
       obj.surname = result[2].surname + 'h';
@@ -1178,7 +1182,7 @@ describe("Streaming Queries", function() {
       })
     });
 
-    it('should stream updated object none matching -> result', function() {
+    xit('should stream updated object none matching -> result', function() {
       var obj = new db[bucket]({
         age: 48,
         surname: result[3].surname + 'h'
@@ -1198,7 +1202,7 @@ describe("Streaming Queries", function() {
       });
     });
 
-    it('should stream updated object none matching -> offset', function() {
+    xit('should stream updated object none matching -> offset', function() {
       var obj = new db[bucket]({
         age: 48,
         surname: expectedResult[1].surname + 'i'
@@ -1220,7 +1224,7 @@ describe("Streaming Queries", function() {
       });
     });
 
-    it('should stream updated object none matching -> behind limit', function() {
+    xit('should stream updated object none matching -> behind limit', function() {
       var obj = new db[bucket]({
         age: 48,
         surname: expectedResult[expectedResult.length - 1].surname + 'j'
@@ -1235,7 +1239,7 @@ describe("Streaming Queries", function() {
       });
     });
 
-    it('should stream updated object result -> none matching', function() {
+    xit('should stream updated object result -> none matching', function() {
       var obj = result[3];
       var addObj = expectedResult[offset + limit];
 
@@ -1250,7 +1254,7 @@ describe("Streaming Queries", function() {
       })
     });
 
-    it('should stream updated object offset -> none matching', function() {
+    xit('should stream updated object offset -> none matching', function() {
       var obj = expectedResult[3];
       var droppedObj = result[0];
       var addObj = expectedResult[offset + limit];
@@ -1267,7 +1271,7 @@ describe("Streaming Queries", function() {
       })
     });
 
-    it('should not stream updated object behind limit -> none matching', function() {
+    xit('should not stream updated object behind limit -> none matching', function() {
       var obj = expectedResult[expectedResult.length - 2];
 
       obj.age = 10;
@@ -1277,7 +1281,7 @@ describe("Streaming Queries", function() {
       return expect(waitOn('all')).rejectedWith('timed out');
     });
 
-    it('should stream deleted object in result', function() {
+    xit('should stream deleted object in result', function() {
       var obj = result[3];
       var addObj = expectedResult[offset + limit];
 
@@ -1290,7 +1294,7 @@ describe("Streaming Queries", function() {
       })
     });
 
-    it('should stream deleted object in offset', function() {
+    xit('should stream deleted object in offset', function() {
       var obj = expectedResult[3];
       var droppedObj = result[0];
       var addObj = expectedResult[offset + limit];
@@ -1305,7 +1309,7 @@ describe("Streaming Queries", function() {
       })
     });
 
-    it('should not stream deleted object behind limit', function() {
+    xit('should not stream deleted object behind limit', function() {
       var obj = expectedResult[expectedResult.length - 2];
 
       remove(obj);
@@ -1313,7 +1317,7 @@ describe("Streaming Queries", function() {
       return expect(waitOn('all')).rejectedWith('timed out');
     });
 
-    it('should stream external inserted object', function() {
+    xit('should stream external inserted object', function() {
       var obj = new db2[bucket]({
         age: 49,
         name: 'Inserted',
@@ -1332,7 +1336,7 @@ describe("Streaming Queries", function() {
       });
     });
 
-    it('should stream external updated object', function() {
+    xit('should stream external updated object', function() {
       db2[bucket].load(result[2].id).then(function(obj) {
         obj.name = 'TestName';
         return obj.save();
@@ -1344,7 +1348,7 @@ describe("Streaming Queries", function() {
       });
     });
 
-    it('should stream external deleted object', function() {
+    xit('should stream external deleted object', function() {
       var droppedObj = result[2];
 
       db2[bucket].load(droppedObj.id).then(function(obj) {
@@ -1398,7 +1402,7 @@ describe("Streaming Queries", function() {
     function sort() {
       expectedResult.sort(function(a, b) {
         if (a.age == b.age) {
-          return a.surname < b.surname? -1: 1;
+          return a.surname < b.surname ? -1 : 1;
         } else {
           return a.age - b.age;
         }
