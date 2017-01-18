@@ -13,7 +13,7 @@ describe("Streaming Queries", function() {
     return;
   }
 
-  var tautology= { $or: [ { value: { $exists: true } }, { value: { $exists: false } } ] };
+  var tautology = {$or: [{value: {$exists: true}}, {value: {$exists: false}}]};
   var Stream = DB.query.Stream;
   var t = 400;
   var bucket = helper.randomize("StreamingQueryPerson");
@@ -199,7 +199,12 @@ describe("Streaming Queries", function() {
   });
 
   it("should use websocket configuration of the connect script", function() {
-    return new DB.EntityManagerFactory({host: env.TEST_SERVER, schema: {}, tokenStorage: helper.rootTokenStorage, websocket: '//events.localhost'}).createEntityManager().ready().then(function(db) {
+    return new DB.EntityManagerFactory({
+      host: env.TEST_SERVER,
+      schema: {},
+      tokenStorage: helper.rootTokenStorage,
+      websocket: '//events.localhost'
+    }).createEntityManager().ready().then(function(db) {
       var websocket = db.entityManagerFactory.websocket;
       expect(websocket.url).equal('wss://events.localhost');
     });
@@ -298,18 +303,18 @@ describe("Streaming Queries", function() {
       subscription = stream.subscribe(function(e) {
         result = e;
       });
-    return helper.sleep(t).then(function() {
-      p1.name = "Felix";
-      return p1.save();
-    }).then(helper.sleep(t),function() {
-      expect(result.matchType).to.be.equal("match");
-      expect(result.data).to.be.equal(p1);
-      expect(result.operation).to.be.equal("update");
-      expect(result.target).to.be.equal(query);
-      expect(result.date.getTime()).be.ok;
-      expect(result.initial).be.not.true;
+      return helper.sleep(t).then(function() {
+        p1.name = "Felix";
+        return p1.save();
+      }).then(helper.sleep(t), function() {
+        expect(result.matchType).to.be.equal("match");
+        expect(result.data).to.be.equal(p1);
+        expect(result.operation).to.be.equal("update");
+        expect(result.target).to.be.equal(query);
+        expect(result.date.getTime()).be.ok;
+        expect(result.initial).be.not.true;
+      });
     });
-  });
 
     it("should maintain offset", function() {
       this.timeout(10000);
@@ -756,7 +761,7 @@ describe("Streaming Queries", function() {
 
       stream = db[bucket].find().where(tautology).stream({initial: false, matchTypes: 'all'});
 
-      var subscription, insert;
+      var insert;
 
       return helper.sleep(1000).then(function() {
         subscription = stream.subscribe(onNext, onError, onCompleted);
@@ -807,7 +812,7 @@ describe("Streaming Queries", function() {
 
       var stream1 = db[bucket].find().where(tautology).stream({initial: false, matchTypes: 'all'});
       var stream2 = db[bucket].find().where(tautology).stream({initial: false, matchTypes: 'all'});
-      var subscription1, subscription2, socket, insert;
+      var socket, insert;
 
       return db.entityManagerFactory.websocket.open().then(function(s) {
         socket = s;
@@ -818,8 +823,8 @@ describe("Streaming Queries", function() {
           }
         })
       }).then(function() {
-        subscription1 = stream1.subscribe(onNext);
-        subscription2 = stream2.subscribe(onNext);
+        subscription = stream1.subscribe(onNext);
+        othersubscription = stream2.subscribe(onNext);
         return helper.sleep(t);
       }).then(function() {
         expect(next).to.be.equal(0);
@@ -830,8 +835,8 @@ describe("Streaming Queries", function() {
       }).then(function() {
         expect(next).to.be.equal(2);
         expect(msg).to.be.equal(4); //insert messages
-        subscription1.unsubscribe();
-        subscription2.unsubscribe();
+        subscription.unsubscribe();
+        othersubscription.unsubscribe();
         return helper.sleep(t);
       }).then(function() {
         insert = db[bucket].fromJSON(p2.toJSON(true));
@@ -936,7 +941,7 @@ describe("Streaming Queries", function() {
       it("should compute aggregate: average", function() {//TODO broken!
         this.timeout(6000);
 
-        stream = db[bucket].find().where({ $or: [ { average: { $exists: true } }, { average: { $exists: false } } ] }).stream({initial: false});
+        stream = db[bucket].find().where({$or: [{average: {$exists: true}}, {average: {$exists: false}}]}).stream({initial: false});
         var initialAccumulator = {
           contributors: {},// individual activity counts go here
           count: 0,// result set cardinality
@@ -1397,7 +1402,7 @@ describe("Streaming Queries", function() {
     function sort() {
       expectedResult.sort(function(a, b) {
         if (a.age == b.age) {
-          return a.surname < b.surname? -1: 1;
+          return a.surname < b.surname ? -1 : 1;
         } else {
           return a.age - b.age;
         }
@@ -1406,7 +1411,7 @@ describe("Streaming Queries", function() {
 
     function waitOn(matchType) {
       return new Promise(function(success, error) {
-        var subscription = stream.subscribe(function(e) {
+        subscription = stream.subscribe(function(e) {
           if (matchType == 'all' || e.matchType == matchType) {
             subscription.unsubscribe();
             success(e.data);
