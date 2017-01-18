@@ -26,7 +26,7 @@ module.exports = function(config) {
       'build/baqend.js',
       'spec/env.js',
       'spec/helper.js',
-      'spec/**/*.spec.js',
+      'spec/**/stream.spec.js',
       {pattern: 'build/*.html', included: false, watched: false},
       {pattern: 'spec/assets/*', watched: false, included: false, served: true, nocache: false}
     ],
@@ -69,7 +69,7 @@ module.exports = function(config) {
     // - Safari (only Mac; has to be installed with `npm install karma-safari-launcher`)
     // - PhantomJS
     // - IE (only Windows; has to be installed with `npm install karma-ie-launcher`)
-    browsers: ['Chrome', 'Firefox', 'PhantomJS'],
+    browsers: ['Chrome', 'Firefox' ],
 
     customLaunchers: {
       'Chrome-Linux': {

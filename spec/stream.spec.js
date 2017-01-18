@@ -943,7 +943,7 @@ describe("Streaming Queries", function() {
           sum: 0,// overall number of activities in the result
           average: 0// computed as: sum/count
         };
-        var maintain = (accumulator, event) => {
+        var maintain = function(accumulator, event) {
           var newValue = event.matchType === 'remove' ? 0 : event.data.age;
           var oldValue = accumulator.contributors[event.data.id] || 0;//default: 0
 
