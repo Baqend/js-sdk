@@ -15,7 +15,7 @@ describe("Streaming Queries", function() {
 
   var tautology = {$or: [{value: {$exists: true}}, {value: {$exists: false}}]};
   var Stream = DB.query.Stream;
-  var t = 400;
+  var t = 2000;
   var bucket = helper.randomize("StreamingQueryPerson");
   var emf, metamodel, db, stream, otherstream, subscription, othersubscription;
   var p0, p1, p2, p3, objects;
@@ -1421,7 +1421,7 @@ describe("Streaming Queries", function() {
         setTimeout(function() {
           subscription.unsubscribe();
           error(new Error('Wait on ' + matchType + ' timed out.'));
-        }, 500);
+        }, t);
       });
     }
   });
