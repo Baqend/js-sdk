@@ -15,7 +15,7 @@ describe("Streaming Queries", function() {
 
   var tautology = {$or: [{value: {$exists: true}}, {value: {$exists: false}}]};
   var Stream = DB.query.Stream;
-  var t = 2000;
+  var timeout = 2000;
   var bucket = helper.randomize("StreamingQueryPerson");
   var emf, metamodel, db, stream, otherstream, subscription, othersubscription;
   var p0, p1, p2, p3, objects;
@@ -214,6 +214,7 @@ describe("Streaming Queries", function() {
     var db, objects;
 
     beforeEach(function() {
+      this.timeout(5000);
       db = emf.createEntityManager();
 
       p0 = new db[bucket]({
@@ -251,7 +252,7 @@ describe("Streaming Queries", function() {
       });
 
       objects = [p0, p1, p2, p3];
-      return helper.sleep(t, Promise.all([p0.save({force: true}), p1.save({force: true}), p2.save({force: true}), p3.save({force: true})]));
+      return helper.sleep(timeout, Promise.all([p0.save({force: true}), p1.save({force: true}), p2.save({force: true}), p3.save({force: true})]));
     });
 
     afterEach(function() {
@@ -276,6 +277,7 @@ describe("Streaming Queries", function() {
     });
 
     it("should return the initial result", function() {//TODO broken!
+      this.timeout(5000);
       var received = [];
       var query = db[bucket].find().where(tautology).limit(3);
       stream = query.stream();
@@ -283,7 +285,7 @@ describe("Streaming Queries", function() {
         received.push(e);
       });
 
-      return helper.sleep(t).then(function() {
+      return helper.sleep(timeout).then(function() {
         expect(received.length).to.be.equal(3);
         received.forEach(function(result) {
           expect(result.matchType).to.be.equal("add");
@@ -297,16 +299,17 @@ describe("Streaming Queries", function() {
     });
 
     it("should return updated object", function() {//TODO broken!
+      this.timeout(5000);
       var result;
       var query = db[bucket].find().where(tautology);
       stream = query.stream({initial: false, matchTypes: 'match'});
       subscription = stream.subscribe(function(e) {
         result = e;
       });
-      return helper.sleep(t).then(function() {
+      return helper.sleep(timeout).then(function() {
         p1.name = "Felix";
         return p1.save();
-      }).then(helper.sleep(t), function() {
+      }).then(helper.sleep(timeout), function() {
         expect(result.matchType).to.be.equal("match");
         expect(result.data).to.be.equal(p1);
         expect(result.operation).to.be.equal("update");
@@ -317,7 +320,7 @@ describe("Streaming Queries", function() {
     });
 
     it("should maintain offset", function() {
-      this.timeout(10000);
+      this.timeout(15000);
       var results = [];
       stream = db[bucket].find().equal("age", 49).limit(2).offset(1).ascending("surname").stream({
         initial: true
@@ -333,7 +336,7 @@ describe("Streaming Queries", function() {
         age: 49
       });
 
-      return helper.sleep(t, al.save())// result: Al, [ ]
+      return helper.sleep(timeout, al.save())// result: Al, [ ]
           .then(function() {
             expect(results.length).to.be.equal(0);  // nothing, yet
 
@@ -343,7 +346,7 @@ describe("Streaming Queries", function() {
               surname: 'Thomas',
               age: 49
             });
-            return helper.sleep(t, bob.save());// result: Al, [ Bob ]
+            return helper.sleep(timeout, bob.save());// result: Al, [ Bob ]
           }).then(function() {
             expect(results.length).to.be.equal(1);
             expect(results[0].operation).to.be.equal("insert");
@@ -357,7 +360,7 @@ describe("Streaming Queries", function() {
               surname: 'Vito',
               age: 49
             });
-            return helper.sleep(t, dave.save());// result: Al, [ Bob, Dave ]
+            return helper.sleep(timeout, dave.save());// result: Al, [ Bob, Dave ]
           }).then(function() {
             expect(results.length).to.be.equal(2);
             expect(results[1].operation).to.be.equal("insert");
@@ -371,7 +374,7 @@ describe("Streaming Queries", function() {
               surname: 'Underhill',
               age: 49
             });
-            return helper.sleep(t, carl.save());// result: Al, [ Bob, Carl ], Dave
+            return helper.sleep(timeout, carl.save());// result: Al, [ Bob, Carl ], Dave
           }).then(function() {
             expect(results.length).to.be.equal(4);
             expect(results[2].operation).to.be.equal('none');
@@ -384,14 +387,14 @@ describe("Streaming Queries", function() {
             expect(results[3].index).to.be.equal(1);
           }).then(function() {
             al.name = "Alvin";
-            return helper.sleep(t, al.save());// result: Al, [ Bob, Carl ], Dave   | Updated in offset--> No notification
+            return helper.sleep(timeout, al.save());// result: Al, [ Bob, Carl ], Dave   | Updated in offset--> No notification
           }).then(function() {
             expect(results.length).to.be.equal(4);
           });
     });
 
     it("should return ordered result", function() {
-      this.timeout(10000);
+      this.timeout(25000);
       var results = [];
       stream = db[bucket].find().equal("age", 49).limit(3).ascending("name").stream({
         initial: false,
@@ -401,7 +404,7 @@ describe("Streaming Queries", function() {
         results.push(e);
       });
 
-      return helper.sleep(t).then(function() {
+      return helper.sleep(timeout).then(function() {
         var al = new db[bucket]({
           key: 'al',
           name: 'Al',
@@ -409,7 +412,7 @@ describe("Streaming Queries", function() {
         });
         return al.save();
       }).then(function() {
-        return helper.sleep(t).then(function() {
+        return helper.sleep(timeout).then(function() {
           expect(results.length).to.be.equal(1);
           expect(results[0].operation).to.be.equal("insert");
           expect(results[0].matchType).to.be.equal("add");
@@ -417,7 +420,7 @@ describe("Streaming Queries", function() {
           expect(results[0].index).to.be.equal(0);
         });
       }).then(function() {
-        return helper.sleep(t).then(function() {
+        return helper.sleep(timeout).then(function() {
           var bob = new db[bucket]({
             key: 'bob',
             name: 'Bob',
@@ -426,7 +429,7 @@ describe("Streaming Queries", function() {
           return bob.save();
         });
       }).then(function() {
-        return helper.sleep(t).then(function() {
+        return helper.sleep(timeout).then(function() {
           expect(results.length).to.be.equal(1);
           expect(results[0].operation).to.be.equal("insert");
           expect(results[0].matchType).to.be.equal("add");
@@ -435,7 +438,7 @@ describe("Streaming Queries", function() {
         });
       })
           .then(function() {
-            return helper.sleep(t).then(function() {
+            return helper.sleep(timeout).then(function() {
               var dave = new db[bucket]({
                 key: 'dave',
                 name: 'Dave',
@@ -444,7 +447,7 @@ describe("Streaming Queries", function() {
               return dave.save();
             });
           }).then(function() {
-            return helper.sleep(t).then(function() {
+            return helper.sleep(timeout).then(function() {
               expect(results.length).to.be.equal(2);
               expect(results[1].operation).to.be.equal("insert");
               expect(results[1].matchType).to.be.equal("add");
@@ -452,7 +455,7 @@ describe("Streaming Queries", function() {
               expect(results[1].index).to.be.equal(1);
             });
           }).then(function() {
-            return helper.sleep(t).then(function() {
+            return helper.sleep(timeout).then(function() {
               var carl = new db[bucket]({
                 key: 'carl',
                 name: 'Carl',
@@ -461,7 +464,7 @@ describe("Streaming Queries", function() {
               return carl.save();
             });
           }).then(function() {
-            return helper.sleep(t).then(function() {
+            return helper.sleep(timeout).then(function() {
               expect(results.length).to.be.equal(3);
               expect(results[2].operation).to.be.equal("insert");
               expect(results[2].matchType).to.be.equal("add");
@@ -469,7 +472,7 @@ describe("Streaming Queries", function() {
               expect(results[2].index).to.be.equal(1);
             });
           }).then(function() {
-            return helper.sleep(t).then(function() {
+            return helper.sleep(timeout).then(function() {
               var dan = new db[bucket]({
                 key: 'dan',
                 name: 'Dan',
@@ -478,7 +481,7 @@ describe("Streaming Queries", function() {
               return dan.save();
             });
           }).then(function() {
-            return helper.sleep(t).then(function() {
+            return helper.sleep(timeout).then(function() {
               expect(results.length).to.be.equal(5);
               expect(results[3].operation).to.be.equal('none'); //transitive remove --> the was no operation on this objects
               expect(results[3].matchType).to.be.equal("remove");
@@ -493,10 +496,10 @@ describe("Streaming Queries", function() {
     });
 
     it("should return 'none'-operation matches", function() {
-      this.timeout(10000);
+      this.timeout(25000);
       var results = [];
 
-      return helper.sleep(t).then(function() {
+      return helper.sleep(timeout).then(function() {
         var al = new db[bucket]({
           key: 'al',
           name: 'Al',
@@ -504,11 +507,11 @@ describe("Streaming Queries", function() {
         });
         return al.save();
       }).then(function() {
-        return helper.sleep(t).then(function() {
+        return helper.sleep(timeout).then(function() {
           expect(results.length).to.be.equal(0);
         });
       }).then(function() {
-        return helper.sleep(t).then(function() {
+        return helper.sleep(timeout).then(function() {
           stream = db[bucket].find().equal("age", 49).limit(3).ascending("name").stream({
             initial: true,
             operations: 'none'
@@ -518,7 +521,7 @@ describe("Streaming Queries", function() {
           });
         });
       }).then(function() {
-        return helper.sleep(t).then(function() {
+        return helper.sleep(timeout).then(function() {
           expect(results.length).to.be.equal(1);
           expect(results[0].operation).to.be.equal('none'); //transitive remove --> the was no operation on this objects
           expect(results[0].matchType).to.be.equal("add");
@@ -533,12 +536,12 @@ describe("Streaming Queries", function() {
           return bob.save();
         });
       }).then(function() {
-        return helper.sleep(t).then(function() {
+        return helper.sleep(timeout).then(function() {
           expect(results.length).to.be.equal(1);
         });
       })
           .then(function() {
-            return helper.sleep(t).then(function() {
+            return helper.sleep(timeout).then(function() {
               var dave = new db[bucket]({
                 key: 'dave',
                 name: 'Dave',
@@ -547,11 +550,11 @@ describe("Streaming Queries", function() {
               return dave.save();
             });
           }).then(function() {
-            return helper.sleep(t).then(function() {
+            return helper.sleep(timeout).then(function() {
               expect(results.length).to.be.equal(1);
             });
           }).then(function() {
-            return helper.sleep(t).then(function() {
+            return helper.sleep(timeout).then(function() {
               var carl = new db[bucket]({
                 key: 'carl',
                 name: 'Carl',
@@ -560,11 +563,11 @@ describe("Streaming Queries", function() {
               return carl.save();
             });
           }).then(function() {
-            return helper.sleep(t).then(function() {
+            return helper.sleep(timeout).then(function() {
               expect(results.length).to.be.equal(1);
             });
           }).then(function() {
-            return helper.sleep(t).then(function() {
+            return helper.sleep(timeout).then(function() {
               var dan = new db[bucket]({
                 key: 'dan',
                 name: 'Dan',
@@ -573,7 +576,7 @@ describe("Streaming Queries", function() {
               return dan.save();
             });
           }).then(function() {
-            return helper.sleep(t).then(function() {
+            return helper.sleep(timeout).then(function() {
               expect(results.length).to.be.equal(2);
               expect(results[1].operation).to.be.equal('none'); //transitive remove --> the was no operation on this objects
               expect(results[1].matchType).to.be.equal("remove");
@@ -584,6 +587,7 @@ describe("Streaming Queries", function() {
     });
 
     it("should return inserted object", function() {
+      this.timeout(5000);
       var result;
       var query = db[bucket].find().equal("name", "franz");
       stream = query.stream({initial: false, matchTypes: 'match'});
@@ -591,10 +595,10 @@ describe("Streaming Queries", function() {
         result = e;
       });
 
-      return helper.sleep(t).then(function() {
+      return helper.sleep(timeout).then(function() {
         var object = db[bucket].fromJSON(p3.toJSON(true));
         object.name = "franz";
-        return helper.sleep(t, object.insert());
+        return helper.sleep(timeout, object.insert());
       }).then(function() {
         expect(result.matchType).to.be.equal("match");
         expect(result.data.name).to.be.equal("franz");
@@ -606,7 +610,7 @@ describe("Streaming Queries", function() {
     });
 
     it("should resolve references from real-time matches", function() {
-      this.timeout(6000);
+      this.timeout(12000);
       var franz, otherfranz;
 
       stream = db[bucket].find().where(tautology).stream({initial: false, matchTypes: 'all'});
@@ -620,10 +624,10 @@ describe("Streaming Queries", function() {
         otherfranz = e.data;
       });
 
-      return helper.sleep(t).then(function() {
+      return helper.sleep(timeout).then(function() {
         var object = db[bucket].fromJSON(p3.toJSON(true));
         object.name = "franz";
-        return helper.sleep(t, object.insert());
+        return helper.sleep(timeout, object.insert());
       }).then(function() {
         expect(franz.name).to.be.equal("franz");
         expect(franz.name).to.be.equal(otherfranz.name);
@@ -632,7 +636,7 @@ describe("Streaming Queries", function() {
         franz.name = "franzl";
         expect(franz.name).to.be.equal("franzl");
         expect(otherfranz.name).to.be.equal("franz");
-        return helper.sleep(t, franz.update());
+        return helper.sleep(timeout, franz.update());
       }).then(function() {
         expect(franz.name).to.be.equal("franzl");
         expect(franz.name).to.be.equal(otherfranz.name);
@@ -643,7 +647,7 @@ describe("Streaming Queries", function() {
         otherfranz.name = "franzler";
         expect(otherfranz.name).to.be.equal("franzler");
         expect(franz.name).to.be.equal("franzl");
-        return helper.sleep(t, otherfranz.update());
+        return helper.sleep(timeout, otherfranz.update());
       }).then(function() {
         expect(otherfranz.name).to.be.equal("franzler");
         expect(franz.name).to.be.equal(otherfranz.name);
@@ -651,7 +655,7 @@ describe("Streaming Queries", function() {
         expect(otherfranz.version).to.be.equal(franz.version);
 
         // delete
-        return helper.sleep(t, otherfranz.delete());
+        return helper.sleep(timeout, otherfranz.delete());
       }).then(function() {
         expect(otherfranz.version).to.be.equal(null);
         expect(otherfranz.version).to.be.equal(franz.version);
@@ -659,6 +663,7 @@ describe("Streaming Queries", function() {
     });
 
     it("should return removed object", function() {
+      this.timeout(5000);
       var result;
       var query = db[bucket].find().equal("name", "franzi");
       stream = query.stream({initial: false, matchTypes: 'remove'});
@@ -669,10 +674,10 @@ describe("Streaming Queries", function() {
       var object = db[bucket].fromJSON(p3.toJSON(true));
       object.name = "franzi";
 
-      return helper.sleep(t).then(function() {
+      return helper.sleep(timeout).then(function() {
         return object.insert();
       }).then(function() {
-        return helper.sleep(t, object.delete());
+        return helper.sleep(timeout, object.delete());
       }).then(function() {
         expect(result.data.id).to.be.equal(object.id);
         expect(result.matchType).to.be.equal("remove");
@@ -684,6 +689,7 @@ describe("Streaming Queries", function() {
     });
 
     it("should return all changes", function() {
+      this.timeout(10000);
       var results = [];
       stream = db[bucket].find().equal("age", 23).stream({initial: false, matchTypes: 'all'});
       subscription = stream.subscribe(function(e) {
@@ -692,20 +698,20 @@ describe("Streaming Queries", function() {
 
       var object = db[bucket].fromJSON(p3.toJSON(true));
 
-      return helper.sleep(t).then(function() {
+      return helper.sleep(timeout).then(function() {
         object.name = "flo";
         return object.insert();
       }).then(function() {
-        return helper.sleep(t).then(function() {
+        return helper.sleep(timeout).then(function() {
           object.name = "karl-friedrich";
           return object.save();
         });
       }).then(function() {
-        return helper.sleep(t).then(function() {
+        return helper.sleep(timeout).then(function() {
           return object.delete();
         });
       }).then(function() {
-        return helper.sleep(t).then(function() {
+        return helper.sleep(timeout).then(function() {
           expect(results.length).to.be.equal(3);
           expect(results[0].operation).to.be.equal("insert");
           expect(results[1].operation).to.be.equal("update");
@@ -716,6 +722,7 @@ describe("Streaming Queries", function() {
     });
 
     it("should allow multiple listeners", function() {
+      this.timeout(8000);
       var received = [];
       var insert = db[bucket].fromJSON(p3.toJSON(true));
       insert.name = "franz";
@@ -729,21 +736,21 @@ describe("Streaming Queries", function() {
       subscription = stream.subscribe(listener);
       othersubscription = stream.subscribe(listener);
 
-      return helper.sleep(t).then(function() {
+      return helper.sleep(timeout).then(function() {
         return insert.insert()
       }).then(function(obj) {
-        return helper.sleep(t, obj);
+        return helper.sleep(timeout, obj);
       }).then(function(obj) {
         obj.name = "frrrrranz";
         othersubscription.unsubscribe();
-        return helper.sleep(t, obj.save());
+        return helper.sleep(timeout, obj.save());
       }).then(function() {
         expect(received.length).to.be.equal(3);
       });
     });
 
     it("should cancel subscription", function() {
-      this.timeout(6000);
+      this.timeout(10000);
 
       var next = 0;
       var errors = 0;
@@ -765,21 +772,21 @@ describe("Streaming Queries", function() {
 
       return helper.sleep(1000).then(function() {
         subscription = stream.subscribe(onNext, onError, onCompleted);
-        return helper.sleep(t);
+        return helper.sleep(timeout);
       }).then(function() {
         expect(next).to.be.equal(0);
         expect(errors).to.be.equal(0);
         expect(completions).to.be.equal(0);
 
         insert = db[bucket].fromJSON(p1.toJSON(true));
-        return helper.sleep(t, insert.insert());
+        return helper.sleep(timeout, insert.insert());
       }).then(function() {
         expect(next).to.be.equal(1);
         expect(errors).to.be.equal(0);
         expect(completions).to.be.equal(0);
 
         insert = db[bucket].fromJSON(p2.toJSON(true));
-        return helper.sleep(t, insert.insert());
+        return helper.sleep(timeout, insert.insert());
       }).then(function() {
         expect(next).to.be.equal(2);
         expect(errors).to.be.equal(0);
@@ -792,7 +799,7 @@ describe("Streaming Queries", function() {
         expect(completions).to.be.equal(0);
 
         insert = db[bucket].fromJSON(p3.toJSON(true));
-        return helper.sleep(t, insert.insert());
+        return helper.sleep(timeout, insert.insert());
       }).then(function() {
         expect(next).to.be.equal(2);
         expect(errors).to.be.equal(0);
@@ -801,7 +808,7 @@ describe("Streaming Queries", function() {
     });
 
     it("should cancel serverside subscription", function() {
-      this.timeout(6000);
+      this.timeout(10000);
 
       var next = 0;
       var msg = 0;
@@ -825,30 +832,30 @@ describe("Streaming Queries", function() {
       }).then(function() {
         subscription = stream1.subscribe(onNext);
         othersubscription = stream2.subscribe(onNext);
-        return helper.sleep(t);
+        return helper.sleep(timeout);
       }).then(function() {
         expect(next).to.be.equal(0);
         expect(msg).to.be.equal(2); //subscription messages
 
         insert = db[bucket].fromJSON(p1.toJSON(true));
-        return helper.sleep(t, insert.insert());
+        return helper.sleep(timeout, insert.insert());
       }).then(function() {
         expect(next).to.be.equal(2);
         expect(msg).to.be.equal(4); //insert messages
         subscription.unsubscribe();
         othersubscription.unsubscribe();
-        return helper.sleep(t);
+        return helper.sleep(timeout);
       }).then(function() {
         insert = db[bucket].fromJSON(p2.toJSON(true));
-        return helper.sleep(t, insert.insert());
+        return helper.sleep(timeout, insert.insert());
       }).then(function() {
         expect(next).to.be.equal(2);
         expect(msg).to.be.equal(4); //no insert message
-
       });
     });
 
     it("should allow to unregister by unsubscribing subscription", function() {
+      this.timeout(8000);
       var calls = 0;
       var listener = function(e) {
         expect(++calls).to.be.at.most(1);
@@ -857,20 +864,21 @@ describe("Streaming Queries", function() {
       subscription = stream.subscribe(listener);
 
       var insert;
-      return helper.sleep(t).then(function() {
+      return helper.sleep(timeout).then(function() {
         insert = db[bucket].fromJSON(p3.toJSON(true));
         insert.name = "franz";
-        return helper.sleep(t, insert.insert());
+        return helper.sleep(timeout, insert.insert());
       }).then(function() {
         subscription.unsubscribe();
         insert.name = "";
-        return helper.sleep(t, insert.save())
+        return helper.sleep(timeout, insert.save())
       }).then(function() {
         expect(calls).to.be.equal(1);
       });
     });
 
     it("should raise error on subscription", function() {
+      this.timeout(5000);
       var next = 0;
       var errors = 0;
       var completions = 0;
@@ -893,7 +901,7 @@ describe("Streaming Queries", function() {
 
       return helper.sleep(1000).then(function() {
         subscription = stream.subscribe(onNext, onError);
-        return helper.sleep(t);
+        return helper.sleep(timeout);
       }).then(function() {
         expect(next).to.be.equal(0);
         expect(errors).to.be.equal(1);
@@ -918,6 +926,7 @@ describe("Streaming Queries", function() {
       });
 
       it("should only be called once", function() {
+        this.timeout(5000);
         var calls = 0;
         var listener = function(e) {
           expect(++calls).to.be.at.most(1);
@@ -926,20 +935,20 @@ describe("Streaming Queries", function() {
         subscription = stream.first().subscribe(listener);
 
         var insert;
-        return helper.sleep(t).then(function() {
+        return helper.sleep(timeout).then(function() {
           insert = db[bucket].fromJSON(p3.toJSON(true));
           insert.name = "franz";
           return insert.insert();
         }).then(function() {
           insert.name = "";
-          return helper.sleep(t, insert.save())
+          return helper.sleep(timeout, insert.save())
         }).then(function() {
           expect(calls).to.be.equal(1);
         });
       });
 
       it("should compute aggregate: average", function() {//TODO broken!
-        this.timeout(6000);
+        this.timeout(15000);
 
         stream = db[bucket].find().where({$or: [{average: {$exists: true}}, {average: {$exists: false}}]}).stream({initial: false});
         var initialAccumulator = {
@@ -971,7 +980,7 @@ describe("Streaming Queries", function() {
         });
 
         var person;
-        return helper.sleep(t).then(function() {
+        return helper.sleep(timeout).then(function() {
           console.log("no matching person --> average age: " + average);
           expect(average).to.be.equal(undefined);
           person = new db[bucket]({
@@ -979,7 +988,7 @@ describe("Streaming Queries", function() {
             name: 'Albert',
             age: 49
           });
-          return helper.sleep(t, person.save());
+          return helper.sleep(timeout, person.save());
         }).then(function() {
           console.log("new match: Albert (49) --> average age: " + average);
           expect(average).to.be.equal(49);
@@ -988,7 +997,7 @@ describe("Streaming Queries", function() {
             name: 'Bob',
             age: 51
           });
-          return helper.sleep(t, person.save());
+          return helper.sleep(timeout, person.save());
         }).then(function() {
           console.log("new match: Bob (51) --> average age: " + average);
           expect(average).to.be.equal(50);
@@ -997,12 +1006,12 @@ describe("Streaming Queries", function() {
             name: 'Carl',
             age: 59
           });
-          return helper.sleep(t, person.save());
+          return helper.sleep(timeout, person.save());
         }).then(function() {
           console.log("new match: Carl (59) --> average age: " + average);
           expect(average).to.be.equal(53);
-          return helper.sleep(t, person.delete());
-        }).then(helper.sleep(t)).then(function() {
+          return helper.sleep(timeout, person.delete());
+        }).then(helper.sleep(timeout)).then(function() {
           console.log("new MISmatch: Carl (59) --> average age: " + average);
           expect(average).to.be.equal(50);
         });
@@ -1421,7 +1430,7 @@ describe("Streaming Queries", function() {
         setTimeout(function() {
           subscription.unsubscribe();
           error(new Error('Wait on ' + matchType + ' timed out.'));
-        }, t);
+        }, timeout);
       });
     }
   });
