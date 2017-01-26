@@ -12,6 +12,10 @@ describe("Test enhancer", function() {
         "testValue": {
           "name": "testValue",
           "type": "/db/Integer"
+        },
+        "embeddedValue": {
+          "name": "embedded",
+          "type": "/db/TestEmbeddedClass"
         }
       }
     },
@@ -155,7 +159,7 @@ describe("Test enhancer", function() {
   it("enhanced objects should be enumarable", function() {
     var obj = new db.TestClass();
 
-    var expected = ['id', 'version', 'acl', 'testValue'];
+    var expected = ['id', 'version', 'acl', 'testValue', 'embedded'];
     var count = 0;
     for (var prop in obj) {
       if (!(obj[prop] instanceof Function)) {
@@ -210,6 +214,18 @@ describe("Test enhancer", function() {
     var testClass = new db.TestEmbeddedClass();
     testClass.value = 5;
     var json = testClass.toJSON();
+    expect(json).be.ok;
+    expect(json.value).eqls(5);
+    expect(json._metadata).be.undefined;
+  });
+
+  it('should convert embedded member to JSON', function() {
+    var testClass = new db.TestClass();
+    testClass.embedded = new db.TestEmbeddedClass({
+      value: 5
+    });
+
+    var json = testClass.embedded.toJSON();
     expect(json).be.ok;
     expect(json.value).eqls(5);
     expect(json._metadata).be.undefined;
