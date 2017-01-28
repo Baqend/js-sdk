@@ -99,10 +99,10 @@ describe("New Streaming Queries", function() {
     addressType.addAttribute(new DB.metamodel.SingularAttribute("zip", metamodel.baseType(Number)));
     addressType.addAttribute(new DB.metamodel.SingularAttribute("city", metamodel.baseType(String)));
 
-    metamodel.save();
-
-    db = emf.createEntityManager();
-    otherDb = emf.createEntityManager();
+    return metamodel.save().then(function() {
+      db = emf.createEntityManager();
+      otherDb = emf.createEntityManager();
+    });
   });
 
 
@@ -312,7 +312,9 @@ describe("New Streaming Queries", function() {
             // delete all 50 elements: if the query has not been unsubscribe, we will receive an error, because the query results cannot be maintained in InvaliDB as soon as less than 10 elements are available server-side
             return helper.sleep(t, clearBucket());
           }).catch(function() {
-            subscription.unsubscribe();
+            if (subscription){
+              subscription.unsubscribe();
+            }
           });
     });
   });
