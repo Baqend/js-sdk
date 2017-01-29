@@ -14,22 +14,65 @@ describe("New Streaming Queries", function() {
 
   var Stream = DB.query.Stream;
   var t = 500;
+  var multiEventDelay = 50;// a little slack to have all observers notified when an event is observed
   var bucket = helper.randomize("StreamingQueryPerson");
-  var emf, metamodel, db, otherDb, stream, subscription, otherSubscription;
+  var emf, metamodel, db, otherDb, stream, otherStream, subscription, otherSubscription;
+  var sameForAll = helper.randomize("same for all persons in the current test");
+
+  function expectEvent(todoAfterSubscription) {
+    return new Promise(function(resolve, reject) {
+      var sub = stream.subscribe(function(e) {
+        sub.unsubscribe();
+        helper.sleep(multiEventDelay).then(function() {
+          return resolve(e);
+        });
+      });
+
+      if (todoAfterSubscription) {
+        helper.sleep(150).then(function() {
+          return todoAfterSubscription();
+        });
+      }
+
+      setTimeout(function() {
+        sub.unsubscribe();
+        reject(new Error('Wait on event timed out.'));
+      }, t + multiEventDelay);
+    });
+  }
+
+
+  function clearSubs() {
+    if (subscription) {
+      subscription.unsubscribe();
+      subscription = undefined;
+    }
+    if (otherSubscription) {
+      otherSubscription.unsubscribe();
+      otherSubscription = undefined;
+    }
+  }
 
   /**
    *
-   * @param attributeName
-   * @returns {$or: *[]} query that matches everything
+   * @param age the age of the person
+   * @param name the name of the person
+   * @returns {*|Promise.<binding.Entity>|{value}}
    */
-  function tautology(attributeName) {
-    var present = {};
-    var missing = {};
+  function newPerson(age, name) {
+    name = name || 'defaultname';
+    age = age || 20;
+    return new db[bucket]({
+      key: helper.randomize(name.toLowerCase()),
+      name: name,
+      age: age,
+      testID: sameForAll
+    });
+  }
 
-    present[attributeName] = {$exists: true};
-    missing[attributeName] = {$exists: false};
 
-    return {$or: [present, missing]};
+  function insertPerson(age, name) {
+    return newPerson(age, name).insert();
   }
 
   /**
@@ -70,15 +113,9 @@ describe("New Streaming Queries", function() {
   }
 
   function clearAll() {
-    if (subscription) {
-      subscription.unsubscribe();
-    }
-    if (otherSubscription) {
-      otherSubscription.unsubscribe();
-    }
+    clearSubs();
     return helper.sleep(t, clearBucket());//wait to make sure that errors are thrown before the function returns
   }
-
 
   before(function() {
     var personType, addressType;
@@ -90,6 +127,7 @@ describe("New Streaming Queries", function() {
 
     personType.addAttribute(new DB.metamodel.SingularAttribute("name", metamodel.baseType(String)));
     personType.addAttribute(new DB.metamodel.SingularAttribute("surname", metamodel.baseType(String)));
+    personType.addAttribute(new DB.metamodel.SingularAttribute("testID", metamodel.baseType(String)));
     personType.addAttribute(new DB.metamodel.SingularAttribute("address", addressType));
     personType.addAttribute(new DB.metamodel.SingularAttribute("age", metamodel.baseType(Number)));
     personType.addAttribute(new DB.metamodel.SingularAttribute("date", metamodel.baseType(Date)));
@@ -102,11 +140,13 @@ describe("New Streaming Queries", function() {
     return metamodel.save().then(function() {
       db = emf.createEntityManager();
       otherDb = emf.createEntityManager();
+    }).then(function() {
+      return clearAll();
     });
   });
 
-
   describe('general', function() {
+    before(clearAll);
 
     it("should parse options correctly", function() {
 
@@ -305,26 +345,477 @@ describe("New Streaming Queries", function() {
           }).then(function(event) {
             expect(event).to.be.ok;
             result = event.data;
+            expect(result.length).to.be(5);
           }).then(function() {
             // unsubscribe and wait a little bit
             return helper.sleep(t, subscription.unsubscribe());
           }).then(function() {
             // delete all 50 elements: if the query has not been unsubscribe, we will receive an error, because the query results cannot be maintained in InvaliDB as soon as less than 10 elements are available server-side
             return helper.sleep(t, clearBucket());
-          }).catch(function() {
-            if (subscription){
-              subscription.unsubscribe();
-            }
-          });
+          }).catch(clearAll);
     });
   });
 
-
   describe('stream', function() {
+    beforeEach(function() {
+      sameForAll = helper.randomize("attribute");
+    });
 
     afterEach(clearAll);
 
-    it("should raise error on subscription", function() {
+    it("should return updated object", function() {
+      this.timeout(5000);
+      var result;
+      var query = db[bucket].find().equal('testID', sameForAll);
+      stream = query.stream({initial: false, operations: 'update'});
+      subscription = stream.subscribe(function(e) {
+        result = e;
+      });
+      var person = newPerson(29, "Feelliiix");
+      return helper.sleep(t, person.insert()).then(function() {
+        expect(result).to.be.not.ok;
+
+        return expectEvent(function() {
+          person.name = "Felix";
+          return person.save();
+        });
+      }).then(function() {
+        expect(result).to.be.ok;
+        expect(result.matchType).to.be.equal("change");
+        expect(result.data).to.be.equal(person);
+        expect(result.operation).to.be.equal("update");
+        expect(result.target).to.be.equal(query);
+        expect(result.date.getTime()).be.ok;
+        expect(result.initial).be.not.true;
+      });
+    });
+
+    it("should maintain offset", function() {
+      var results = [];
+      stream = db[bucket].find().equal('testID', sameForAll).limit(2).offset(1).ascending("name").stream({
+        initial: true
+      });
+      subscription = stream.subscribe(function(e) {
+        results.push(e);
+      });
+
+      var al = newPerson(49, 'Al');
+      var bob = newPerson(49, 'Bob');
+      var carl = newPerson(49, 'Carl');
+      var dave = newPerson(49, 'Dave');
+
+      return helper.sleep(t, al.insert())// result: Al, [ ]
+          .then(function() {
+            expect(results.length).to.be.equal(0);  // nothing, yet
+            return bob.insert();// result: Al, [ Bob ]
+          }).then(function() {
+            return expectEvent();
+          }).then(function() {
+            expect(results.length).to.be.equal(1);
+            expect(results[0].operation).to.be.equal("insert");
+            expect(results[0].matchType).to.be.equal("add");
+            expect(results[0].data.name).to.be.equal("Bob");
+            expect(results[0].index).to.be.equal(0);
+            return dave.insert();// result: Al, [ Bob, Dave ]
+          }).then(function() {
+            return expectEvent();
+          }).then(function() {
+            expect(results.length).to.be.equal(2);
+            expect(results[1].operation).to.be.equal("insert");
+            expect(results[1].matchType).to.be.equal("add");
+            expect(results[1].data.name).to.be.equal("Dave");
+            expect(results[1].index).to.be.equal(1);
+            return carl.insert();// result: Al, [ Bob, Carl ], Dave
+          }).then(function() {
+            return expectEvent();
+          }).then(function() {
+            expect(results.length).to.be.equal(4);
+            expect(results[2].operation).to.be.equal('none');
+            expect(results[2].matchType).to.be.equal("remove");
+            expect(results[2].data.name).to.be.equal("Dave");
+            expect(results[2].index).to.be.equal(undefined);
+            expect(results[3].operation).to.be.equal("insert");
+            expect(results[3].matchType).to.be.equal("add");
+            expect(results[3].data.name).to.be.equal("Carl");
+            expect(results[3].index).to.be.equal(1);
+          }).then(function() {
+            al.name = "Alvin";
+            return helper.sleep(t, al.save());// result: Al, [ Bob, Carl ], Dave   | Updated in offset--> No notification
+          }).then(function() {
+            expect(results.length).to.be.equal(4);
+          });
+    });
+
+    it("should return ordered result", function() {
+      var results = [];
+      var al = newPerson(49, 'Al');
+      var bob = newPerson(49, 'Bob');
+      var carl = newPerson(49, 'Carl');
+      var dave = newPerson(49, 'Dave');
+      var dan = newPerson(49, 'Dan');
+
+
+      var query = db[bucket].find();
+      var condition1 = query.equal("age", 49);
+      var condition2 = query.equal('testID', sameForAll);
+      stream = query.and(condition1, condition2).limit(3).ascending("name").stream({
+        initial: false,
+        matchTypes: 'all'
+      });
+      subscription = stream.subscribe(function(e) {
+        results.push(e);
+      });
+
+
+      return expectEvent(function() {
+        return al.insert();
+      }).then(function() {
+        expect(results.length).to.be.equal(1);
+        //operation could be either 'insert' or 'none'
+        expect(results[0].matchType).to.be.equal("add");
+        expect(results[0].data.name).to.be.equal("Al");
+        expect(results[0].index).to.be.equal(0);
+
+        bob.age = 50;
+        return helper.sleep(t, bob.insert());
+      }).then(function() {
+        return expectEvent(function() {
+          return dave.insert();
+        });
+      }).then(function() {
+        expect(results.length).to.be.equal(2);
+        expect(results[1].operation).to.be.equal("insert");
+        expect(results[1].matchType).to.be.equal("add");
+        expect(results[1].data.name).to.be.equal("Dave");
+        expect(results[1].index).to.be.equal(1);
+
+        return expectEvent(function() {
+          return carl.save();
+        });
+      }).then(function() {
+        expect(results.length).to.be.equal(3);
+        expect(results[2].operation).to.be.equal("insert");
+        expect(results[2].matchType).to.be.equal("add");
+        expect(results[2].data.name).to.be.equal("Carl");
+        expect(results[2].index).to.be.equal(1);
+        return expectEvent(function() {
+          return dan.insert();
+        });
+      }).then(function() {
+        expect(results.length).to.be.equal(5);
+        expect(results[3].operation).to.be.equal('none'); //transitive remove --> the was no operation on this objects
+        expect(results[3].matchType).to.be.equal("remove");
+        expect(results[3].data.name).to.be.equal("Dave");
+        expect(results[3].index).to.be.equal(undefined);
+        expect(results[4].operation).to.be.equal("insert");
+        expect(results[4].matchType).to.be.equal("add");
+        expect(results[4].data.name).to.be.equal("Dan");
+        expect(results[4].index).to.be.equal(2);
+      });
+    });
+
+    it("should return 'none'-operation matches", function() {
+      this.timeout(3000);
+      var results = [];
+      var al = newPerson(49, 'Al');
+      var bob = newPerson(49, 'Bob');
+      var carl = newPerson(49, 'Carl');
+      var dave = newPerson(49, 'Dave');
+      var dan = newPerson(49, 'Dan');
+
+      return helper.sleep(t, al.insert()).then(function() {
+        var query = db[bucket].find();
+        var condition1 = query.equal("age", 49);
+        var condition2 = query.equal('testID', sameForAll);
+        stream = query.and(condition1, condition2).limit(3).ascending("name").stream({
+          initial: true,
+          operations: 'none'
+        });
+
+        subscription = stream.subscribe(function(e) {
+          results.push(e);
+        });
+      }).then(function() {
+        return expectEvent();
+      }).then(function() {
+        expect(results.length).to.be.equal(1);
+        expect(results[0].operation).to.be.equal('none'); // initial match --> there was no operation on this objects
+        expect(results[0].matchType).to.be.equal("add");
+        expect(results[0].data.name).to.be.equal("Al");
+        expect(results[0].index).to.be.equal(0);
+
+        bob.age = 50;
+        return helper.sleep(t, bob.insert());
+      }).then(function() {
+        expect(results.length).to.be.equal(1);
+
+        return helper.sleep(t, dave.insert());
+      }).then(function() {
+        expect(results.length).to.be.equal(1);
+
+        return helper.sleep(t, carl.insert());
+      }).then(function() {
+        expect(results.length).to.be.equal(1);
+
+        return helper.sleep(t, dan.insert());
+      }).then(function() {
+        expect(results.length).to.be.equal(2);
+        expect(results[1].operation).to.be.equal('none'); //transitive remove --> the was no operation on this objects
+        expect(results[1].matchType).to.be.equal("remove");
+        expect(results[1].data.name).to.be.equal("Dave");
+        expect(results[1].index).to.be.equal(undefined);
+      });
+    });
+
+    it("should return inserted object", function() {
+      var result;
+      var query = db[bucket].find().equal('testID', sameForAll);
+      stream = query.stream({initial: false, matchTypes: 'match'});
+      subscription = stream.subscribe(function(e) {
+        result = e;
+      });
+
+      return helper.sleep(t, insertPerson(29, "franz")).then(function() {
+        expect(result).to.be.ok;
+        expect(result.matchType).to.be.equal("match");
+        expect(result.data.age).to.be.equal(29);
+        expect(result.data.name).to.be.equal("franz");
+        expect(result.operation).to.be.equal("insert");
+        expect(result.target).to.be.equal(query);
+        expect(result.date.getTime()).be.ok;
+        expect(result.initial).not.be.true;
+      });
+    });
+
+    it("should resolve references from real-time matches", function() {
+      this.timeout(5000);
+      var franz, otherFranz;
+
+      stream = db[bucket].find().equal('testID', sameForAll).stream();
+      subscription = stream.subscribe(function(e) {
+        franz = e.data;
+      });
+
+      otherStream = otherDb[bucket].find().equal('testID', sameForAll).stream();
+      otherSubscription = otherStream.subscribe(function(e) {
+        otherFranz = e.data;
+      });
+
+      var person = newPerson(20, "franz");
+      // we don't wait for events, because we have to streams here and not only a single one
+      return helper.sleep(t, person.insert()).then(function() {
+        expect(franz).to.be.ok;
+        expect(otherFranz).to.be.ok;
+        expect(franz.name).to.be.equal("franz");
+        expect(franz.name).to.be.equal(otherFranz.name);
+
+        // update
+        franz.name = "franzl";
+        expect(franz.name).to.be.equal("franzl");
+        expect(otherFranz.name).to.be.equal("franz");
+        return helper.sleep(t, franz.update());
+      }).then(function() {
+        expect(franz.name).to.be.equal("franzl");
+        expect(franz.name).to.be.equal(otherFranz.name);
+        expect(franz.version).to.be.equal(2);
+        expect(franz.version).to.be.equal(otherFranz.version);
+
+        // update the other way around
+        otherFranz.name = "franzler";
+        expect(otherFranz.name).to.be.equal("franzler");
+        expect(franz.name).to.be.equal("franzl");
+        return helper.sleep(t, otherFranz.update());
+      }).then(function() {
+        expect(otherFranz.name).to.be.equal("franzler");
+        expect(franz.name).to.be.equal(otherFranz.name);
+        expect(otherFranz.version).to.be.equal(3);
+        expect(otherFranz.version).to.be.equal(franz.version);
+
+        // delete
+        return helper.sleep(t, otherFranz.delete());
+      }).then(function() {
+        expect(otherFranz.version).to.be.equal(null);
+        return expect(otherFranz.version).to.be.equal(franz.version);
+      });
+    });
+
+    it("should return removed object", function() {
+      var result;
+      var query = db[bucket].find().equal('testID', sameForAll);
+      stream = query.stream({initial: false, matchTypes: 'remove'});
+      subscription = stream.subscribe(function(e) {
+        result = e;
+      });
+
+      var person = newPerson();
+      return person.insert().then(function() {
+        return expectEvent(function() {
+          return person.delete();
+        });
+      }).then(function() {
+        expect(result.data.id).to.be.equal(person.id);
+        expect(result.matchType).to.be.equal("remove");
+        expect(result.operation).to.be.equal("delete");
+        expect(result.target).to.be.equal(query);
+        expect(result.date.getTime()).be.ok;
+        expect(result.initial).not.be.true;
+      });
+    });
+
+    it("should return all changes", function() {
+      var results = [];
+      stream = db[bucket].find().equal('testID', sameForAll).stream({initial: false, matchTypes: 'all'});
+      subscription = stream.subscribe(function(e) {
+        results.push(e);
+      });
+
+      var person = newPerson(29, 'Felix');
+
+      return expectEvent(function() {
+        return person.insert();
+      }).then(function() {
+        person.name = "Flo";
+        return expectEvent(function() {
+          return person.save();
+        });
+      }).then(function() {
+        return expectEvent(function() {
+          return person.delete();
+        });
+      }).then(function() {
+        expect(results.length).to.be.equal(3);
+        expect(results[0].operation).to.be.equal("insert");
+        expect(results[1].operation).to.be.equal("update");
+        expect(results[2].operation).to.be.equal("delete");
+        expect(results[2].data.id).to.be.equal(person.id);
+      });
+    });
+
+    it("should allow multiple listeners", function() {
+      var received = [];
+      var person = newPerson(33);
+
+      stream = db[bucket].find().equal('testID', sameForAll).stream({initial: false, matchTypes: 'match'});
+
+      var listener = function(e) {
+        received.push(e);
+        expect(e.data.id).to.be.equal(person.id);
+      };
+      subscription = stream.subscribe(listener);
+      otherSubscription = stream.subscribe(listener);
+
+
+      return expectEvent(function() {
+        return person.insert()
+      }).then(function() {
+        person.age = 32;
+        otherSubscription.unsubscribe();
+        return expectEvent(function() {
+          return person.save();
+        });
+      }).then(function() {
+        expect(received.length).to.be.equal(3);
+      });
+    });
+
+    it("should return the initial result", function() {
+      var people = [newPerson(), newPerson(), newPerson(), newPerson()];
+      return helper.sleep(t, Promise.all(people.map(function(p) {
+        p.insert();
+      }))).then(function() {
+        var received = [];
+        var query = db[bucket].find().equal('testID', sameForAll).limit(3);
+        stream = query.stream();
+        subscription = stream.subscribe(function(e) {
+          received.push(e);
+        });
+
+        return expectEvent().then(function() {
+          expect(received.length).to.be.equal(3);
+          return received.forEach(function(result) {
+            expect(result.matchType).to.be.equal("add");
+            expect(people).to.include(result.data);
+            expect(result.operation).to.be.equal('none');
+            expect(result.target).to.be.equal(query);
+            expect(result.date.getTime()).be.ok;
+            expect(result.initial).be.true;
+          });
+        });
+      });
+    });
+
+    it("should cancel serverside subscription", function() {
+      this.timeout(3000);
+      var socket;
+      var next = 0;
+      var msg = 0;
+
+      var onNext = function(match) { // onNext
+        next++;
+      };
+
+      var options = {
+        initial: false,
+        matchTypes: 'all'
+      };
+      stream = db[bucket].find().equal('testID', sameForAll).stream(options);
+      otherStream = db[bucket].find().equal('testID', sameForAll).stream(options);
+
+      return db.entityManagerFactory.websocket.open().then(function(s) {
+        socket = s;
+        socket.addEventListener('message', function listener() {
+          msg++;
+          if (msg > 5) {
+            socket.removeEventListener('message', listener);
+          }
+        })
+      }).then(function() {
+        subscription = stream.subscribe(onNext);
+        otherSubscription = otherStream.subscribe(onNext);
+        return helper.sleep(t);
+      }).then(function() {
+        expect(next).to.be.equal(0);
+        expect(msg).to.be.equal(2); //subscription messages
+        return helper.sleep(t, insertPerson());
+      }).then(function() {
+        expect(next).to.be.equal(2);
+        expect(msg).to.be.equal(4); //insert messages
+        subscription.unsubscribe();
+        otherSubscription.unsubscribe();
+        return helper.sleep(t);
+      }).then(function() {
+        return helper.sleep(t, insertPerson());
+      }).then(function() {
+        expect(next).to.be.equal(2);
+        expect(msg).to.be.equal(4); //no insert message
+      });
+    });
+
+    it("should allow to unregister by unsubscribing subscription", function() {
+      var calls = 0;
+      var listener = function(e) {
+        calls++;
+      };
+      stream = db[bucket].find().equal('testID', sameForAll).stream({
+        initial: false,
+        matchTypes: 'match'
+      });
+      subscription = stream.subscribe(listener);
+
+      var john = newPerson(20);
+      return expectEvent(function() {
+        return john.insert();
+      }).then(function() {
+        expect(calls).to.be.equal(1);
+        subscription.unsubscribe();
+        john.age = 25;
+        return helper.sleep(t, john.save());
+      }).then(function() {
+        expect(calls).to.be.equal(1);
+      });
+    });
+
+    it("should raise error on subscription: missing limit on order-by", function() {
       var next = 0;
       var errors = 0;
 
@@ -340,10 +831,8 @@ describe("New Streaming Queries", function() {
           .ascending('name')
           .stream();
 
+      subscription = stream.subscribe(onNext, onError);
       return helper.sleep(t).then(function() {
-        subscription = stream.subscribe(onNext, onError);
-        return helper.sleep(t);
-      }).then(function() {
         expect(next).to.be.equal(0);
         expect(errors).to.be.equal(1);
       });
@@ -358,6 +847,7 @@ describe("New Streaming Queries", function() {
             DB.Observable = Rx.Observable;
           });
         }
+        return clearAll();
       });
 
       after(function() {
@@ -367,35 +857,26 @@ describe("New Streaming Queries", function() {
       });
 
       it("should only be called once", function() {
+        stream = db[bucket].find().equal('testID', sameForAll).stream();
         var calls = 0;
         var listener = function(e) {
-          expect(++calls).to.be.at.most(1);
+          calls++;
         };
-        stream = db[bucket].find().where(tautology('should only be called once')).stream({initial: false, matchTypes: 'match'});
         subscription = stream.first().subscribe(listener);
 
-        var insert;
-        return helper.sleep(t).then(function() {
-          insert = db[bucket].fromJSON({
-            name: 'John',
-            age: 45,
-            date: new Date('1978-02-03T00:00Z'),
-            address: new db.QueryAddress({city: 'Hamburg', zip: 22865}),
-            colors: new DB.List(['red', 'green']),
-            birthplace: new DB.GeoPoint(35, 110)
-          });
-          return insert.insert();
-        }).then(function() {
-          insert.name = "";
-          return helper.sleep(t, insert.save())
+        // waiting for events does not work, because of interference between subscribing and unsubscribing
+        var john = newPerson(49);
+        return helper.sleep(t, john.insert()).then(function() {
+          expect(calls).to.be.equal(1);
+          john.age = 50;
+          return helper.sleep(t, john.save());
         }).then(function() {
           expect(calls).to.be.equal(1);
         });
       });
 
-      it("should compute aggregate: average", function() {//TODO broken!
-        this.timeout(3000);
-        stream = db[bucket].find().where({$or: [{average: {$exists: true}}, {average: {$exists: false}}]}).stream({initial: false});
+      it("should compute aggregate: average", function() {
+        stream = db[bucket].find().equal('testID', sameForAll).stream();
         var initialAccumulator = {
           contributors: {},// individual activity counts go here
           count: 0,// result set cardinality
@@ -425,40 +906,25 @@ describe("New Streaming Queries", function() {
         });
 
         var person;
-        return helper.sleep(t).then(function() {
-          console.log("no matching person --> average age: " + average);
-          expect(average).to.be.equal(undefined);
-          person = new db[bucket]({
-            key: 'albert',
-            name: 'Albert',
-            age: 49
-          });
-          return helper.sleep(t, person.save());
-        }).then(function() {
-          console.log("new match: Albert (49) --> average age: " + average);
+        insertPerson(49);
+        return expectEvent().then(function() {
           expect(average).to.be.equal(49);
-          person = new db[bucket]({
-            key: 'bob',
-            name: 'Bob',
-            age: 51
-          });
-          return helper.sleep(t, person.save());
+          return insertPerson(51);
         }).then(function() {
-          console.log("new match: Bob (51) --> average age: " + average);
+          return expectEvent();
+        }).then(function() {
           expect(average).to.be.equal(50);
-          person = new db[bucket]({
-            key: 'carl',
-            name: 'Carl',
-            age: 59
-          });
-          return helper.sleep(t, person.save());
+          person = newPerson(59);
+          return person.insert();
         }).then(function() {
-          console.log("new match: Carl (59) --> average age: " + average);
+          return expectEvent();
+        }).then(function() {
           expect(average).to.be.equal(53);
-          return helper.sleep(t, person.delete());
+          return person.delete();
+        }).then(function() {
+          return expectEvent();
         }).then(helper.sleep(t)).then(function() {
-          console.log("new MISmatch: Carl (59) --> average age: " + average);
-          expect(average).to.be.equal(50);
+          return expect(average).to.be.equal(50);
         });
       });
     });
@@ -875,48 +1341,6 @@ describe("New Streaming Queries", function() {
     });
   });
 
-  /* Some generic describe block
-
-
-   describe('describe block', function() {
-   var sub, result, expectedResult = [], offset = 5, limit = 10, otherDb;
-
-   before(function() {
-   return null;
-   });
-
-   after(function() {
-   if (sub){
-   sub.unsubscribe();
-   }
-   });
-
-   beforeEach(function() {
-   });
-
-   afterEach(function() {
-   });
-
-   it('should test something', function() {
-   doStuffWith(something);
-
-   return helper.sleep(t).then(function() {
-   return helper.sleep(t, al.save());
-   }).then(function() {
-   return helper.sleep(t, bob.save());// result: Al, [ Bob ]
-   }).then(function() {
-   return helper.sleep(t).then(function() {
-   var bob = new db[bucket]({
-   key: 'bob',
-   name: 'Bob',
-   age: 50
-   });
-   return bob.save();
-   });
-   });
-   });
-   });
-
-   */
-});
+})
+;
 
