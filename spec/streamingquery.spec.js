@@ -21,7 +21,7 @@ describe("New Streaming Queries", function() {
   function expectEvent(matchType, todoAfterSubscription) {
     return new Promise(function(resolve, reject) {
       var sub = stream.subscribe(function(e) {
-        if (!e.initial && (!matchType || matchType === 'all' || matchType === e.matchType)) {
+        if (!matchType || matchType === 'all' || matchType === e.matchType) {
           sub.unsubscribe();
           resolve(e);
         }
@@ -996,7 +996,8 @@ describe("New Streaming Queries", function() {
         });
 
         var person;
-        return helper.sleep(t,insertPerson(49)).then(function() { 
+        return expectEvent('all', function() {
+          return insertPerson(49);
         }).then(function() {
           expect(average).to.be.equal(49);
           return expectEvent('all', function() {
