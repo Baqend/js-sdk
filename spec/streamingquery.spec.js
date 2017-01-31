@@ -13,7 +13,7 @@ describe("New Streaming Queries", function() {
   }
 
   var Stream = DB.query.Stream;
-  var t = 500;
+  var t = 1000;
   var bucket = helper.randomize("StreamingQueryPerson");
   var emf, metamodel, db, otherDb, query, otherQuery, stream, otherStream, subscription, otherSubscription;
   var sameForAll = helper.randomize("same for all persons in the current test");
@@ -27,17 +27,29 @@ describe("New Streaming Queries", function() {
         }
       });
       if (todoAfterSubscription) {
-        /*
-         helper.sleep(t).then(function() {
-         return todoAfterSubscription();
-         });
-         */
         todoAfterSubscription();
       }
 
       setTimeout(function() {
         sub.unsubscribe();
         reject(new Error('Wait on event timed out.'));
+      }, t);
+    });
+  }
+
+  function expectNoEvent(todoAfterSubscription) {
+    return new Promise(function(resolve, reject) {
+      var sub = stream.subscribe(function(e) {
+        sub.unsubscribe();
+        reject(e);
+      });
+      if (todoAfterSubscription) {
+        todoAfterSubscription();
+      }
+
+      setTimeout(function() {
+        sub.unsubscribe();
+        resolve();
       }, t);
     });
   }
@@ -113,7 +125,7 @@ describe("New Streaming Queries", function() {
     }
   }
 
-  function clearAll() {
+  function clearAll() { 
     clearSubs();
     return helper.sleep(t).then(function() {// wait to avoid abort through conflict
       return helper.sleep(t, clearBucket());//wait to make sure that errors are thrown before the function returns
@@ -309,6 +321,7 @@ describe("New Streaming Queries", function() {
     });
 
     it("should use websocket configuration of the connect script", function() {
+      this.timeout(10000);
       return new DB.EntityManagerFactory({
         host: env.TEST_SERVER,
         schema: {},
@@ -321,6 +334,7 @@ describe("New Streaming Queries", function() {
     });
 
     it("should unsubscribe streamResult immediately", function() {
+      this.timeout(10000);
       var result, inserts;
 
       // Insert a bunch of elements
@@ -365,7 +379,7 @@ describe("New Streaming Queries", function() {
     beforeEach(clearSubs)
 
     it("should return updated object", function() {
-      this.timeout(90000);
+      this.timeout(10000);
       sameForAll = helper.randomize(this.test.title);
       var result;
       query = db[bucket].find().equal('testID', sameForAll);
@@ -376,7 +390,9 @@ describe("New Streaming Queries", function() {
       var person = newPerson(29, "Feelliiix");
 
       return helper.sleep(t).then(function() {
-        return helper.sleep(t, person.insert());
+        return expectNoEvent(function() {
+          return person.insert();
+        });
       }).then(function() {
         expect(result).to.be.not.ok;
 
@@ -396,7 +412,7 @@ describe("New Streaming Queries", function() {
     });
 
     it("should maintain offset", function() {
-      this.timeout(90000);
+      this.timeout(10000);
       sameForAll = helper.randomize(this.test.title);
       var results = [];
       query = db[bucket].find().equal('testID', sameForAll).limit(2).offset(1).ascending("name");
@@ -412,53 +428,56 @@ describe("New Streaming Queries", function() {
       var carl = newPerson(49, 'Carl');
       var dave = newPerson(49, 'Dave');
 
-      return helper.sleep(t, al.insert())// result: Al, [ ]
-          .then(function() {
-            expect(results.length).to.be.equal(0);  // nothing, yet
+      return expectNoEvent(function() {
+        return al.insert();// result: Al, [ ]
+      }).then(function() {
+        expect(results.length).to.be.equal(0);  // nothing, yet
 
-            return expectEvent('all', function() {
-              return bob.insert();// result: Al, [ Bob ]
-            });
-          }).then(function() {
-            expect(results.length).to.be.equal(1);
-            expect(results[0].operation).to.be.equal("insert");
-            expect(results[0].matchType).to.be.equal("add");
-            expect(results[0].data.name).to.be.equal("Bob");
-            expect(results[0].index).to.be.equal(0);
+        return expectEvent('all', function() {
+          return bob.insert();// result: Al, [ Bob ]
+        });
+      }).then(function() {
+        expect(results.length).to.be.equal(1);
+        expect(results[0].operation).to.be.equal("insert");
+        expect(results[0].matchType).to.be.equal("add");
+        expect(results[0].data.name).to.be.equal("Bob");
+        expect(results[0].index).to.be.equal(0);
 
-            return expectEvent('all', function() {
-              return dave.insert();// result: Al, [ Bob, Dave ]
-            });
-          }).then(function() {
-            expect(results.length).to.be.equal(2);
-            expect(results[1].operation).to.be.equal("insert");
-            expect(results[1].matchType).to.be.equal("add");
-            expect(results[1].data.name).to.be.equal("Dave");
-            expect(results[1].index).to.be.equal(1);
+        return expectEvent('all', function() {
+          return dave.insert();// result: Al, [ Bob, Dave ]
+        });
+      }).then(function() {
+        expect(results.length).to.be.equal(2);
+        expect(results[1].operation).to.be.equal("insert");
+        expect(results[1].matchType).to.be.equal("add");
+        expect(results[1].data.name).to.be.equal("Dave");
+        expect(results[1].index).to.be.equal(1);
 
-            return expectEvent('add', function() {
-              return carl.insert();// result: Al, [ Bob, Carl ], Dave
-            });
-          }).then(function() {
-            expect(results.length).to.be.equal(4);
-            expect(results[2].operation).to.be.equal('none');
-            expect(results[2].matchType).to.be.equal("remove");
-            expect(results[2].data.name).to.be.equal("Dave");
-            expect(results[2].index).to.be.equal(undefined);
-            expect(results[3].operation).to.be.equal("insert");
-            expect(results[3].matchType).to.be.equal("add");
-            expect(results[3].data.name).to.be.equal("Carl");
-            expect(results[3].index).to.be.equal(1);
+        return expectEvent('add', function() {
+          return carl.insert();// result: Al, [ Bob, Carl ], Dave
+        });
+      }).then(function() {
+        expect(results.length).to.be.equal(4);
+        expect(results[2].operation).to.be.equal('none');
+        expect(results[2].matchType).to.be.equal("remove");
+        expect(results[2].data.name).to.be.equal("Dave");
+        expect(results[2].index).to.be.equal(undefined);
+        expect(results[3].operation).to.be.equal("insert");
+        expect(results[3].matchType).to.be.equal("add");
+        expect(results[3].data.name).to.be.equal("Carl");
+        expect(results[3].index).to.be.equal(1);
 
-            al.name = "Alvin";
-            return helper.sleep(t, al.save());// result: Al, [ Bob, Carl ], Dave   | Updated in offset--> No notification
-          }).then(function() {
-            expect(results.length).to.be.equal(4);
-          });
+        al.name = "Alvin";
+        return expectNoEvent(function() {
+          return al.save();// result: Al, [ Bob, Carl ], Dave   | Updated in offset--> No notification
+        });
+      }).then(function() {
+        expect(results.length).to.be.equal(4);
+      });
     });
 
     it("should return ordered result", function() {
-      this.timeout(90000);
+      this.timeout(10000);
       sameForAll = helper.randomize(this.test.title);
 
       var results = [];
@@ -490,7 +509,9 @@ describe("New Streaming Queries", function() {
         expect(results[0].index).to.be.equal(0);
 
         bob.age = 50;
-        return helper.sleep(t, bob.insert());
+        return expectNoEvent(function() {
+          return bob.insert();
+        });
       }).then(function() {
         return expectEvent('add', function() {
           return dave.insert();
@@ -529,7 +550,7 @@ describe("New Streaming Queries", function() {
     });
 
     it("should return 'none'-operation matches", function() {
-      this.timeout(90000);
+      this.timeout(10000);
       sameForAll = helper.randomize(this.test.title);
       var results = [];
       var al = newPerson(49, 'Al');
@@ -561,15 +582,21 @@ describe("New Streaming Queries", function() {
         expect(results[0].index).to.be.equal(0);
 
         bob.age = 50;
-        return helper.sleep(t, bob.insert());
+        return expectNoEvent(function() {
+          return bob.insert();
+        });
       }).then(function() {
         expect(results.length).to.be.equal(1);
 
-        return helper.sleep(t, dave.insert());
+        return expectNoEvent(function() {
+          return dave.insert();
+        });
       }).then(function() {
         expect(results.length).to.be.equal(1);
 
-        return helper.sleep(t, carl.insert());
+        return expectNoEvent(function() {
+          return carl.insert();
+        });
       }).then(function() {
         expect(results.length).to.be.equal(1);
 
@@ -586,7 +613,7 @@ describe("New Streaming Queries", function() {
     });
 
     it("should return inserted object", function() {
-      this.timeout(90000);
+      this.timeout(10000);
       sameForAll = helper.randomize(this.test.title);
       var result;
       query = db[bucket].find().equal('testID', sameForAll);
@@ -596,7 +623,9 @@ describe("New Streaming Queries", function() {
       });
 
       return helper.sleep(t).then(function() {
-        return helper.sleep(t, insertPerson(29, "franz"));
+        return expectEvent('all', function() {
+          return insertPerson(29, "franz");
+        });
       }).then(function() {
         expect(result).to.be.ok;
         expect(result.matchType).to.be.equal("match");
@@ -610,7 +639,7 @@ describe("New Streaming Queries", function() {
     });
 
     it("should resolve references from real-time matches", function() {
-      this.timeout(90000);
+      this.timeout(10000);
       sameForAll = helper.randomize(this.test.title);
       var franz, otherFranz;
 
@@ -665,7 +694,7 @@ describe("New Streaming Queries", function() {
     });
 
     it("should return removed object", function() {
-      this.timeout(90000);
+      this.timeout(10000);
       sameForAll = helper.randomize(this.test.title);
       var result;
       query = db[bucket].find().equal('testID', sameForAll);
@@ -676,9 +705,13 @@ describe("New Streaming Queries", function() {
 
       var person = newPerson();
       return helper.sleep(t).then(function() {
-        return helper.sleep(t, person.insert());
+        return expectNoEvent(function() {
+          return person.insert();
+        });
       }).then(function() {
-        return helper.sleep(t, person.delete());
+        return expectEvent('all', function() {
+          return person.delete();
+        });
       }).then(function() {
         expect(result.data.id).to.be.equal(person.id);
         expect(result.matchType).to.be.equal("remove");
@@ -690,7 +723,7 @@ describe("New Streaming Queries", function() {
     });
 
     it("should return all changes", function() {
-      this.timeout(90000);
+      this.timeout(10000);
       sameForAll = helper.randomize(this.test.title);
       var results = [];
       query = db[bucket].find().equal('testID', sameForAll);
@@ -702,12 +735,18 @@ describe("New Streaming Queries", function() {
       var person = newPerson(29, 'Felix');
 
       return helper.sleep(t).then(function() {
-        return helper.sleep(t, person.insert());
+        return expectEvent('all', function() {
+          return person.insert();
+        });
       }).then(function() {
         person.name = "Flo";
-        return helper.sleep(t, person.save());
+        return expectEvent('all', function() {
+          return person.save();
+        });
       }).then(function() {
-        return helper.sleep(t, person.delete());
+        return expectEvent('all', function() {
+          return person.delete();
+        });
       }).then(function() {
         expect(results.length).to.be.equal(3);
         expect(results[0].operation).to.be.equal("insert");
@@ -718,7 +757,7 @@ describe("New Streaming Queries", function() {
     });
 
     it("should allow multiple listeners", function() {
-      this.timeout(90000);
+      this.timeout(10000);
       sameForAll = helper.randomize(this.test.title);
       var received = [];
       var person = newPerson(33);
@@ -734,18 +773,22 @@ describe("New Streaming Queries", function() {
       otherSubscription = stream.subscribe(listener);
 
       return helper.sleep(t).then(function() {
-        return helper.sleep(t, person.insert());
+        return expectEvent('all', function() {
+          return person.insert();
+        });
       }).then(function() {
         person.age = 32;
         otherSubscription.unsubscribe();
-        return helper.sleep(t, person.save());
+        return expectEvent('all', function() {
+          return person.save();
+        });
       }).then(function() {
         expect(received.length).to.be.equal(3);
       });
     });
 
     it("should return the initial result", function() {
-      this.timeout(90000);
+      this.timeout(10000);
       sameForAll = helper.randomize(this.test.title);
       var people = [newPerson(), newPerson(), newPerson(), newPerson()];
       return helper.sleep(t, Promise.all(people.map(function(p) {
@@ -773,8 +816,9 @@ describe("New Streaming Queries", function() {
     });
 
     it("should cancel serverside subscription", function() {
-      this.timeout(90000);
+      this.timeout(10000);
       sameForAll = helper.randomize(this.test.title);
+
       var socket;
       var next = 0;
       var msg = 0;
@@ -823,7 +867,7 @@ describe("New Streaming Queries", function() {
     });
 
     it("should allow to unregister by unsubscribing subscription", function() {
-      this.timeout(90000);
+      this.timeout(10000);
       sameForAll = helper.randomize(this.test.title);
       var calls = 0;
       var listener = function(e) {
@@ -838,7 +882,9 @@ describe("New Streaming Queries", function() {
 
       var john = newPerson(20);
       return helper.sleep(t).then(function() {
-        return helper.sleep(t, john.insert());
+        return expectEvent('all', function() {
+          return john.insert();
+        });
       }).then(function() {
         expect(calls).to.be.equal(1);
         subscription.unsubscribe();
@@ -850,7 +896,7 @@ describe("New Streaming Queries", function() {
     });
 
     it("should raise error on subscription: missing limit on order-by", function() {
-      this.timeout(90000);
+      this.timeout(10000);
       sameForAll = helper.randomize(this.test.title);
       var next = 0;
       var errors = 0;
@@ -892,7 +938,7 @@ describe("New Streaming Queries", function() {
       });
 
       it("should only be called once", function() {
-        this.timeout(90000);
+        this.timeout(10000);
         sameForAll = helper.randomize(this.test.title);
         query = db[bucket].find().equal('testID', sameForAll);
         stream = query.stream();
@@ -914,7 +960,7 @@ describe("New Streaming Queries", function() {
       });
 
       it("should compute aggregate: average", function() {
-        this.timeout(90000);
+        this.timeout(10000);
         sameForAll = helper.randomize(this.test.title);
         query = db[bucket].find().equal('testID', sameForAll);
         stream = query.stream();
@@ -976,6 +1022,7 @@ describe("New Streaming Queries", function() {
     var maintainedResult, expectedResult = [], offset = 5, limit = 10;
 
     before(function() {
+      this.timeout(10000);
       return clearAll().then(function() {
         var inserts = 'abcdefghijklmnopqrst'.split('').map(function(char) {
           return insert(new db[bucket]({
