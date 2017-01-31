@@ -125,7 +125,7 @@ describe("New Streaming Queries", function() {
     }
   }
 
-  function clearAll() { 
+  function clearAll() {
     clearSubs();
     return helper.sleep(t).then(function() {// wait to avoid abort through conflict
       return helper.sleep(t, clearBucket());//wait to make sure that errors are thrown before the function returns
@@ -161,7 +161,10 @@ describe("New Streaming Queries", function() {
     });
   });
 
-  after(clearAll);
+  after(function() {
+    this.timeout(10000);
+    return clearAll();
+  });
 
   describe('general', function() {
 
@@ -993,8 +996,7 @@ describe("New Streaming Queries", function() {
         });
 
         var person;
-        return expectEvent('all', function() {
-          return insertPerson(49);
+        return helper.sleep(t,insertPerson(49)).then(function() { 
         }).then(function() {
           expect(average).to.be.equal(49);
           return expectEvent('all', function() {
