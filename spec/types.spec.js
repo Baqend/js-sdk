@@ -172,6 +172,7 @@ describe('Test entity type', function () {
         expect(obj.file.id).equals(ref.id);
         expect(obj.file).not.equal(ref);
         expect(obj.file instanceof em.File).to.be.true;
+        expect(obj.file.url).contains('/file/test/myFile.png');
       });
     });
   });
