@@ -18,7 +18,7 @@ describe("New Streaming Queries", function() {
   var emf, metamodel, db, otherDb, query, otherQuery, stream, otherStream, subscription, otherSubscription;
   var sameForAll = helper.randomize("same for all persons in the current test");
 
-  function expectEvent(matchType, todoAfterSubscription) {
+  function expectEvent(matchType) {
     return new Promise(function(resolve, reject) {
       var sub = stream.subscribe(function(e) {
         if (!matchType || matchType === 'all' || matchType === e.matchType) {
@@ -26,9 +26,6 @@ describe("New Streaming Queries", function() {
           resolve(e);
         }
       });
-      if (todoAfterSubscription) {
-        todoAfterSubscription();
-      }
 
       setTimeout(function() {
         sub.unsubscribe();
@@ -37,15 +34,12 @@ describe("New Streaming Queries", function() {
     });
   }
 
-  function expectNoEvent(todoAfterSubscription) {
+  function expectNoEvent() {
     return new Promise(function(resolve, reject) {
       var sub = stream.subscribe(function(e) {
         sub.unsubscribe();
         reject(e);
       });
-      if (todoAfterSubscription) {
-        todoAfterSubscription();
-      }
 
       setTimeout(function() {
         sub.unsubscribe();
@@ -393,16 +387,16 @@ describe("New Streaming Queries", function() {
       var person = newPerson(29, "Feelliiix");
 
       return helper.sleep(t).then(function() {
-        return expectNoEvent(function() {
-          return person.insert();
-        });
+        var event = expectNoEvent();
+        person.insert();
+        return event;
       }).then(function() {
         expect(result).to.be.not.ok;
 
-        return expectEvent('change', function() {
-          person.name = "Felix";
-          return person.save();
-        });
+        var event = expectEvent();
+        person.name = "Felix";
+        person.save();
+        return event;
       }).then(function() {
         expect(result).to.be.ok;
         expect(result.matchType).to.be.equal("change");
@@ -431,14 +425,14 @@ describe("New Streaming Queries", function() {
       var carl = newPerson(49, 'Carl');
       var dave = newPerson(49, 'Dave');
 
-      return expectNoEvent(function() {
-        return al.insert();// result: Al, [ ]
-      }).then(function() {
+      var event = expectNoEvent();
+      al.insert();// result: Al, [ ]
+      return event.then(function() {
         expect(results.length).to.be.equal(0);  // nothing, yet
 
-        return expectEvent('all', function() {
-          return bob.insert();// result: Al, [ Bob ]
-        });
+        var event = expectEvent();
+        bob.insert();// result: Al, [ Bob ]
+        return event;
       }).then(function() {
         expect(results.length).to.be.equal(1);
         expect(results[0].operation).to.be.equal("insert");
@@ -446,9 +440,9 @@ describe("New Streaming Queries", function() {
         expect(results[0].data.name).to.be.equal("Bob");
         expect(results[0].index).to.be.equal(0);
 
-        return expectEvent('all', function() {
-          return dave.insert();// result: Al, [ Bob, Dave ]
-        });
+        var event = expectEvent();
+        dave.insert();// result: Al, [ Bob, Dave ]
+        return event;
       }).then(function() {
         expect(results.length).to.be.equal(2);
         expect(results[1].operation).to.be.equal("insert");
@@ -456,9 +450,9 @@ describe("New Streaming Queries", function() {
         expect(results[1].data.name).to.be.equal("Dave");
         expect(results[1].index).to.be.equal(1);
 
-        return expectEvent('add', function() {
-          return carl.insert();// result: Al, [ Bob, Carl ], Dave
-        });
+        var event = expectEvent('add');
+        carl.insert();// result: Al, [ Bob, Carl ], Dave
+        return event;
       }).then(function() {
         expect(results.length).to.be.equal(4);
         expect(results[2].operation).to.be.equal('none');
@@ -470,10 +464,10 @@ describe("New Streaming Queries", function() {
         expect(results[3].data.name).to.be.equal("Carl");
         expect(results[3].index).to.be.equal(1);
 
+        var event = expectNoEvent();
         al.name = "Alvin";
-        return expectNoEvent(function() {
-          return al.save();// result: Al, [ Bob, Carl ], Dave   | Updated in offset--> No notification
-        });
+        al.save();// result: Al, [ Bob, Carl ], Dave   | Updated in offset--> No notification
+        return event;
       }).then(function() {
         expect(results.length).to.be.equal(4);
       });
@@ -501,9 +495,9 @@ describe("New Streaming Queries", function() {
       });
 
       return helper.sleep(t).then(function() {
-        return expectEvent('add', function() {
-          return al.insert();
-        });
+        var event = expectEvent();
+        al.insert();
+        return event;
       }).then(function() {
         expect(results.length).to.be.equal(1);
         //operation could be either 'insert' or 'none'
@@ -512,13 +506,13 @@ describe("New Streaming Queries", function() {
         expect(results[0].index).to.be.equal(0);
 
         bob.age = 50;
-        return expectNoEvent(function() {
-          return bob.insert();
-        });
+        var event = expectNoEvent();
+        bob.insert();
+        return event;
       }).then(function() {
-        return expectEvent('add', function() {
-          return dave.insert();
-        });
+        var event = expectEvent();
+        dave.insert();
+        return event;
       }).then(function() {
         expect(results.length).to.be.equal(2);
         expect(results[1].operation).to.be.equal("insert");
@@ -526,9 +520,9 @@ describe("New Streaming Queries", function() {
         expect(results[1].data.name).to.be.equal("Dave");
         expect(results[1].index).to.be.equal(1);
 
-        return expectEvent('add', function() {
-          return carl.insert();
-        });
+        var event = expectEvent();
+        carl.insert();
+        return event;
       }).then(function() {
         expect(results.length).to.be.equal(3);
         expect(results[2].operation).to.be.equal("insert");
@@ -536,9 +530,9 @@ describe("New Streaming Queries", function() {
         expect(results[2].data.name).to.be.equal("Carl");
         expect(results[2].index).to.be.equal(1);
 
-        return expectEvent('add', function() {
-          return dan.insert();
-        });
+        var event = expectEvent('add');
+        dan.insert();
+        return event;
       }).then(function() {
         expect(results.length).to.be.equal(5);
         expect(results[3].operation).to.be.equal('none'); //transitive remove --> the was no operation on this objects
@@ -584,28 +578,28 @@ describe("New Streaming Queries", function() {
         expect(results[0].data.name).to.be.equal("Al");
         expect(results[0].index).to.be.equal(0);
 
+        var event = expectNoEvent();
         bob.age = 50;
-        return expectNoEvent(function() {
-          return bob.insert();
-        });
+        bob.insert();
+        return event;
       }).then(function() {
         expect(results.length).to.be.equal(1);
 
-        return expectNoEvent(function() {
-          return dave.insert();
-        });
+        var event = expectNoEvent();
+        dave.insert();
+        return event;
       }).then(function() {
         expect(results.length).to.be.equal(1);
 
-        return expectNoEvent(function() {
-          return carl.insert();
-        });
+        var event = expectNoEvent();
+        carl.insert();
+        return event;
       }).then(function() {
         expect(results.length).to.be.equal(1);
 
-        return expectEvent('all', function() {
-          return dan.insert();
-        });
+        var event = expectEvent();
+        dan.insert();
+        return event;
       }).then(function() {
         expect(results.length).to.be.equal(2);
         expect(results[1].operation).to.be.equal('none'); //transitive remove --> the was no operation on this objects
@@ -626,9 +620,9 @@ describe("New Streaming Queries", function() {
       });
 
       return helper.sleep(t).then(function() {
-        return expectEvent('all', function() {
-          return insertPerson(29, "franz");
-        });
+        var event = expectEvent();
+        insertPerson(29, "franz");
+        return event;
       }).then(function() {
         expect(result).to.be.ok;
         expect(result.matchType).to.be.equal("match");
@@ -708,13 +702,13 @@ describe("New Streaming Queries", function() {
 
       var person = newPerson();
       return helper.sleep(t).then(function() {
-        return expectNoEvent(function() {
-          return person.insert();
-        });
+        var event = expectNoEvent();
+        person.insert();
+        return event;
       }).then(function() {
-        return expectEvent('all', function() {
-          return person.delete();
-        });
+        var event = expectEvent();
+        person.delete();
+        return event;
       }).then(function() {
         expect(result.data.id).to.be.equal(person.id);
         expect(result.matchType).to.be.equal("remove");
@@ -738,18 +732,18 @@ describe("New Streaming Queries", function() {
       var person = newPerson(29, 'Felix');
 
       return helper.sleep(t).then(function() {
-        return expectEvent('all', function() {
-          return person.insert();
-        });
+        var event = expectEvent();
+        person.insert();
+        return event;
       }).then(function() {
         person.name = "Flo";
-        return expectEvent('all', function() {
-          return person.save();
-        });
+        var event = expectEvent();
+        person.save();
+        return event;
       }).then(function() {
-        return expectEvent('all', function() {
-          return person.delete();
-        });
+        var event = expectEvent();
+        person.delete();
+        return event;
       }).then(function() {
         expect(results.length).to.be.equal(3);
         expect(results[0].operation).to.be.equal("insert");
@@ -776,15 +770,15 @@ describe("New Streaming Queries", function() {
       otherSubscription = stream.subscribe(listener);
 
       return helper.sleep(t).then(function() {
-        return expectEvent('all', function() {
-          return person.insert();
-        });
+        var event = expectEvent();
+        person.insert();
+        return event;
       }).then(function() {
         person.age = 32;
         otherSubscription.unsubscribe();
-        return expectEvent('all', function() {
-          return person.save();
-        });
+        var event = expectEvent();
+        person.save();
+        return event;
       }).then(function() {
         expect(received.length).to.be.equal(3);
       });
@@ -885,9 +879,9 @@ describe("New Streaming Queries", function() {
 
       var john = newPerson(20);
       return helper.sleep(t).then(function() {
-        return expectEvent('all', function() {
-          return john.insert();
-        });
+        var event = expectEvent();
+        john.insert();
+        return event;
       }).then(function() {
         expect(calls).to.be.equal(1);
         subscription.unsubscribe();
@@ -996,24 +990,25 @@ describe("New Streaming Queries", function() {
         });
 
         var person;
-        return expectEvent('all', function() {
-          return insertPerson(49);
-        }).then(function() {
+        var event = expectEvent();
+        insertPerson(49);
+        return event.then(function() {
           expect(average).to.be.equal(49);
-          return expectEvent('all', function() {
-            return insertPerson(51);
-          });
+          var event = expectEvent();
+          insertPerson(51);
+          return event;
         }).then(function() {
           expect(average).to.be.equal(50);
-          return expectEvent('all', function() {
-            person = newPerson(59);
-            return person.insert();
-          });
+
+          var event = expectEvent();
+          person = newPerson(59);
+          person.insert();
+          return event;
         }).then(function() {
           expect(average).to.be.equal(53);
-          return expectEvent('all', function() {
-            return person.delete();
-          });
+          var event = expectEvent();
+          person.delete();
+          return event;
         }).then(helper.sleep(t)).then(function() {
           return expect(average).to.be.equal(50);
         });
