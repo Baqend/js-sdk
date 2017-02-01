@@ -6,9 +6,9 @@ if (typeof module != 'undefined') {
   require('rxjs/add/operator/scan');
   require('rxjs/add/operator/map');
 }
-describe("New Streaming Queries", function() {
+describe("Streaming Queries", function() {
   // skips test for ie9 and ie10
-  if (typeof window != 'undefined' && !window.WebSocket) {
+  if (helper.isIE && !helper.isIE11) {
     return;
   }
 
