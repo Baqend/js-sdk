@@ -892,7 +892,7 @@ describe("Streaming Queries", function() {
       });
     });
 
-    it("should raise error on subscription: missing limit on order-by", function() {
+    it("should raise error on subscription: limit + offset must not exceed 500 on order-by", function() {
       this.timeout(10000);
       sameForAll = helper.randomize(this.test.title);
       var next = 0;
@@ -906,7 +906,7 @@ describe("Streaming Queries", function() {
       };
 
       query = db[bucket].find()
-          .matches('name', /^My Todo/)
+          .matches('name', /^My Todo/).offset(500).limit(1)
           .ascending('name');
       stream = query.stream();
 
