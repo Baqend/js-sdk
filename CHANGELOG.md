@@ -1,3 +1,13 @@
+<a name="v2.5.1"></a>
+# v2.5.1 (2017-1-26)
+
+
+### Bug Fixes
+
+* Fix file object creation while resolving file references
+* Add createdAt and updatedAt to typings
+* Make typings compatible to Angular 2 AOT compiling
+
 <a name="v2.5.0"></a>
 # v2.5.0 (2017-1-6)
 
