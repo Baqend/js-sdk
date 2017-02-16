@@ -1,3 +1,14 @@
+<a name="v2.6.0"></a>
+# v2.6.0 (2017-2-6)
+
+
+## If your app was created after Feburary 06 2017, the minimum required SDK version 2.6.0.
+
+### Features
+
+* Using new connection string. Your app is now accessible via HTTPS and HTTP/2 at <appname>.app.baqend.com.
+* Added function to request a reset password e-mail.
+
 <a name="v2.5.1"></a>
 # v2.5.1 (2017-1-26)
 
