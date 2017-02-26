@@ -1,8 +1,8 @@
 "use strict";
-var CommunicationError = require('../../lib/error/CommunicationError');
-var WebSocket = require('./websocket').WebSocket;
-var lib = require('../../lib');
-var util = require('../../lib/util/util');
+const CommunicationError = require('../../lib/error/CommunicationError');
+const WebSocket = require('./websocket').WebSocket;
+const lib = require('../../lib');
+const util = require('../../lib/util/util');
 
 /**
  * @alias connector.WebSocketConnector
@@ -15,7 +15,7 @@ class WebSocketConnector {
    * @return {connector.WebSocketConnector} a websocket connection
    */
   static create(url) {
-    var websocket = this.websockets[url];
+    let websocket = this.websockets[url];
     if (!websocket) {
       websocket = new WebSocketConnector(url);
       this.websockets[url] = websocket;
@@ -37,29 +37,40 @@ class WebSocketConnector {
       const socket = new WebSocket(this.url);
       let socketPromise;
 
-      var handleSocketCompletion = (error) => {
-        Object.keys(this.observers).forEach(id => {
-          error? this.observers[id].error(error): this.observers[id].complete();
-          delete this.observers[id];
-        });
+      const handleSocketCompletion = (error) => {
+        //observable error calls can throw an exception therefore cleanup beforehand
         if (this.socket == socketPromise)
           this.socket = null;
+
+        let firstErr;
+        Object.keys(this.observers).forEach(id => {
+          try {
+            error? this.observers[id].error(error): this.observers[id].complete();
+          } catch (e) {
+            if (!firstErr)
+              firstErr = e;
+          }
+          delete this.observers[id];
+        });
+
+        if (firstErr)
+          throw firstErr;
       };
 
       socket.onerror = handleSocketCompletion;
       socket.onclose = handleSocketCompletion;
       socket.onmessage = (event) => {
-        var message = JSON.parse(event.data);
+        const message = JSON.parse(event.data);
         message.date = new Date(message.date);
 
-        var id = message.id;
+        const id = message.id;
         if (!id) {
           if (message.type == 'error')
             handleSocketCompletion(new CommunicationError(null, message));
           return;
         }
 
-        var observer = this.observers[id];
+        const observer = this.observers[id];
         if (observer) {
           if (message.type == "error") {
             observer.error(new CommunicationError(null, message));
@@ -109,7 +120,7 @@ class WebSocketConnector {
         message.id = id;
         if (tokenStorage.token)
           message.token = tokenStorage.token;
-        var jsonMessage = JSON.stringify(message);
+        const jsonMessage = JSON.stringify(message);
         socket.send(jsonMessage);
       });
     };
