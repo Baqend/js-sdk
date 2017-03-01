@@ -13,31 +13,42 @@ module.exports = function(args) {
     return account.login({app: args.app, host: args.host}).then((db) => {
       if (!args.code && !args.files || args.code && args.files) {
         return Promise.all([
-          deployFiles(db, args.fileDir, args.fileGlob),
+          deployFiles(db, args.bucketPath, args.fileDir, args.fileGlob),
           deployCode(db, args.codeDir)
         ]);
       } else if (args.code) {
         return deployCode(db, args.codeDir);
       } else if (args.files) {
-        return deployFiles(db, args.fileDir, args.fileGlob);
+        return deployFiles(db, args.bucketPath, args.fileDir, args.fileGlob);
       }
     });
   }
 };
 
-function deployFiles(db, cwd, pattern) {
+function deployFiles(db, path, cwd, pattern) {
+  while (path.length && path.charAt(0) == '/')
+    path = path.substring(1);
+
+  while (path.length && path.charAt(path.length - 1) == '/')
+    path = path.substring(0, path.length - 1);
+
+  if (!path.length) {
+    console.error('Invalid bucket-path ' + path);
+    return;
+  }
+
   return new Promise((resolve, reject) => {
     glob(pattern, {nodir: true, cwd}, (er, files) => {
       if (er)
         reject(er);
       else
-        resolve(uploadFiles(db, files, cwd));
+        resolve(uploadFiles(db, path, files, cwd));
     });
   }).then((result) => {
     if (result && result.length > 0) {
       console.log('File deployment completed.');
     } else {
-      console.warn('No files where uploaded.');
+      console.warn('Your specified upload folder is empty, no files where uploaded.');
     }
   })
 }
@@ -58,7 +69,7 @@ function deployCode(db, codePath) {
       console.error(`Failed to deploy code: ${e.message}`);
     });
   }).catch(() => {
-    console.warn(`Code deployment skipped, the code folder ${codePath} does not exists.`);
+    console.warn('Your specified backend code folder is empty, no backend code was deployed.');
   });
 }
 
@@ -115,7 +126,7 @@ function uploadCode(db, name, codePath) {
   });
 }
 
-function uploadFiles(db, files, cwd) {
+function uploadFiles(db, bucket, files, cwd) {
   let isTty = process.stdout.isTTY;
   let index = 0;
 
@@ -146,17 +157,17 @@ function uploadFiles(db, files, cwd) {
         console.log(''); //add a final linebreak
       }
 
-      return uploadFile(db, file, cwd).then(upload);
+      return uploadFile(db, bucket, file, cwd).then(upload);
     }
   }
 }
 
-function uploadFile(db, filePath, cwd) {
+function uploadFile(db, bucket, filePath, cwd) {
   let fullFilePath = path.join(cwd, filePath);
 
   let stat = fs.statSync(fullFilePath);
 
-  let file = new db.File({path: `/www/${filePath}`, data: fs.createReadStream(fullFilePath), size: stat.size, type: 'stream'});
+  let file = new db.File({path: `/${bucket}/${filePath}`, data: fs.createReadStream(fullFilePath), size: stat.size, type: 'stream'});
   return file.upload({ force: true }).catch(function(e) {
     console.error(`Failed to upload file ${filePath}: ${e.message}`);
   });
