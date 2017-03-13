@@ -13,7 +13,8 @@
     "./index.js": "./dist/baqend.js",
     "./streaming.js": "./dist/baqend-streaming.js",
     "./lib/util/util.js": "./lib/util/util-browser.js",
-    "./streaming/connector/websocket.js": "./streaming/connector/websocket-browser.js"
+    "./streaming/connector/websocket.js": "./streaming/connector/websocket-browser.js",
+    "./lib/connector/NodeConnector": false
   },
   "typings": "index.d.ts",
   "dependencies": {
