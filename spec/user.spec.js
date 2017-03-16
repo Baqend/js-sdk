@@ -204,9 +204,7 @@ describe('Test user and roles', function() {
       var oldToken;
       return db.User.register(oldLogin, "secret").then(function() {
         oldToken = db.token;
-        return new Promise(function(resolve) {
-          setTimeout(resolve, RENEW_TIMEOUT);
-        });
+        return helper.sleep(RENEW_TIMEOUT);
       }).then(function() {
         return db.me.newPassword("secret", "newSecret");
       }).then(function() {
@@ -225,17 +223,16 @@ describe('Test user and roles', function() {
       var oldLogin = helper.makeLogin();
       var oldToken;
       return db.User.register(oldLogin, "secret").then(function() {
-        oldToken = db.token;
-        return new Promise(function(resolve) {
-          setTimeout(resolve, RENEW_TIMEOUT);
-        }).then(function() { return db.User.logout() });
+        return db.User.logout();
       }).then(function() {
         return db.User.login("root", "root");
       }).then(function() {
+        oldToken = db.token;
         expect(db.me.username).eqls("root");
         return db.User.newPassword(oldLogin, "", "newSecret");
       }).then(function() {
         expect(db.me.username).eqls("root");
+        expect(db.token).eqls(oldToken);
         return db.User.logout();
       }).then(function() {
         return expect(db.User.login(oldLogin, "newSecret")).be.fulfilled.then(function() { return db.User.logout() });
