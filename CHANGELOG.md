@@ -1,3 +1,17 @@
+<a name="v2.6.1"></a>
+# v2.6.1 (2017-3-16)
+
+
+### Bug Fixes
+
+* Let the SDK work properly under React Native
+* Auto login the user after he has successfully reset his password and make the login behavior configurable
+* Handle unauthorized errors in the CLI properly
+
+### Features
+
+* Allow to specify the bucket path in the CLI for file deployments
+
 <a name="v2.6.0"></a>
 # v2.6.0 (2017-2-6)
 
