@@ -1,7 +1,7 @@
 "use strict";
 
-var Stream = require('./Stream');
-var Node = require('../../lib/query/Node');
+const Stream = require('./Stream');
+const Node = require('../../lib/query/Node');
 
 /**
  * @ignore
@@ -23,7 +23,7 @@ Node.prototype.streamResult = function(options) {
 };
 
 Node.prototype._createStreamingQuery = function() {
-  var type = this.resultClass ? this.entityManager.metamodel.entity(this.resultClass) : null;
+  let type = this.resultClass ? this.entityManager.metamodel.entity(this.resultClass) : null;
   if (!type) {
     throw new Error('Only typed queries can be executed.');
   }
@@ -33,7 +33,7 @@ Node.prototype._createStreamingQuery = function() {
     query: this._serializeQuery()
   };
 
-  var sort = this._serializeSort();
+  const sort = this._serializeSort();
   if (sort && sort != '{}') {
     query.sort = sort;
   }

@@ -1,12 +1,12 @@
 
-var EntityManagerFactory = require('../lib/EntityManagerFactory');
-var WebSocketConnector = require('./connector/WebSocketConnector');
+const EntityManagerFactory = require('../lib/EntityManagerFactory');
+const WebSocketConnector = require('./connector/WebSocketConnector');
 
 Object.defineProperty(EntityManagerFactory.prototype, 'websocket', {
   get() {
     if (!this._websocket) {
-      var secure = this._connector.secure;
-      var url;
+      const secure = this._connector.secure;
+      let url;
       if (this._connectData.websocket) {
         url = (secure? 'wss:': 'ws:') + this._connectData.websocket;
       } else {

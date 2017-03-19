@@ -1,7 +1,7 @@
 "use strict";
-var Metadata = require('../../lib/util/Metadata');
-var WebSocketConnector = require('../connector/WebSocketConnector');
-var lib = require('../../lib');
+const Metadata = require('../../lib/util/Metadata');
+let WebSocketConnector = require('../connector/WebSocketConnector');
+const lib = require('../../lib');
 
 /**
  * @alias query.Stream
@@ -174,7 +174,7 @@ class Stream {
   static parseOptions(options) {
     options = options || {};
 
-    var verified = {
+    const verified = {
       initial: options.initial === undefined || !!options.initial,
       matchTypes: Stream.normalizeMatchTypes(options.matchTypes),
       operations: Stream.normalizeOperations(options.operations)
@@ -210,9 +210,9 @@ class Stream {
 
     // sort, remove duplicates and check whether all values are allowed
     list.sort();
-    var item;
-    var lastItem = undefined;
-    for (var i = list.length - 1; i >= 0; i--) {
+    let item;
+    let lastItem = undefined;
+    for (let i = list.length - 1; i >= 0; i--) {
       item = list[i];
       if (!item) {//undefined and null item in the list --> invalid!
         throw new Error('undefined and null not allowed!');
