@@ -1,0 +1,639 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>Baqend JavaScript SDK 2.6.2 - Source: lib/metamodel/Metamodel.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+
+    <link rel="shortcut icon" type="image/x-icon" href="img/favicon.ico">
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/bootstrap-baqend.min.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<nav class="navbar navbar-default navbar-fixed-top" role="navigation">
+    <div class="container">
+
+        <!-- Collapsed navigation -->
+        <div class="navbar-header">
+            <!-- Expander button -->
+            <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+
+            <!-- Main title -->
+            <a class="navbar-brand" href="/"><img src="img/baqend_logo.svg"></a>
+        </div>
+
+        <!-- Expanded navigation -->
+        <div id="nav" class="navbar-collapse collapse">
+            <!-- Main navigation -->
+            <ul class="nav navbar-nav">
+                <li>
+                    <a href="http://www.baqend.com/guide/index.html">Guide</a>
+                </li>
+                <li class="active">
+                    <a href="baqend.html">JS API</a>
+                </li>
+                <li>
+                    <a href="http://www.baqend.com/#tutorial">Tutorial</a>
+                </li>
+                <li>
+                    <a href="http://dashboard.baqend.com/">Dashboard</a>
+                </li>
+                <li>
+                    <a href="https://community.baqend.com/">Community <span class="visible-lg-inline">Forum</span></a>
+                </li>
+            </ul>
+        </div>
+    </div>
+</nav>
+
+
+<div class="container">
+  <div class="row">
+    <div class="col-md-3">
+        <div class="bs-sidebar hidden-print fixed affix" role="complementary">
+            <input class="filter form-control input-sm" type="text" placeholder="FILTER"/>
+
+            <ul class="nav bs-sidenav">
+            
+            
+                
+                    
+                        <li class=""><a href="Acl.html" class="nav-name">Acl</a></li>
+                    
+                        <li class=""><a href="EntityManager.html" class="nav-name">EntityManager</a></li>
+                    
+                        <li class=""><a href="EntityManagerFactory.html" class="nav-name">EntityManagerFactory</a></li>
+                    
+                        <li class=""><a href="EntityTransaction.html" class="nav-name">EntityTransaction</a></li>
+                    
+                        <li class=""><a href="GeoPoint.html" class="nav-name">GeoPoint</a></li>
+                    
+                        <li class=""><a href="StreamingEvent.html" class="nav-name">StreamingEvent</a></li>
+                    
+                        <li class=""><a href="baqend.html" class="nav-name">baqend</a></li>
+                    
+                
+            
+                
+                    <li class="">
+                        <a href="binding.html" class="nav-name">binding</a>
+                        <ul class="nav">
+                          
+                            <li class=""><a href="binding.Accessor.html" class="nav-name">Accessor</a></li>
+                          
+                            <li class=""><a href="binding.DeviceFactory.html" class="nav-name">DeviceFactory</a></li>
+                          
+                            <li class=""><a href="binding.Enhancer.html" class="nav-name">Enhancer</a></li>
+                          
+                            <li class=""><a href="binding.Entity.html" class="nav-name">Entity</a></li>
+                          
+                            <li class=""><a href="binding.EntityFactory.html" class="nav-name">EntityFactory</a></li>
+                          
+                            <li class=""><a href="binding.Factory.html" class="nav-name">Factory</a></li>
+                          
+                            <li class=""><a href="binding.File.html" class="nav-name">File</a></li>
+                          
+                            <li class=""><a href="binding.FileFactory.html" class="nav-name">FileFactory</a></li>
+                          
+                            <li class=""><a href="binding.Managed.html" class="nav-name">Managed</a></li>
+                          
+                            <li class=""><a href="binding.ManagedFactory.html" class="nav-name">ManagedFactory</a></li>
+                          
+                            <li class=""><a href="binding.Role.html" class="nav-name">Role</a></li>
+                          
+                            <li class=""><a href="binding.User.html" class="nav-name">User</a></li>
+                          
+                            <li class=""><a href="binding.UserFactory.html" class="nav-name">UserFactory</a></li>
+                          
+                        </ul>
+                    </li>
+                
+            
+                
+                    <li class="">
+                        <a href="caching.html" class="nav-name">caching</a>
+                        <ul class="nav">
+                          
+                            <li class=""><a href="caching.BloomFilter.html" class="nav-name">BloomFilter</a></li>
+                          
+                        </ul>
+                    </li>
+                
+            
+                
+                    <li class="">
+                        <a href="connector.html" class="nav-name">connector</a>
+                        <ul class="nav">
+                          
+                            <li class=""><a href="connector.Connector.html" class="nav-name">Connector</a></li>
+                          
+                            <li class=""><a href="connector.IFrameConnector.html" class="nav-name">IFrameConnector</a></li>
+                          
+                            <li class=""><a href="connector.Message.html" class="nav-name">Message</a></li>
+                          
+                            <li class=""><a href="connector.NodeConnector.html" class="nav-name">NodeConnector</a></li>
+                          
+                            <li class=""><a href="connector.WebSocketConnector.html" class="nav-name">WebSocketConnector</a></li>
+                          
+                            <li class=""><a href="connector.XMLHttpConnector.html" class="nav-name">XMLHttpConnector</a></li>
+                          
+                        </ul>
+                    </li>
+                
+            
+                
+                    <li class="">
+                        <a href="error.html" class="nav-name">error</a>
+                        <ul class="nav">
+                          
+                            <li class=""><a href="error.CommunicationError.html" class="nav-name">CommunicationError</a></li>
+                          
+                            <li class=""><a href="error.EntityExistsError.html" class="nav-name">EntityExistsError</a></li>
+                          
+                            <li class=""><a href="error.IllegalEntityError.html" class="nav-name">IllegalEntityError</a></li>
+                          
+                            <li class=""><a href="error.PersistentError.html" class="nav-name">PersistentError</a></li>
+                          
+                            <li class=""><a href="error.RollbackError.html" class="nav-name">RollbackError</a></li>
+                          
+                        </ul>
+                    </li>
+                
+            
+                
+                    <li class="">
+                        <a href="metamodel.html" class="nav-name">metamodel</a>
+                        <ul class="nav">
+                          
+                            <li class=""><a href="metamodel.Attribute.html" class="nav-name">Attribute</a></li>
+                          
+                            <li class=""><a href="metamodel.BasicType.html" class="nav-name">BasicType</a></li>
+                          
+                            <li class=""><a href="metamodel.CollectionAttribute.html" class="nav-name">CollectionAttribute</a></li>
+                          
+                            <li class=""><a href="metamodel.DbIndex.html" class="nav-name">DbIndex</a></li>
+                          
+                            <li class=""><a href="metamodel.EmbeddableType.html" class="nav-name">EmbeddableType</a></li>
+                          
+                            <li class=""><a href="metamodel.EntityType.html" class="nav-name">EntityType</a></li>
+                          
+                            <li class=""><a href="metamodel.ListAttribute.html" class="nav-name">ListAttribute</a></li>
+                          
+                            <li class=""><a href="metamodel.ManagedType.html" class="nav-name">ManagedType</a></li>
+                          
+                            <li class=""><a href="metamodel.MapAttribute.html" class="nav-name">MapAttribute</a></li>
+                          
+                            <li class=""><a href="metamodel.Metamodel.html" class="nav-name">Metamodel</a></li>
+                          
+                            <li class=""><a href="metamodel.ModelBuilder.html" class="nav-name">ModelBuilder</a></li>
+                          
+                            <li class=""><a href="metamodel.PluralAttribute.html" class="nav-name">PluralAttribute</a></li>
+                          
+                            <li class=""><a href="metamodel.SetAttribute.html" class="nav-name">SetAttribute</a></li>
+                          
+                            <li class=""><a href="metamodel.SingularAttribute.html" class="nav-name">SingularAttribute</a></li>
+                          
+                            <li class=""><a href="metamodel.Type.html" class="nav-name">Type</a></li>
+                          
+                        </ul>
+                    </li>
+                
+            
+                
+                    <li class="">
+                        <a href="model.html" class="nav-name">model</a>
+                        <ul class="nav">
+                          
+                            <li class=""><a href="model.Device.html" class="nav-name">Device</a></li>
+                          
+                            <li class=""><a href="model.Role.html" class="nav-name">Role</a></li>
+                          
+                            <li class=""><a href="model.User.html" class="nav-name">User</a></li>
+                          
+                        </ul>
+                    </li>
+                
+            
+                
+                    <li class="">
+                        <a href="query.html" class="nav-name">query</a>
+                        <ul class="nav">
+                          
+                            <li class=""><a href="query.Builder.html" class="nav-name">Builder</a></li>
+                          
+                            <li class=""><a href="query.Condition.html" class="nav-name">Condition</a></li>
+                          
+                            <li class=""><a href="query.Filter.html" class="nav-name">Filter</a></li>
+                          
+                            <li class=""><a href="query.Node.html" class="nav-name">Node</a></li>
+                          
+                            <li class=""><a href="query.Operator.html" class="nav-name">Operator</a></li>
+                          
+                            <li class=""><a href="query.Query.html" class="nav-name">Query</a></li>
+                          
+                            <li class=""><a href="query.Stream.html#.parseOptions" class="nav-name">Stream</a></li>
+                          
+                        </ul>
+                    </li>
+                
+            
+                
+                    <li class="">
+                        <a href="util.html" class="nav-name">util</a>
+                        <ul class="nav">
+                          
+                            <li class=""><a href="util.Code.html" class="nav-name">Code</a></li>
+                          
+                            <li class=""><a href="util.Lockable.html" class="nav-name">Lockable</a></li>
+                          
+                            <li class=""><a href="util.Logger.html" class="nav-name">Logger</a></li>
+                          
+                            <li class=""><a href="util.Metadata.html" class="nav-name">Metadata</a></li>
+                          
+                            <li class=""><a href="util.Modules.html" class="nav-name">Modules</a></li>
+                          
+                            <li class=""><a href="util.Permission.html" class="nav-name">Permission</a></li>
+                          
+                            <li class=""><a href="util.PushMessage.html" class="nav-name">PushMessage</a></li>
+                          
+                            <li class=""><a href="util.TokenStorage.html" class="nav-name">TokenStorage</a></li>
+                          
+                            <li class=""><a href="util.ValidationResult.html" class="nav-name">ValidationResult</a></li>
+                          
+                            <li class=""><a href="util.Validator.html" class="nav-name">Validator</a></li>
+                          
+                            <li class=""><a href="util.TokenStorageFactory.html" class="nav-name">TokenStorageFactory</a></li>
+                          
+                        </ul>
+                    </li>
+                
+            
+            </ul>
+        </div>
+    </div>
+    <div class="col-md-9" id="main">
+      <h1 class="page-title">Source: lib/metamodel/Metamodel.js</h1>
+
+      
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>"use strict";
+
+var BasicType = require('./BasicType');
+var ManagedType = require('./ManagedType');
+var EntityType = require('./EntityType');
+var Enhancer = require('../binding/Enhancer');
+var ModelBuilder = require('./ModelBuilder');
+var DbIndex = require('./DbIndex');
+var Lockable = require('../util/Lockable');
+var StatusCode = require('../connector/Message').StatusCode;
+
+var message = require('../message');
+
+/**
+ * @alias metamodel.Metamodel
+ * @extends util.Lockable
+ */
+class Metamodel extends Lockable {
+
+  constructor(entityManagerFactory) {
+    super();
+
+    /**
+     * Defines if the Metamodel has been finalized
+     * @type boolean
+     */
+    this.isInitialized = false;
+
+    /**
+     * @type EntityManagerFactory
+     */
+    this.entityManagerFactory = entityManagerFactory;
+
+    /**
+     * @type Array.&lt;metamodel.EntityType>
+     */
+    this.entities = null;
+
+    /**
+     * @type Array.&lt;metamodel.EmbeddableType>
+     */
+    this.embeddables = null;
+
+    /**
+     * @type Array.&lt;metamodel.BasicType>
+     */
+    this.baseTypes = null;
+
+    this._enhancer = new Enhancer();
+  }
+
+  /**
+   * Prepare the Metamodel for custom schema creation
+   * @param {Object=} jsonMetamodel initialize the metamodel with the serialized json schema
+   */
+  init(jsonMetamodel) {
+    if (this.isInitialized) {
+      throw new Error('Metamodel is already initialized.');
+    }
+
+    this.fromJSON(jsonMetamodel || []);
+    this.isInitialized = true;
+  }
+
+  /**
+   * @param {(Class&lt;binding.Managed>|string)} arg
+   * @return {string}
+   */
+  _getRef(arg) {
+    var ref;
+    if (Object(arg) instanceof String) {
+      ref = arg;
+
+      if (ref.indexOf('/db/') != 0) {
+        ref = '/db/' + arg;
+      }
+    } else {
+      ref = this._enhancer.getIdentifier(arg);
+    }
+
+    return ref;
+  }
+
+  /**
+   * Return the metamodel entity type representing the entity.
+   *
+   * @param {(Class&lt;binding.Entity>|string)} typeConstructor - the type of the represented entity
+   * @returns {metamodel.EntityType} the metamodel entity type
+   */
+  entity(typeConstructor) {
+    var ref = this._getRef(typeConstructor);
+    return ref ? this.entities[ref] : null;
+  }
+
+  /**
+   * Return the metamodel basic type representing the native class.
+   * @param {(Class&lt;*>|string)} typeConstructor - the type of the represented native class
+   * @returns {metamodel.BasicType} the metamodel basic type
+   */
+  baseType(typeConstructor) {
+    var ref = null;
+    if (Object(typeConstructor) instanceof String) {
+      ref = this._getRef(typeConstructor);
+    } else {
+      for (var name in this.baseTypes) {
+        var type = this.baseTypes[name];
+        if (!type.noResolving &amp;&amp; type.typeConstructor == typeConstructor) {
+          ref = name;
+          break;
+        }
+      }
+    }
+
+    return ref ? this.baseTypes[ref] : null;
+  }
+
+  /**
+   * Return the metamodel embeddable type representing the embeddable class.
+   * @param {Class&lt;binding.Managed>|string} typeConstructor - the type of the represented embeddable class
+   * @returns {metamodel.EmbeddableType} the metamodel embeddable type
+   */
+  embeddable(typeConstructor) {
+    var ref = this._getRef(typeConstructor);
+    return ref ? this.embeddables[ref] : null;
+  }
+
+  /**
+   * Return the metamodel managed type representing the entity, mapped superclass, or embeddable class.
+   *
+   * @param {(Class&lt;binding.Managed>|string)} typeConstructor - the type of the represented managed class
+   * @returns {metamodel.Type} the metamodel managed type
+   */
+  managedType(typeConstructor) {
+    return this.baseType(typeConstructor) || this.entity(typeConstructor) || this.embeddable(typeConstructor);
+  }
+
+  /**
+   * @param {metamodel.Type} type
+   * @return {metamodel.Type} the added type
+   */
+  addType(type) {
+    var types;
+
+    if (type.isBasic) {
+      types = this.baseTypes;
+    } else if (type.isEmbeddable) {
+      type.init(this._enhancer);
+      types = this.embeddables;
+    } else if (type.isEntity) {
+      type.init(this._enhancer);
+      types = this.entities;
+
+      if (type.superType == null &amp;&amp; type.ref != EntityType.Object.ref) {
+        type.superType = this.entity(EntityType.Object.ref);
+      }
+    }
+
+    if (types[type.ref]) {
+      throw new Error("The type " + type.ref + " is already declared.");
+    }
+
+    return types[type.ref] = type;
+  }
+
+  /**
+   * Load all schema data from the server
+   * @returns {Promise&lt;metamodel.Metamodel>}
+   */
+  load() {
+    if(!this.isInitialized) {
+      return this.withLock(() => {
+        var msg = new message.GetAllSchemas();
+
+        return this.entityManagerFactory.send(msg).then((response) => {
+          this.init(response.entity);
+          return this;
+        });
+      });
+    } else {
+      throw new Error("Metamodel is already initialized.");
+    }
+  }
+
+  /**
+   * Store all local schema data on the server, or the provided one
+   *
+   * Note: The schema must be initialized, by init or load
+   *
+   * @param {metamodel.ManagedType=} managedType The specific type to persist, if omitted the complete schema will be updated
+   * @returns {Promise&lt;metamodel.Metamodel>}
+   */
+  save(managedType) {
+    return this._send(managedType || this.toJSON()).then(() => {
+      return this;
+    });
+  }
+
+  /**
+   * The provided options object will be forwarded to the UpdateAllSchemas resource.
+   * The underlying schema of this Metamodel object will be replaced by the result.
+   *
+   * @param {json} data The JSON which will be send to the UpdateAllSchemas resource.
+   * @returns {Promise&lt;metamodel.Metamodel>}
+   */
+  update(data) {
+    return this._send(data).then((response) => {
+      this.fromJSON(response.entity);
+      return this;
+    });
+  }
+
+  _send(data) {
+    if (!this.isInitialized)
+      throw new Error("Metamodel is not initialized.");
+
+    return this.withLock(() => {
+      var msg;
+      if(data instanceof ManagedType) {
+        msg = new message.UpdateSchema(data.name, data.toJSON());
+      } else {
+        msg = new message.UpdateAllSchemas(data);
+      }
+
+      return this.entityManagerFactory.send(msg);
+    });
+  }
+
+  /**
+   * Get the current schema types as json
+   * @returns {json} the json data
+   */
+  toJSON() {
+    var json = [];
+
+    for (var ref in this.entities) {
+      json.push(this.entities[ref]);
+    }
+
+    for (ref in this.embeddables) {
+      json.push(this.embeddables[ref]);
+    }
+
+    return json;
+  }
+
+  /**
+   * Replace the current schema by the provided one in json
+   * @param {json} json The json schema data
+   */
+  fromJSON(json) {
+    var builder = new ModelBuilder();
+    var models = builder.buildModels(json);
+
+    this.baseTypes = {};
+    this.embeddables = {};
+    this.entities = {};
+
+    for (var ref in models) {
+      var type = models[ref];
+      this.addType(type);
+    }
+  }
+
+  /**
+   * Creates an index
+   *
+   * @param {string} bucket Name of the Bucket
+   * @param {metamodel.DbIndex} index Will be applied for the given bucket
+   * @return {Promise&lt;*>}
+   */
+  createIndex(bucket, index) {
+    index.drop = false;
+    var msg = new message.CreateDropIndex(bucket, index.toJSON());
+    return this.entityManagerFactory.send(msg);
+  }
+
+  /**
+   * Drops an index
+   *
+   * @param {string} bucket Name of the Bucket
+   * @param {metamodel.DbIndex} index Will be dropped for the given bucket
+   * @return {Promise&lt;*>}
+   */
+  dropIndex(bucket, index) {
+    index.drop = true;
+    var msg = new message.CreateDropIndex(bucket, index.toJSON());
+    return this.entityManagerFactory.send(msg);
+  }
+
+  /**
+   * Drops all indexes
+   *
+   * @param {string} bucket Indexes will be dropped for the given bucket
+   * @returns {Promise&lt;*>}
+   */
+  dropAllIndexes(bucket) {
+    var msg = new message.DropAllIndexes(bucket);
+    return this.entityManagerFactory.send(msg);
+  }
+
+  /**
+   * Loads all indexes for the given bucket
+   *
+   * @param {string} bucket Current indexes will be loaded for the given bucket
+   * @returns {Promise&lt;Array&lt;metamodel.DbIndex>>}
+   */
+  getIndexes(bucket) {
+    var msg = new message.ListIndexes(bucket);
+    return this.entityManagerFactory.send(msg).then((response) => {
+      return response.entity.map(function(el) {
+        return new DbIndex(el.keys, el.unique);
+      });
+    }, function(e) {
+      if (e.status == StatusCode.BUCKET_NOT_FOUND || e.status == StatusCode.OBJECT_NOT_FOUND) {
+        return null;
+      } else {
+        throw e;
+      }
+    });
+  }
+}
+
+module.exports = Metamodel;</code></pre>
+        </article>
+    </section>
+
+
+
+
+
+      <footer>
+        Baqend JavaScript SDK 2.6.2 &copy 2015 Baqend GmbH<br>
+        Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.3</a> on Mon, 20 Mar 2017 23:07:56 GMT
+      </footer>
+    </div>
+  </div>
+</div>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+<script src="scripts/filter.js"> </script>
+</body>
+</html>

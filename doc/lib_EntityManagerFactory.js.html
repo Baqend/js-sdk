@@ -1,0 +1,518 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>Baqend JavaScript SDK 2.6.2 - Source: lib/EntityManagerFactory.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+
+    <link rel="shortcut icon" type="image/x-icon" href="img/favicon.ico">
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/bootstrap-baqend.min.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<nav class="navbar navbar-default navbar-fixed-top" role="navigation">
+    <div class="container">
+
+        <!-- Collapsed navigation -->
+        <div class="navbar-header">
+            <!-- Expander button -->
+            <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+
+            <!-- Main title -->
+            <a class="navbar-brand" href="/"><img src="img/baqend_logo.svg"></a>
+        </div>
+
+        <!-- Expanded navigation -->
+        <div id="nav" class="navbar-collapse collapse">
+            <!-- Main navigation -->
+            <ul class="nav navbar-nav">
+                <li>
+                    <a href="http://www.baqend.com/guide/index.html">Guide</a>
+                </li>
+                <li class="active">
+                    <a href="baqend.html">JS API</a>
+                </li>
+                <li>
+                    <a href="http://www.baqend.com/#tutorial">Tutorial</a>
+                </li>
+                <li>
+                    <a href="http://dashboard.baqend.com/">Dashboard</a>
+                </li>
+                <li>
+                    <a href="https://community.baqend.com/">Community <span class="visible-lg-inline">Forum</span></a>
+                </li>
+            </ul>
+        </div>
+    </div>
+</nav>
+
+
+<div class="container">
+  <div class="row">
+    <div class="col-md-3">
+        <div class="bs-sidebar hidden-print fixed affix" role="complementary">
+            <input class="filter form-control input-sm" type="text" placeholder="FILTER"/>
+
+            <ul class="nav bs-sidenav">
+            
+            
+                
+                    
+                        <li class=""><a href="Acl.html" class="nav-name">Acl</a></li>
+                    
+                        <li class=""><a href="EntityManager.html" class="nav-name">EntityManager</a></li>
+                    
+                        <li class=""><a href="EntityManagerFactory.html" class="nav-name">EntityManagerFactory</a></li>
+                    
+                        <li class=""><a href="EntityTransaction.html" class="nav-name">EntityTransaction</a></li>
+                    
+                        <li class=""><a href="GeoPoint.html" class="nav-name">GeoPoint</a></li>
+                    
+                        <li class=""><a href="StreamingEvent.html" class="nav-name">StreamingEvent</a></li>
+                    
+                        <li class=""><a href="baqend.html" class="nav-name">baqend</a></li>
+                    
+                
+            
+                
+                    <li class="">
+                        <a href="binding.html" class="nav-name">binding</a>
+                        <ul class="nav">
+                          
+                            <li class=""><a href="binding.Accessor.html" class="nav-name">Accessor</a></li>
+                          
+                            <li class=""><a href="binding.DeviceFactory.html" class="nav-name">DeviceFactory</a></li>
+                          
+                            <li class=""><a href="binding.Enhancer.html" class="nav-name">Enhancer</a></li>
+                          
+                            <li class=""><a href="binding.Entity.html" class="nav-name">Entity</a></li>
+                          
+                            <li class=""><a href="binding.EntityFactory.html" class="nav-name">EntityFactory</a></li>
+                          
+                            <li class=""><a href="binding.Factory.html" class="nav-name">Factory</a></li>
+                          
+                            <li class=""><a href="binding.File.html" class="nav-name">File</a></li>
+                          
+                            <li class=""><a href="binding.FileFactory.html" class="nav-name">FileFactory</a></li>
+                          
+                            <li class=""><a href="binding.Managed.html" class="nav-name">Managed</a></li>
+                          
+                            <li class=""><a href="binding.ManagedFactory.html" class="nav-name">ManagedFactory</a></li>
+                          
+                            <li class=""><a href="binding.Role.html" class="nav-name">Role</a></li>
+                          
+                            <li class=""><a href="binding.User.html" class="nav-name">User</a></li>
+                          
+                            <li class=""><a href="binding.UserFactory.html" class="nav-name">UserFactory</a></li>
+                          
+                        </ul>
+                    </li>
+                
+            
+                
+                    <li class="">
+                        <a href="caching.html" class="nav-name">caching</a>
+                        <ul class="nav">
+                          
+                            <li class=""><a href="caching.BloomFilter.html" class="nav-name">BloomFilter</a></li>
+                          
+                        </ul>
+                    </li>
+                
+            
+                
+                    <li class="">
+                        <a href="connector.html" class="nav-name">connector</a>
+                        <ul class="nav">
+                          
+                            <li class=""><a href="connector.Connector.html" class="nav-name">Connector</a></li>
+                          
+                            <li class=""><a href="connector.IFrameConnector.html" class="nav-name">IFrameConnector</a></li>
+                          
+                            <li class=""><a href="connector.Message.html" class="nav-name">Message</a></li>
+                          
+                            <li class=""><a href="connector.NodeConnector.html" class="nav-name">NodeConnector</a></li>
+                          
+                            <li class=""><a href="connector.WebSocketConnector.html" class="nav-name">WebSocketConnector</a></li>
+                          
+                            <li class=""><a href="connector.XMLHttpConnector.html" class="nav-name">XMLHttpConnector</a></li>
+                          
+                        </ul>
+                    </li>
+                
+            
+                
+                    <li class="">
+                        <a href="error.html" class="nav-name">error</a>
+                        <ul class="nav">
+                          
+                            <li class=""><a href="error.CommunicationError.html" class="nav-name">CommunicationError</a></li>
+                          
+                            <li class=""><a href="error.EntityExistsError.html" class="nav-name">EntityExistsError</a></li>
+                          
+                            <li class=""><a href="error.IllegalEntityError.html" class="nav-name">IllegalEntityError</a></li>
+                          
+                            <li class=""><a href="error.PersistentError.html" class="nav-name">PersistentError</a></li>
+                          
+                            <li class=""><a href="error.RollbackError.html" class="nav-name">RollbackError</a></li>
+                          
+                        </ul>
+                    </li>
+                
+            
+                
+                    <li class="">
+                        <a href="metamodel.html" class="nav-name">metamodel</a>
+                        <ul class="nav">
+                          
+                            <li class=""><a href="metamodel.Attribute.html" class="nav-name">Attribute</a></li>
+                          
+                            <li class=""><a href="metamodel.BasicType.html" class="nav-name">BasicType</a></li>
+                          
+                            <li class=""><a href="metamodel.CollectionAttribute.html" class="nav-name">CollectionAttribute</a></li>
+                          
+                            <li class=""><a href="metamodel.DbIndex.html" class="nav-name">DbIndex</a></li>
+                          
+                            <li class=""><a href="metamodel.EmbeddableType.html" class="nav-name">EmbeddableType</a></li>
+                          
+                            <li class=""><a href="metamodel.EntityType.html" class="nav-name">EntityType</a></li>
+                          
+                            <li class=""><a href="metamodel.ListAttribute.html" class="nav-name">ListAttribute</a></li>
+                          
+                            <li class=""><a href="metamodel.ManagedType.html" class="nav-name">ManagedType</a></li>
+                          
+                            <li class=""><a href="metamodel.MapAttribute.html" class="nav-name">MapAttribute</a></li>
+                          
+                            <li class=""><a href="metamodel.Metamodel.html" class="nav-name">Metamodel</a></li>
+                          
+                            <li class=""><a href="metamodel.ModelBuilder.html" class="nav-name">ModelBuilder</a></li>
+                          
+                            <li class=""><a href="metamodel.PluralAttribute.html" class="nav-name">PluralAttribute</a></li>
+                          
+                            <li class=""><a href="metamodel.SetAttribute.html" class="nav-name">SetAttribute</a></li>
+                          
+                            <li class=""><a href="metamodel.SingularAttribute.html" class="nav-name">SingularAttribute</a></li>
+                          
+                            <li class=""><a href="metamodel.Type.html" class="nav-name">Type</a></li>
+                          
+                        </ul>
+                    </li>
+                
+            
+                
+                    <li class="">
+                        <a href="model.html" class="nav-name">model</a>
+                        <ul class="nav">
+                          
+                            <li class=""><a href="model.Device.html" class="nav-name">Device</a></li>
+                          
+                            <li class=""><a href="model.Role.html" class="nav-name">Role</a></li>
+                          
+                            <li class=""><a href="model.User.html" class="nav-name">User</a></li>
+                          
+                        </ul>
+                    </li>
+                
+            
+                
+                    <li class="">
+                        <a href="query.html" class="nav-name">query</a>
+                        <ul class="nav">
+                          
+                            <li class=""><a href="query.Builder.html" class="nav-name">Builder</a></li>
+                          
+                            <li class=""><a href="query.Condition.html" class="nav-name">Condition</a></li>
+                          
+                            <li class=""><a href="query.Filter.html" class="nav-name">Filter</a></li>
+                          
+                            <li class=""><a href="query.Node.html" class="nav-name">Node</a></li>
+                          
+                            <li class=""><a href="query.Operator.html" class="nav-name">Operator</a></li>
+                          
+                            <li class=""><a href="query.Query.html" class="nav-name">Query</a></li>
+                          
+                            <li class=""><a href="query.Stream.html#.parseOptions" class="nav-name">Stream</a></li>
+                          
+                        </ul>
+                    </li>
+                
+            
+                
+                    <li class="">
+                        <a href="util.html" class="nav-name">util</a>
+                        <ul class="nav">
+                          
+                            <li class=""><a href="util.Code.html" class="nav-name">Code</a></li>
+                          
+                            <li class=""><a href="util.Lockable.html" class="nav-name">Lockable</a></li>
+                          
+                            <li class=""><a href="util.Logger.html" class="nav-name">Logger</a></li>
+                          
+                            <li class=""><a href="util.Metadata.html" class="nav-name">Metadata</a></li>
+                          
+                            <li class=""><a href="util.Modules.html" class="nav-name">Modules</a></li>
+                          
+                            <li class=""><a href="util.Permission.html" class="nav-name">Permission</a></li>
+                          
+                            <li class=""><a href="util.PushMessage.html" class="nav-name">PushMessage</a></li>
+                          
+                            <li class=""><a href="util.TokenStorage.html" class="nav-name">TokenStorage</a></li>
+                          
+                            <li class=""><a href="util.ValidationResult.html" class="nav-name">ValidationResult</a></li>
+                          
+                            <li class=""><a href="util.Validator.html" class="nav-name">Validator</a></li>
+                          
+                            <li class=""><a href="util.TokenStorageFactory.html" class="nav-name">TokenStorageFactory</a></li>
+                          
+                        </ul>
+                    </li>
+                
+            
+            </ul>
+        </div>
+    </div>
+    <div class="col-md-9" id="main">
+      <h1 class="page-title">Source: lib/EntityManagerFactory.js</h1>
+
+      
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>"use strict";
+
+var message = require('./message');
+var metamodel = require('./metamodel');
+
+var util = require('./util');
+var caching = require('./caching');
+var Connector = require('./connector/Connector');
+var EntityManager = require('./EntityManager');
+
+/**
+ * @alias EntityManagerFactory
+ * @extends util.Lockable
+ */
+class EntityManagerFactory extends util.Lockable {
+
+  _connected() {}
+
+  /**
+   * Creates a new EntityManagerFactory connected to the given destination
+   * @param {string|Object} [options] The destination to connect with, or an options object
+   * @param {string} [options.host] The destination to connect with
+   * @param {number} [options.port=80|443] The optional destination port to connect with
+   * @param {boolean} [options.secure=false] &lt;code>true&lt;/code> To use a secure ssl encrypted connection
+   * @param {string} [options.basePath="/v1"] The base path of the api
+   * @param {Object} [options.schema=null] The serialized schema as json used to initialize the metamodel
+   * @param {util.TokenStorage} [options.tokenStorage] The tokenStorage which should be used by this emf
+   * @param {util.TokenStorageFactory} [options.tokenStorageFactory] The tokenStorage factory implementation which should
+   * be used for token storage
+   * @param {number} [options.staleness=60] The maximum staleness of objects that are acceptable while reading cached data
+   */
+  constructor(options) {
+    super();
+
+    options = Object(options) instanceof String? {host: options}: options || {};
+
+    /** @type connector.Connector */
+    this._connector = null;
+    /** @type metamodel.Metamodel */
+    this.metamodel = this.createMetamodel();
+    /** @type util.Code */
+    this.code = new util.Code(this.metamodel, this);
+    /** @type util.TokenStorageFactory */
+    this.tokenStorageFactory = util.TokenStorage.WEB_STORAGE || util.TokenStorage.GLOBAL;
+
+    this.configure(options);
+
+    var isReady = true;
+    var ready = new Promise((success) => {
+      this._connected = success;
+    });
+
+    if (options.host) {
+      this.connect(options.host, options.port, options.secure, options.basePath);
+    } else {
+      isReady = false;
+    }
+
+    if (!this.tokenStorage) {
+      isReady = false;
+      ready = ready.then(() => {
+        return this.tokenStorageFactory.create(this._connector.origin);
+      }).then((tokenStorage) => {
+        this.tokenStorage = tokenStorage;
+      });
+    }
+
+    if (options.schema) {
+      this._connectData = options;
+      this.metamodel.init(options.schema);
+    } else {
+      isReady = false;
+      ready = ready.then(() => {
+        var msg = new message.Connect();
+        msg.withCredentials = true; //used for registered devices
+
+        if (this.staleness === 0)
+          msg.noCache();
+
+        return this.send(msg);
+      }).then((response) => {
+        this._connectData = response.entity;
+
+        if (this.staleness === undefined) {
+          this.staleness = this._connectData.bloomFilterRefresh || 60;
+        }
+
+        if (!this.metamodel.isInitialized)
+          this.metamodel.init(this._connectData.schema);
+
+        this.tokenStorage.update(this._connectData.token);
+      });
+    }
+
+    if (!isReady) {
+      this.withLock(() => {
+        return ready;
+      }, true);
+    }
+  }
+
+  /**
+   * Apply additional configurations to this EntityManagerFactory
+   * @param {Object} options The additional configuration options
+   * @param {util.TokenStorage} [options.tokenStorage] The tokenStorage which should be used by this emf
+   * @param {util.TokenStorageFactory} [options.tokenStorageFactory] The tokenStorage factory implementation which should
+   * be used for token storage
+   * @param {number} [options.staleness=60] The maximum staleness of objects that are acceptable while reading cached data,
+   * &lt;code>0&lt;/code> to always bypass the browser cache
+   */
+  configure(options) {
+    if (this._connector)
+      throw new Error('The EntityManagerFactory can only be configured before is is connected.');
+
+    if (options.tokenStorage) {
+      /** @type util.TokenStorage */
+      this.tokenStorage = options.tokenStorage;
+    }
+
+    if (options.tokenStorageFactory) {
+      this.tokenStorageFactory = options.tokenStorageFactory;
+    }
+
+    if (options.staleness !== undefined) {
+      /** @type number */
+      this.staleness = options.staleness;
+    }
+  }
+
+  /**
+   * Connects this EntityManager to the given destination
+   * @param {string} hostOrApp The host or the app name to connect with
+   * @param {number} [port=80|443] The port to connect to
+   * @param {boolean} [secure=false] &lt;code>true&lt;/code> To use a secure connection
+   * @param {string} [basePath="/v1"] The base path of the api
+   */
+  connect(hostOrApp, port, secure, basePath) {
+    if (this._connector)
+      throw new Error('The EntityManagerFactory is already connected.');
+
+    if (Object(port) instanceof Boolean) {
+      secure = port;
+      port = 0;
+    }
+    
+    this._connector = Connector.create(hostOrApp, port, secure, basePath);
+
+    this._connected();
+    return this.ready();
+  }
+
+  /**
+   * Connects this EntityManager to the given destination
+   * @param {string} hostOrApp The host or the app name to connect with
+   * @param {boolean} [secure=false] &lt;code>true&lt;/code> To use a secure connection
+   * @name connect
+   * @memberOf EntityManagerFactory.prototype
+   * @method
+   */
+
+
+  /**
+   * Creates a new Metamodel instance, which is not connected
+   * @return {metamodel.Metamodel} A new Metamodel instance
+   */
+  createMetamodel() {
+    return new metamodel.Metamodel(this);
+  }
+
+  /**
+   * Create a new application-managed EntityManager.
+   *
+   * @param {boolean=} useSharedTokenStorage The token storage to persist the authorization token, or
+   * &lt;code>true&lt;/code> To use the shared token storage of the emf.
+   * &lt;code>false&lt;/code> To use a instance based storage.
+   *
+   * @returns {EntityManager} a new entityManager
+   */
+  createEntityManager(useSharedTokenStorage) {
+    var em = new EntityManager(this);
+
+    if (this.isReady) {
+      em.connected(this._connector, this._connectData, useSharedTokenStorage? this.tokenStorage: new util.TokenStorage(this._connector.origin));
+    } else {
+      em.withLock(() => {
+        return this.ready().then(() => {
+          em.connected(this._connector, this._connectData, useSharedTokenStorage? this.tokenStorage: new util.TokenStorage(this._connector.origin));
+        });
+      }, true);
+    }
+
+    return em;
+  }
+
+  send(message) {
+    if (!message.tokenStorage)
+      message.tokenStorage = this.tokenStorage;
+    return this._connector.send(message);
+  }
+}
+
+module.exports = EntityManagerFactory;</code></pre>
+        </article>
+    </section>
+
+
+
+
+
+      <footer>
+        Baqend JavaScript SDK 2.6.2 &copy 2015 Baqend GmbH<br>
+        Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.3</a> on Mon, 20 Mar 2017 23:07:56 GMT
+      </footer>
+    </div>
+  </div>
+</div>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+<script src="scripts/filter.js"> </script>
+</body>
+</html>
