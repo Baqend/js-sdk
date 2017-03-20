@@ -219,6 +219,20 @@ describe('Test user and roles', function() {
       });
     });
 
+    it('should keep user login when newPassword is called with invalid credentials', function() {
+      var oldLogin = helper.makeLogin();
+      var oldToken;
+      return db.User.register(oldLogin, "secret").then(function() {
+        oldToken = db.token;
+        return helper.sleep(RENEW_TIMEOUT);
+      }).then(function() {
+        return expect(db.me.newPassword("wrong-secret", "newSecret")).rejectedWith('User name or password is incorrect');
+      }).then(function() {
+        expect(oldToken).eqls(db.token);
+        expect(db.me.username).eqls(oldLogin);
+      });
+    });
+
     it('should be allowed to change password as root', function() {
       var oldLogin = helper.makeLogin();
       var oldToken;
