@@ -32,7 +32,7 @@ if (!module.parent) {
   ;
 
   program
-      .command('deploy <app>')
+      .command('deploy [app]')
       .description('Deploys your baqend code and files')
       .option('-F, --files', 'deploy files')
       .option('-C, --code', 'deploy code')

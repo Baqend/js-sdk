@@ -7,29 +7,26 @@ const path = require('path');
 const readline = require('readline');
 
 module.exports = function(args) {
-  if (!args.app && !args.host) {
-    return false;
-  } else {
-    return account.login({app: args.app, host: args.host}).then((db) => {
-      if (!args.code && !args.files || args.code && args.files) {
-        return Promise.all([
-          deployFiles(db, args.bucketPath, args.fileDir, args.fileGlob),
-          deployCode(db, args.codeDir)
-        ]);
-      } else if (args.code) {
-        return deployCode(db, args.codeDir);
-      } else if (args.files) {
-        return deployFiles(db, args.bucketPath, args.fileDir, args.fileGlob);
-      }
-    });
-  }
+
+  return account.login({app: args.app, host: args.host}).then((db) => {
+    if (!args.code && !args.files || args.code && args.files) {
+      return Promise.all([
+        deployFiles(db, args.bucketPath, args.fileDir, args.fileGlob),
+        deployCode(db, args.codeDir)
+      ]);
+    } else if (args.code) {
+      return deployCode(db, args.codeDir);
+    } else if (args.files) {
+      return deployFiles(db, args.bucketPath, args.fileDir, args.fileGlob);
+    }
+  }).catch(e => console.error(e.message ||e));
 };
 
 function deployFiles(db, path, cwd, pattern) {
-  while (path.length && path.charAt(0) == '/')
+  while (path.length && path.charAt(0) === '/')
     path = path.substring(1);
 
-  while (path.length && path.charAt(path.length - 1) == '/')
+  while (path.length && path.charAt(path.length - 1) === '/')
     path = path.substring(0, path.length - 1);
 
   if (!path.length) {

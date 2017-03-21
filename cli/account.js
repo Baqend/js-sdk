@@ -38,21 +38,19 @@ module.exports.login = function(args, persist) {
   }
 
   return inputPromise.then((credentials) => {
-    return login(credentials[0], credentials[1]).then((db) => [credentials, db]);
+    return dbLogin(credentials[0], credentials[1]).then((db) => [credentials, db]);
   }).then((args) => {
     let credentials = args[0];
     let db = args[1];
     if (persist) {
       return saveCredentials(credentials[0], credentials[1]);
     }
-
     return db;
   });
 };
 
 module.exports.register = function() {
   host = bbqHost;
-
   return readInputCredentials().then(credentials => {
     return register(credentials[0], credentials[1]).then(db => {
       loadAppName(db).then(name => console.log('Your app name is ' + name));
@@ -67,6 +65,15 @@ module.exports.logout = function(args) {
   return readFile().then((json) => {
     delete json[host];
     return writeFile(json);
+  });
+};
+
+function getDefaultApp(db) {
+  return db.modules.get('apps').then(apps => {
+    if (apps.length === 1) {
+      return apps[0].name;
+    }
+    throw new Error('Please add the name of your app as a parameter.');
   });
 };
 
@@ -163,11 +170,15 @@ function saveCredentials(username, password) {
   })
 }
 
-function login(username, password) {
+function dbLogin(username, password) {
   return baqend.connect(host, true)
       .then(db => db.login(username, password).then(() => db))
-      .then(db => isBbq() && app? bbqAppLogin(db): db)
-      .catch(() => { throw new Error('Unauthorized: Login failed') });
+      .then(db => {
+        if (isBbq()) {
+          return app? bbqAppLogin(db) : getDefaultApp(db).then(appName => bbqAppLogin(db, appName));
+        }
+        return db;
+      });
 }
 
 function register(username, password) {
@@ -181,9 +192,9 @@ function loadAppName(db) {
   return db.modules.get('apps').then(apps => apps[0].name);
 }
 
-function bbqAppLogin(db) {
-  return db.modules.get('apps', { app }).then((result) => {
-    let factory = new baqend.EntityManagerFactory({host: app, secure: true, tokenStorageFactory: {
+function bbqAppLogin(db, appName) {
+  return db.modules.get('apps', { app: app || appName }).then((result) => {
+    let factory = new baqend.EntityManagerFactory({host: result.name, secure: true, tokenStorageFactory: {
       create(origin) {
         return new baqend.util.TokenStorage(origin, result.token);
       }
