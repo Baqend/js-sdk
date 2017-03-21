@@ -26,6 +26,12 @@ if (!module.parent) {
   ;
 
   program
+      .command('register')
+      .description('Registers an account and locally saves your credentials')
+      .action(options => result = account.register())
+  ;
+
+  program
       .command('deploy <app>')
       .description('Deploys your baqend code and files')
       .option('-F, --files', 'deploy files')
