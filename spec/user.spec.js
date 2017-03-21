@@ -204,9 +204,7 @@ describe('Test user and roles', function() {
       var oldToken;
       return db.User.register(oldLogin, "secret").then(function() {
         oldToken = db.token;
-        return new Promise(function(resolve) {
-          setTimeout(resolve, RENEW_TIMEOUT);
-        });
+        return helper.sleep(RENEW_TIMEOUT);
       }).then(function() {
         return db.me.newPassword("secret", "newSecret");
       }).then(function() {
@@ -221,21 +219,34 @@ describe('Test user and roles', function() {
       });
     });
 
-    it('should be allowed to change password as root', function() {
+    it('should keep user login when newPassword is called with invalid credentials', function() {
       var oldLogin = helper.makeLogin();
       var oldToken;
       return db.User.register(oldLogin, "secret").then(function() {
         oldToken = db.token;
-        return new Promise(function(resolve) {
-          setTimeout(resolve, RENEW_TIMEOUT);
-        }).then(function() { return db.User.logout() });
+        return helper.sleep(RENEW_TIMEOUT);
+      }).then(function() {
+        return expect(db.me.newPassword("wrong-secret", "newSecret")).rejectedWith('User name or password is incorrect');
+      }).then(function() {
+        expect(oldToken).eqls(db.token);
+        expect(db.me.username).eqls(oldLogin);
+      });
+    });
+
+    it('should be allowed to change password as root', function() {
+      var oldLogin = helper.makeLogin();
+      var oldToken;
+      return db.User.register(oldLogin, "secret").then(function() {
+        return db.User.logout();
       }).then(function() {
         return db.User.login("root", "root");
       }).then(function() {
+        oldToken = db.token;
         expect(db.me.username).eqls("root");
         return db.User.newPassword(oldLogin, "", "newSecret");
       }).then(function() {
         expect(db.me.username).eqls("root");
+        expect(db.token).eqls(oldToken);
         return db.User.logout();
       }).then(function() {
         return expect(db.User.login(oldLogin, "newSecret")).be.fulfilled.then(function() { return db.User.logout() });

@@ -167,7 +167,7 @@ function login(username, password) {
   return baqend.connect(host, true)
       .then(db => db.login(username, password).then(() => db))
       .then(db => isBbq() && app? bbqAppLogin(db): db)
-      .catch(() => console.error('Login denied'));
+      .catch(() => { throw new Error('Unauthorized: Login failed') });
 }
 
 function register(username, password) {

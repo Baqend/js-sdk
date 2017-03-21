@@ -38,7 +38,7 @@ if (!module.parent) {
       .option('-C, --code', 'deploy code')
       .option('-f, --file-dir <dir>', 'path to file directory [default:www]', 'www')
       .option('-g, --file-glob <pattern>', 'pattern to match files [default:**/*]', '**/*')
-      .option('-g, --bucket-path <path>', 'remote path where the files will be uploaded to.', 'www')
+      .option('-b, --bucket-path <path>', 'remote path where the files will be uploaded to.', 'www')
       .option('-c, --code-dir <dir>', 'path to code directory [default:baqend]', 'baqend')
       .action((app, options) => result = deploy(Object.assign({app: app}, options)))
   ;
