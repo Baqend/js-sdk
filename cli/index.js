@@ -32,6 +32,11 @@ if (!module.parent) {
   ;
 
   program
+      .command('open [app}')
+      .description('Opens the url to your app')
+      .action(app => result = account.openApp(app));
+
+  program
       .command('deploy [app]')
       .description('Deploys your baqend code and files')
       .option('-F, --files', 'deploy files')

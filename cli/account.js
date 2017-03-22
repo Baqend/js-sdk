@@ -5,6 +5,7 @@ const baqend = require('../lib/baqend');
 const fileName = os.homedir() + '/.baqend';
 const readline = require('readline');
 const crypto = require('crypto');
+const opn = require('opn');
 const algorithm = 'aes-256-ctr';
 const password = 'N2Ki=za[8iy4ff4jYn/3,y;';
 
@@ -12,7 +13,7 @@ const bbqHost = 'bbq';
 let host;
 let app;
 
-module.exports.login = function(args, persist) {
+function login(args, persist) {
   if (args.host && args.app) {
     throw new Error('Only app or host parameter is allowed.');
   }
@@ -49,6 +50,8 @@ module.exports.login = function(args, persist) {
   });
 };
 
+module.exports.login = login;
+
 module.exports.register = function() {
   host = bbqHost;
   return readInputCredentials().then(credentials => {
@@ -66,6 +69,16 @@ module.exports.logout = function(args) {
     delete json[host];
     return writeFile(json);
   });
+};
+
+module.exports.openApp = function(app) {
+  if (app) {
+    opn(`https://${app}.app.baqend.com`)
+  } else {
+    return login({}, false).then(db => {
+      opn(`https://${db._connector.host}`);
+    });
+  }
 };
 
 function getDefaultApp(db) {
