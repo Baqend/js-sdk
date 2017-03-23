@@ -41,7 +41,8 @@ module.exports = function (grunt) {
 
       debug: {
         files: {
-          'build/baqend.js': ['polyfills/index.js', 'streaming/index.js']
+          'build/baqend.js': ['polyfills/index.js', 'streaming/index.js'],
+          'build/baqend-webworker.js': ['webworker/index.js']
         },
         options: {
           watch: true,
@@ -62,7 +63,8 @@ module.exports = function (grunt) {
       dist: {
         files: {
           'dist/baqend.js': ['lib/index.js'],
-          'dist/baqend-streaming.js': ['streaming/index.js']
+          'dist/baqend-streaming.js': ['streaming/index.js'],
+          'dist/baqend-webworker.js': ['webworker/index.js']
         }
       }
     },
@@ -79,7 +81,8 @@ module.exports = function (grunt) {
           }
         },
         files: {
-          'build/debug.html': 'tpl/debug.tpl'
+          'build/debug.html': 'tpl/debug.tpl',
+          'build/webworker.html': 'tpl/webworker.tpl'
         }
       }
     },
