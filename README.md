@@ -1,5 +1,18 @@
 Baqend JavaScript SDK
 =====================
+Baqend JavaScript SDK and CLI for High-Performance Websites
+
+* [Docs](https://www.baqend.com/guide/) and [API](https://www.baqend.com/js-sdk/latest/baqend.html)
+* [CLI help](https://www.baqend.com/guide/#baqend-cli)
+* [Dashboard](https://dashboard.baqend.com/register/)
+
+CLI
+-----
+Baqend provides a CLI to easily manage your app. Install it by typing `npm install -g baqend`.
+Afterwards you can use the `baqend` command in your terminal.
+
+If you don't already have a Baqend account, type `baqend register` to create your first app.
+Now you can open the dashboard of your app with `baqend dashboard`. To see all the command use `baqend help`.
 
 Setup
 -----
