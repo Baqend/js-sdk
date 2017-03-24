@@ -26,7 +26,25 @@ if (!module.parent) {
   ;
 
   program
-      .command('deploy <app>')
+      .command('register')
+      .description('Registers an account and locally saves your credentials')
+      .action(options => result = account.register())
+  ;
+
+  program
+      .command('open [app}')
+      .description('Opens the url to your app')
+      .action(app => result = account.openApp(app))
+  ;
+
+  program
+      .command('dashboard')
+      .description('Opens the url to the baqend dashboard')
+      .action(() => result = account.openDashboard())
+  ;
+
+  program
+      .command('deploy [app]')
       .description('Deploys your baqend code and files')
       .option('-F, --files', 'deploy files')
       .option('-C, --code', 'deploy code')

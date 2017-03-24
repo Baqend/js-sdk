@@ -1,3 +1,11 @@
+<a name="v2.6.2"></a>
+# v2.6.2 (2017-3-21)
+
+
+### Bug Fixes
+
+* Fix newPassword logouts a user if the provided credentials wasn't valid
+
 <a name="v2.6.1"></a>
 # v2.6.1 (2017-3-16)
 
