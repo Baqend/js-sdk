@@ -1,3 +1,14 @@
+<a name="v2.6.3"></a>
+# v2.6.3 (2017-3-24)
+
+
+### Features
+
+* CLI: Register an account with the new "register" command
+* CLI: Open the dashboard with the new "dashboard" command
+* CLI: Open your app with the new "open" command
+* CLI: Using default app if only one has been started
+
 <a name="v2.6.2"></a>
 # v2.6.2 (2017-3-21)
 
