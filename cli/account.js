@@ -48,7 +48,7 @@ function login(args, persist) {
     }
     return db;
   });
-};
+}
 
 module.exports.login = login;
 
@@ -77,8 +77,21 @@ module.exports.openApp = function(app) {
   } else {
     return login({}, false).then(db => {
       opn(`https://${db._connector.host}`);
-    });
+    }).catch(e => console.log(e.message || e));
   }
+};
+
+module.exports.openDashboard = function() {
+  host = 'bbq';
+  return readFile().then(json => {
+    if (json[host] && json[host].password && json[host].username) {
+      connect(host, json[host].username, json[host].password).then(db => {
+        opn("https://dashboard.baqend.com/login?token=" + db.token);
+      });
+    } else {
+      opn("https://dashboard.baqend.com");
+    }
+  })
 };
 
 function getDefaultApp(db) {
@@ -183,9 +196,13 @@ function saveCredentials(username, password) {
   })
 }
 
-function dbLogin(username, password) {
-  return baqend.connect(host, true)
+function connect(hostName, username, password) {
+  return baqend.connect(hostName, true)
       .then(db => db.login(username, password).then(() => db))
+}
+
+function dbLogin(username, password) {
+  return connect(host, username, password)
       .then(db => {
         if (isBbq()) {
           return app? bbqAppLogin(db) : getDefaultApp(db).then(appName => bbqAppLogin(db, appName));
@@ -207,6 +224,10 @@ function loadAppName(db) {
 
 function bbqAppLogin(db, appName) {
   return db.modules.get('apps', { app: app || appName }).then((result) => {
+    if (!result) {
+      throw new Error('App not found.');
+    }
+
     let factory = new baqend.EntityManagerFactory({host: result.name, secure: true, tokenStorageFactory: {
       create(origin) {
         return new baqend.util.TokenStorage(origin, result.token);

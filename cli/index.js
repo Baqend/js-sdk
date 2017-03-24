@@ -34,7 +34,14 @@ if (!module.parent) {
   program
       .command('open [app}')
       .description('Opens the url to your app')
-      .action(app => result = account.openApp(app));
+      .action(app => result = account.openApp(app))
+  ;
+
+  program
+      .command('dashboard')
+      .description('Opens the url to the baqend dashboard')
+      .action(() => result = account.openDashboard())
+  ;
 
   program
       .command('deploy [app]')
