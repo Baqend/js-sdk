@@ -112,7 +112,7 @@ function showLoginInfo() {
 }
 
 function readInputCredentials() {
-  return readInput('Username: ')
+  return readInput('E-Mail: ')
       .then((username) => {
         return readInput('Password: ', true).then((password) => {
           console.log();
