@@ -58,7 +58,7 @@ class WebSocketConnector {
       };
 
       socket.onerror = handleSocketCompletion;
-      socket.onclose = handleSocketCompletion;
+      socket.onclose = handleSocketCompletion.bind(null, null);
       socket.onmessage = (event) => {
         const message = JSON.parse(event.data);
         message.date = new Date(message.date);

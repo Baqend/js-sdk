@@ -330,7 +330,7 @@ describe("Streaming Queries", function() {
       });
     });
 
-    it("should unsubscribe streamResult immediately", function() {
+    it("should unsubscribe resultStream immediately", function() {
       this.timeout(10000);
       var result, inserts;
 
@@ -351,16 +351,15 @@ describe("Streaming Queries", function() {
                   .equal("age", 64)
                   .ascending("surname")
                   .limit(5);
-              stream = query.streamResult();
+              stream = query.resultStream();
               subscription = stream.subscribe(function(e) {
                 resolve(e);
               }, function(e) {
                 reject(e);
               });
             });
-          }).then(function(event) {
-            expect(event).to.be.ok;
-            result = event.data;
+          }).then(function(result) {
+            expect(result).to.be.ok;
             return expect(result.length).to.equal(5);
           }).then(function() {
             // unsubscribe and wait a little bit
@@ -373,14 +372,14 @@ describe("Streaming Queries", function() {
   });
 
   describe('stream', function() {
-    beforeEach(clearSubs)
+    beforeEach(clearSubs);
 
     it("should return updated object", function() {
       this.timeout(10000);
       sameForAll = helper.randomize(this.test.title);
       var result;
       query = db[bucket].find().equal('testID', sameForAll);
-      stream = query.stream({initial: false, operations: 'update'});
+      stream = query.eventStream({initial: false, operations: 'update'});
       subscription = stream.subscribe(function(e) {
         result = e;
       });
@@ -402,7 +401,6 @@ describe("Streaming Queries", function() {
         expect(result.matchType).to.be.equal("change");
         expect(result.data).to.be.equal(person);
         expect(result.operation).to.be.equal("update");
-        expect(result.target).to.be.equal(query);
         expect(result.date.getTime()).be.ok;
         expect(result.initial).be.not.true;
       });
@@ -413,7 +411,7 @@ describe("Streaming Queries", function() {
       sameForAll = helper.randomize(this.test.title);
       var results = [];
       query = db[bucket].find().equal('testID', sameForAll).limit(2).offset(1).ascending("name");
-      stream = query.stream({
+      stream = query.eventStream({
         initial: true
       });
       subscription = stream.subscribe(function(e) {
@@ -489,7 +487,7 @@ describe("Streaming Queries", function() {
       var condition1 = query.equal("age", 49);
       var condition2 = query.equal('testID', sameForAll);
       query = query.and(condition1, condition2).limit(3).ascending("name");
-      stream = query.stream();
+      stream = query.eventStream();
       subscription = stream.subscribe(function(e) {
         results.push(e);
       });
@@ -561,7 +559,7 @@ describe("Streaming Queries", function() {
         var condition1 = query.equal("age", 49);
         var condition2 = query.equal('testID', sameForAll);
         query = query.and(condition1, condition2).limit(3).ascending("name");
-        stream = query.stream({
+        stream = query.eventStream({
           initial: true,
           operations: 'none'
         });
@@ -614,7 +612,7 @@ describe("Streaming Queries", function() {
       sameForAll = helper.randomize(this.test.title);
       var result;
       query = db[bucket].find().equal('testID', sameForAll);
-      stream = query.stream({initial: false, matchTypes: 'match'});
+      stream = query.eventStream({initial: false, matchTypes: 'match'});
       subscription = stream.subscribe(function(e) {
         result = e;
       });
@@ -629,7 +627,6 @@ describe("Streaming Queries", function() {
         expect(result.data.age).to.be.equal(29);
         expect(result.data.name).to.be.equal("franz");
         expect(result.operation).to.be.equal("insert");
-        expect(result.target).to.be.equal(query);
         expect(result.date.getTime()).be.ok;
         expect(result.initial).not.be.true;
       });
@@ -641,13 +638,13 @@ describe("Streaming Queries", function() {
       var franz, otherFranz;
 
       query = db[bucket].find().equal('testID', sameForAll);
-      stream = query.stream();
+      stream = query.eventStream();
       subscription = stream.subscribe(function(e) {
         franz = e.data;
       });
 
       otherQuery = otherDb[bucket].find().equal('testID', sameForAll);
-      otherStream = otherQuery.stream();
+      otherStream = otherQuery.eventStream();
       otherSubscription = otherStream.subscribe(function(e) {
         otherFranz = e.data;
       });
@@ -695,7 +692,7 @@ describe("Streaming Queries", function() {
       sameForAll = helper.randomize(this.test.title);
       var result;
       query = db[bucket].find().equal('testID', sameForAll);
-      stream = query.stream({initial: false, matchTypes: 'remove'});
+      stream = query.eventStream({initial: false, matchTypes: 'remove'});
       subscription = stream.subscribe(function(e) {
         result = e;
       });
@@ -713,7 +710,6 @@ describe("Streaming Queries", function() {
         expect(result.data.id).to.be.equal(person.id);
         expect(result.matchType).to.be.equal("remove");
         expect(result.operation).to.be.equal("delete");
-        expect(result.target).to.be.equal(query);
         expect(result.date.getTime()).be.ok;
         expect(result.initial).not.be.true;
       });
@@ -724,7 +720,7 @@ describe("Streaming Queries", function() {
       sameForAll = helper.randomize(this.test.title);
       var results = [];
       query = db[bucket].find().equal('testID', sameForAll);
-      stream = query.stream({initial: false, matchTypes: 'all'});
+      stream = query.eventStream({initial: false, matchTypes: 'all'});
       subscription = stream.subscribe(function(e) {
         results.push(e);
       });
@@ -760,7 +756,7 @@ describe("Streaming Queries", function() {
       var person = newPerson(33);
 
       query = db[bucket].find().equal('testID', sameForAll);
-      stream = query.stream({initial: false, matchTypes: 'match'});
+      stream = query.eventStream({initial: false, matchTypes: 'match'});
 
       var listener = function(e) {
         received.push(e);
@@ -793,7 +789,7 @@ describe("Streaming Queries", function() {
       }))).then(function() {
         var received = [];
         query = db[bucket].find().equal('testID', sameForAll).limit(3);
-        stream = query.stream();
+        stream = query.eventStream();
         subscription = stream.subscribe(function(e) {
           received.push(e);
         });
@@ -804,7 +800,6 @@ describe("Streaming Queries", function() {
             expect(result.matchType).to.be.equal("add");
             expect(people).to.include(result.data);
             expect(result.operation).to.be.equal('none');
-            expect(result.target).to.be.equal(query);
             expect(result.date.getTime()).be.ok;
             expect(result.initial).be.true;
           });
@@ -829,9 +824,9 @@ describe("Streaming Queries", function() {
         matchTypes: 'all'
       };
       query = db[bucket].find().equal('testID', sameForAll);
-      stream = query.stream(options);
+      stream = query.eventStream(options);
       otherQuery = db[bucket].find().equal('testID', sameForAll);
-      otherStream = otherQuery.stream(options);
+      otherStream = otherQuery.eventStream(options);
 
       return db.entityManagerFactory.websocket.open().then(function(s) {
         socket = s;
@@ -871,7 +866,7 @@ describe("Streaming Queries", function() {
         calls++;
       };
       query = db[bucket].find().equal('testID', sameForAll);
-      stream = query.stream({
+      stream = query.eventStream({
         initial: false,
         matchTypes: 'match'
       });
@@ -908,7 +903,7 @@ describe("Streaming Queries", function() {
       query = db[bucket].find()
           .matches('name', /^My Todo/).offset(500).limit(1)
           .ascending('name');
-      stream = query.stream();
+      stream = query.eventStream();
 
       subscription = stream.subscribe(onNext, onError);
       return helper.sleep(t).then(function() {
@@ -938,7 +933,7 @@ describe("Streaming Queries", function() {
         this.timeout(10000);
         sameForAll = helper.randomize(this.test.title);
         query = db[bucket].find().equal('testID', sameForAll);
-        stream = query.stream();
+        stream = query.eventStream();
         var calls = 0;
         var listener = function(e) {
           calls++;
@@ -960,7 +955,7 @@ describe("Streaming Queries", function() {
         this.timeout(10000);
         sameForAll = helper.randomize(this.test.title);
         query = db[bucket].find().equal('testID', sameForAll);
-        stream = query.stream();
+        stream = query.eventStream();
         var initialAccumulator = {
           contributors: {},// individual activity counts go here
           count: 0,// result set cardinality
@@ -1016,7 +1011,7 @@ describe("Streaming Queries", function() {
     });
   });
 
-  describe('streamResult', function() {
+  describe('resultStream', function() {
     var maintainedResult, expectedResult = [], offset = 5, limit = 10;
 
     before(function() {
@@ -1034,14 +1029,14 @@ describe("Streaming Queries", function() {
             .ascending("surname")
             .limit(limit)
             .offset(offset);
-        stream = query.streamResult();
+        stream = query.resultStream();
 
         return helper.sleep(t, Promise.all(inserts)).then(function() {
-          subscription = stream.subscribe(function(e) {
-            maintainedResult = e.data;
+          subscription = stream.subscribe(function(result) {
+            maintainedResult = result;
           });
 
-          return waitOn('all').then(function(result) {
+          return waitOn().then(function(result) {
             expectResult(result);
           });
         });
@@ -1093,18 +1088,20 @@ describe("Streaming Queries", function() {
       });
     }
 
-    function waitOn(matchType) {
+    function waitOn(count) {
+      count = count || 1;
       return new Promise(function(success, error) {
-        var sub = stream.subscribe(function(e) {
-          if (matchType == 'all' || e.matchType == matchType) {
+        var sub = stream.subscribe(function(result) {
+          count--;
+          if (!count) {
             sub.unsubscribe();
-            success(e.data);
+            success(result);
           }
         });
 
         setTimeout(function() {
           sub.unsubscribe();
-          error(new Error('Wait on ' + matchType + ' timed out.'));
+          error(new Error('Wait on ' + count + ' events timed out.'));
         }, t);
       });
     }
@@ -1117,7 +1114,7 @@ describe("Streaming Queries", function() {
 
       insert(obj);
 
-      return waitOn('add').then(function(result) {
+      return waitOn(2).then(function(result) {
         expectResult(result);
       });
     });
@@ -1130,7 +1127,7 @@ describe("Streaming Queries", function() {
 
       insert(obj);
 
-      return expect(waitOn('all')).rejectedWith('timed out');
+      return expect(waitOn()).rejectedWith('timed out');
     });
 
     it('should stream matching offset insert', function() {
@@ -1141,7 +1138,7 @@ describe("Streaming Queries", function() {
 
       insert(obj);
 
-      return waitOn('add').then(function(result) {
+      return waitOn(2).then(function(result) {
         expect(result).not.include(obj);
         expectResult(result);
       });
@@ -1155,7 +1152,7 @@ describe("Streaming Queries", function() {
 
       insert(obj);
 
-      return expect(waitOn('all')).rejectedWith('timed out');
+      return expect(waitOn()).rejectedWith('timed out');
     });
 
     it('should stream updated object within limit', function() {
@@ -1164,7 +1161,7 @@ describe("Streaming Queries", function() {
 
       update(obj);
 
-      return waitOn('changeIndex').then(function(result) {
+      return waitOn().then(function(result) {
         expect(result[3]).equal(obj);
         expectResult(result);
       })
@@ -1176,7 +1173,7 @@ describe("Streaming Queries", function() {
 
       update(obj);
 
-      return expect(waitOn('all')).rejectedWith('timed out');
+      return expect(waitOn()).rejectedWith('timed out');
     });
 
     it('should not stream updated object behind limit', function() {
@@ -1185,7 +1182,7 @@ describe("Streaming Queries", function() {
 
       update(obj);
 
-      return expect(waitOn('all')).rejectedWith('timed out');
+      return expect(waitOn()).rejectedWith('timed out');
     });
 
     it('should stream updated object moved from result to offset', function() {
@@ -1195,7 +1192,7 @@ describe("Streaming Queries", function() {
 
       update(obj);
 
-      return waitOn('add').then(function(result) {
+      return waitOn(2).then(function(result) {
         expect(result[0]).equal(newObj);
         expect(result).not.include(obj);
         expectResult(result);
@@ -1210,7 +1207,7 @@ describe("Streaming Queries", function() {
 
       update(obj);
 
-      return waitOn('add').then(function(result) {
+      return waitOn(2).then(function(result) {
         expect(result[0]).equal(obj);
         expect(result).not.include(droppedObj);
         expectResult(result);
@@ -1224,7 +1221,7 @@ describe("Streaming Queries", function() {
 
       update(obj);
 
-      return waitOn('add').then(function(result) {
+      return waitOn(2).then(function(result) {
         expect(result[limit - 1]).equal(addObj);
         expect(result).not.include(obj);
         expectResult(result);
@@ -1238,7 +1235,7 @@ describe("Streaming Queries", function() {
 
       update(obj);
 
-      return waitOn('add').then(function(result) {
+      return waitOn(2).then(function(result) {
         expect(result[3]).equal(obj);
         expect(result).not.include(droppedObj);
         expectResult(result);
@@ -1257,7 +1254,7 @@ describe("Streaming Queries", function() {
 
         update(obj);
 
-        return waitOn('add');
+        return waitOn(2);
       }).then(function(result) {
         expect(result[4]).equal(obj);
         expect(result).not.include(droppedObj);
@@ -1278,7 +1275,7 @@ describe("Streaming Queries", function() {
 
         update(obj);
 
-        return waitOn('add');
+        return waitOn(2);
       }).then(function(result) {
         expect(result[0]).equal(addObj);
         expect(result).not.include(droppedObj);
@@ -1298,7 +1295,7 @@ describe("Streaming Queries", function() {
 
         update(obj);
 
-        return expect(waitOn('all')).rejectedWith('timed out');
+        return expect(waitOn()).rejectedWith('timed out');
       });
     });
 
@@ -1310,7 +1307,7 @@ describe("Streaming Queries", function() {
 
       update(obj);
 
-      return waitOn('add').then(function(result) {
+      return waitOn(2).then(function(result) {
         expect(result[limit - 1]).equal(addObj);
         expect(result).not.include(obj);
         expectResult(result);
@@ -1326,7 +1323,7 @@ describe("Streaming Queries", function() {
 
       update(obj);
 
-      return waitOn('add').then(function(result) {
+      return waitOn(2).then(function(result) {
         expect(result[limit - 1]).equal(addObj);
         expect(result).not.include(obj);
         expect(result).not.include(droppedObj);
@@ -1341,7 +1338,7 @@ describe("Streaming Queries", function() {
 
       update(obj);
 
-      return expect(waitOn('all')).rejectedWith('timed out');
+      return expect(waitOn()).rejectedWith('timed out');
     });
 
     it('should stream deleted object in result', function() {
@@ -1350,7 +1347,7 @@ describe("Streaming Queries", function() {
 
       remove(obj);
 
-      return waitOn('add').then(function(result) {
+      return waitOn(2).then(function(result) {
         expect(result[limit - 1]).equal(addObj);
         expect(result).not.include(obj);
         expectResult(result);
@@ -1364,7 +1361,7 @@ describe("Streaming Queries", function() {
 
       remove(obj);
 
-      return waitOn('add').then(function(result) {
+      return waitOn(2).then(function(result) {
         expect(result[limit - 1]).equal(addObj);
         expect(result).not.include(obj);
         expect(result).not.include(droppedObj);
@@ -1377,7 +1374,7 @@ describe("Streaming Queries", function() {
 
       remove(obj);
 
-      return expect(waitOn('all')).rejectedWith('timed out');
+      return expect(waitOn()).rejectedWith('timed out');
     });
 
     it('should stream external inserted object', function() {
@@ -1389,7 +1386,7 @@ describe("Streaming Queries", function() {
 
       obj.save();
 
-      return waitOn('add').then(function(result) {
+      return waitOn(2).then(function(result) {
         expect(result[5].name).eql('Inserted');
 
         expectedResult.push(db.getReference(obj.id));
@@ -1418,7 +1415,7 @@ describe("Streaming Queries", function() {
         return obj.delete();
       });
 
-      return waitOn('add').then(function(result) {
+      return waitOn(2).then(function(result) {
         expect(result).not.include(droppedObj);
         expect(db.contains(droppedObj)).be.false;
 

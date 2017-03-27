@@ -41,7 +41,7 @@ module.exports = function (grunt) {
 
       debug: {
         files: {
-          'build/baqend.js': ['streaming/index.js']
+          'build/baqend.js': ['realtime/index.js']
         },
         options: {
           watch: true,
@@ -55,14 +55,14 @@ module.exports = function (grunt) {
 
       test: {
         files: {
-          'build/baqend.js': ['streaming/index.js']
+          'build/baqend.js': ['realtime/index.js']
         }
       },
 
       dist: {
         files: {
           'dist/baqend.js': ['lib/index.js'],
-          'dist/baqend-streaming.js': ['streaming/index.js']
+          'dist/baqend-realtime.js': ['realtime/index.js']
         }
       }
     },
@@ -155,7 +155,7 @@ module.exports = function (grunt) {
       dist: {
         files: {
           'dist/baqend.min.js': 'dist/baqend.js',
-          'dist/baqend-streaming.min.js': 'dist/baqend-streaming.js'
+          'dist/baqend-realtime.min.js': 'dist/baqend-realtime.js'
         }
       }
     }

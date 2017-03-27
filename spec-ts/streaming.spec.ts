@@ -1,8 +1,9 @@
 /// <reference path="./types.d.ts" />
 
-import {binding, query, model, baqend, StreamingEvent} from '../streaming';
-import {db} from '../streaming';
+import {binding, query, model, baqend, StreamingEvent, db} from '..';
+import '../realtime';
 import {Observable} from 'rxjs/Observable';
+import {Subscription} from 'rxjs/Subscription';
 
 db.connect('test', true).then(() => {
     //db.Test.load('test').then((entity) => {
@@ -22,10 +23,20 @@ db.User.find()
 
 let stream:Observable<StreamingEvent<model.Test>> = db.Test.find()
     .equal("myProp", "test")
-    .stream();
+    .eventStream({matchTypes: ['any']});
+
+let subscription:Subscription = stream.subscribe();
+
+subscription.unsubscribe();
+
+db.Test.find()
+    .equal("myProp", "test")
+    .resultStream((result:Array<model.Test>) => {
+        const prop:string = result[0].myProp;
+    });
 
 stream.subscribe(event => {
-    var question = event.data;
+    const question = event.data;
 
     if (event.matchType == 'add' || event.initial) {
         //add something

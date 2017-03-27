@@ -1,6 +1,5 @@
 "use strict";
 const Metadata = require('../../lib/util/Metadata');
-let WebSocketConnector = require('../connector/WebSocketConnector');
 const lib = require('../../lib');
 
 /**
@@ -20,13 +19,10 @@ class Stream {
    * @param {number=} query.offset offset, i.e. the number of items to skip
    * @param {boolean=} query.initial Indicates if the initial result should be returned
    * @param {Object} options an object containing parameters
-   * @param {query.Node<T>} target the target of the stream
-   * @return {Observable<T>} The query result as a live updating stream of objects
+   * @return {Observable<StreamingEvent<T>>} The query result as a live updating stream of objects
    */
-  static createStream(entityManager, query, options, target) {
+  static createEventStream(entityManager, query, options) {
     return Stream.streamObservable(entityManager, query, options, (msg, next) => {
-      msg.target = target;
-
       if (msg.type == 'result') {
         const result = msg.data;
         msg.data.forEach((obj, index) => {
@@ -65,7 +61,7 @@ class Stream {
    * @param {Object} options an object containing parameters
    * @return {Observable<Array<T>>} The query result as a live updating query result
    */
-  static createStreamResult(entityManager, query, options) {
+  static createResultStream(entityManager, query, options) {
     options = options || {};
     options.initial = true;
     options.matchTypes = 'all';
@@ -75,8 +71,7 @@ class Stream {
     return Stream.streamObservable(entityManager, query, options, (event, next) => {
       if (event.type == 'result') {
         result = event.data.map(obj => Stream._resolveObject(entityManager, obj));
-        event.data = result.slice();
-        next(event);
+        next(result.slice());
       }
 
       if (event.type == 'match') {
@@ -97,27 +92,26 @@ class Stream {
           ordered? result.splice(event.index, 0, obj): result.push(obj);
         }
 
-        event.data = result.slice();
-        next(event);
+        next(result.slice());
       }
     });
   }
 
-  static streamObservable(entityManager, query, options, mapper) {
+  static streamObservable(entityManager, query, options, mapper, retryInterval) {
     options = Stream.parseOptions(options);
 
     const socket = entityManager.entityManagerFactory.websocket;
-    const observable = new lib.Observable(observer => {
+    const observable = new lib.Observable(subscriber => {
       const stream = socket.openStream(entityManager.tokenStorage);
 
       stream.send(Object.assign({
         type: 'subscribe'
       }, query, options));
 
-      const next = observer.next.bind(observer);
+      const next = subscriber.next.bind(subscriber);
       const subscription = stream.subscribe({
-        complete: observer.complete.bind(observer),
-        error: observer.error.bind(observer),
+        complete: subscriber.complete.bind(subscriber),
+        error: subscriber.error.bind(subscriber),
         next: (msg) => mapper(msg, next)
       });
 
