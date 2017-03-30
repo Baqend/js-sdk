@@ -16,7 +16,6 @@
     var expect = chai.expect;
   </script>
 
-  <script src="https://unpkg.com/@reactivex/rxjs@5.0.0-rc.2/dist/global/Rx.js"></script>
   <script src="../build/baqend.js"></script>
   <script src="../spec/env.js"></script>
 
@@ -36,7 +35,7 @@
       document.getElementById('grep').value = grep? decodeURIComponent(grep[1]): '';
 
       mocha.checkLeaks();
-      mocha.globals(['jQuery', 'ms__*', '$*']);
+      mocha.globals(['jQuery', 'ms__*', '$*', '__*', 'Rx']);
       mocha.run();
     }
   </script>

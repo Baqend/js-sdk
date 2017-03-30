@@ -1,7 +1,7 @@
 var DB;
 if (typeof module != 'undefined') {
   require('./node');
-  DB = require('../streaming');
+  DB = require('../realtime');
   require('rxjs/add/operator/scan');
   require('rxjs/add/operator/map');
 }
@@ -13,12 +13,18 @@ xdescribe("Guide Examples", function() {
   }
 
   var Stream = DB.query.Stream;
+  var tautology= { $or: [ { value: { $exists: true } }, { value: { $exists: false } } ] };
   var t = 400;
   var bucket = helper.randomize("Guide_StreamingQuery");
   var emf, metamodel, db, stream, subscription;
 
+  var _Observable = DB.Observable;
+
   before(function() {
 
+  });
+
+  before(function() {
     var todoType, activityType;
     emf = new DB.EntityManagerFactory({host: env.TEST_SERVER, schema: {}, tokenStorage: helper.rootTokenStorage});
     metamodel = emf.metamodel;
@@ -34,10 +40,22 @@ xdescribe("Guide Examples", function() {
     activityType.addAttribute(new DB.metamodel.SingularAttribute("name", metamodel.baseType(String)));
 
     return metamodel.save().then(function() {
-      return db = emf.createEntityManager();
-    }).then(function() {
-      return helper.sleep(t);
+      return emf.createEntityManager().ready();
+    }).then(function(em) {
+      db = em;
+
+      if (!helper.isNode) {
+        return helper.load('Rx').then(function(Rx) {
+          DB.Observable = Rx.Observable;
+        });
+      }
     });
+  });
+
+  after(function() {
+    if (!helper.isNode) {
+      DB.Observable = _Observable;
+    }
   });
 
   afterEach(function() {
@@ -65,7 +83,7 @@ xdescribe("Guide Examples", function() {
   it("should compute aggregate: count", function() {
     this.timeout(6000);
 
-    stream = db[bucket].find().stream();
+    stream = db[bucket].find().where(tautology).eventStream();
     var aggregate; // aggregate value goes here!
 
     var todo1, todo2, todo3;
@@ -108,7 +126,7 @@ xdescribe("Guide Examples", function() {
   it("should compute aggregate: average activity number", function() {
     this.timeout(6000);
 
-    stream = db[bucket].find().stream();
+    stream = db[bucket].find().where(tautology).eventStream();
     var aggregate; // aggregate value goes here!
 
     var todo1, todo2, todo3;
@@ -184,7 +202,7 @@ xdescribe("Guide Examples", function() {
         .ascending('name')
         .descending('active')
         .limit(3)
-        .stream();
+        .eventStream();
 
     var todo0, todo1, todo2, todo3;
     return helper.sleep(t).then(function() {
@@ -304,7 +322,7 @@ xdescribe("Guide Examples", function() {
     this.timeout(6000);
 
     var counter = 0;
-    stream = db[bucket].find().matches('name', /^My Todo/).sort({'name': 1, 'active': -1}).limit(5).stream();
+    stream = db[bucket].find().matches('name', /^My Todo/).sort({'name': 1, 'active': -1}).limit(5).eventStream();
 
     subscription = stream.subscribe(function(value) {
       return counter++;
@@ -324,8 +342,8 @@ xdescribe("Guide Examples", function() {
 
     var counter = 0;
 
-    // stream = db[bucket].find().sort({'name': 1, 'active': -1}).stream();
-    stream = db[bucket].find().sort({'name': 1, 'active': -1}).limit(5).stream();
+    // stream = db[bucket].find().sort({'name': 1, 'active': -1}).eventStream();
+    stream = db[bucket].find().where(tautology).sort({'name': 1, 'active': -1}).limit(5).eventStream();
 
     subscription = stream.subscribe(function(value) {
       return counter++;
@@ -347,7 +365,7 @@ xdescribe("Guide Examples", function() {
     stream = db[bucket].find().matches('name', /^result/)
         .ascending('name')
         .descending('active')
-        .limit(3).stream();
+        .limit(3).eventStream();
 
 
     var todo0, todo1, todo2, todo3;
@@ -422,7 +440,7 @@ xdescribe("Guide Examples", function() {
     this.timeout(6000);
 
     var urgent = [];
-    stream = db[bucket].find().matches('name', /^result unordered/).stream();
+    stream = db[bucket].find().matches('name', /^result unordered/).eventStream();
 
 
     var todo0, todo1, todo2, todo3;
