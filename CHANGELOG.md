@@ -1,3 +1,12 @@
+<a name="v2.6.4"></a>
+# v2.6.4 (2017-3-30)
+
+
+### Bug Fixes
+
+* Ignore bodies of 204 responses since some intermediate proxies send invalid content in some cases
+
+
 <a name="v2.6.3"></a>
 # v2.6.3 (2017-3-24)
 
