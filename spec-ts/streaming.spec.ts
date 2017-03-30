@@ -1,6 +1,6 @@
 /// <reference path="./types.d.ts" />
 
-import {binding, query, model, baqend, StreamingEvent, db} from '..';
+import {binding, query, model, baqend, RealtimeEvent, db} from '..';
 import '../realtime';
 import {Observable} from 'rxjs/Observable';
 import {Subscription} from 'rxjs/Subscription';
@@ -21,7 +21,7 @@ db.User.find()
         user.username;
     });
 
-let stream:Observable<StreamingEvent<model.Test>> = db.Test.find()
+let stream:Observable<RealtimeEvent<model.Test>> = db.Test.find()
     .equal("myProp", "test")
     .eventStream({matchTypes: ['any']});
 

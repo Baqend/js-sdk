@@ -19,7 +19,7 @@ class Stream {
    * @param {number=} query.offset offset, i.e. the number of items to skip
    * @param {boolean=} query.initial Indicates if the initial result should be returned
    * @param {Object} options an object containing parameters
-   * @return {Observable<StreamingEvent<T>>} The query result as a live updating stream of objects
+   * @return {Observable<RealtimeEvent<T>>} The query result as a live updating stream of objects
    */
   static createEventStream(entityManager, query, options) {
     return Stream.streamObservable(entityManager, query, options, (msg, next) => {
@@ -158,7 +158,6 @@ class Stream {
    <li>initial: a Boolean indicating whether or not the initial result set should be delivered on creating the subscription</li>
    <li>matchTypes: a list of match types</li>
    <li>operations: a list of operations</li>
-   <li></li>
    </ul>
    *
    *
