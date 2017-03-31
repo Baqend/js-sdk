@@ -181,13 +181,23 @@ describe("Streaming Queries", function() {
         null,//
         undefined//
       ].forEach(function(options) {
-        expect(Stream.parseOptions(options)).to.be.eql({initial: true, matchTypes: ['all'], operations: ['any'], reconnects: -1});
+        expect(Stream.parseOptions(options)).to.be.eql({
+          initial: true,
+          matchTypes: ['all'],
+          operations: ['any'],
+          reconnects: -1
+        });
       });
 
       [//
         {initial: null, matchTypes: 'all', operations: ['any']},//
       ].forEach(function(options) {
-        expect(Stream.parseOptions(options)).to.be.eql({initial: false, matchTypes: ['all'], operations: ['any'], reconnects: -1});
+        expect(Stream.parseOptions(options)).to.be.eql({
+          initial: false,
+          matchTypes: ['all'],
+          operations: ['any'],
+          reconnects: -1
+        });
       });
 
       // Operations and match type should be provide-able as item AND list
@@ -195,13 +205,23 @@ describe("Streaming Queries", function() {
         {matchTypes: ['match']},//
         {matchTypes: 'match'},//
       ].forEach(function(options) {
-        expect(Stream.parseOptions(options)).to.be.eql({initial: true, matchTypes: ['match'], operations: ['any'], reconnects: -1});
+        expect(Stream.parseOptions(options)).to.be.eql({
+          initial: true,
+          matchTypes: ['match'],
+          operations: ['any'],
+          reconnects: -1
+        });
       });
       [//
         {operations: 'insert'},//
         {operations: ['insert']}//
       ].forEach(function(options) {
-        expect(Stream.parseOptions(options)).to.be.eql({initial: true, matchTypes: ['all'], operations: ['insert'], reconnects: -1});
+        expect(Stream.parseOptions(options)).to.be.eql({
+          initial: true,
+          matchTypes: ['all'],
+          operations: ['insert'],
+          reconnects: -1
+        });
       });
 
       // Operations and match type must not be provided both, UNLESS one of them listens to everything anyways
@@ -213,7 +233,12 @@ describe("Streaming Queries", function() {
         {initial: true, matchTypes: 'match', operations: undefined},//
         {matchTypes: 'match'}//
       ].forEach(function(options) {
-        expect(Stream.parseOptions(options)).to.be.eql({initial: true, matchTypes: ['match'], operations: ['any'], reconnects: -1});
+        expect(Stream.parseOptions(options)).to.be.eql({
+          initial: true,
+          matchTypes: ['match'],
+          operations: ['any'],
+          reconnects: -1
+        });
       });
       [//
         {initial: true, matchTypes: ['all'], operations: ['insert']},//
@@ -222,13 +247,19 @@ describe("Streaming Queries", function() {
         {initial: true, matchTypes: undefined, operations: 'insert'},//
         {operations: ['insert']}//
       ].forEach(function(options) {
-        expect(Stream.parseOptions(options)).to.be.eql({initial: true, matchTypes: ['all'], operations: ['insert'], reconnects: -1});
+        expect(Stream.parseOptions(options)).to.be.eql({
+          initial: true,
+          matchTypes: ['all'],
+          operations: ['insert'],
+          reconnects: -1
+        });
       });
       [ //should to raise an error
         {matchTypes: ['match'], operations: ['insert']},//
         {matchTypes: 'remove', operations: 'update'},//
         {matchTypes: 1, operations: 5},//
         {initial: true, matchTypes: 'match', operations: 'none'},//
+        {reconnects: 'banana'},//
       ].forEach(function(options) {
         var exceptions = 0;
         try {//Should raise an error
@@ -238,6 +269,33 @@ describe("Streaming Queries", function() {
           exceptions++;
         }
         expect(exceptions).to.be.equal(1);
+      });
+
+      // edge cases
+      //expect(Stream.parseOptions({initial: true, matchTypes: ['all'], operations: ['any'], reconnects: -1})).to.be.eql({initial: true, matchTypes: ['all'], operations: ['any'], reconnects: -1});
+      expect(Stream.parseOptions({reconnects: -2})).to.be.eql({
+        initial: true,
+        matchTypes: ['all'],
+        operations: ['any'],
+        reconnects: -1
+      });
+      expect(Stream.parseOptions({reconnects: -1})).to.be.eql({
+        initial: true,
+        matchTypes: ['all'],
+        operations: ['any'],
+        reconnects: -1
+      });
+      expect(Stream.parseOptions({reconnects: 0})).to.be.eql({
+        initial: true,
+        matchTypes: ['all'],
+        operations: ['any'],
+        reconnects: 0
+      });
+      expect(Stream.parseOptions({reconnects: 1})).to.be.eql({
+        initial: true,
+        matchTypes: ['all'],
+        operations: ['any'],
+        reconnects: 1
       });
     });
 
@@ -1452,17 +1510,31 @@ describe("Streaming Queries", function() {
     this.timeout(6000);
 
     var result, otherResult;
+    var completions = 0, otherCompletions = 0, errors = 0, otherErrors = 0;
+    var onNext = function(r) {
+      result = r;
+    };
+    var onOtherNext = function(r) {
+      otherResult = r;
+    };
+    var onError = function(r) {
+      errors++;
+    };
+    var onOtherError = function(r) {
+      otherErrors++;
+    };
+    var onComplete = function(r) {
+      completions++;
+    };
+    var onOtherComplete = function(r) {
+      otherCompletions++;
+    };
     query = db[bucket].find().matches('name', /^reconnection test/)
         .ascending('name')
         .descending('active')
-        .limit(3)
-    subscription = query.resultStream(function(r) {
-          result = r;
-        });
-    otherSubscription = query.resultStream({ reconnects: -1 }, function(r) {
-      otherResult = r;
-    });
-
+        .limit(8)
+    subscription = query.resultStream(onNext, onError, onComplete);
+    otherSubscription = query.resultStream({reconnects: -1}, onOtherNext, onOtherError, onOtherComplete);
 
 
     return helper.sleep(t).then(function() {
@@ -1486,32 +1558,53 @@ describe("Streaming Queries", function() {
     }).then(function() {
       expect(result.length).to.be.equal(2);
       expect(otherResult.length).to.be.equal(2);
+      expect(completions).to.be.equal(0);
+      expect(otherCompletions).to.be.equal(0);
+      expect(errors).to.be.equal(0);
+      expect(otherErrors).to.be.equal(0);
     });
   });
 
   it("should resume resultStream specific number of times after disconnect", function() {
-    this.timeout(8000);
+    this.timeout(10000);
 
     var result, otherResult;
-    query = db[bucket].find().matches('name', /^resultStream test/)
+    var completions = 0, otherCompletions = 0, errors = 0, otherErrors = 0;
+    var onNext = function(r) {
+      result = r;
+    };
+    var onOtherNext = function(r) {
+      otherResult = r;
+    };
+    var onError = function(r) {
+      errors++;
+    };
+    var onOtherError = function(r) {
+      otherErrors++;
+    };
+    var onComplete = function(r) {
+      completions++;
+    };
+    var onOtherComplete = function(r) {
+      otherCompletions++;
+    };
+    query = db[bucket].find().matches('name', /^reconnection count test/)
         .ascending('name')
         .descending('active')
-        .limit(8);
-    subscription = query.resultStream({ reconnects: 2 }, function(r) {
-      result = r;
-    });
-    otherSubscription = query.resultStream({ reconnects: 0 }, function(r) {
-      otherResult = r;
-    });
+        .limit(8)
+    subscription = query.resultStream({reconnects: 2}, onNext, onError, onComplete);
+    otherSubscription = query.resultStream({reconnects: 0}, onOtherNext, onOtherError, onOtherComplete);
 
     return helper.sleep(t).then(function() {
       expect(result.length).to.be.equal(0);
       expect(otherResult.length).to.be.equal(0);
-      var todo1 = new db[bucket]({name: 'resultStream test 1'});
+      var todo1 = new db[bucket]({name: 'reconnection count test 1'});
       return helper.sleep(t, todo1.save());
     }).then(function() {
       expect(result.length).to.be.equal(1);
       expect(otherResult.length).to.be.equal(1);
+      expect(completions).to.be.equal(0);
+      expect(otherCompletions).to.be.equal(0);
       expect(websocket.socket).to.be.ok;
       websocket.close();
       expect(websocket.socket).to.be.not.ok;
@@ -1520,11 +1613,15 @@ describe("Streaming Queries", function() {
       expect(websocket.socket).to.be.ok;
       expect(result.length).to.be.equal(1);
       expect(otherResult.length).to.be.equal(1);
-      var todo2 = new db[bucket]({name: 'resultStream test 2'});
+      expect(completions).to.be.equal(0);
+      expect(otherCompletions).to.be.equal(1);
+      var todo2 = new db[bucket]({name: 'reconnection count test 2'});
       return helper.sleep(t, todo2.save());
     }).then(function() {
       expect(result.length).to.be.equal(2);
       expect(otherResult.length).to.be.equal(1);
+      expect(completions).to.be.equal(0);
+      expect(otherCompletions).to.be.equal(1);
       expect(websocket.socket).to.be.ok;
       websocket.close();
       expect(websocket.socket).to.be.not.ok;
@@ -1533,24 +1630,24 @@ describe("Streaming Queries", function() {
       expect(websocket.socket).to.be.ok;
       expect(result.length).to.be.equal(2);
       expect(otherResult.length).to.be.equal(1);
-      var todo3 = new db[bucket]({name: 'resultStream test 3'});
+      var todo3 = new db[bucket]({name: 'reconnection count test 3'});
       return helper.sleep(t, todo3.save());
     }).then(function() {
       expect(result.length).to.be.equal(3);
       expect(otherResult.length).to.be.equal(1);
+      expect(completions).to.be.equal(0);
+      expect(otherCompletions).to.be.equal(1);
       expect(websocket.socket).to.be.ok;
       websocket.close();
       expect(websocket.socket).to.be.not.ok;
       return helper.sleep(t);
     }).then(function() {
-      expect(websocket.socket).to.be.ok;
       expect(result.length).to.be.equal(3);
       expect(otherResult.length).to.be.equal(1);
-      var todo2 = new db[bucket]({name: 'resultStream test 4'});
-      return helper.sleep(t, todo2.save());
-    }).then(function() {
-      expect(result.length).to.be.equal(3);
-      expect(otherResult.length).to.be.equal(1);
+      expect(completions).to.be.equal(1);
+      expect(otherCompletions).to.be.equal(1);
+      expect(errors).to.be.equal(0);
+      expect(otherErrors).to.be.equal(0);
     });
   });
 });

@@ -145,8 +145,8 @@ class Stream {
           if (remainingRetries !== 0) {
             remainingRetries = remainingRetries < 0 ? -1 : remainingRetries - 1;
             subscription = observable.subscribe({next: onNext, error: onError, complete: onComplete});
-          } else if (onComplete) {
-            onComplete();
+          } else if (observer.complete) {
+            observer.complete();
           }
         };
         subscription = observable.subscribe({next: onNext, error: onError, complete: onComplete});
@@ -196,8 +196,13 @@ class Stream {
   }
 
   static normalizeReconnects(reconnects) {
-    reconnects = reconnects || -1;
-    reconnects = reconnects < 0 ? -1 : reconnects;
+    if (reconnects && !Number.isInteger(reconnects)) {
+      throw new Error('non-integer values not allowed!');
+    } else if (Number.isInteger(reconnects)) {
+      reconnects = reconnects < 0 ? -1 : reconnects;
+    } else {
+      reconnects = -1;
+    }
     return reconnects;
   }
 
