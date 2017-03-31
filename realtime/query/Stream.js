@@ -1,6 +1,7 @@
 "use strict";
 const Metadata = require('../../lib/util/Metadata');
 const lib = require('../../lib');
+const util = require('../../lib/util/util');
 
 /**
  * @alias query.Stream
@@ -22,6 +23,8 @@ class Stream {
    * @return {Observable<RealtimeEvent<T>>} The query result as a live updating stream of objects
    */
   static createEventStream(entityManager, query, options) {
+    options = options || {};
+    options.reconnects = 0;
     return Stream.streamObservable(entityManager, query, options, (msg, next) => {
       if (msg.type == 'result') {
         const result = msg.data;
@@ -89,7 +92,7 @@ class Stream {
         }
 
         if (event.matchType == 'add' || event.matchType == 'changeIndex') {
-          ordered? result.splice(event.index, 0, obj): result.push(obj);
+          ordered ? result.splice(event.index, 0, obj) : result.push(obj);
         }
 
         next(result.slice());
@@ -99,10 +102,11 @@ class Stream {
 
   static streamObservable(entityManager, query, options, mapper, retryInterval) {
     options = Stream.parseOptions(options);
+    let id = util.uuid();
 
     const socket = entityManager.entityManagerFactory.websocket;
     const observable = new lib.Observable(subscriber => {
-      const stream = socket.openStream(entityManager.tokenStorage);
+      const stream = socket.openStream(entityManager.tokenStorage, id);
 
       stream.send(Object.assign({
         type: 'subscribe'
@@ -121,25 +125,31 @@ class Stream {
       }
     });
 
-    return Stream.cachedObservable(observable);
+    return Stream.cachedObservable(observable, options);
   }
 
-  static cachedObservable(observable) {
+  static cachedObservable(observable, options) {
     let subscription = null;
     let observers = [];
     return new lib.Observable(observer => {
       if (!subscription) {
-        subscription = observable.subscribe({
-          next(msg) {
-            observers.forEach(o => o.next(msg))
-          },
-          error(e) {
-            observers.forEach(o => o.error(e))
-          },
-          complete() {
-            observers.forEach(o => o.complete())
+        let remainingRetries = options.reconnects;
+        let onNext, onError, onComplete;
+        onNext = function(msg) {
+          observers.forEach(o => o.next(msg))
+        };
+        onError = function(e) {
+          observers.forEach(o => o.error(e))
+        };
+        onComplete = function() {
+          if (remainingRetries !== 0) {
+            remainingRetries = remainingRetries < 0 ? -1 : remainingRetries - 1;
+            subscription = observable.subscribe({next: onNext, error: onError, complete: onComplete});
+          } else if (onComplete) {
+            onComplete();
           }
-        });
+        };
+        subscription = observable.subscribe({next: onNext, error: onError, complete: onComplete});
       }
       observers.push(observer);
       return () => {
@@ -170,7 +180,8 @@ class Stream {
     const verified = {
       initial: options.initial === undefined || !!options.initial,
       matchTypes: Stream.normalizeMatchTypes(options.matchTypes),
-      operations: Stream.normalizeOperations(options.operations)
+      operations: Stream.normalizeOperations(options.operations),
+      reconnects: Stream.normalizeReconnects(options.reconnects)
     };
 
     if (verified.matchTypes.indexOf('all') == -1 && verified.operations.indexOf('any') == -1) {
@@ -182,6 +193,12 @@ class Stream {
 
   static normalizeMatchTypes(list) {
     return Stream.normalizeSortedSet(list, 'all', "match types", ['add', 'change', 'changeIndex', 'match', 'remove']);
+  }
+
+  static normalizeReconnects(reconnects) {
+    reconnects = reconnects || -1;
+    reconnects = reconnects < 0 ? -1 : reconnects;
+    return reconnects;
   }
 
   static normalizeOperations(list) {
@@ -226,7 +243,7 @@ class Stream {
   }
 
   static _resolveObject(entityManager, object) {
-    const entity  = entityManager.getReference(object.id);
+    const entity = entityManager.getReference(object.id);
     const metadata = Metadata.get(entity);
     if (!object.version) {
       metadata.setRemoved();

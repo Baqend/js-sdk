@@ -101,10 +101,10 @@ class WebSocketConnector {
 
   /**
    * @param {util.TokenStorage} tokenStorage
+   * @param {string} id subscription ID
    * @return {connector.ObservableStream} The channel for sending and receiving messages
    */
-  openStream(tokenStorage) {
-    let id = util.uuid();
+  openStream(tokenStorage, id) {
     let stream = new lib.Observable(observer => {
       if (this.observers[id])
         throw new Error("Only one subscription per stream is allowed.");
