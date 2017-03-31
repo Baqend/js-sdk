@@ -1532,7 +1532,7 @@ describe("Streaming Queries", function() {
     query = db[bucket].find().matches('name', /^reconnection test/)
         .ascending('name')
         .descending('active')
-        .limit(8)
+        .limit(8);
     subscription = query.resultStream(onNext, onError, onComplete);
     otherSubscription = query.resultStream({reconnects: -1}, onOtherNext, onOtherError, onOtherComplete);
 

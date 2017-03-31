@@ -102,11 +102,10 @@ class Stream {
 
   static streamObservable(entityManager, query, options, mapper, retryInterval) {
     options = Stream.parseOptions(options);
-    let id = util.uuid();
 
     const socket = entityManager.entityManagerFactory.websocket;
     const observable = new lib.Observable(subscriber => {
-      const stream = socket.openStream(entityManager.tokenStorage, id);
+      const stream = socket.openStream(entityManager.tokenStorage);
 
       stream.send(Object.assign({
         type: 'subscribe'
