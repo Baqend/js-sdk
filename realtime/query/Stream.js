@@ -102,25 +102,38 @@ class Stream {
 
   static streamObservable(entityManager, query, options, mapper, retryInterval) {
     options = Stream.parseOptions(options);
+    let id = util.uuid();
 
     const socket = entityManager.entityManagerFactory.websocket;
     const observable = new lib.Observable(subscriber => {
-      const stream = socket.openStream(entityManager.tokenStorage);
+      const stream = socket.openStream(entityManager.tokenStorage, id);
 
       stream.send(Object.assign({
         type: 'subscribe'
       }, query, options));
 
+      let closed = false;
       const next = subscriber.next.bind(subscriber);
       const subscription = stream.subscribe({
-        complete: subscriber.complete.bind(subscriber),
-        error: subscriber.error.bind(subscriber),
-        next: (msg) => mapper(msg, next)
+        complete() {
+          closed = true;
+          subscriber.complete();
+        },
+        error(e) {
+          closed = true;
+          subscriber.error(e);
+        },
+        next(msg) {
+          mapper(msg, next)
+        }
       });
 
       return () => {
-        stream.send({type: 'unsubscribe'});
-        subscription.unsubscribe();
+        if (!closed) { // send unsubscribe only when we aren't completed by the socket and call it only once
+          stream.send({type: 'unsubscribe'});
+          subscription.unsubscribe();
+          closed = true;
+        }
       }
     });
 
@@ -133,22 +146,23 @@ class Stream {
     return new lib.Observable(observer => {
       if (!subscription) {
         let remainingRetries = options.reconnects;
-        let onNext, onError, onComplete;
-        onNext = function(msg) {
-          observers.forEach(o => o.next(msg))
-        };
-        onError = function(e) {
-          observers.forEach(o => o.error(e))
-        };
-        onComplete = function() {
-          if (remainingRetries !== 0) {
-            remainingRetries = remainingRetries < 0 ? -1 : remainingRetries - 1;
-            subscription = observable.subscribe({next: onNext, error: onError, complete: onComplete});
-          } else if (observer.complete) {
-            observer.complete();
+        const subscriptionObserver = {
+          next(msg) {
+            observers.forEach(o => o.next(msg))
+          },
+          error(e) {
+            observers.forEach(o => o.error(e))
+          },
+          complete() {
+            if (remainingRetries !== 0) {
+              remainingRetries = remainingRetries < 0 ? -1 : remainingRetries - 1;
+              subscription = observable.subscribe(subscriptionObserver);
+            } else {
+              observers.forEach(o => o.complete())
+            }
           }
         };
-        subscription = observable.subscribe({next: onNext, error: onError, complete: onComplete});
+        subscription = observable.subscribe(subscriptionObserver);
       }
       observers.push(observer);
       return () => {

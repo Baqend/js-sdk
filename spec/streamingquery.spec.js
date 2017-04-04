@@ -1556,11 +1556,11 @@ describe("Streaming Queries", function() {
       var todo2 = new db[bucket]({name: 'reconnection test 2'});
       return helper.sleep(t, todo2.save());
     }).then(function() {
+      expect(errors).to.be.equal(0);
+      expect(completions).to.be.equal(0);
       expect(result.length).to.be.equal(2);
       expect(otherResult.length).to.be.equal(2);
-      expect(completions).to.be.equal(0);
       expect(otherCompletions).to.be.equal(0);
-      expect(errors).to.be.equal(0);
       expect(otherErrors).to.be.equal(0);
     });
   });
