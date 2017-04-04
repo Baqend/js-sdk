@@ -41,7 +41,7 @@ class WebSocketConnector {
         //observable error calls can throw an exception therefore cleanup beforehand
         let isError = false;
         if (this.socket == socketPromise) {
-          isError = this.socket.readyState != 3;
+          isError = socket.readyState != 3;
           this.socket = null;
         }
 
