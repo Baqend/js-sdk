@@ -26,11 +26,12 @@ class Stream {
     options = options || {};
     options.reconnects = 0;
     return Stream.streamObservable(entityManager, query, options, (msg, next) => {
-      if (msg.type == 'result') {
+      let messageType = msg.type;
+      delete msg.type;
+      if (messageType == 'result') {
         const result = msg.data;
         msg.data.forEach((obj, index) => {
           const event = Object.assign({
-            type: 'match',
             matchType: 'add',
             operation: 'none',
             initial: true
@@ -44,7 +45,7 @@ class Stream {
         });
       }
 
-      if (msg.type == 'match') {
+      if (messageType == 'match') {
         msg.data = Stream._resolveObject(entityManager, msg.data);
         next(msg);
       }
