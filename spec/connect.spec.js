@@ -47,8 +47,6 @@ describe('Test Connect', function() {
   });
 
   it('should resume a logged in session with new connection', function() {
-    var connector = DB.connector.Connector.create(env.TEST_SERVER);
-
     DB.connector.Connector.connections = {};
 
     var emf = new DB.EntityManagerFactory(env.TEST_SERVER);
