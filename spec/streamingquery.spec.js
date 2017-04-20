@@ -259,7 +259,6 @@ describe("Streaming Queries", function() {
         {matchTypes: 'remove', operations: 'update'},//
         {matchTypes: 1, operations: 5},//
         {initial: true, matchTypes: 'match', operations: 'none'},//
-        {reconnects: 'banana'},//
       ].forEach(function(options) {
         var exceptions = 0;
         try {//Should raise an error
