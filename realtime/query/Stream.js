@@ -210,14 +210,11 @@ class Stream {
   }
 
   static normalizeReconnects(reconnects) {
-    if (reconnects && !Number.isInteger(reconnects)) {
-      throw new Error('non-integer values not allowed!');
-    } else if (Number.isInteger(reconnects)) {
-      reconnects = reconnects < 0 ? -1 : reconnects;
+    if (reconnects === undefined) {
+      return -1;
     } else {
-      reconnects = -1;
+      return reconnects < 0 ? -1 : Number(reconnects);
     }
-    return reconnects;
   }
 
   static normalizeOperations(list) {

@@ -210,7 +210,7 @@ describe('Test user and roles', function() {
         return db.renew();
       }).then(function() {
         //renew by side effect
-        const newToken = db.token;
+        var newToken = db.token;
         expect(db.token).not.eqls(oldToken);
         db.token = oldToken;
         expect(db.token).eqls(newToken);
