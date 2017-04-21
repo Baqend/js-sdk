@@ -22,7 +22,7 @@ if (!module.parent) {
       .command('login')
       .description('Logs you in and locally saves your credentials')
       .option('-H, --host <name>', 'Host for custom deployment')
-      .action(options => result = account.login(options, true))
+      .action(options => result = account.persistLogin(options))
   ;
 
   program
