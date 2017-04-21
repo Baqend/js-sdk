@@ -13,7 +13,7 @@ xdescribe("Guide Examples", function() {
   }
 
   var Stream = DB.query.Stream;
-  var tautology= { $or: [ { value: { $exists: true } }, { value: { $exists: false } } ] };
+  var tautology = {$or: [{value: {$exists: true}}, {value: {$exists: false}}]};
   var t = 400;
   var bucket = helper.randomize("Guide_StreamingQuery");
   var emf, metamodel, db, stream, subscription;

@@ -1,9 +1,7 @@
 /// <reference path="./types.d.ts" />
 
-import {binding, query, model, baqend, RealtimeEvent, db} from '..';
-import '../realtime';
-import {Observable} from 'rxjs/Observable';
-import {Subscription} from 'rxjs/Subscription';
+import {binding, query, model, baqend, RealtimeEvent, db} from '../realtime';
+import {Observable, Subscription} from 'rxjs';
 
 db.connect('test', true).then(() => {
     //db.Test.load('test').then((entity) => {

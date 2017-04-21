@@ -24,7 +24,7 @@
     "glob": "^7.0.6",
     "opn": "^4.0.2",
     "rimraf": "^2.5.4",
-    "rxjs": "^5.0.0-rc.2",
+    "rxjs": "^5.1.0",
     "simple-git": "^1.62.0",
     "uuid": "^3.0.1",
     "validator": "^4.9.0"
@@ -97,7 +97,7 @@
     "release": "node scripts/release",
     "typings": "npm run typings-generate && npm run typings-test",
     "typings-generate": "jsdoc -t tpl/typings -r lib realtime -d index.d.ts",
-    "typings-test": "tsc --target es6 --noImplicitAny -m commonjs spec-ts/streaming.spec.ts spec-ts/streaming.spec.ts ",
+    "typings-test": "tsc --target es6 --noImplicitAny -m commonjs spec-ts/typings.spec.ts spec-ts/realtime.spec.ts",
     "jsdoc": "jsdoc -t tpl/theme -r lib realtime -c tpl/jsdoc.conf.json --package package.json -d doc",
     "baqend": "node cli/index.js"
   },

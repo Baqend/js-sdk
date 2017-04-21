@@ -1,6 +1,7 @@
 "use strict";
 const Metadata = require('../../lib/util/Metadata');
 const lib = require('../../lib');
+const util = require('../../lib/util/util');
 
 /**
  * @alias query.Stream
@@ -22,12 +23,15 @@ class Stream {
    * @return {Observable<RealtimeEvent<T>>} The query result as a live updating stream of objects
    */
   static createEventStream(entityManager, query, options) {
+    options = options || {};
+    options.reconnects = 0;
     return Stream.streamObservable(entityManager, query, options, (msg, next) => {
-      if (msg.type == 'result') {
+      let messageType = msg.type;
+      delete msg.type;
+      if (messageType == 'result') {
         const result = msg.data;
         msg.data.forEach((obj, index) => {
           const event = Object.assign({
-            type: 'match',
             matchType: 'add',
             operation: 'none',
             initial: true
@@ -41,7 +45,7 @@ class Stream {
         });
       }
 
-      if (msg.type == 'match') {
+      if (messageType == 'match') {
         msg.data = Stream._resolveObject(entityManager, msg.data);
         next(msg);
       }
@@ -89,7 +93,7 @@ class Stream {
         }
 
         if (event.matchType == 'add' || event.matchType == 'changeIndex') {
-          ordered? result.splice(event.index, 0, obj): result.push(obj);
+          ordered ? result.splice(event.index, 0, obj) : result.push(obj);
         }
 
         next(result.slice());
@@ -99,37 +103,51 @@ class Stream {
 
   static streamObservable(entityManager, query, options, mapper, retryInterval) {
     options = Stream.parseOptions(options);
+    let id = util.uuid();
 
     const socket = entityManager.entityManagerFactory.websocket;
     const observable = new lib.Observable(subscriber => {
-      const stream = socket.openStream(entityManager.tokenStorage);
+      const stream = socket.openStream(entityManager.tokenStorage, id);
 
       stream.send(Object.assign({
         type: 'subscribe'
       }, query, options));
 
+      let closed = false;
       const next = subscriber.next.bind(subscriber);
       const subscription = stream.subscribe({
-        complete: subscriber.complete.bind(subscriber),
-        error: subscriber.error.bind(subscriber),
-        next: (msg) => mapper(msg, next)
+        complete() {
+          closed = true;
+          subscriber.complete();
+        },
+        error(e) {
+          closed = true;
+          subscriber.error(e);
+        },
+        next(msg) {
+          mapper(msg, next)
+        }
       });
 
       return () => {
-        stream.send({type: 'unsubscribe'});
-        subscription.unsubscribe();
+        if (!closed) { // send unsubscribe only when we aren't completed by the socket and call it only once
+          stream.send({type: 'unsubscribe'});
+          subscription.unsubscribe();
+          closed = true;
+        }
       }
     });
 
-    return Stream.cachedObservable(observable);
+    return Stream.cachedObservable(observable, options);
   }
 
-  static cachedObservable(observable) {
+  static cachedObservable(observable, options) {
     let subscription = null;
     let observers = [];
     return new lib.Observable(observer => {
       if (!subscription) {
-        subscription = observable.subscribe({
+        let remainingRetries = options.reconnects;
+        const subscriptionObserver = {
           next(msg) {
             observers.forEach(o => o.next(msg))
           },
@@ -137,9 +155,15 @@ class Stream {
             observers.forEach(o => o.error(e))
           },
           complete() {
-            observers.forEach(o => o.complete())
+            if (remainingRetries !== 0) {
+              remainingRetries = remainingRetries < 0 ? -1 : remainingRetries - 1;
+              subscription = observable.subscribe(subscriptionObserver);
+            } else {
+              observers.forEach(o => o.complete())
+            }
           }
-        });
+        };
+        subscription = observable.subscribe(subscriptionObserver);
       }
       observers.push(observer);
       return () => {
@@ -170,7 +194,8 @@ class Stream {
     const verified = {
       initial: options.initial === undefined || !!options.initial,
       matchTypes: Stream.normalizeMatchTypes(options.matchTypes),
-      operations: Stream.normalizeOperations(options.operations)
+      operations: Stream.normalizeOperations(options.operations),
+      reconnects: Stream.normalizeReconnects(options.reconnects)
     };
 
     if (verified.matchTypes.indexOf('all') == -1 && verified.operations.indexOf('any') == -1) {
@@ -182,6 +207,14 @@ class Stream {
 
   static normalizeMatchTypes(list) {
     return Stream.normalizeSortedSet(list, 'all', "match types", ['add', 'change', 'changeIndex', 'match', 'remove']);
+  }
+
+  static normalizeReconnects(reconnects) {
+    if (reconnects === undefined) {
+      return -1;
+    } else {
+      return reconnects < 0 ? -1 : Number(reconnects);
+    }
   }
 
   static normalizeOperations(list) {
@@ -226,7 +259,7 @@ class Stream {
   }
 
   static _resolveObject(entityManager, object) {
-    const entity  = entityManager.getReference(object.id);
+    const entity = entityManager.getReference(object.id);
     const metadata = Metadata.get(entity);
     if (!object.version) {
       metadata.setRemoved();

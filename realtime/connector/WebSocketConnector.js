@@ -39,18 +39,22 @@ class WebSocketConnector {
 
       const handleSocketCompletion = (error) => {
         //observable error calls can throw an exception therefore cleanup beforehand
-        if (this.socket == socketPromise)
+        let isError = false;
+        if (this.socket == socketPromise) {
+          isError = socket.readyState != 3;
           this.socket = null;
+        }
 
         let firstErr;
         Object.keys(this.observers).forEach(id => {
+          const observer = this.observers[id];
+          delete this.observers[id]; //unsubscribe to allow resubscriptions
           try {
-            error? this.observers[id].error(error): this.observers[id].complete();
+            isError? observer.error(new CommunicationError(null, error)): observer.complete();
           } catch (e) {
             if (!firstErr)
               firstErr = e;
           }
-          delete this.observers[id];
         });
 
         if (firstErr)
@@ -58,7 +62,7 @@ class WebSocketConnector {
       };
 
       socket.onerror = handleSocketCompletion;
-      socket.onclose = handleSocketCompletion.bind(null, null);
+      socket.onclose = handleSocketCompletion;
       socket.onmessage = (event) => {
         const message = JSON.parse(event.data);
         message.date = new Date(message.date);
@@ -66,7 +70,7 @@ class WebSocketConnector {
         const id = message.id;
         if (!id) {
           if (message.type == 'error')
-            handleSocketCompletion(new CommunicationError(null, message));
+            handleSocketCompletion(message);
           return;
         }
 
@@ -101,17 +105,19 @@ class WebSocketConnector {
 
   /**
    * @param {util.TokenStorage} tokenStorage
+   * @param {string} id subscription ID
    * @return {connector.ObservableStream} The channel for sending and receiving messages
    */
-  openStream(tokenStorage) {
-    let id = util.uuid();
+  openStream(tokenStorage, id) {
     let stream = new lib.Observable(observer => {
       if (this.observers[id])
         throw new Error("Only one subscription per stream is allowed.");
 
       this.observers[id] = observer;
       return () => {
-        delete this.observers[id];
+        //cleanup only our subscription and handle resubscription on the same stream id correctly
+        if (this.observers[id] == observer)
+          delete this.observers[id];
       }
     });
 

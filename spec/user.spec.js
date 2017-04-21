@@ -7,7 +7,7 @@ if (typeof module != 'undefined') {
 describe('Test user and roles', function() {
   var emf, db;
   var RENEW_TIMEOUT = 2000;
-  this.timeout(RENEW_TIMEOUT * 2);
+  this.timeout(RENEW_TIMEOUT * 5);
 
   before(function() {
     emf = new DB.EntityManagerFactory({host: env.TEST_SERVER, tokenStorage: helper.rootTokenStorage});
@@ -187,9 +187,7 @@ describe('Test user and roles', function() {
       var login = helper.makeLogin();
       var oldToken;
       return db.User.register(login, 'secret').then(function() {
-        return new Promise(function(resolve) {
-          setTimeout(resolve, RENEW_TIMEOUT);
-        });
+        return helper.sleep(RENEW_TIMEOUT);
       }).then(function() {
         expect(db.token).be.ok;
         oldToken = db.token;
@@ -197,6 +195,26 @@ describe('Test user and roles', function() {
       }).then(function() {
         expect(db.token).not.eqls(oldToken);
       });
+    });
+
+    it('should not old cached user tokens from a renewal', function() {
+      var login = helper.makeLogin();
+      var oldToken;
+      return db.User.register(login, 'secret').then(function() {
+        return helper.sleep(RENEW_TIMEOUT);
+      }).then(function() {
+        expect(db.token).be.ok;
+        oldToken = db.token;
+
+        //create a browser cached object, with a renewed token
+        return db.renew();
+      }).then(function() {
+        //renew by side effect
+        var newToken = db.token;
+        expect(db.token).not.eqls(oldToken);
+        db.token = oldToken;
+        expect(db.token).eqls(newToken);
+      })
     });
 
     it('should change password', function() {
@@ -286,11 +304,7 @@ describe('Test user and roles', function() {
     it('should remove token if password has been changed', function() {
       var login = helper.makeLogin();
       return DB.User.register(login, 'secret').then(function() {
-        return new Promise(function(resolve) {
-          setTimeout(function() {
-            resolve();
-          }, RENEW_TIMEOUT);
-        });
+        return helper.sleep(RENEW_TIMEOUT);
       }).then(function() {
         return db.User.login(login, 'secret');
       }).then(function() {
@@ -310,7 +324,7 @@ describe('Test user and roles', function() {
       return DB.User.register(login, 'secret').then(function() {
         var token = DB.tokenStorage.token;
         expect(token).be.ok;
-        DB.tokenStorage.update(token.replace(/.{1}$/, token.substr(token.length - 1, token.length) == '0'? '1': '0'));
+        DB.tokenStorage.update(token.substring(0, token.length - 1) + (token.substr(token.length - 1, token.length) == '0'? '1': '0'));
         return DB.renew();
       }).then(function(user) {
         expect(user).be.null;
@@ -477,9 +491,7 @@ describe('Test user and roles', function() {
       var login = helper.makeLogin();
       var oldToken;
       return db.User.register(login, 'secret').then(function() {
-        return new Promise(function(resolve) {
-          setTimeout(resolve, RENEW_TIMEOUT);
-        });
+        return helper.sleep(RENEW_TIMEOUT);
       }).then(function() {
         oldToken = db.token;
         var role = new db.Role();
