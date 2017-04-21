@@ -45,7 +45,7 @@ function deployFiles(db, path, cwd, pattern) {
     if (result && result.length > 0) {
       console.log('File deployment completed.');
     } else {
-      console.warn('Your specified upload folder is empty, no files where uploaded.');
+      console.warn('Your specified upload folder is empty, no files were uploaded.');
     }
   })
 }
