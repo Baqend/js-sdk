@@ -1,3 +1,18 @@
+<a name="v2.7.0"></a>
+# v2.7.0 (2017-4-21)
+
+
+### Bug Fixes
+
+* fix duplicated connect call on cross domain connections 
+* fix token renew properly when token comes from local cache 
+* fix CLI login for accounts with multiple apps
+
+### Features
+
+* new real-time API based on observables
+* self-maintaining real-time queries
+
 <a name="v2.6.4"></a>
 # v2.6.4 (2017-3-30)
 
