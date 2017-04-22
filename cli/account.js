@@ -22,7 +22,7 @@ function persistLogin(args) {
 
   return inputPromise.then(credentials => {
     return connect(host, credentials[0], credentials[1]).then(() =>  saveCredentials(credentials[0], credentials[1]))
-  }).catch(e => console.log(e.message || e));
+  }).then(() => console.log('You have successfully been logged in.'), e => console.log(e.message || e))
 }
 
 function getArgsCredentials(args) {
@@ -41,7 +41,7 @@ function getArgsCredentials(args) {
 }
 
 function login(args) {
-  let inputPromise = getArgsCredentials(args);
+  let inputPromise = getArgsCredentials(args || {});
   if (!inputPromise){
     inputPromise = readFile().then((json) => {
       if (json[host] && json[host].password && json[host].username) {
@@ -85,7 +85,7 @@ module.exports.openApp = function(app) {
   if (app) {
     return opn(`https://${app}.app.baqend.com`)
   } else {
-    return login({}, false).then(db => {
+    return login({}).then(db => {
       opn(`https://${db._connector.host}`);
     }).catch(e => console.log(e.message || e));
   }
@@ -102,6 +102,31 @@ module.exports.openDashboard = function() {
       opn("https://dashboard.baqend.com");
     }
   })
+};
+
+module.exports.listApps = function() {
+  host = bbqHost;
+
+  return readFile().then(json => {
+    if (!json || !json[host]) {
+      throw new Error("You are not logged in.");
+    }
+    return connect(host, json[host].username, json[host].password)
+  }).then(db =>  db.modules.get('apps'))
+    .then(apps => apps.forEach(app => console.log(app.name)))
+    .catch(e => console.log(e.message || e));
+};
+
+module.exports.whoami = function(args) {
+  host = args.host || bbqHost;
+
+  return readFile().then(json => {
+    if (!json) {
+      throw new Error();
+    }
+
+    return connect(host, json[host].username, json[host].password);
+  }).then(db => console.log(db.User.me.username), () => console.log('You are not logged in.'));
 };
 
 function getDefaultApp(db) {
