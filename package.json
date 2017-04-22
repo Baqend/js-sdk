@@ -11,9 +11,9 @@
   "main": "index.js",
   "browser": {
     "./index.js": "./dist/baqend.js",
-    "./streaming.js": "./dist/baqend-streaming.js",
+    "./realtime.js": "./dist/baqend-realtime.js",
     "./lib/util/util.js": "./lib/util/util-browser.js",
-    "./streaming/connector/websocket.js": "./streaming/connector/websocket-browser.js",
+    "./realtime/connector/websocket.js": "./realtime/connector/websocket-browser.js",
     "./lib/connector/NodeConnector": false
   },
   "typings": "index.d.ts",

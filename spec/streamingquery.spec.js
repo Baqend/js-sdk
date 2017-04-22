@@ -1,7 +1,7 @@
 var DB;
 if (typeof module != 'undefined') {
   require('./node');
-  DB = require('../streaming');
+  DB = require('../realtime');
   require('rxjs/add/operator/first');
   require('rxjs/add/operator/scan');
   require('rxjs/add/operator/map');

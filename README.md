@@ -111,8 +111,8 @@ DB.ready(function() {
 });
 ```
 
-Note: The Baqend Streaming SDK can be required with `var DB = require('baqend/streaming');`, ensure that you only 
-require either the Baqend SDK or the Baqend Streaming SDK and not both.
+Note: The Baqend Real-Time SDK can be required with `var DB = require('baqend/realtime');`, ensure that you only 
+require either the Baqend SDK or the Baqend Real-Time SDK and not both.
 
 
 
@@ -136,7 +136,7 @@ DB.ready(function() {
 });
 ```
 
-Note: The Baqend Streaming SDK can be required with `var DB = require('baqend/streaming');`, ensure that you only 
+Note: The Baqend Streaming SDK can be required with `var DB = require('baqend/realtime');`, ensure that you only 
 require either the Baqend SDK or the Baqend Streaming SDK and not both.
 
 Type `browserify scripts/main.js > scripts/bundle.js` to build your main.js script.

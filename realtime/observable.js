@@ -1,6 +1,6 @@
 /*
  * loads the observalbe from the global context, the global Rx variable or try to load Rx.js, fallback to core-js shim
- * The Observable can be overwritten by setting the require('baqend/streaming').Observable = Observable afterwards
+ * The Observable can be overwritten by setting the require('baqend/realtime').Observable = Observable afterwards
  */
 
 if (typeof Rx !== 'undefined') {
