@@ -1,4 +1,4 @@
-import {Observable} from 'rxjs/Observable';
+import {Observable, Subscription} from 'rxjs';
 
 declare type json = Object|Array<any>;
 

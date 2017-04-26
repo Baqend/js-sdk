@@ -1,5 +1,18 @@
 Baqend JavaScript SDK
 =====================
+Baqend JavaScript SDK and CLI for High-Performance Websites
+
+* [Docs](https://www.baqend.com/guide/) and [API](https://www.baqend.com/js-sdk/latest/baqend.html)
+* [CLI help](https://www.baqend.com/guide/#baqend-cli)
+* [Dashboard](https://dashboard.baqend.com/register/)
+
+CLI
+-----
+Baqend provides a CLI to easily manage your app. Install it by typing `npm install -g baqend`.
+Afterwards you can use the `baqend` command in your terminal.
+
+If you don't already have a Baqend account, type `baqend register` to create your first app.
+Now you can open the dashboard of your app with `baqend dashboard`. To see all the command use `baqend help`.
 
 Setup
 -----
@@ -29,26 +42,22 @@ You can also include it from our CDN-Provider `fastly`.
 The Baqend SDK provides a global `DB` variable by default.
 
 
-Baqend Streaming SDK
+Baqend Real-Time SDK
 --------------------
-
-If you want to use the realtime streaming queries, you have to either use `baqend-streaming.js` or 
-`baqend-streaming.min.js` for production.
-
+If you want to use real-time queries, you have to either use `baqend-realtime.js` or 
+`baqend-realtime.min.js` for production.
 In Addition, you can include [Rx.js](https://github.com/ReactiveX/rxjs) v5 into your project, for many advanced 
 Observable features.
 You can use the unpkg CDN:
-
 ```html
-<script type="text/javascript" src="//unpkg.com/@reactivex/rxjs@5.0.0-rc.2/dist/global/Rx.js"></script>
+<script type="text/javascript" src="//unpkg.com/@reactivex/rxjs@5.2.0/dist/global/Rx.js"></script>
 <!-- include the SDK after rxjs -->
-<script type="text/javascript" src="//www.baqend.com/js-sdk/latest/baqend-streaming.js"></script>
+<script type="text/javascript" src="//www.baqend.com/js-sdk/latest/baqend-realtime.js"></script>
 ```
-
 The SDK is shipped with the core-js Observable shim per default. 
 If you include Rx.js globally, it will be detected and used by the SDK automatically.
 You can also set the Observable implementation which the SDK will use, 
-by setting the `require('baqend/streaming').Observable = Observable` afterwards.
+by setting the `require('baqend/realtime').Observable = Observable` afterwards.
 
 Initialize
 ----------
@@ -102,8 +111,8 @@ DB.ready(function() {
 });
 ```
 
-Note: The Baqend Streaming SDK can be required with `var DB = require('baqend/streaming');`, ensure that you only 
-require either the Baqend SDK or the Baqend Streaming SDK and not both.
+Note: The Baqend Real-Time SDK can be required with `var DB = require('baqend/realtime');`, ensure that you only 
+require either the Baqend SDK or the Baqend Real-Time SDK and not both.
 
 
 
@@ -127,7 +136,7 @@ DB.ready(function() {
 });
 ```
 
-Note: The Baqend Streaming SDK can be required with `var DB = require('baqend/streaming');`, ensure that you only 
+Note: The Baqend Streaming SDK can be required with `var DB = require('baqend/realtime');`, ensure that you only 
 require either the Baqend SDK or the Baqend Streaming SDK and not both.
 
 Type `browserify scripts/main.js > scripts/bundle.js` to build your main.js script.

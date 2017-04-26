@@ -22,7 +22,7 @@ if (!module.parent) {
       .command('login')
       .description('Logs you in and locally saves your credentials')
       .option('-H, --host <name>', 'Host for custom deployment')
-      .action(options => result = account.login(options, true))
+      .action(options => result = account.persistLogin(options))
   ;
 
   program
@@ -32,9 +32,24 @@ if (!module.parent) {
   ;
 
   program
+      .command('whoami')
+      .alias('me')
+      .option('-H, --host <name>', 'Host for custom deployment')
+      .description('Show your login status')
+      .action(options => result = account.whoami(options))
+  ;
+
+  program
       .command('open [app}')
       .description('Opens the url to your app')
-      .action(app => result = account.openApp(app));
+      .action(app => result = account.openApp(app))
+  ;
+
+  program
+      .command('dashboard')
+      .description('Opens the url to the baqend dashboard')
+      .action(() => result = account.openDashboard())
+  ;
 
   program
       .command('deploy [app]')
@@ -71,6 +86,12 @@ if (!module.parent) {
       .command('start [name] [dir]')
       .description('clones the starter kit and install it in the given directory')
       .action((name, dir) => result = starter(name, dir))
+  ;
+
+  program
+      .command('apps')
+      .description('list all your apps')
+      .action(() => result = account.listApps())
   ;
 
   program.parse(process.argv);

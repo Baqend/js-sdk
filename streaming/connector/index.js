@@ -1,1 +1,0 @@
-exports.WebSocketConnector = require('./WebSocketConnector');

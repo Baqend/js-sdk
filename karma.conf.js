@@ -23,7 +23,6 @@ module.exports = function(config) {
 
     // list of files / patterns to load in the browser
     files: [
-      'https://unpkg.com/@reactivex/rxjs@5.0.0-rc.2/dist/global/Rx.js',
       'build/baqend.js',
       'spec/env.js',
       'spec/helper.js',
