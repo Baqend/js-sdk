@@ -95,7 +95,6 @@ describe("Test toJSON and fromJSON", function() {
       obj = db.Level0.fromJSON(json)
       expect(obj).be.ok;
       expect(obj.value).eqls("test");
-      expect(obj.id).be.null;
       expect(obj.version).be.null;
       obj.save().then(function(obj) {
         expect(obj.id).be.ok;
