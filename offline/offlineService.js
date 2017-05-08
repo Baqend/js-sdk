@@ -1,51 +1,74 @@
 'use strict';
 const minimongo = require('minimongo');
 const IndexedDb = minimongo.IndexedDb;
-const db = null;
+const db = new IndexedDb({ namespace: 'baqend' }, function () {});
 
 class OfflineService {
-    constructor(dbName) {
-        this.db = new IndexedDb({ namespace: dbName }, function () {});
-    }
 
     // TODO add functionality to diagnose flaky internet connection
     isOnline() {
-        return navigator.onLine;
+        return false;
+        //return navigator.onLine;
     }
 
-    saveDataLocally(data, className) {
-        this.db.addCollection(className, function () {
-            this.db[className].findOne({ id: data.id }, {}, function (result) {
-                if (result) {
-                    this.db[className].remove(result._id, function (res) {});
-                }
-                this.db[className].upsert(data, function () {});
+    saveDataLocally(entity, entityClass, offlineUpdate) {
+        let promise = new Promise(function (resolve, reject) {
+            db.addCollection(entityClass, function () {
+                if (offlineUpdate)
+                    entity.offlineUpdate = true;
+
+                entity._id = entity.id;
+                db[entityClass].upsert(entity, function () { resolve(); });
             });
         });
+
+        return promise;
     };
 
-    deleteLocalEntry(objectId, className) {
-        this.db.addCollection(className, function () {
-            this.db[className].findOne({ id: objectId }, {}, function (result) {
-                this.db[className].remove(result._id, function (res) {});
+    deleteLocalEntry(entity, entityClass, offlineDelete) {
+        let promise = new Promise(function (resolve, reject) {
+            db.addCollection(entityClass, function () {
+                db[entityClass].remove(entity.id, function (res) {
+                    resolve();
+                });
             });
         });
+
+        return promise.then(() => {
+            if(offlineDelete)
+                return this.saveDataLocally(entity, 'deletedObjects', false);
+            return;
+        })
     }
 
-    loadLocalEntry(objectId, className) {
-        this.db.addCollection(className, function () {
-            this.db[className].findOne({ id: objectId }, {}, function (result) {
-                return result;
+    loadLocalEntry(entity, entityClass) {
+        let localLoadResult;
+        let promise = new Promise(function (resolve, reject) {
+            db.addCollection(entityClass, function () {
+                db[entityClass].findOne({ _id: entity.id }, {}, function (result) {
+                    localLoadResult = result;
+                    resolve();
+                });
             });
         });
+
+        return promise.then(() => localLoadResult);
     }
 
-    queryLocalData(query, sort, limit,className) {
-        limit = limit < 0 ? 0 : limit;
-        this.db.addCollection(className, function () {
-            this.db[className].find(queryString, { limit: limit }, { sort: sortBy }).fetch(function (result) {
-               return result;
+    queryLocalData(query, sort, limit, entityClass) {
+        let localQueryResult;
+        let promise = new Promise(function (resolve, reject) {
+            limit = limit < 0 ? 0 : limit;
+            db.addCollection(entityClass, function () {
+                db[entityClass].find(JSON.parse(query), { sort: JSON.parse(sort) }, { limit: JSON.parse(limit) }).fetch(function (result) {
+                    localQueryResult = result;
+                    resolve();
+                });
             });
         });
+
+        return promise.then(() => localQueryResult);
     };
 }
+
+module.exports = OfflineService;

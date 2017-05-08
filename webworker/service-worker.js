@@ -36,10 +36,10 @@ self.addEventListener('fetch', event => {
                         clonedResponse.json().then(function (data) {
                             if (Array.isArray(data)) {
                                 data.forEach(function (entry) {
-                                    saveDataLocally(entry);
+                                    saveData(entry);
                                 });
                             } else {
-                                saveDataLocally(data);
+                                saveData(data);
                             }
                         });
                     } else if (event.request.method === 'DELETE') {
@@ -72,7 +72,7 @@ self.addEventListener('fetch', event => {
     }
 });
 
-function saveDataLocally(data) {
+function saveData(data) {
     db.addCollection(className, function () {
         db[className].findOne({id: data.id}, {}, function (result) {
             if (result) {
