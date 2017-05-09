@@ -10,7 +10,7 @@ describe('Test Offline', function() {
     before(function() {
         var personType, addressType;
 
-        emf = new DB.EntityManagerFactory({ host: env.TEST_SERVER, schema: {}, tokenStorage: helper.rootTokenStorage });
+        emf = new DB.EntityManagerFactory({ host: env.TEST_SERVER, schema: {}, tokenStorage: helper.rootTokenStorage, conflictResolution: function (localObj, serverObj) { return localObj; }});
         metamodel = emf.metamodel;
 
         metamodel.addType(personType = new DB.metamodel.EntityType("QueryPerson", metamodel.entity(Object)));
@@ -77,7 +77,7 @@ describe('Test Offline', function() {
         });
 
         it('should return loaded object', function() {
-            return db.QueryPerson.load('query_p2', {depth: 1}).then(function(obj) {
+            return db.QueryPerson.load('query_p2').then(function(obj) {
                 expect(obj).equals(p2);
             });
         });
@@ -237,21 +237,13 @@ describe('Test Offline', function() {
 
         it("should return date between 1970-01-01Z and 1990-31-12Z matches", function() {
             return db.QueryPerson.find()
-                .between('date', new Date("1970-01-01T00:00Z"), new Date("1990-12-31T00:00Z"))
+                .between('date', "1970-01-01T00:00Z", "1990-12-31T00:00Z")
                 .resultList()
                 .then(function(list) {
                     expectResult([p1, p3], list);
                 });
         });
 
-        it("should return date between 1970-01-01Z and 1990-31-12Z matches", function() {
-            return db.QueryPerson.find()
-                .between('date', new Date("1970-01-01T00:00Z"), new Date("1990-12-31T00:00Z"))
-                .resultList()
-                .then(function(list) {
-                    expectResult([p1, p3], list);
-                });
-        });
 // Query Filter $geoWithin not supported by minimongo
 /*        it("should return birthplace withinPolygon matches", function() {
             return db.QueryPerson.find()
@@ -282,7 +274,6 @@ describe('Test Offline', function() {
                 .ascending('age')
                 .resultList()
                 .then(function(list) {
-                    console.log(list);
                     expectSortedResult([p3, p2, p1], list);
                 });
         });
@@ -362,6 +353,15 @@ describe('Test Offline', function() {
                     expectResult([p1, p2, p3], list);
                 });
         });
+
+        it('should update object', function() {
+            return db.QueryPerson.load('query_p2').then(function(obj) {
+                obj.age = 55;
+                return obj.update().then(function(updated) {
+                    expect(true);
+                });
+             });
+         });
 
 /*        it('should delete object', function() {
             return db.QueryPerson.load('query_p2').then(function(obj) {
