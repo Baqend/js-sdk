@@ -12,9 +12,12 @@ let savedObjectsCollection = 'savedObjects';
 let deletedObjectsCollection = 'deletedObjects';
 
 class OfflineService {
-    constructor(entityManagerFactory, entityManager) {
-        this.entityManagerFactory = entityManagerFactory;
+    /**
+     * @param {EntityManager} entityManager The EntityManager which of this offlineService instance
+     */
+    constructor(entityManager) {
         this.entityManager = entityManager;
+        this.entityManagerFactory = entityManager.entityManagerFactory;
 
         this.online = new Observable((observer) => {
             if(window) {
@@ -22,20 +25,28 @@ class OfflineService {
                     observer.next(false);
                 });
                 window.addEventListener('online', (e) => {
-                    this.synchronizeData();
-                    observer.next(true);
+                    this.synchronizeData().then(() => {
+                        observer.next(true);
+                    });
                 });
             }
         });
-
-        this.synchronizeData();
     }
 
+    /**
+     * The Method to verify whether the app is online or offline
+     */
     isOnline() {
         return true;
         //return navigator.onLine;
     }
 
+    /**
+     * method to save (insert/update) objects to the local database
+     * @param {Object} entity
+     * @param {String} entityClass
+     * @param {Boolean} offlineSave
+     */
     saveDataLocally(entity, entityClass, offlineSave) {
         let promise = new Promise((resolve, reject) => {
             localDb.addCollection(entityClass, () => {
@@ -55,6 +66,12 @@ class OfflineService {
         })
     };
 
+    /**
+     * method to delete objects of the local database
+     * @param {Object} entity
+     * @param {String} entityClass
+     * @param {Boolean} offlineDelete
+     */
     deleteLocalEntry(entity, entityClass, offlineDelete) {
         let promise = new Promise((resolve, reject) => {
             localDb.addCollection(entityClass, () => {
@@ -72,6 +89,11 @@ class OfflineService {
         })
     }
 
+    /**
+     * method to load objects from the local database
+     * @param {Object} entity
+     * @param {String} entityClass
+     */
     loadLocalEntry(entity, entityClass) {
         let localLoadResult;
         let promise = new Promise((resolve, reject) => {
@@ -88,6 +110,13 @@ class OfflineService {
         return promise.then(() => localLoadResult);
     }
 
+    /**
+     * method to query data of the local database
+     * @param {String} query
+     * @param {String} sort
+     * @param {String} limit
+     * @param {String} entityClass
+     */
     queryLocalData(query, sort, limit, entityClass) {
         let localQueryResult;
         let promise = new Promise((resolve, reject) => {
@@ -206,6 +235,11 @@ class OfflineService {
         }
     }
 
+    /**
+     * method to verify which objects wins when a conflict occurs
+     * @param {Object} localObj
+     * @param {Object} remoteObj
+     */
     conflictResolution(localObj, remoteObj) {
         if(this.entityManagerFactory.conflictResolution) {
             if (typeof this.entityManagerFactory.conflictResolution === "function") {
@@ -220,10 +254,18 @@ class OfflineService {
         }
     }
 
+    /**
+     * method to get the key of a specific entity
+     * @param {Object} entity
+     */
     getKeyOfEntity(entity) {
         return entity.id.substr(entity.id.lastIndexOf('/') + 1);
     }
 
+    /**
+     * method to get the bucket of a specific entity
+     * @param {Object} entity
+     */
     getBucketOfEntity(entity) {
         return entity.id.split('/')[2];
     }
