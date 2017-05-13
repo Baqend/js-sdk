@@ -67,7 +67,7 @@ class OfflineService {
         });
 
         return promise.then(() => {
-            if(offlineDelete)
+            if(offlineDelete && entity.version)
                 return this.saveDataLocally(entity, deletedObjectsCollection, false);
         })
     }
@@ -134,34 +134,9 @@ class OfflineService {
                                     return this.deleteLocalEntry(entity, deletedObjectsCollection, false);
                                 });
                             }, (e) => {
-                                if(e.status === StatusCode.OBJECT_OUT_OF_DATE){
-                                    return this.entityManager.send(new message.GetObject(bucket, key)).then((response) => {
-                                        if(this.conflictResolution(entity, response.entity) === response.entity) {
-                                            return this.saveDataLocally(response.entity, bucket, false).then(() => {
-                                                return this.deleteLocalEntry(entity, savedObjectsCollection, false);
-                                            });
-                                        } else {
-                                            delete entity.version;
-                                            return new this.entityManager.send(message.ReplaceObject(bucket, key, entity)).then((response) => {
-                                                return this.saveDataLocally(response.entity, bucket, false).then(() => {
-                                                    return this.deleteLocalEntry(entity, savedObjectsCollection, false);
-                                                });
-                                            });
-                                        }
-                                    }, (e) => {
-                                        if (e.status === StatusCode.OBJECT_NOT_FOUND) {
-                                            if(this.conflictResolution(entity, 'remoteObj') === entity) {
-                                                return this.entityManager.send(new message.CreateObject(bucket, entity)).then(() => {
-                                                    return this.deleteLocalEntry(entity, savedObjectsCollection, false);
-                                                });
-                                            } else {
-                                                return this.deleteLocalEntry(entity, bucket, false).then(() => {
-                                                    return this.deleteLocalEntry(entity, savedObjectsCollection, false);
-                                                });
-                                            }
-                                        }
-                                    });
-                                }
+                                return this.errorHandling(e, entity, 'save').then(() => {
+                                    return this.deleteLocalEntry(entity, savedObjectsCollection, false);
+                                })
                             });
                         });
 
@@ -186,23 +161,9 @@ class OfflineService {
                             return this.entityManager.send(new message.DeleteObject(bucket, key).ifMatch(entity.version)).then(() => {
                                 return this.deleteLocalEntry(entity, deletedObjectsCollection, false);
                             }, (e) => {
-                                if(e.status === StatusCode.OBJECT_OUT_OF_DATE){
-                                    return this.entityManager.send(new message.GetObject(bucket, key)).then((response) => {
-                                        if(this.conflictResolution(entity, response.entity) === response.entity) {
-                                            return this.saveDataLocally(response.entity, bucket, false).then(() => {
-                                                return this.deleteLocalEntry(entity, deletedObjectsCollection, false);
-                                            });
-                                        } else {
-                                            return this.entityManager.send(new message.DeleteObject(bucket, key)).then((response) => {
-                                                return this.deleteLocalEntry(entity, deletedObjectsCollection, false);
-                                            });
-                                        }
-                                    }, (e) => {
-                                        if (e.status === StatusCode.OBJECT_NOT_FOUND) {
-                                            return this.deleteLocalEntry(entity, deletedObjectsCollection, false);
-                                        }
-                                    });
-                                }
+                                return this.errorHandling(e, entity, 'delete').then(() => {
+                                    return this.deleteLocalEntry(entity, deletedObjectsCollection, false);
+                                })
                             });
                         });
 
@@ -213,6 +174,36 @@ class OfflineService {
                 });
             })
         });
+    }
+
+    errorHandling(error, entity, operation) {
+        let bucket = this.getBucketOfEntity(entity);
+        let key = this.getKeyOfEntity(entity);
+
+        if(error.status === StatusCode.OBJECT_OUT_OF_DATE){
+            return this.entityManager.send(new message.GetObject(bucket, key)).then((response) => {
+                if(this.conflictResolution(entity, response.entity) === response.entity) {
+                    return this.saveDataLocally(response.entity, bucket, false).then(() => {});
+                } else {
+                    if(operation === 'save') {
+                        delete entity.version;
+                        return new this.entityManager.send(message.ReplaceObject(bucket, key, entity)).then((response) => {
+                            return this.saveDataLocally(response.entity, bucket, false).then(() => {});
+                        });
+                    } else if(operation === 'delete') {
+                        return this.entityManager.send(new message.DeleteObject(bucket, key)).then(() => {});
+                    }
+                }
+            }, (e) => {
+                if (e.status === StatusCode.OBJECT_NOT_FOUND && operation === 'save') {
+                    if(this.conflictResolution(entity, 'remoteObj') === entity) {
+                        return this.entityManager.send(new message.CreateObject(bucket, entity)).then(() => {});
+                    } else {
+                        return this.deleteLocalEntry(entity, bucket, false).then(() => {});
+                    }
+                }
+            });
+        }
     }
 
     conflictResolution(localObj, remoteObj) {
