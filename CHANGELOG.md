@@ -1,3 +1,17 @@
+<a name="v2.7.1"></a>
+# v2.7.1 (2017-5-16)
+
+
+### Bug Fixes
+
+* Fixed toJSON for ACL values
+* Compatibility fixes for react native
+* Minor bug fixes
+
+### Features
+
+* Added depth parameter to fromJSON and toJSON methods
+
 <a name="v2.7.0"></a>
 # v2.7.0 (2017-4-21)
 
