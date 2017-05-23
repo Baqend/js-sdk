@@ -3,6 +3,7 @@
 
 const account = require('./account');
 const deploy = require('./deploy');
+const schema = require('./schema');
 const typings = require('./typings');
 const starter = require('./starter');
 
@@ -62,6 +63,15 @@ if (!module.parent) {
       .option('-c, --code-dir <dir>', 'path to code directory [default:baqend]', 'baqend')
       .action((app, options) => result = deploy(Object.assign({app: app}, options)))
   ;
+
+  program
+      .command('schema [command] [app]')
+      .option('-F, --force', 'overwrite old schema')
+      .action((command, app, options) => result = schema(Object.assign({command: command, app: app}, options)))
+
+  // program
+  //     .command('schema download [app]')
+  //     .action((app, options) => result = schema.download(Object.assign({app: app}, options)))
 
   program
       .command('logout')
