@@ -169,4 +169,3 @@ function uploadFile(db, bucket, filePath, cwd) {
     console.error(`Failed to upload file ${filePath}: ${e.message}`);
   });
 }
-
