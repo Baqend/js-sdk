@@ -3,6 +3,7 @@
 
 const account = require('./account');
 const deploy = require('./deploy');
+const schema = require('./schema');
 const typings = require('./typings');
 const starter = require('./starter');
 
@@ -64,6 +65,15 @@ if (!module.parent) {
   ;
 
   program
+      .command('schema [command] [app]')
+      .option('-F, --force', 'overwrite old schema')
+      .action((command, app, options) => result = schema(Object.assign({command: command, app: app}, options)))
+
+  // program
+  //     .command('schema download [app]')
+  //     .action((app, options) => result = schema.download(Object.assign({app: app}, options)))
+
+  program
       .command('logout')
       .description('Removes your stored credentials')
       .option('-H, --host <name>', 'Host for custom deployment')
@@ -100,7 +110,7 @@ if (!module.parent) {
     program.outputHelp();
   } else if (result) {
     if (result.catch) {
-      result.catch((e) => console.error(e));
+      result.catch((e) => console.error(e.message ||e));
     }
   }
 }
