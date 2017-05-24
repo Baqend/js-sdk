@@ -110,7 +110,7 @@ if (!module.parent) {
     program.outputHelp();
   } else if (result) {
     if (result.catch) {
-      result.catch((e) => console.error(e));
+      result.catch((e) => console.error(e.message ||e));
     }
   }
 }
