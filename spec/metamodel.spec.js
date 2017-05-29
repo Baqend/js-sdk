@@ -534,6 +534,66 @@ describe('Test Metamodel', function() {
     });
   });
 
+  it('should handle metadata on classes', function() {
+    const model = {
+      "class": "/db/test.OtherPersClass",
+      "metadata": {
+        "hello": "world"
+      },
+      "fields": {
+        "value": {
+          "name": "value",
+          "type": "/db/Integer",
+          "order": 0
+        }
+      }
+    };
+
+    metamodel.fromJSON([model]);
+
+    const entity = metamodel.entity("/db/test.OtherPersClass");
+
+    expect(entity).instanceof(DB.metamodel.EntityType);
+    expect(entity.metadata).deep.equals({
+      "hello": "world"
+    });
+    expect(entity.hasMetadata('hello')).be.true;
+    expect(entity.getMetadata('hello')).equals('world');
+    expect(entity.hasMetadata('notexisting')).be.false;
+    expect(entity.getMetadata('notexisting')).be.null;
+
+  });
+
+  it('should handle metadata on fields', function() {
+    const model = {
+      "class": "/db/test.OtherPersClass",
+      "fields": {
+        "value": {
+          "name": "value",
+          "type": "/db/Integer",
+          "order": 0,
+          "metadata": {
+            "hello": "world"
+          }
+        }
+      }
+    };
+
+    metamodel.fromJSON([model]);
+
+    const entity = metamodel.entity("/db/test.OtherPersClass");
+
+    expect(entity).instanceof(DB.metamodel.EntityType);
+    expect(entity.getDeclaredAttribute('value').metadata).deep.equals({
+      "hello": "world"
+    });
+    expect(entity.getDeclaredAttribute('value').hasMetadata('hello')).be.true;
+    expect(entity.getDeclaredAttribute('value').getMetadata('hello')).equals('world');
+    expect(entity.getDeclaredAttribute('value').hasMetadata('notexisting')).be.false;
+    expect(entity.getDeclaredAttribute('value').getMetadata('notexisting')).be.null;
+
+  });
+
   describe("Testmodel", function() {
     var type, childType, embeddedType, metamodel;
 
