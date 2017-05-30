@@ -57,6 +57,7 @@ if (!module.parent) {
       .description('Deploys your baqend code and files')
       .option('-F, --files', 'deploy files')
       .option('-C, --code', 'deploy code')
+      .option('-S, --schema', 'deploy schema')
       .option('-f, --file-dir <dir>', 'path to file directory [default:www]', 'www')
       .option('-g, --file-glob <pattern>', 'pattern to match files [default:**/*]', '**/*')
       .option('-b, --bucket-path <path>', 'remote path where the files will be uploaded to.', 'www')

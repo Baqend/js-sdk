@@ -54,6 +54,7 @@ function uploadSchema(db, args = {}) {
     })
   })
 }
+module.exports.uploadSchema = uploadSchema;
 
 function downloadSchema(db, args = {}) {
   return db.send(new db.message.GetAllSchemas()).then((res) => {
@@ -71,6 +72,7 @@ function downloadSchema(db, args = {}) {
     )
   });
 }
+module.exports.downloadSchema = downloadSchema;
 
 function readDirectory(filePath) {
   return new Promise((resolve, reject) => {

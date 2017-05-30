@@ -2,6 +2,7 @@
 const fs = require('fs');
 const glob = require("glob");
 const account = require('./account');
+const schema = require('./schema');
 const handlerTypes = ['update', 'insert', 'delete', 'validate'];
 const path = require('path');
 const readline = require('readline');
@@ -9,16 +10,19 @@ const readline = require('readline');
 module.exports = function(args) {
 
   return account.login({app: args.app, host: args.host}).then((db) => {
+    let promises = []
     if (!args.code && !args.files || args.code && args.files) {
-      return Promise.all([
-        deployFiles(db, args.bucketPath, args.fileDir, args.fileGlob),
-        deployCode(db, args.codeDir)
-      ]);
+      promises.push(deployFiles(db, args.bucketPath, args.fileDir, args.fileGlob))
+      promises.push(deployCode(db, args.codeDir))
     } else if (args.code) {
-      return deployCode(db, args.codeDir);
+      promises.push(deployCode(db, args.codeDir));
     } else if (args.files) {
-      return deployFiles(db, args.bucketPath, args.fileDir, args.fileGlob);
+      promises.push(deployFiles(db, args.bucketPath, args.fileDir, args.fileGlob));
     }
+    if (args.schema) {
+      promises.push(schema.uploadSchema(db))
+    }
+    return Promise.all(promises);
   }).catch(e => console.error(e.message ||e));
 };
 
