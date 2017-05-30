@@ -1,8 +1,8 @@
 import {Observable, Subscription} from 'rxjs';
 
-declare type json = Object|Array<any>;
+export type json = Object|Array<any>;
 
-declare interface Class<T> {
+export interface Class<T> {
     new(...args: Array<any>): T;
 }
 
