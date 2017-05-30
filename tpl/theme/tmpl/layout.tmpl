@@ -14,6 +14,7 @@
     <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
     <link type="text/css" rel="stylesheet" href="styles/bootstrap-baqend.min.css">
     <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+    <link type="text/css" rel="stylesheet" href="styles/font-awesome-4.7.0.css">
 </head>
 
 <body>
@@ -37,6 +38,17 @@
 
         <!-- Expanded navigation -->
         <div id="nav" class="navbar-collapse collapse">
+            <!-- Search -->
+            <form class="navbar-right form-inline search-form">
+                <div class="form-group search-form-group">
+                    <input type="search" class="form-control search-input" id="search-query" placeholder="Search Guide" name="q" autocomplete="off">
+                    <div id="search-results" class="search-results">
+                        <p class="search-no-results">Please enter a search query ...</p>
+                    </div>
+                    <i class="search-icon fa fa-search"></i>
+                </div>
+            </form>
+
             <!-- Main navigation -->
             <ul class="nav navbar-nav">
                 <li>
@@ -137,5 +149,6 @@
 <script src="scripts/bootstrap.min.js"> </script>
 <script src="scripts/linenumber.js"> </script>
 <script src="scripts/filter.js"> </script>
+<script data-main="scripts/search.js" src="scripts/require.js"></script>
 </body>
 </html>
