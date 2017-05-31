@@ -1,7 +1,6 @@
 "use strict";
 const fs = require('fs');
 const account = require('./account');
-const request = require('request');
 const path = require('path');
 
 const filepath = './baqend/schema/';
