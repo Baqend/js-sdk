@@ -35,7 +35,46 @@ describe('Test Offline', function() {
 
         before(function() {
             db = emf.createEntityManager();
-        });
+
+/*            p0 = new db.QueryPerson({
+                key: 'query_p0'
+            });
+
+            p1 = new db.QueryPerson({
+                key: 'query_p1',
+                person: p0,
+                name: 'QueryPerson 1',
+                age: 45,
+                date: new Date('1978-02-03T00:00Z'),
+                address: new db.QueryAddress({city: 'Hamburg', zip: 22865}),
+                colors: ['red', 'green'],
+                birthplace: new DB.GeoPoint(35, 110)
+            });
+
+            p2 = new db.QueryPerson({
+                key: 'query_p2',
+                person: p1,
+                name: 'QueryPerson 2',
+                age: 33,
+                date: new Date('1966-05-01T00:00Z'),
+                address: new db.QueryAddress({city: 'Hamburg', zip: 23432}),
+                colors: ['blue', 'green', 'red'],
+                birthplace: new DB.GeoPoint(32, 112)
+            });
+
+            p3 = new db.QueryPerson({
+                key: 'query_p3',
+                person: p1,
+                name: 'QueryPerson 3',
+                age: 23,
+                date: new Date('1989-05-01T00:00Z'),
+                address: new db.QueryAddress({city: 'Munich', zip: 92438}),
+                colors: ['yellow', 'blue', 'white'],
+                birthplace: new DB.GeoPoint(29, 109)
+            });
+
+            return Promise.all([p0.save({force:true}), p1.save({force:true}), p2.save({force:true}), p3.save({force:true})])
+       */ });
 
         it('should return loaded object', function() {
             return db.QueryPerson.load('query_p2').then(function(obj) {
