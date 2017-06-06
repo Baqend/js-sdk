@@ -60,6 +60,10 @@ describe("Test toJSON and fromJSON", function() {
         "value": {
           "name": "value",
           "type": "/db/String"
+        },
+        "level0": {
+          "name": "level0",
+          "type": "/db/Level0"
         }
       }
     }
@@ -332,23 +336,29 @@ describe("Test toJSON and fromJSON", function() {
   })
 
   describe("Embedded", function() {
-    var obj;
+    var level0, embedded, obj;
     beforeEach(function() {
+      level0 = new db.Level0({
+        value: "level0"
+      });
+      embedded = new db.Embedded({
+        value: 'embedded',
+        level0: level0
+      })
       obj = new db.Level2({
         value: "level2",
-        embedded: new db.Embedded({
-          value: 'embedded'
-        })
+        embedded: embedded
       })
     });
 
     it('should serialize a object with embedded json', function() {
-      return obj.save().then(function(obj) {
-        return db2.load(obj.id)
+      return obj.save({depth: 2}).then(function(obj) {
+        return db2.Level2.load(obj.id, {depth: 2})
       }).then(function(obj) {
-        var json = obj.toJSON()
+        var json = obj.toJSON({depth: 2})
         expect(json).be.ok
         expect(json.embedded.value).eqls('embedded')
+        expect(json.embedded.level0.value).eqls('level0')
       })
     })
 
