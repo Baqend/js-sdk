@@ -1,3 +1,16 @@
+<a name="v2.7.2"></a>
+# v2.7.2 (2017-6-7)
+
+
+### Bug Fixes
+
+* fixed toJSON for references in embedded objects
+
+### Features
+
+* Support class and field metadata annotations
+* Allow schema upload and download via CLI
+
 <a name="v2.7.1"></a>
 # v2.7.1 (2017-5-16)
 
