@@ -535,7 +535,7 @@ describe('Test Metamodel', function() {
   });
 
   it('should handle metadata on classes', function() {
-    const model = {
+    var model = {
       "class": "/db/test.OtherPersClass",
       "metadata": {
         "hello": "world"
@@ -551,7 +551,7 @@ describe('Test Metamodel', function() {
 
     metamodel.fromJSON([model]);
 
-    const entity = metamodel.entity("/db/test.OtherPersClass");
+    var entity = metamodel.entity("/db/test.OtherPersClass");
 
     expect(entity).instanceof(DB.metamodel.EntityType);
     expect(entity.metadata).deep.equals({
@@ -565,7 +565,7 @@ describe('Test Metamodel', function() {
   });
 
   it('should handle metadata on fields', function() {
-    const model = {
+    var model = {
       "class": "/db/test.OtherPersClass",
       "fields": {
         "value": {
@@ -581,7 +581,7 @@ describe('Test Metamodel', function() {
 
     metamodel.fromJSON([model]);
 
-    const entity = metamodel.entity("/db/test.OtherPersClass");
+    var entity = metamodel.entity("/db/test.OtherPersClass");
 
     expect(entity).instanceof(DB.metamodel.EntityType);
     expect(entity.getDeclaredAttribute('value').metadata).deep.equals({
