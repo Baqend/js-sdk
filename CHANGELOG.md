@@ -1,3 +1,12 @@
+<a name="v2.7.3"></a>
+# v2.7.3 (2017-6-12)
+
+
+### Bug Fixes
+
+* Added missing field documentations
+* Handle on progress callback correctly for react native
+
 <a name="v2.7.2"></a>
 # v2.7.2 (2017-6-7)
 
