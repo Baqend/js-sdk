@@ -179,7 +179,7 @@ describe('Test Partial Updates', function() {
 
       pub = p0.partialUpdate().replace('listAttr', 0, 'green');
       expect(pub.toJSON()).eql({
-        $replace: { listAttr: { $at: 0, $to: 'green' } },
+        $replace: { listAttr: { at: 0, to: 'green' } },
       });
     });
 
@@ -202,7 +202,7 @@ describe('Test Partial Updates', function() {
       ;
 
       expect(pub.toJSON()).eql({
-        $currentDate: { date: 'timestamp' },
+        $currentDate: { date: null },
       });
     });
 
