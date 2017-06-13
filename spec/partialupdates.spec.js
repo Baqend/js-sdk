@@ -28,6 +28,7 @@ describe('Test Partial Updates', function() {
     personType.addAttribute(new DB.metamodel.SingularAttribute('date', metamodel.baseType(Date)));
     personType.addAttribute(new DB.metamodel.ListAttribute('listAttr', metamodel.baseType(String)));
     personType.addAttribute(new DB.metamodel.SetAttribute('set', metamodel.baseType(String)));
+    personType.addAttribute(new DB.metamodel.MapAttribute('myMap', metamodel.baseType(String), metamodel.baseType(String)));
     personType.addAttribute(new DB.metamodel.SingularAttribute('birthplace', metamodel.baseType(DB.GeoPoint)));
 
     addressType.addAttribute(new DB.metamodel.SingularAttribute('zip', metamodel.baseType(Number)));
@@ -48,7 +49,8 @@ describe('Test Partial Updates', function() {
         age: 24,
         numFriends: 5,
         listAttr: ['blue'],
-        set: ['blue'],
+        set: new Set(['blue']),
+        myMap: new Map([ ['test', 'demo'] ]),
         tasksToDo: 5,
         foo: 23,
         bar: 1337,
@@ -178,14 +180,28 @@ describe('Test Partial Updates', function() {
 
     it('should support array operations on sets', function() {
       var pub;
-      pub = p0.partialUpdate()
-        .add('set', 'red')
-        .remove('set', 'blue')
-      ;
-      expect(pub.toJSON()).eql({
-        $add: { set: 'red' },
-        $remove: { set: 'blue' },
-      });
+      pub = p0.partialUpdate().add('set', 'red');
+      expect(pub.toJSON()).eql({ $add: { set: 'red' } });
+
+      pub = p0.partialUpdate().remove('set', 'blue');
+      expect(pub.toJSON()).eql({ $remove: { set: 'blue' } });
+
+      pub = p0.partialUpdate().set('set', new Set(['yellow']));
+      expect(pub.toJSON()).eql({ $set: { set: ['yellow'] } });
+    });
+
+    it('should support operations on maps', function() {
+      var pub;
+      pub = p0.partialUpdate().put('myMap', 'color', 'red');
+      expect(pub.toJSON()).eql({ $put: { myMap: {'color': 'red'} } });
+      pub = p0.partialUpdate().put('myMap', {'color': 'red', 'city': 'Hamburg'});
+      expect(pub.toJSON()).eql({ $put: { myMap: {'color': 'red', 'city': 'Hamburg'} } });
+
+      pub = p0.partialUpdate().remove('myMap', 'test');
+      expect(pub.toJSON()).eql({ $remove: { myMap: 'test' } });
+
+      pub = p0.partialUpdate().set('myMap', new Map([ ['alpha', 'alef'] ]));
+      expect(pub.toJSON()).eql({ $set: { myMap: {'alpha': 'alef'} } });
     });
 
     it('should support date operations', function() {
@@ -248,6 +264,7 @@ describe('Test Partial Updates', function() {
         listAttr: ['blue', 'green'],
         set: new Set(['Einstein', 'Planck', 'Bor']),
         date: new Date(1992, 05, 14, 0, 42, 0),
+        myMap: new Map([ ['Hamburg', 'Moin'], ['Hannover', 'Hallo'], ['München', 'Grüß Gott'] ]),
         address: new db.PartialUpdateAddress({
           city: 'Liverpool',
         }),
@@ -455,7 +472,7 @@ describe('Test Partial Updates', function() {
       expect(p0.set.has('Huygens')).to.be.false;
       expect(p0.set.has('Heisenberg')).to.be.false;
       return p0.partialUpdate()
-        .set('set', ['Curie', 'Huygens', 'Heisenberg'])
+        .set('set', new Set(['Curie', 'Huygens', 'Heisenberg']))
         .execute()
         .then((result) => {
           expect(p0).to.equal(result);
@@ -508,6 +525,57 @@ describe('Test Partial Updates', function() {
           expect(p0.set.has('Einstein')).to.be.true;
           expect(p0.set.has('Planck')).to.be.false;
           expect(p0.set.has('Bor')).to.be.true;
+        });
+    });
+
+    it('should perform a $set partial update on a map', function() {
+      expect(p0.myMap.get('Hamburg')).to.eql('Moin');
+      expect(p0.myMap.get('Hannover')).to.eql('Hallo');
+      expect(p0.myMap.get('München')).to.eql('Grüß Gott');
+      expect(p0.myMap.has('Paris')).to.be.false;
+      expect(p0.myMap.has('London')).to.be.false;
+      return p0.partialUpdate()
+        .set('myMap', new Map([ ['London', 'Hello'], ['Paris', 'Salut'] ]))
+        .execute()
+        .then((result) => {
+          expect(p0).to.equal(result);
+          expect(p0.myMap.get('London')).to.eql('Hello');
+          expect(p0.myMap.get('Paris')).to.eql('Salut');
+          expect(p0.myMap.has('Hamburg')).to.be.false;
+          expect(p0.myMap.has('Hannover')).to.be.false;
+          expect(p0.myMap.has('München')).to.be.false;
+        });
+    });
+
+    it('should perform a $put partial update on a map', function() {
+      expect(p0.myMap.get('Hamburg')).to.eql('Moin');
+      expect(p0.myMap.get('Hannover')).to.eql('Hallo');
+      expect(p0.myMap.get('München')).to.eql('Grüß Gott');
+      expect(p0.myMap.has('Wien')).to.be.false;
+      return p0.partialUpdate()
+        .put('myMap', 'Wien', 'Servus')
+        .execute()
+        .then((result) => {
+          expect(p0).to.equal(result);
+          expect(p0.myMap.get('Hamburg')).to.eql('Moin');
+          expect(p0.myMap.get('Hannover')).to.eql('Hallo');
+          expect(p0.myMap.get('München')).to.eql('Grüß Gott');
+          expect(p0.myMap.get('Wien')).to.eql('Servus');
+        });
+    });
+
+    it('should perform a $remove partial update on a map', function() {
+      expect(p0.myMap.get('Hamburg')).to.eql('Moin');
+      expect(p0.myMap.get('Hannover')).to.eql('Hallo');
+      expect(p0.myMap.get('München')).to.eql('Grüß Gott');
+      return p0.partialUpdate()
+        .remove('myMap', 'München')
+        .execute()
+        .then((result) => {
+          expect(p0).to.equal(result);
+          expect(p0.myMap.get('Hamburg')).to.eql('Moin');
+          expect(p0.myMap.get('Hannover')).to.eql('Hallo');
+          expect(p0.myMap.has('München')).to.be.false;
         });
     });
 
