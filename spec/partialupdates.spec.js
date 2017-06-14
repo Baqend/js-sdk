@@ -58,7 +58,7 @@ describe('Test Partial Updates', function() {
         bitmask: 0b01010101,
         address: {
           city: 'Cologne',
-          zipcode: '50667'
+          zip: 50667
         }
       });
     });
@@ -129,11 +129,11 @@ describe('Test Partial Updates', function() {
         .set('age', 25)
         .set('name', 'KSM')
         .set('address.city', 'Hamburg')
-        .set('address.zipcode', '22527')
+        .set('address.zip', 20259)
         .set('date', date)
       ;
       expect(pub.toJSON()).eql({
-        $set: { age: 25, name: 'KSM', 'address.city': 'Hamburg', 'address.zipcode': '22527', date: date },
+        $set: { age: 25, name: 'KSM', 'address.city': 'Hamburg', 'address.zip': 20259, date: date },
       });
 
       pub = p0.partialUpdate()
@@ -266,7 +266,8 @@ describe('Test Partial Updates', function() {
         date: new Date(1992, 05, 14, 0, 42, 0),
         myMap: new Map([ ['Hamburg', 'Moin'], ['Hannover', 'Hallo'], ['München', 'Grüß Gott'] ]),
         address: new db.PartialUpdateAddress({
-          city: 'Liverpool',
+          city: 'Cologne',
+          zip: 50667,
         }),
       });
 
@@ -300,6 +301,21 @@ describe('Test Partial Updates', function() {
         .then((result) => {
           expect(p0).to.equal(result);
           expect(p0.name).to.equal('KSM');
+        });
+    });
+
+    it('should perform a partial updates on embedded objects', function() {
+      expect(p0.address.city).to.equal('Cologne');
+      expect(p0.address.zip).to.equal(50667);
+      return p0.partialUpdate()
+        .set('address.city', 'Hamburg')
+        .set('address.zip', 20259)
+        .execute()
+        .then((result) => {
+          expect(p0).to.equal(result);
+          expect(p0.address).to.equal(result.address);
+          expect(p0.address.city).to.equal('Hamburg');
+          expect(p0.address.zip).to.equal(20259);
         });
     });
 
