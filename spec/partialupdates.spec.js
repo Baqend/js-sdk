@@ -27,8 +27,8 @@ describe('Test Partial Updates', function() {
     personType.addAttribute(new DB.metamodel.SingularAttribute('bitmask', metamodel.baseType('Integer')));
     personType.addAttribute(new DB.metamodel.SingularAttribute('date', metamodel.baseType(Date)));
     personType.addAttribute(new DB.metamodel.ListAttribute('listAttr', metamodel.baseType(String)));
-    personType.addAttribute(new DB.metamodel.SetAttribute('set', metamodel.baseType(String)));
-    personType.addAttribute(new DB.metamodel.MapAttribute('myMap', metamodel.baseType(String), metamodel.baseType(String)));
+    personType.addAttribute(new DB.metamodel.SetAttribute('setAttr', metamodel.baseType(String)));
+    personType.addAttribute(new DB.metamodel.MapAttribute('mapAttr', metamodel.baseType(String), metamodel.baseType(String)));
     personType.addAttribute(new DB.metamodel.SingularAttribute('birthplace', metamodel.baseType(DB.GeoPoint)));
 
     addressType.addAttribute(new DB.metamodel.SingularAttribute('zip', metamodel.baseType(Number)));
@@ -50,7 +50,7 @@ describe('Test Partial Updates', function() {
         numFriends: 5,
         listAttr: ['blue'],
         set: new Set(['blue']),
-        myMap: new Map([ ['test', 'demo'] ]),
+        mapAttr: new Map([ ['test', 'demo'] ]),
         tasksToDo: 5,
         foo: 23,
         bar: 1337,
@@ -68,6 +68,24 @@ describe('Test Partial Updates', function() {
 
       expect(pub).to.be.an.instanceof(DB.partialupdate.EntityPartialUpdateBuilder);
       expect(pub._entity).to.equal(p0);
+    });
+
+    it('should throw an error if you update a path twice', function() {
+      expect(() => p0.partialUpdate()
+        .increment('age')
+        .multiply('age', 2)).to.throw('You cannot update age multiple times');
+
+      expect(() => p0.partialUpdate()
+        .push('listAttr')
+        .pop('listAttr')).to.throw('You cannot update listAttr multiple times');
+
+      expect(() => p0.partialUpdate()
+        .push('listAttr')
+        .replace('listAttr', 0, 'Demo')).to.throw('You cannot update listAttr multiple times');
+
+      expect(() => p0.partialUpdate()
+        .replace('listAttr', 0, 'Demo1')
+        .replace('listAttr', 1, 'Demo2')).to.not.throw();
     });
 
     it('should support numeric operations', function() {
@@ -91,10 +109,10 @@ describe('Test Partial Updates', function() {
       // An operation overwrite causes an error
       expect(() => p0.partialUpdate()
         .increment('age', 12)
-        .decrement('age', 12)).to.throw('Path age already has a $inc operation set');
+        .decrement('age', 12)).to.throw('You cannot update age multiple times');
       expect(() => p0.partialUpdate()
         .multiply('age', 12)
-        .divide('age', 12)).to.throw('Path age already has a $mul operation set');
+        .divide('age', 12)).to.throw('You cannot update age multiple times');
     });
 
     it('should support min and max operations', function() {
@@ -174,34 +192,34 @@ describe('Test Partial Updates', function() {
 
       pub = p0.partialUpdate().replace('listAttr', 0, 'green');
       expect(pub.toJSON()).eql({
-        $replace: { listAttr: { at: 0, to: 'green' } },
+        $replace: { 'listAttr.0': 'green' },
       });
     });
 
     it('should support array operations on sets', function() {
       var pub;
-      pub = p0.partialUpdate().add('set', 'red');
-      expect(pub.toJSON()).eql({ $add: { set: 'red' } });
+      pub = p0.partialUpdate().add('setAttr', 'red');
+      expect(pub.toJSON()).eql({ $add: { setAttr: 'red' } });
 
-      pub = p0.partialUpdate().remove('set', 'blue');
-      expect(pub.toJSON()).eql({ $remove: { set: 'blue' } });
+      pub = p0.partialUpdate().remove('setAttr', 'blue');
+      expect(pub.toJSON()).eql({ $remove: { setAttr: 'blue' } });
 
-      pub = p0.partialUpdate().set('set', new Set(['yellow']));
-      expect(pub.toJSON()).eql({ $set: { set: ['yellow'] } });
+      pub = p0.partialUpdate().set('setAttr', new Set(['yellow']));
+      expect(pub.toJSON()).eql({ $set: { setAttr: ['yellow'] } });
     });
 
     it('should support operations on maps', function() {
       var pub;
-      pub = p0.partialUpdate().put('myMap', 'color', 'red');
-      expect(pub.toJSON()).eql({ $put: { myMap: {'color': 'red'} } });
-      pub = p0.partialUpdate().put('myMap', {'color': 'red', 'city': 'Hamburg'});
-      expect(pub.toJSON()).eql({ $put: { myMap: {'color': 'red', 'city': 'Hamburg'} } });
+      pub = p0.partialUpdate().put('mapAttr', 'color', 'red');
+      expect(pub.toJSON()).eql({ $put: { mapAttr: {'color': 'red'} } });
+      pub = p0.partialUpdate().put('mapAttr', {'color': 'red', 'city': 'Hamburg'});
+      expect(pub.toJSON()).eql({ $put: { mapAttr: {'color': 'red', 'city': 'Hamburg'} } });
 
-      pub = p0.partialUpdate().remove('myMap', 'test');
-      expect(pub.toJSON()).eql({ $remove: { myMap: 'test' } });
+      pub = p0.partialUpdate().remove('mapAttr', 'test');
+      expect(pub.toJSON()).eql({ $remove: { mapAttr: 'test' } });
 
-      pub = p0.partialUpdate().set('myMap', new Map([ ['alpha', 'alef'] ]));
-      expect(pub.toJSON()).eql({ $set: { myMap: {'alpha': 'alef'} } });
+      pub = p0.partialUpdate().set('mapAttr', new Map([ ['alpha', 'alef'] ]));
+      expect(pub.toJSON()).eql({ $set: { mapAttr: {'alpha': 'alef'} } });
     });
 
     it('should support date operations', function() {
@@ -243,7 +261,7 @@ describe('Test Partial Updates', function() {
       // An operation overwrite causes an error
       expect(() => p0.partialUpdate()
         .and('bitmask', 0b00001111)
-        .or('bitmask', 0b00001111)).to.throw('Path bitmask already has a bitwise operation set');
+        .or('bitmask', 0b00001111)).to.throw('You cannot update bitmask multiple times');
     });
   });
 
@@ -262,9 +280,9 @@ describe('Test Partial Updates', function() {
         baz: 1337,
         bitmask: 0b00001111,
         listAttr: ['blue', 'green'],
-        set: new Set(['Einstein', 'Planck', 'Bor']),
+        setAttr: new Set(['Einstein', 'Planck', 'Bor']),
         date: new Date(1992, 05, 14, 0, 42, 0),
-        myMap: new Map([ ['Hamburg', 'Moin'], ['Hannover', 'Hallo'], ['München', 'Grüß Gott'] ]),
+        mapAttr: new Map([ ['Hamburg', 'Moin'], ['Hannover', 'Hallo'], ['München', 'Grüß Gott'] ]),
         address: new db.PartialUpdateAddress({
           city: 'Cologne',
           zip: 50667,
@@ -278,7 +296,7 @@ describe('Test Partial Updates', function() {
       return p0.partialUpdate({ $wrongOperation: { age: 42 } }).execute()
         .catch((response) => {
           expect(response.status).to.equal(400);
-          expect(response.message).to.equal('Invalid operation key: $wrongOperation');
+          expect(response.message).to.equal('Unsupported update operation $wrongOperation on age');
         });
     });
 
@@ -288,7 +306,7 @@ describe('Test Partial Updates', function() {
         .set('age', 42)
         .execute()
         .then((result) => {
-          expect(p0).to.equal(result);
+          expect(result).to.equal(p0);
           expect(p0.age).to.equal(42);
         });
     });
@@ -299,7 +317,7 @@ describe('Test Partial Updates', function() {
         .set('name', 'KSM')
         .execute()
         .then((result) => {
-          expect(p0).to.equal(result);
+          expect(result).to.equal(p0);
           expect(p0.name).to.equal('KSM');
         });
     });
@@ -312,7 +330,7 @@ describe('Test Partial Updates', function() {
         .set('address.zip', 20259)
         .execute()
         .then((result) => {
-          expect(p0).to.equal(result);
+          expect(result).to.equal(p0);
           expect(p0.address).to.equal(result.address);
           expect(p0.address.city).to.equal('Hamburg');
           expect(p0.address.zip).to.equal(20259);
@@ -325,7 +343,7 @@ describe('Test Partial Updates', function() {
         .increment('age')
         .execute()
         .then((result) => {
-          expect(p0).to.equal(result);
+          expect(result).to.equal(p0);
           expect(p0.age).to.equal(25);
         });
     });
@@ -336,7 +354,7 @@ describe('Test Partial Updates', function() {
         .decrement('age')
         .execute()
         .then((result) => {
-          expect(p0).to.equal(result);
+          expect(result).to.equal(p0);
           expect(p0.age).to.equal(23);
         });
     });
@@ -347,7 +365,7 @@ describe('Test Partial Updates', function() {
         .multiply('foo', 2)
         .execute()
         .then((result) => {
-          expect(p0).to.equal(result);
+          expect(result).to.equal(p0);
           expect(p0.foo).to.equal(26.74);
         });
     });
@@ -358,7 +376,7 @@ describe('Test Partial Updates', function() {
         .divide('foo', 2)
         .execute()
         .then((result) => {
-          expect(p0).to.equal(result);
+          expect(result).to.equal(p0);
           expect(p0.foo).to.equal(6.685);
         });
     });
@@ -373,7 +391,7 @@ describe('Test Partial Updates', function() {
         .min('baz', 42)
         .execute()
         .then((result) => {
-          expect(p0).to.equal(result);
+          expect(result).to.equal(p0);
           expect(p0.foo).to.equal(13.37);
           expect(p0.bar).to.equal(42);
           expect(p0.baz).to.equal(42);
@@ -390,7 +408,7 @@ describe('Test Partial Updates', function() {
         .max('baz', 42)
         .execute()
         .then((result) => {
-          expect(p0).to.equal(result);
+          expect(result).to.equal(p0);
           expect(p0.foo).to.equal(42);
           expect(p0.bar).to.equal(42);
           expect(p0.baz).to.equal(1337);
@@ -403,7 +421,7 @@ describe('Test Partial Updates', function() {
         .set('listAttr', ['red'])
         .execute()
         .then((result) => {
-          expect(p0).to.equal(result);
+          expect(result).to.equal(p0);
           expect(p0.listAttr).to.eql(['red']);
         });
     });
@@ -414,14 +432,14 @@ describe('Test Partial Updates', function() {
         .push('listAttr', 'red')
         .execute()
         .then((result) => {
-          expect(p0).to.equal(result);
+          expect(result).to.equal(p0);
           expect(p0.listAttr).to.eql(['blue', 'green', 'red']);
 
           return p0.partialUpdate()
             .push('listAttr', 'red')
             .execute()
             .then((result) => {
-              expect(p0).to.equal(result);
+              expect(result).to.equal(p0);
               expect(p0.listAttr).to.eql(['blue', 'green', 'red', 'red']);
             });
         });
@@ -433,14 +451,14 @@ describe('Test Partial Updates', function() {
         .unshift('listAttr', 'red')
         .execute()
         .then((result) => {
-          expect(p0).to.equal(result);
+          expect(result).to.equal(p0);
           expect(p0.listAttr).to.eql(['red', 'blue', 'green']);
 
           return p0.partialUpdate()
             .unshift('listAttr', 'red')
             .execute()
             .then((result) => {
-              expect(p0).to.equal(result);
+              expect(result).to.equal(p0);
               expect(p0.listAttr).to.eql(['red', 'red', 'blue', 'green']);
             });
         });
@@ -452,7 +470,7 @@ describe('Test Partial Updates', function() {
         .remove('listAttr', 'green')
         .execute()
         .then((result) => {
-          expect(p0).to.equal(result);
+          expect(result).to.equal(p0);
           expect(p0.listAttr).to.include('blue');
           expect(p0.listAttr).to.not.include('green');
         });
@@ -464,7 +482,7 @@ describe('Test Partial Updates', function() {
         .shift('listAttr')
         .execute()
         .then((result) => {
-          expect(p0).to.equal(result);
+          expect(result).to.equal(p0);
           expect(p0.listAttr).to.eql(['green']);
         });
     });
@@ -475,123 +493,182 @@ describe('Test Partial Updates', function() {
         .pop('listAttr')
         .execute()
         .then((result) => {
-          expect(p0).to.equal(result);
+          expect(result).to.equal(p0);
           expect(p0.listAttr).to.eql(['blue']);
         });
     });
 
+    it('should perform a $replace partial update on a list', function() {
+      return Promise.resolve(p0)
+      .then((result) => {
+        expect(result).to.equal(p0);
+        expect(p0.listAttr).to.eql(['blue', 'green']);
+
+        // Test simple replace
+        return p0.partialUpdate()
+          .replace('listAttr', 0, 'red')
+          .execute();
+      })
+      .then((result) => {
+        expect(result).to.equal(p0);
+        expect(p0.listAttr).to.eql(['red', 'green']);
+
+        // Test replace at other index
+        return p0.partialUpdate()
+          .replace('listAttr', 1, 'red')
+          .execute()
+      })
+      .then((result) => {
+        expect(result).to.equal(p0);
+        expect(p0.listAttr).to.eql(['red', 'red']);
+
+        // Test two replaces on same list at once
+        return p0.partialUpdate()
+          .replace('listAttr', 0, 'yellow')
+          .replace('listAttr', 1, 'cyan')
+          .execute();
+      })
+      .then((result) => {
+        expect(result).to.equal(p0);
+        expect(p0.listAttr).to.eql(['yellow', 'cyan']);
+
+        // Test replace on undefined index
+        return p0.partialUpdate()
+          .replace('listAttr', 2, 'green')
+          .execute();
+      })
+      .then((result) => {
+        expect(result).to.equal(p0);
+        expect(p0.listAttr).to.eql(['yellow', 'cyan', 'green']);
+
+        // Test replace on far away index
+        return p0.partialUpdate()
+          .replace('listAttr', 99, 'ninetynine')
+          .execute();
+      })
+      .then((result) => {
+        expect(result).to.equal(p0);
+        expect(p0.listAttr.length).to.eql(100);
+        expect(p0.listAttr[0]).to.eql('yellow');
+        expect(p0.listAttr[1]).to.eql('cyan');
+        expect(p0.listAttr[2]).to.eql('green');
+        expect(p0.listAttr[3]).to.be.null;
+        expect(p0.listAttr[99]).to.eql('ninetynine');
+      });
+    });
+
     it('should perform a $set partial update on a set', function() {
-      expect(p0.set.has('Einstein')).to.be.true;
-      expect(p0.set.has('Planck')).to.be.true;
-      expect(p0.set.has('Bor')).to.be.true;
-      expect(p0.set.has('Curie')).to.be.false;
-      expect(p0.set.has('Huygens')).to.be.false;
-      expect(p0.set.has('Heisenberg')).to.be.false;
+      expect(p0.setAttr.has('Einstein')).to.be.true;
+      expect(p0.setAttr.has('Planck')).to.be.true;
+      expect(p0.setAttr.has('Bor')).to.be.true;
+      expect(p0.setAttr.has('Curie')).to.be.false;
+      expect(p0.setAttr.has('Huygens')).to.be.false;
+      expect(p0.setAttr.has('Heisenberg')).to.be.false;
       return p0.partialUpdate()
-        .set('set', new Set(['Curie', 'Huygens', 'Heisenberg']))
+        .set('setAttr', new Set(['Curie', 'Huygens', 'Heisenberg']))
         .execute()
         .then((result) => {
-          expect(p0).to.equal(result);
-          expect(p0.set.has('Einstein')).to.be.false;
-          expect(p0.set.has('Planck')).to.be.false;
-          expect(p0.set.has('Bor')).to.be.false;
-          expect(p0.set.has('Curie')).to.be.true;
-          expect(p0.set.has('Huygens')).to.be.true;
-          expect(p0.set.has('Heisenberg')).to.be.true;
+          expect(result).to.equal(p0);
+          expect(p0.setAttr.has('Einstein')).to.be.false;
+          expect(p0.setAttr.has('Planck')).to.be.false;
+          expect(p0.setAttr.has('Bor')).to.be.false;
+          expect(p0.setAttr.has('Curie')).to.be.true;
+          expect(p0.setAttr.has('Huygens')).to.be.true;
+          expect(p0.setAttr.has('Heisenberg')).to.be.true;
         });
     });
 
     it('should perform an $add partial update on a set', function() {
-      expect(p0.set.has('Einstein')).to.be.true;
-      expect(p0.set.has('Planck')).to.be.true;
-      expect(p0.set.has('Bor')).to.be.true;
-      expect(p0.set.has('Curie')).to.be.false;
+      expect(p0.setAttr.has('Einstein')).to.be.true;
+      expect(p0.setAttr.has('Planck')).to.be.true;
+      expect(p0.setAttr.has('Bor')).to.be.true;
+      expect(p0.setAttr.has('Curie')).to.be.false;
       return p0.partialUpdate()
-        .add('set', 'Curie')
+        .add('setAttr', 'Curie')
         .execute()
         .then((result) => {
-          expect(p0).to.equal(result);
-          expect(p0.set.has('Einstein')).to.be.true;
-          expect(p0.set.has('Planck')).to.be.true;
-          expect(p0.set.has('Bor')).to.be.true;
-          expect(p0.set.has('Curie')).to.be.true;
+          expect(result).to.equal(p0);
+          expect(p0.setAttr.has('Einstein')).to.be.true;
+          expect(p0.setAttr.has('Planck')).to.be.true;
+          expect(p0.setAttr.has('Bor')).to.be.true;
+          expect(p0.setAttr.has('Curie')).to.be.true;
 
           return p0.partialUpdate()
-            .add('set', 'Einstein')
+            .add('setAttr', 'Einstein')
             .execute()
             .then((result) => {
-              expect(p0).to.equal(result);
-              expect(p0.set.has('Einstein')).to.be.true;
-              expect(p0.set.has('Planck')).to.be.true;
-              expect(p0.set.has('Bor')).to.be.true;
-              expect(p0.set.has('Curie')).to.be.true;
+              expect(result).to.equal(p0);
+              expect(p0.setAttr.has('Einstein')).to.be.true;
+              expect(p0.setAttr.has('Planck')).to.be.true;
+              expect(p0.setAttr.has('Bor')).to.be.true;
+              expect(p0.setAttr.has('Curie')).to.be.true;
             });
         });
     });
 
     it('should perform a $remove partial update on a set', function() {
-      expect(p0.set.has('Einstein')).to.be.true;
-      expect(p0.set.has('Planck')).to.be.true;
-      expect(p0.set.has('Bor')).to.be.true;
+      expect(p0.setAttr.has('Einstein')).to.be.true;
+      expect(p0.setAttr.has('Planck')).to.be.true;
+      expect(p0.setAttr.has('Bor')).to.be.true;
       return p0.partialUpdate()
-        .remove('set', 'Planck')
+        .remove('setAttr', 'Planck')
         .execute()
         .then((result) => {
-          expect(p0).to.equal(result);
-          expect(p0.set.has('Einstein')).to.be.true;
-          expect(p0.set.has('Planck')).to.be.false;
-          expect(p0.set.has('Bor')).to.be.true;
+          expect(result).to.equal(p0);
+          expect(p0.setAttr.has('Einstein')).to.be.true;
+          expect(p0.setAttr.has('Planck')).to.be.false;
+          expect(p0.setAttr.has('Bor')).to.be.true;
         });
     });
 
     it('should perform a $set partial update on a map', function() {
-      expect(p0.myMap.get('Hamburg')).to.eql('Moin');
-      expect(p0.myMap.get('Hannover')).to.eql('Hallo');
-      expect(p0.myMap.get('München')).to.eql('Grüß Gott');
-      expect(p0.myMap.has('Paris')).to.be.false;
-      expect(p0.myMap.has('London')).to.be.false;
+      expect(p0.mapAttr.get('Hamburg')).to.eql('Moin');
+      expect(p0.mapAttr.get('Hannover')).to.eql('Hallo');
+      expect(p0.mapAttr.get('München')).to.eql('Grüß Gott');
+      expect(p0.mapAttr.has('Paris')).to.be.false;
+      expect(p0.mapAttr.has('London')).to.be.false;
       return p0.partialUpdate()
-        .set('myMap', new Map([ ['London', 'Hello'], ['Paris', 'Salut'] ]))
+        .set('mapAttr', new Map([ ['London', 'Hello'], ['Paris', 'Salut'] ]))
         .execute()
         .then((result) => {
-          expect(p0).to.equal(result);
-          expect(p0.myMap.get('London')).to.eql('Hello');
-          expect(p0.myMap.get('Paris')).to.eql('Salut');
-          expect(p0.myMap.has('Hamburg')).to.be.false;
-          expect(p0.myMap.has('Hannover')).to.be.false;
-          expect(p0.myMap.has('München')).to.be.false;
+          expect(result).to.equal(p0);
+          expect(p0.mapAttr.get('London')).to.eql('Hello');
+          expect(p0.mapAttr.get('Paris')).to.eql('Salut');
+          expect(p0.mapAttr.has('Hamburg')).to.be.false;
+          expect(p0.mapAttr.has('Hannover')).to.be.false;
+          expect(p0.mapAttr.has('München')).to.be.false;
         });
     });
 
     it('should perform a $put partial update on a map', function() {
-      expect(p0.myMap.get('Hamburg')).to.eql('Moin');
-      expect(p0.myMap.get('Hannover')).to.eql('Hallo');
-      expect(p0.myMap.get('München')).to.eql('Grüß Gott');
-      expect(p0.myMap.has('Wien')).to.be.false;
+      expect(p0.mapAttr.get('Hamburg')).to.eql('Moin');
+      expect(p0.mapAttr.get('Hannover')).to.eql('Hallo');
+      expect(p0.mapAttr.get('München')).to.eql('Grüß Gott');
+      expect(p0.mapAttr.has('Wien')).to.be.false;
       return p0.partialUpdate()
-        .put('myMap', 'Wien', 'Servus')
+        .put('mapAttr', 'Wien', 'Servus')
         .execute()
         .then((result) => {
-          expect(p0).to.equal(result);
-          expect(p0.myMap.get('Hamburg')).to.eql('Moin');
-          expect(p0.myMap.get('Hannover')).to.eql('Hallo');
-          expect(p0.myMap.get('München')).to.eql('Grüß Gott');
-          expect(p0.myMap.get('Wien')).to.eql('Servus');
+          expect(result).to.equal(p0);
+          expect(p0.mapAttr.get('Hamburg')).to.eql('Moin');
+          expect(p0.mapAttr.get('Hannover')).to.eql('Hallo');
+          expect(p0.mapAttr.get('München')).to.eql('Grüß Gott');
+          expect(p0.mapAttr.get('Wien')).to.eql('Servus');
         });
     });
 
     it('should perform a $remove partial update on a map', function() {
-      expect(p0.myMap.get('Hamburg')).to.eql('Moin');
-      expect(p0.myMap.get('Hannover')).to.eql('Hallo');
-      expect(p0.myMap.get('München')).to.eql('Grüß Gott');
+      expect(p0.mapAttr.get('Hamburg')).to.eql('Moin');
+      expect(p0.mapAttr.get('Hannover')).to.eql('Hallo');
+      expect(p0.mapAttr.get('München')).to.eql('Grüß Gott');
       return p0.partialUpdate()
-        .remove('myMap', 'München')
+        .remove('mapAttr', 'München')
         .execute()
         .then((result) => {
-          expect(p0).to.equal(result);
-          expect(p0.myMap.get('Hamburg')).to.eql('Moin');
-          expect(p0.myMap.get('Hannover')).to.eql('Hallo');
-          expect(p0.myMap.has('München')).to.be.false;
+          expect(result).to.equal(p0);
+          expect(p0.mapAttr.get('Hamburg')).to.eql('Moin');
+          expect(p0.mapAttr.get('Hannover')).to.eql('Hallo');
+          expect(p0.mapAttr.has('München')).to.be.false;
         });
     });
 
@@ -601,7 +678,7 @@ describe('Test Partial Updates', function() {
         .set('date', date)
         .execute()
         .then((result) => {
-          expect(p0).to.equal(result);
+          expect(result).to.equal(p0);
           expect(p0.date.getFullYear()).to.eql(date.getFullYear());
           expect(p0.date.getMonth()).to.eql(date.getMonth());
           expect(p0.date.getDay()).to.eql(date.getDay());
@@ -618,7 +695,7 @@ describe('Test Partial Updates', function() {
         .execute()
         .then((result) => {
           var date = new Date();
-          expect(p0).to.equal(result);
+          expect(result).to.equal(p0);
           expect(p0.date.getFullYear()).to.eql(date.getFullYear());
           expect(p0.date.getMonth()).to.eql(date.getMonth());
           expect(p0.date.getDay()).to.eql(date.getDay());
@@ -633,7 +710,7 @@ describe('Test Partial Updates', function() {
         .and('bitmask', 0b01010101)
         .execute()
         .then((result) => {
-          expect(p0).to.equal(result);
+          expect(result).to.equal(p0);
           expect(p0.bitmask).to.equal(0b00000101);
         });
     });
@@ -644,7 +721,7 @@ describe('Test Partial Updates', function() {
         .or('bitmask', 0b01010101)
         .execute()
         .then((result) => {
-          expect(p0).to.equal(result);
+          expect(result).to.equal(p0);
           expect(p0.bitmask).to.equal(0b01011111);
         });
     });
@@ -655,8 +732,34 @@ describe('Test Partial Updates', function() {
         .xor('bitmask', 0b01010101)
         .execute()
         .then((result) => {
-          expect(p0).to.equal(result);
+          expect(result).to.equal(p0);
           expect(p0.bitmask).to.equal(0b01011010);
+        });
+    });
+
+    it('should throw an error if you perform updates on wrong data types', function() {
+      return p0.partialUpdate()
+        .add('bitmask', 0b01010101)
+        .execute()
+        .catch((response) => {
+          expect(response.status).to.equal(400);
+          expect(response.message).to.equal('Unsupported update operation $add on bitmask');
+
+          return p0.partialUpdate()
+            .add('listAttr', '')
+            .execute()
+            .catch((response) => {
+              expect(response.status).to.equal(400);
+              expect(response.message).to.equal('Unsupported update operation $add on listAttr');
+
+              return p0.partialUpdate()
+                .push('setAttr', '')
+                .execute()
+                .catch((response) => {
+                  expect(response.status).to.equal(400);
+                  expect(response.message).to.equal('Unsupported update operation $push on setAttr');
+                });
+            });
         });
     });
 
