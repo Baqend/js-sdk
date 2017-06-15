@@ -3,7 +3,7 @@ if (typeof module != 'undefined') {
   DB = require('../lib');
 }
 
-describe('Test Partial Updates', function() {
+describe('Test Partial Updates', function () {
   var emf, metamodel;
 
   before(function () {
@@ -37,10 +37,10 @@ describe('Test Partial Updates', function() {
     return metamodel.save();
   });
 
-  describe('Entity Builder', () => {
+  describe('Entity Builder', function () {
     var db, p0;
 
-    before(() => {
+    before(function () {
       db =  emf.createEntityManager();
 
       p0 = new db.PartialUpdatePerson({
@@ -71,21 +71,29 @@ describe('Test Partial Updates', function() {
     });
 
     it('should throw an error if you update a path twice', function() {
-      expect(() => p0.partialUpdate()
-        .increment('age')
-        .multiply('age', 2)).to.throw('You cannot update age multiple times');
+      expect(function () {
+        p0.partialUpdate()
+          .increment('age')
+          .multiply('age', 2)
+      }).to.throw('You cannot update age multiple times');
 
-      expect(() => p0.partialUpdate()
-        .push('listAttr')
-        .pop('listAttr')).to.throw('You cannot update listAttr multiple times');
+      expect(function () {
+        p0.partialUpdate()
+          .push('listAttr')
+          .pop('listAttr')
+      }).to.throw('You cannot update listAttr multiple times');
 
-      expect(() => p0.partialUpdate()
-        .push('listAttr')
-        .replace('listAttr', 0, 'Demo')).to.throw('You cannot update listAttr multiple times');
+      expect(function () {
+        p0.partialUpdate()
+          .push('listAttr')
+          .replace('listAttr', 0, 'Demo')
+      }).to.throw('You cannot update listAttr multiple times');
 
-      expect(() => p0.partialUpdate()
-        .replace('listAttr', 0, 'Demo1')
-        .replace('listAttr', 1, 'Demo2')).to.not.throw();
+      expect(function () {
+        p0.partialUpdate()
+          .replace('listAttr', 0, 'Demo1')
+          .replace('listAttr', 1, 'Demo2')
+      }).to.not.throw();
     });
 
     it('should support numeric operations', function() {
@@ -103,16 +111,24 @@ describe('Test Partial Updates', function() {
         $mul: { foo: 42, bar: 1 / 2 },
       });
 
-      expect(() => p0.partialUpdate().multiply('foo', 'string')).to.throw();
-      expect(() => p0.partialUpdate().divide('foo', 'string')).to.throw();
+      expect(function () { 
+        p0.partialUpdate().multiply('foo', 'string'); 
+      }).to.throw();
+      expect(function () { 
+        p0.partialUpdate().divide('foo', 'string'); 
+      }).to.throw();
 
       // An operation overwrite causes an error
-      expect(() => p0.partialUpdate()
-        .increment('age', 12)
-        .decrement('age', 12)).to.throw('You cannot update age multiple times');
-      expect(() => p0.partialUpdate()
-        .multiply('age', 12)
-        .divide('age', 12)).to.throw('You cannot update age multiple times');
+      expect(function () {
+        p0.partialUpdate()
+          .increment('age', 12)
+          .decrement('age', 12);
+      }).to.throw('You cannot update age multiple times');
+      expect(function () {
+        p0.partialUpdate()
+          .multiply('age', 12)
+          .divide('age', 12);
+      }).to.throw('You cannot update age multiple times');
     });
 
     it('should support min and max operations', function() {
@@ -134,10 +150,10 @@ describe('Test Partial Updates', function() {
       });
 
       // Throw if got strings, not numbers
-      expect(() => p0.partialUpdate().min('foo', 'string')).to.throw('Value must be a number');
-      expect(() => p0.partialUpdate().max('foo', 'string')).to.throw('Value must be a number');
-      expect(() => p0.partialUpdate().atLeast('foo', 'string')).to.throw('Value must be a number');
-      expect(() => p0.partialUpdate().atMost('foo', 'string')).to.throw('Value must be a number');
+      expect(function () { p0.partialUpdate().min('foo', 'string'); }).to.throw('Value must be a number');
+      expect(function () { p0.partialUpdate().max('foo', 'string'); }).to.throw('Value must be a number');
+      expect(function () { p0.partialUpdate().atLeast('foo', 'string'); }).to.throw('Value must be a number');
+      expect(function () { p0.partialUpdate().atMost('foo', 'string'); }).to.throw('Value must be a number');
     });
 
     it('should support set operations', function() {
@@ -259,16 +275,18 @@ describe('Test Partial Updates', function() {
       });
 
       // An operation overwrite causes an error
-      expect(() => p0.partialUpdate()
-        .and('bitmask', 0b00001111)
-        .or('bitmask', 0b00001111)).to.throw('You cannot update bitmask multiple times');
+      expect(function () {
+        p0.partialUpdate()
+          .and('bitmask', 0b00001111)
+          .or('bitmask', 0b00001111)
+      }).to.throw('You cannot update bitmask multiple times');
     });
   });
 
-  describe('Entity Execution', () => {
+  describe('Entity Execution', function () {
     var db, p0;
 
-    beforeEach(() => {
+    beforeEach(function () {
       db = emf.createEntityManager();
 
       p0 = new db.PartialUpdatePerson({
@@ -294,7 +312,7 @@ describe('Test Partial Updates', function() {
 
     it('should fail with status code 400 if key is wrong', function() {
       return p0.partialUpdate({ $wrongOperation: { age: 42 } }).execute()
-        .catch((response) => {
+        .catch(function (response) {
           expect(response.status).to.equal(400);
           expect(response.message).to.equal('Unsupported update operation $wrongOperation on age');
         });
@@ -305,7 +323,7 @@ describe('Test Partial Updates', function() {
       return p0.partialUpdate()
         .set('age', 42)
         .execute()
-        .then((result) => {
+        .then(function (result) {
           expect(result).to.equal(p0);
           expect(p0.age).to.equal(42);
         });
@@ -316,7 +334,7 @@ describe('Test Partial Updates', function() {
       return p0.partialUpdate()
         .set('name', 'KSM')
         .execute()
-        .then((result) => {
+        .then(function (result) {
           expect(result).to.equal(p0);
           expect(p0.name).to.equal('KSM');
         });
@@ -329,7 +347,7 @@ describe('Test Partial Updates', function() {
         .set('address.city', 'Hamburg')
         .set('address.zip', 20259)
         .execute()
-        .then((result) => {
+        .then(function (result) {
           expect(result).to.equal(p0);
           expect(p0.address).to.equal(result.address);
           expect(p0.address.city).to.equal('Hamburg');
@@ -342,7 +360,7 @@ describe('Test Partial Updates', function() {
       return p0.partialUpdate()
         .increment('age')
         .execute()
-        .then((result) => {
+        .then(function (result) {
           expect(result).to.equal(p0);
           expect(p0.age).to.equal(25);
         });
@@ -353,7 +371,7 @@ describe('Test Partial Updates', function() {
       return p0.partialUpdate()
         .decrement('age')
         .execute()
-        .then((result) => {
+        .then(function (result) {
           expect(result).to.equal(p0);
           expect(p0.age).to.equal(23);
         });
@@ -364,7 +382,7 @@ describe('Test Partial Updates', function() {
       return p0.partialUpdate()
         .multiply('foo', 2)
         .execute()
-        .then((result) => {
+        .then(function (result) {
           expect(result).to.equal(p0);
           expect(p0.foo).to.equal(26.74);
         });
@@ -375,7 +393,7 @@ describe('Test Partial Updates', function() {
       return p0.partialUpdate()
         .divide('foo', 2)
         .execute()
-        .then((result) => {
+        .then(function (result) {
           expect(result).to.equal(p0);
           expect(p0.foo).to.equal(6.685);
         });
@@ -390,7 +408,7 @@ describe('Test Partial Updates', function() {
         .min('bar', 42)
         .min('baz', 42)
         .execute()
-        .then((result) => {
+        .then(function (result) {
           expect(result).to.equal(p0);
           expect(p0.foo).to.equal(13.37);
           expect(p0.bar).to.equal(42);
@@ -407,7 +425,7 @@ describe('Test Partial Updates', function() {
         .max('bar', 42)
         .max('baz', 42)
         .execute()
-        .then((result) => {
+        .then(function (result) {
           expect(result).to.equal(p0);
           expect(p0.foo).to.equal(42);
           expect(p0.bar).to.equal(42);
@@ -420,7 +438,7 @@ describe('Test Partial Updates', function() {
       return p0.partialUpdate()
         .set('listAttr', ['red'])
         .execute()
-        .then((result) => {
+        .then(function (result) {
           expect(result).to.equal(p0);
           expect(p0.listAttr).to.eql(['red']);
         });
@@ -431,14 +449,14 @@ describe('Test Partial Updates', function() {
       return p0.partialUpdate()
         .push('listAttr', 'red')
         .execute()
-        .then((result) => {
+        .then(function (result) {
           expect(result).to.equal(p0);
           expect(p0.listAttr).to.eql(['blue', 'green', 'red']);
 
           return p0.partialUpdate()
             .push('listAttr', 'red')
             .execute()
-            .then((result) => {
+            .then(function (result) {
               expect(result).to.equal(p0);
               expect(p0.listAttr).to.eql(['blue', 'green', 'red', 'red']);
             });
@@ -450,14 +468,14 @@ describe('Test Partial Updates', function() {
       return p0.partialUpdate()
         .unshift('listAttr', 'red')
         .execute()
-        .then((result) => {
+        .then(function (result) {
           expect(result).to.equal(p0);
           expect(p0.listAttr).to.eql(['red', 'blue', 'green']);
 
           return p0.partialUpdate()
             .unshift('listAttr', 'red')
             .execute()
-            .then((result) => {
+            .then(function (result) {
               expect(result).to.equal(p0);
               expect(p0.listAttr).to.eql(['red', 'red', 'blue', 'green']);
             });
@@ -469,7 +487,7 @@ describe('Test Partial Updates', function() {
       return p0.partialUpdate()
         .remove('listAttr', 'green')
         .execute()
-        .then((result) => {
+        .then(function (result) {
           expect(result).to.equal(p0);
           expect(p0.listAttr).to.include('blue');
           expect(p0.listAttr).to.not.include('green');
@@ -481,7 +499,7 @@ describe('Test Partial Updates', function() {
       return p0.partialUpdate()
         .shift('listAttr')
         .execute()
-        .then((result) => {
+        .then(function (result) {
           expect(result).to.equal(p0);
           expect(p0.listAttr).to.eql(['green']);
         });
@@ -492,7 +510,7 @@ describe('Test Partial Updates', function() {
       return p0.partialUpdate()
         .pop('listAttr')
         .execute()
-        .then((result) => {
+        .then(function (result) {
           expect(result).to.equal(p0);
           expect(p0.listAttr).to.eql(['blue']);
         });
@@ -500,7 +518,7 @@ describe('Test Partial Updates', function() {
 
     it('should perform a $replace partial update on a list', function() {
       return Promise.resolve(p0)
-      .then((result) => {
+      .then(function (result) {
         expect(result).to.equal(p0);
         expect(p0.listAttr).to.eql(['blue', 'green']);
 
@@ -509,7 +527,7 @@ describe('Test Partial Updates', function() {
           .replace('listAttr', 0, 'red')
           .execute();
       })
-      .then((result) => {
+      .then(function (result) {
         expect(result).to.equal(p0);
         expect(p0.listAttr).to.eql(['red', 'green']);
 
@@ -518,7 +536,7 @@ describe('Test Partial Updates', function() {
           .replace('listAttr', 1, 'red')
           .execute()
       })
-      .then((result) => {
+      .then(function (result) {
         expect(result).to.equal(p0);
         expect(p0.listAttr).to.eql(['red', 'red']);
 
@@ -528,7 +546,7 @@ describe('Test Partial Updates', function() {
           .replace('listAttr', 1, 'cyan')
           .execute();
       })
-      .then((result) => {
+      .then(function (result) {
         expect(result).to.equal(p0);
         expect(p0.listAttr).to.eql(['yellow', 'cyan']);
 
@@ -537,7 +555,7 @@ describe('Test Partial Updates', function() {
           .replace('listAttr', 2, 'green')
           .execute();
       })
-      .then((result) => {
+      .then(function (result) {
         expect(result).to.equal(p0);
         expect(p0.listAttr).to.eql(['yellow', 'cyan', 'green']);
 
@@ -546,7 +564,7 @@ describe('Test Partial Updates', function() {
           .replace('listAttr', 99, 'ninetynine')
           .execute();
       })
-      .then((result) => {
+      .then(function (result) {
         expect(result).to.equal(p0);
         expect(p0.listAttr.length).to.eql(100);
         expect(p0.listAttr[0]).to.eql('yellow');
@@ -567,7 +585,7 @@ describe('Test Partial Updates', function() {
       return p0.partialUpdate()
         .set('setAttr', new Set(['Curie', 'Huygens', 'Heisenberg']))
         .execute()
-        .then((result) => {
+        .then(function (result) {
           expect(result).to.equal(p0);
           expect(p0.setAttr.has('Einstein')).to.be.false;
           expect(p0.setAttr.has('Planck')).to.be.false;
@@ -586,7 +604,7 @@ describe('Test Partial Updates', function() {
       return p0.partialUpdate()
         .add('setAttr', 'Curie')
         .execute()
-        .then((result) => {
+        .then(function (result) {
           expect(result).to.equal(p0);
           expect(p0.setAttr.has('Einstein')).to.be.true;
           expect(p0.setAttr.has('Planck')).to.be.true;
@@ -596,7 +614,7 @@ describe('Test Partial Updates', function() {
           return p0.partialUpdate()
             .add('setAttr', 'Einstein')
             .execute()
-            .then((result) => {
+            .then(function (result) {
               expect(result).to.equal(p0);
               expect(p0.setAttr.has('Einstein')).to.be.true;
               expect(p0.setAttr.has('Planck')).to.be.true;
@@ -613,7 +631,7 @@ describe('Test Partial Updates', function() {
       return p0.partialUpdate()
         .remove('setAttr', 'Planck')
         .execute()
-        .then((result) => {
+        .then(function (result) {
           expect(result).to.equal(p0);
           expect(p0.setAttr.has('Einstein')).to.be.true;
           expect(p0.setAttr.has('Planck')).to.be.false;
@@ -630,7 +648,7 @@ describe('Test Partial Updates', function() {
       return p0.partialUpdate()
         .set('mapAttr', new Map([ ['London', 'Hello'], ['Paris', 'Salut'] ]))
         .execute()
-        .then((result) => {
+        .then(function (result) {
           expect(result).to.equal(p0);
           expect(p0.mapAttr.get('London')).to.eql('Hello');
           expect(p0.mapAttr.get('Paris')).to.eql('Salut');
@@ -648,7 +666,7 @@ describe('Test Partial Updates', function() {
       return p0.partialUpdate()
         .put('mapAttr', 'Wien', 'Servus')
         .execute()
-        .then((result) => {
+        .then(function (result) {
           expect(result).to.equal(p0);
           expect(p0.mapAttr.get('Hamburg')).to.eql('Moin');
           expect(p0.mapAttr.get('Hannover')).to.eql('Hallo');
@@ -664,7 +682,7 @@ describe('Test Partial Updates', function() {
       return p0.partialUpdate()
         .remove('mapAttr', 'München')
         .execute()
-        .then((result) => {
+        .then(function (result) {
           expect(result).to.equal(p0);
           expect(p0.mapAttr.get('Hamburg')).to.eql('Moin');
           expect(p0.mapAttr.get('Hannover')).to.eql('Hallo');
@@ -677,7 +695,7 @@ describe('Test Partial Updates', function() {
       return p0.partialUpdate()
         .set('date', date)
         .execute()
-        .then((result) => {
+        .then(function (result) {
           expect(result).to.equal(p0);
           expect(p0.date.getFullYear()).to.eql(date.getFullYear());
           expect(p0.date.getMonth()).to.eql(date.getMonth());
@@ -690,17 +708,14 @@ describe('Test Partial Updates', function() {
     });
 
     it('should perform a $currentDate partial update on a date', function() {
+      var now = Date.now();
       return p0.partialUpdate()
         .toNow('date')
         .execute()
-        .then((result) => {
-          var date = new Date();
+        // Ensure timestamp is at least as high as before the operation
+        .then(function (result) {
           expect(result).to.equal(p0);
-          expect(p0.date.getFullYear()).to.eql(date.getFullYear());
-          expect(p0.date.getMonth()).to.eql(date.getMonth());
-          expect(p0.date.getDay()).to.eql(date.getDay());
-          expect(p0.date.getHours()).to.eql(date.getHours());
-          expect(p0.date.getMinutes()).to.eql(date.getMinutes());
+          expect(p0.date.getTime()).to.be.at.least(now);
         });
     });
 
@@ -709,7 +724,7 @@ describe('Test Partial Updates', function() {
       return p0.partialUpdate()
         .and('bitmask', 0b01010101)
         .execute()
-        .then((result) => {
+        .then(function (result) {
           expect(result).to.equal(p0);
           expect(p0.bitmask).to.equal(0b00000101);
         });
@@ -720,7 +735,7 @@ describe('Test Partial Updates', function() {
       return p0.partialUpdate()
         .or('bitmask', 0b01010101)
         .execute()
-        .then((result) => {
+        .then(function (result) {
           expect(result).to.equal(p0);
           expect(p0.bitmask).to.equal(0b01011111);
         });
@@ -731,38 +746,39 @@ describe('Test Partial Updates', function() {
       return p0.partialUpdate()
         .xor('bitmask', 0b01010101)
         .execute()
-        .then((result) => {
+        .then(function (result) {
           expect(result).to.equal(p0);
           expect(p0.bitmask).to.equal(0b01011010);
         });
     });
 
     it('should throw an error if you perform updates on wrong data types', function() {
-      return p0.partialUpdate()
-        .add('bitmask', 0b01010101)
-        .execute()
-        .catch((response) => {
-          expect(response.status).to.equal(400);
-          expect(response.message).to.equal('Unsupported update operation $add on bitmask');
+      return Promise.resolve(p0)
+      .then(function () {
+        return p0.partialUpdate()
+          .add('bitmask', 0b01010101)
+          .execute()
+      })
+      .catch(function (response) {
+        expect(response.status).to.equal(400);
+        expect(response.message).to.equal('Unsupported update operation $add on bitmask');
 
-          return p0.partialUpdate()
-            .add('listAttr', '')
-            .execute()
-            .catch((response) => {
-              expect(response.status).to.equal(400);
-              expect(response.message).to.equal('Unsupported update operation $add on listAttr');
+        return p0.partialUpdate()
+          .add('listAttr', '')
+          .execute();
+      })
+      .catch(function (response) {
+        expect(response.status).to.equal(400);
+        expect(response.message).to.equal('Unsupported update operation $add on listAttr');
 
-              return p0.partialUpdate()
-                .push('setAttr', '')
-                .execute()
-                .catch((response) => {
-                  expect(response.status).to.equal(400);
-                  expect(response.message).to.equal('Unsupported update operation $push on setAttr');
-                });
-            });
-        });
+        return p0.partialUpdate()
+          .push('setAttr', '')
+          .execute();
+      })
+      .catch(function (response) {
+        expect(response.status).to.equal(400);
+        expect(response.message).to.equal('Unsupported update operation $push on setAttr');
+      });
     });
-
   })
-
 });
