@@ -284,12 +284,14 @@ describe('Test Partial Updates', function () {
   });
 
   describe('Entity Execution', function () {
-    var key, db, p0, p1;
+    var key, db, db2, p0, p1;
 
     beforeEach(function () {
       key = 'partial_update_' + Math.round(Math.random() * Date.now());
 
       db = emf.createEntityManager();
+      db2 = emf.createEntityManager();
+
       p0 = new db.PartialUpdatePerson({
         key: key,
         name: 'Konstantin',
@@ -308,7 +310,7 @@ describe('Test Partial Updates', function () {
         }),
       });
 
-      return Promise.all([p0.save({ force: true })]);
+      return Promise.all([p0.save({ force: true }), db2.ready()]);
     });
 
     it('should fail with status code 400 if key is wrong', function() {
@@ -779,6 +781,16 @@ describe('Test Partial Updates', function () {
       .catch(function (response) {
         expect(response.status).to.equal(400);
         expect(response.message).to.equal('Unsupported update operation $push on setAttr');
+      });
+    });
+
+    it('should allow partial updates on unloaded objects', function() {
+      var p = db2.getReference('/db/PartialUpdatePerson/' + key);
+      return p.partialUpdate()
+        .set('name', 'Unloaded KSM')
+        .execute()
+      .then(function (loaded) {
+        expect(loaded.name).to.equal('Unloaded KSM');
       });
     });
   })
