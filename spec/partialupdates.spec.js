@@ -711,15 +711,25 @@ describe('Test Partial Updates', function () {
     });
 
     it('should perform a $currentDate partial update on a date', function() {
-      var now = Date.now();
-      return p0.partialUpdate()
-        .toNow('date')
-        .execute()
+      var ancient = new Date(1992, 4, 14);
+
+      p0.date = ancient;
+      return p0.save()
+      .then(function () {
+          expect(p0.date).eqls(ancient);
+
+          return p0.partialUpdate()
+            .toNow('date')
+            .execute();
+      })
+      .then(function (result) {
         // Ensure timestamp is at least as high as before the operation
-        .then(function (result) {
-          expect(result).to.equal(p0);
-          expect(p0.date.getTime()).to.be.at.least(now);
-        });
+        expect(result).to.equal(p0);
+
+        var fiveMinutes = 5 * 60 * 1000;
+        expect(p0.date).gt(new Date(Date.now() - fiveMinutes));
+        expect(p0.date).lt(new Date(Date.now() + fiveMinutes));
+      });
     });
 
     it('should perform bitwise AND partial update', function() {
