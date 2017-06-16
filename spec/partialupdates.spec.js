@@ -55,7 +55,7 @@ describe('Test Partial Updates', function () {
         foo: 23,
         bar: 1337,
         baz: 42,
-        bitmask: 0b01010101,
+        bitmask: 85,
         address: {
           city: 'Cologne',
           zip: 50667
@@ -259,26 +259,26 @@ describe('Test Partial Updates', function () {
 
     it('should support bitwise operations', function() {
       var pub;
-      pub = p0.partialUpdate().and('bitmask', 0b01010000);
+      pub = p0.partialUpdate().and('bitmask', 80);
       expect(pub.toJSON()).eql({
-        $and: { bitmask: 0b01010000 }
+        $and: { bitmask: 80 }
       });
 
-      pub = p0.partialUpdate().or('bitmask', 0b00001111);
+      pub = p0.partialUpdate().or('bitmask', 15);
       expect(pub.toJSON()).eql({
-        $or: { bitmask: 0b00001111 }
+        $or: { bitmask: 15 }
       });
 
-      pub = p0.partialUpdate().xor('bitmask', 0b00001010);
+      pub = p0.partialUpdate().xor('bitmask', 10);
       expect(pub.toJSON()).eql({
-        $xor: { bitmask: 0b00001010 }
+        $xor: { bitmask: 10 }
       });
 
       // An operation overwrite causes an error
       expect(function () {
         p0.partialUpdate()
-          .and('bitmask', 0b00001111)
-          .or('bitmask', 0b00001111)
+          .and('bitmask', 15)
+          .or('bitmask', 15)
       }).to.throw('You cannot update bitmask multiple times');
     });
   });
@@ -297,7 +297,7 @@ describe('Test Partial Updates', function () {
         foo: 13.37,
         bar: 42,
         baz: 1337,
-        bitmask: 0b00001111,
+        bitmask: 15,
         listAttr: ['blue', 'green'],
         setAttr: new Set(['Einstein', 'Planck', 'Bor']),
         date: new Date(1992, 05, 14, 0, 42, 0),
@@ -721,35 +721,35 @@ describe('Test Partial Updates', function () {
     });
 
     it('should perform bitwise AND partial update', function() {
-      expect(p0.bitmask).to.equal(0b00001111);
+      expect(p0.bitmask).to.equal(15);
       return p0.partialUpdate()
-        .and('bitmask', 0b01010101)
+        .and('bitmask', 85)
         .execute()
         .then(function (result) {
           expect(result).to.equal(p0);
-          expect(p0.bitmask).to.equal(0b00000101);
+          expect(p0.bitmask).to.equal(5);
         });
     });
 
     it('should perform bitwise OR partial update', function() {
-      expect(p0.bitmask).to.equal(0b00001111);
+      expect(p0.bitmask).to.equal(15);
       return p0.partialUpdate()
-        .or('bitmask', 0b01010101)
+        .or('bitmask', 85)
         .execute()
         .then(function (result) {
           expect(result).to.equal(p0);
-          expect(p0.bitmask).to.equal(0b01011111);
+          expect(p0.bitmask).to.equal(95);
         });
     });
 
     it('should perform bitwise XOR partial update', function() {
-      expect(p0.bitmask).to.equal(0b00001111);
+      expect(p0.bitmask).to.equal(15);
       return p0.partialUpdate()
-        .xor('bitmask', 0b01010101)
+        .xor('bitmask', 85)
         .execute()
         .then(function (result) {
           expect(result).to.equal(p0);
-          expect(p0.bitmask).to.equal(0b01011010);
+          expect(p0.bitmask).to.equal(90);
         });
     });
 
@@ -757,7 +757,7 @@ describe('Test Partial Updates', function () {
       return Promise.resolve(p0)
       .then(function () {
         return p0.partialUpdate()
-          .add('bitmask', 0b01010101)
+          .add('bitmask', 85)
           .execute()
       })
       .catch(function (response) {
