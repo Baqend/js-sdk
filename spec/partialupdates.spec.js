@@ -284,13 +284,14 @@ describe('Test Partial Updates', function () {
   });
 
   describe('Entity Execution', function () {
-    var db, p0;
+    var key, db, p0, p1;
 
     beforeEach(function () {
-      db = emf.createEntityManager();
+      key = 'partial_update_' + Math.round(Math.random() * Date.now());
 
+      db = emf.createEntityManager();
       p0 = new db.PartialUpdatePerson({
-        key: 'partial_update_p0',
+        key: key,
         name: 'Konstantin',
         age: 24,
         foo: 13.37,
@@ -455,12 +456,12 @@ describe('Test Partial Updates', function () {
 
           return p0.partialUpdate()
             .push('listAttr', 'red')
-            .execute()
-            .then(function (result) {
-              expect(result).to.equal(p0);
-              expect(p0.listAttr).to.eql(['blue', 'green', 'red', 'red']);
-            });
-        });
+            .execute();
+        })
+      .then(function (result) {
+        expect(result).to.equal(p0);
+        expect(p0.listAttr).to.eql(['blue', 'green', 'red', 'red']);
+      });
     });
 
     it('should perform an $unshift partial update on a list', function() {
