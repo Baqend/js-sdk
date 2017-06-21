@@ -539,6 +539,45 @@ describe('Test crud', function() {
       });
     });
 
+    it('should get object reference', function() {
+      var obj1 = db.getReference(person.id);
+      var obj2 = db.Person.ref(person.id);
+      var obj3 = db.Person.ref(person.key);
+      var obj4 = db2.getReference(person.id);
+      var obj5 = db2.Person.ref(person.id);
+      var obj6 = db2.Person.ref(person.key);
+
+      expect(obj1).be.ok;
+      expect(obj2).be.ok;
+      expect(obj3).be.ok;
+      expect(obj4).be.ok;
+      expect(obj5).be.ok;
+      expect(obj6).be.ok;
+
+      // Check loaded reference is loaded
+      expect(obj1.id).equals(person.id);
+      expect(obj1.name).equals("Peter Mueller");
+      expect(obj1.age).equals(42);
+      expect(obj1.date).eql(new Date("1976-11-13"));
+
+      // Check references are the same
+      expect(obj1 === obj2).true;
+      expect(obj1 === obj3).true;
+      expect(obj4 === obj5).true;
+      expect(obj4 === obj6).true;
+
+      // Check loaded/unloaded references are not the same
+      expect(obj1 === obj4).false;
+
+      // Check ids match
+      expect(obj1.id).equals(obj4.id);
+
+      // Check unloaded reference is not loaded
+      expect(function () {
+        obj4.name;
+      }).to.throw("This object " + person.id + " is not available.");
+    });
+
     it('should retrieved same version in same db context', function() {
       var p1 = db.Person.load(person.id);
       var p2 = db.Person.load(person.id);
