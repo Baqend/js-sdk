@@ -70,6 +70,21 @@ describe('Test Partial Updates', function () {
       expect(pub._entity).to.equal(p0);
     });
 
+    it('should create an entity factory partial update builder', function() {
+      const pub = db.PartialUpdatePerson.partialUpdate(p0.key);
+
+      expect(pub).to.be.an.instanceof(DB.partialupdate.EntityPartialUpdateBuilder);
+      expect(pub._entity.id).to.equal(p0.id);
+    });
+
+    it('provides an initializer for partial updates', function() {
+      var testPU = { $set: { name: 'KSM' } };
+      var pub1 = db.PartialUpdatePerson.partialUpdate(p0.key, testPU).toJSON();
+      var pub2 = p0.partialUpdate(testPU).toJSON();
+      expect(pub1).eql(testPU);
+      expect(pub2).eql(testPU);
+    });
+
     it('should throw an error if you update a path twice', function() {
       expect(function () {
         p0.partialUpdate()
@@ -801,6 +816,16 @@ describe('Test Partial Updates', function () {
         .execute()
       .then(function (loaded) {
         expect(loaded.name).to.equal('Unloaded KSM');
+      });
+    });
+
+    it('should allow partial updates on entity factories', function() {
+      return db.PartialUpdatePerson.partialUpdate(key)
+        .set('name', 'Unloaded KSM')
+        .execute()
+      .then(function (loadedFromClass) {
+        expect(loadedFromClass === p0).true;
+        expect(loadedFromClass.name).to.equal('Unloaded KSM');
       });
     });
   })
