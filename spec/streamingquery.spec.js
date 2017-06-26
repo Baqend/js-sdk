@@ -128,26 +128,36 @@ describe("Streaming Queries", function() {
 
   before(function() {
     this.timeout(10000);
-    var personType, addressType;
-    emf = new DB.EntityManagerFactory({host: env.TEST_SERVER, schema: {}, tokenStorage: helper.rootTokenStorage});
-    metamodel = emf.metamodel;
+    var personType, addressType, codeType;
+    emf = new DB.EntityManagerFactory({host: env.TEST_SERVER, tokenStorage: helper.rootTokenStorage});
+    return emf.ready().then(function() {
+      metamodel = emf.metamodel;
 
-    metamodel.addType(personType = new DB.metamodel.EntityType(bucket, metamodel.entity(Object)));
-    metamodel.addType(addressType = new DB.metamodel.EmbeddableType("QueryAddress"));
+      addressType = metamodel.embeddable('QueryAddress');
+      if (!addressType) {
+        metamodel.addType(addressType = new DB.metamodel.EmbeddableType("QueryAddress"));
+        addressType.addAttribute(new DB.metamodel.SingularAttribute("zip", metamodel.baseType(Number)));
+        addressType.addAttribute(new DB.metamodel.SingularAttribute("city", metamodel.baseType(String)));
+      }
 
-    personType.addAttribute(new DB.metamodel.SingularAttribute("name", metamodel.baseType(String)));
-    personType.addAttribute(new DB.metamodel.SingularAttribute("surname", metamodel.baseType(String)));
-    personType.addAttribute(new DB.metamodel.SingularAttribute("testID", metamodel.baseType(String)));
-    personType.addAttribute(new DB.metamodel.SingularAttribute("address", addressType));
-    personType.addAttribute(new DB.metamodel.SingularAttribute("age", metamodel.baseType(Number)));
-    personType.addAttribute(new DB.metamodel.SingularAttribute("date", metamodel.baseType(Date)));
-    personType.addAttribute(new DB.metamodel.ListAttribute("colors", metamodel.baseType(String)));
-    personType.addAttribute(new DB.metamodel.SingularAttribute("birthplace", metamodel.baseType(DB.GeoPoint)));
+      metamodel.addType(personType = new DB.metamodel.EntityType(bucket, metamodel.entity(Object)));
+      personType.addAttribute(new DB.metamodel.SingularAttribute("name", metamodel.baseType(String)));
+      personType.addAttribute(new DB.metamodel.SingularAttribute("surname", metamodel.baseType(String)));
+      personType.addAttribute(new DB.metamodel.SingularAttribute("testID", metamodel.baseType(String)));
+      personType.addAttribute(new DB.metamodel.SingularAttribute("address", addressType));
+      personType.addAttribute(new DB.metamodel.SingularAttribute("age", metamodel.baseType(Number)));
+      personType.addAttribute(new DB.metamodel.SingularAttribute("date", metamodel.baseType(Date)));
+      personType.addAttribute(new DB.metamodel.ListAttribute("colors", metamodel.baseType(String)));
+      personType.addAttribute(new DB.metamodel.SingularAttribute("birthplace", metamodel.baseType(DB.GeoPoint)));
 
-    addressType.addAttribute(new DB.metamodel.SingularAttribute("zip", metamodel.baseType(Number)));
-    addressType.addAttribute(new DB.metamodel.SingularAttribute("city", metamodel.baseType(String)));
+      codeType = metamodel.entity('StreamCodeType');
+      if (!codeType) {
+        metamodel.addType(codeType = new DB.metamodel.EntityType('StreamCodeType', metamodel.entity(Object)));
+        codeType.addAttribute(new DB.metamodel.SingularAttribute("name", metamodel.baseType(String)));
+      }
 
-    return metamodel.save().then(function() {
+      return metamodel.save();
+    }).then(function() {
       db = emf.createEntityManager();
       websocket = db.entityManagerFactory.websocket;
       otherDb = emf.createEntityManager();
@@ -427,6 +437,42 @@ describe("Streaming Queries", function() {
             // delete all 50 elements: if the query has not been unsubscribe, we will receive an error, because the query results cannot be maintained in InvaliDB as soon as less than 10 elements are available server-side
             return helper.sleep(t, clearBucket());
           });
+    });
+  });
+
+  it("should refresh local objects on same versions", function() {
+    var obj = new db.StreamCodeType({
+      name: 'Test'
+    });
+
+    return db.code.saveCode('StreamCodeType', 'insert', function(module, exports) {
+      exports.onInsert = function(db, obj) {
+        obj.name = 'insert ' + obj.name;
+      }
+    }).then(function() {
+      return obj.insert();
+    }).then(function() {
+      expect(obj.name).equal('Test');
+
+      return new Promise(function(resolve, reject) {
+        var initial = false;
+        subscription = db.StreamCodeType.find()
+          .equal('id', obj.id)
+          .limit(1)
+          .resultStream(function(result) {
+            resolve(result);
+          }, function(e) {
+            reject(e);
+          });
+      });
+    }).then(function(result) {
+      expect(result.length).equal(1);
+      expect(result[0]).equal(obj);
+      expect(obj.name).equal('insert Test');
+      expect(obj.id).be.ok;
+      expect(obj.version).be.ok;
+      expect(obj.createdAt).be.ok;
+      expect(obj.updatedAt).be.ok;
     });
   });
 

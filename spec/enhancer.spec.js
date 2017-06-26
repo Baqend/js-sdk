@@ -210,6 +210,16 @@ describe("Test enhancer", function() {
     expect(json._metadata).be.undefined;
   });
 
+  it('should convert metadata to JSON if serialized by JSON.stringify', function() {
+    var testClass = new db.TestClass();
+    testClass.testValue = 5;
+    var jsonString = JSON.stringify({obj: testClass});
+    var json = JSON.parse(jsonString);
+    expect(json.obj).be.ok;
+    expect(json.obj.testValue).eqls(5);
+    expect(json._metadata).be.undefined;
+  });
+
   it('should convert embedded to JSON', function() {
     var testClass = new db.TestEmbeddedClass();
     testClass.value = 5;

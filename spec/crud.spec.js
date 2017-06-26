@@ -141,12 +141,14 @@ describe('Test crud', function() {
   });
 
   describe('save', function() {
-    it('should save new object', function() {
+    it('should save new created object', function() {
       var person = new db.Person();
 
       return person.save(function(result) {
         expect(person.id).be.ok;
         expect(person.version).be.ok;
+        expect(person.createdAt).be.ok;
+        expect(person.updatedAt).be.ok;
         expect(person._metadata.isPersistent).be.true;
         expect(person._metadata.isDirty).be.false;
         expect(person).equals(result);
@@ -735,11 +737,22 @@ describe('Test crud', function() {
 
     it('should update object', function() {
       person.name = 'New Name';
-      expect(person.version).equals(1);
       return person.update().then(function() {
         expect(person.name).equals('New Name');
-        expect(person.version).equals(2);
         return expect(db.Person.load(person.id)).eventually.have.property('name', 'New Name');
+      });
+    });
+
+    it('should update refresh metadata', function() {
+      person.name = 'New Name';
+      expect(person.version).equals(1);
+      return person.update().then(function() {
+        expect(person.id).be.ok;
+        expect(person.version).equals(2);
+        expect(person.acl).be.ok;
+        expect(person.createdAt).lt(person.updatedAt);
+        expect(person.updatedAt).gt(new Date(Date.now() - 10 * 60 * 1000));
+        expect(person.updatedAt).lt(new Date(Date.now() + 10 * 60 * 1000));
       });
     });
 
@@ -798,6 +811,20 @@ describe('Test crud', function() {
       person.name = "Peter Insert";
       return person.insert().then(function() {
         return expect(db.Person.load(person.id)).become(person);
+      });
+    });
+
+    it('should update metadata', function() {
+      var person = new db.Person();
+      person.name = "Peter Insert";
+      return person.insert().then(function() {
+        expect(person.id).be.ok;
+        expect(person.version).equals(1);
+        expect(person.acl).be.ok;
+        expect(person.createdAt).gt(new Date(Date.now() - 10 * 60 * 1000));
+        expect(person.createdAt).lt(new Date(Date.now() + 10 * 60 * 1000));
+        expect(person.updatedAt).gt(new Date(Date.now() - 10 * 60 * 1000));
+        expect(person.updatedAt).lt(new Date(Date.now() + 10 * 60 * 1000));
       });
     });
 
@@ -1121,6 +1148,62 @@ describe('Test crud', function() {
         var json = saved.toJSON();
         expect(json.aunt).eqls(mother.id);
         expect(json.name).eqls(child.name);
+        expect(json.id).eqls(child.id);
+        expect(json.version).eqls(child.version);
+        expect(json.acl).be.ok;
+        expect(Date.parse(json.createdAt)).eqls(child.createdAt.getTime());
+        expect(Date.parse(json.updatedAt)).eqls(child.updatedAt.getTime());
+      });
+    });
+
+    it('should save and convert result excluding metadata to JSON', function() {
+      return child.save({depth: true}).then(function(saved) {
+        var json = saved.toJSON(true);
+        expect(json.aunt).eqls(mother.id);
+        expect(json.name).eqls(child.name);
+        expect(json.id).be.not.ok;
+        expect(json.version).be.not.ok;
+        expect(json.acl).be.not.ok;
+        expect(json.createdAt).be.not.ok;
+        expect(json.updatedAt).be.not.ok;
+
+        var json = saved.toJSON({excludeMetadata: true});
+        expect(json.aunt).eqls(mother.id);
+        expect(json.name).eqls(child.name);
+        expect(json.id).be.not.ok;
+        expect(json.version).be.not.ok;
+        expect(json.acl).be.not.ok;
+        expect(json.createdAt).be.not.ok;
+        expect(json.updatedAt).be.not.ok;
+
+        var json = saved.toJSON({depth: 1, excludeMetadata: true});
+        expect(json.name).eqls(child.name);
+        expect(json.id).be.not.ok;
+        expect(json.version).be.not.ok;
+        expect(json.acl).be.not.ok;
+        expect(json.createdAt).be.not.ok;
+        expect(json.updatedAt).be.not.ok;
+        expect(json.aunt.name).eqls("Hildegard Meier");
+        expect(json.aunt.id).be.not.ok;
+        expect(json.aunt.version).be.not.ok;
+        expect(json.aunt.acl).be.not.ok;
+        expect(json.aunt.createdAt).be.not.ok;
+        expect(json.aunt.updatedAt).be.not.ok;
+      });
+    });
+
+    it('should save and convert result by JSON.stringify to JSON', function() {
+      return child.save({depth: true}).then(function(saved) {
+        var jsonString = JSON.stringify({obj: saved});
+        var json = JSON.parse(jsonString).obj;
+        expect(json).be.ok;
+        expect(json.aunt).eqls(mother.id);
+        expect(json.name).eqls(child.name);
+        expect(json.id).eqls(child.id);
+        expect(json.version).eqls(child.version);
+        expect(json.acl).be.ok;
+        expect(Date.parse(json.createdAt)).eqls(child.createdAt.getTime());
+        expect(Date.parse(json.updatedAt)).eqls(child.updatedAt.getTime());
       });
     });
 

@@ -264,8 +264,8 @@ class Stream {
     if (!object.version) {
       metadata.setRemoved();
       entityManager.removeReference(entity);
-    } else if (entity.version < object.version) {
-      metadata.setJson(object, true);
+    } else if (entity.version <= object.version) {
+      metadata.setJson(object, {persisting: true});
     }
     return entity;
   }
