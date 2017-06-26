@@ -9,32 +9,40 @@ describe('Test Partial Updates', function () {
   before(function () {
     var personType, addressType;
 
-    emf = new DB.EntityManagerFactory({ host: env.TEST_SERVER, schema: {}, tokenStorage: helper.rootTokenStorage });
+    emf = new DB.EntityManagerFactory({ host: env.TEST_SERVER, tokenStorage: helper.rootTokenStorage });
     metamodel = emf.metamodel;
 
-    metamodel.addType(personType = new DB.metamodel.EntityType('PartialUpdatePerson', metamodel.entity(Object)));
-    metamodel.addType(addressType = new DB.metamodel.EmbeddableType('PartialUpdateAddress'));
+    return emf.ready().then(function () {
 
-    personType.addAttribute(new DB.metamodel.SingularAttribute('name', metamodel.baseType(String)));
-    personType.addAttribute(new DB.metamodel.SingularAttribute('person', personType));
-    personType.addAttribute(new DB.metamodel.SingularAttribute('address', addressType));
-    personType.addAttribute(new DB.metamodel.SingularAttribute('age', metamodel.baseType('Integer')));
-    personType.addAttribute(new DB.metamodel.SingularAttribute('numFriends', metamodel.baseType('Integer')));
-    personType.addAttribute(new DB.metamodel.SingularAttribute('tasksToDo', metamodel.baseType(Number)));
-    personType.addAttribute(new DB.metamodel.SingularAttribute('foo', metamodel.baseType('Double')));
-    personType.addAttribute(new DB.metamodel.SingularAttribute('bar', metamodel.baseType('Double')));
-    personType.addAttribute(new DB.metamodel.SingularAttribute('baz', metamodel.baseType('Double')));
-    personType.addAttribute(new DB.metamodel.SingularAttribute('bitmask', metamodel.baseType('Integer')));
-    personType.addAttribute(new DB.metamodel.SingularAttribute('date', metamodel.baseType(Date)));
-    personType.addAttribute(new DB.metamodel.ListAttribute('listAttr', metamodel.baseType(String)));
-    personType.addAttribute(new DB.metamodel.SetAttribute('setAttr', metamodel.baseType(String)));
-    personType.addAttribute(new DB.metamodel.MapAttribute('mapAttr', metamodel.baseType(String), metamodel.baseType(String)));
-    personType.addAttribute(new DB.metamodel.SingularAttribute('birthplace', metamodel.baseType(DB.GeoPoint)));
+      if (!metamodel.entity("PartialUpdatePerson")) {
+        metamodel.addType(personType = new DB.metamodel.EntityType('PartialUpdatePerson', metamodel.entity(Object)));
+        metamodel.addType(addressType = new DB.metamodel.EmbeddableType('PartialUpdateAddress'));
 
-    addressType.addAttribute(new DB.metamodel.SingularAttribute('zip', metamodel.baseType(Number)));
-    addressType.addAttribute(new DB.metamodel.SingularAttribute('city', metamodel.baseType(String)));
+        personType.addAttribute(new DB.metamodel.SingularAttribute('name', metamodel.baseType(String)));
+        personType.addAttribute(new DB.metamodel.SingularAttribute('person', personType));
+        personType.addAttribute(new DB.metamodel.SingularAttribute('address', addressType));
+        personType.addAttribute(new DB.metamodel.SingularAttribute('age', metamodel.baseType('Integer')));
+        personType.addAttribute(new DB.metamodel.SingularAttribute('numFriends', metamodel.baseType('Integer')));
+        personType.addAttribute(new DB.metamodel.SingularAttribute('tasksToDo', metamodel.baseType(Number)));
+        personType.addAttribute(new DB.metamodel.SingularAttribute('foo', metamodel.baseType('Double')));
+        personType.addAttribute(new DB.metamodel.SingularAttribute('bar', metamodel.baseType('Double')));
+        personType.addAttribute(new DB.metamodel.SingularAttribute('baz', metamodel.baseType('Double')));
+        personType.addAttribute(new DB.metamodel.SingularAttribute('bitmask', metamodel.baseType('Integer')));
+        personType.addAttribute(new DB.metamodel.SingularAttribute('date', metamodel.baseType(Date)));
+        personType.addAttribute(new DB.metamodel.ListAttribute('listAttr', metamodel.baseType(String)));
+        personType.addAttribute(new DB.metamodel.SetAttribute('setAttr', metamodel.baseType(String)));
+        personType.addAttribute(new DB.metamodel.MapAttribute('mapAttr', metamodel.baseType(String), metamodel.baseType(String)));
+        personType.addAttribute(new DB.metamodel.SingularAttribute('birthplace', metamodel.baseType(DB.GeoPoint)));
 
-    return metamodel.save();
+        addressType.addAttribute(new DB.metamodel.SingularAttribute('zip', metamodel.baseType(Number)));
+        addressType.addAttribute(new DB.metamodel.SingularAttribute('city', metamodel.baseType(String)));
+      } else {
+        personType = metamodel.entity('PartialUpdatePerson');
+        addressType = metamodel.entity('PartialUpdateAddress');
+      }
+
+      return metamodel.save();
+    })
   });
 
   describe('Entity Builder', function () {
@@ -325,7 +333,7 @@ describe('Test Partial Updates', function () {
         }),
       });
 
-      return Promise.all([p0.save({ force: true }), db2.ready()]);
+      return Promise.all([p0.save({ force: true, refresh: true }), db2.ready()]);
     });
 
     it('should fail with status code 400 if key is wrong', function() {
@@ -334,6 +342,40 @@ describe('Test Partial Updates', function () {
           expect(response.status).to.equal(400);
           expect(response.message).to.equal('Unsupported update operation $wrongOperation on age');
         });
+    });
+
+    it('updates metadata on the object', function() {
+      expect(p0.version).to.equal(1);
+      expect(p0.createdAt).to.be.not.undefined;
+      expect(p0.updatedAt).to.be.not.undefined;
+      expect(p0.updatedAt).to.eql(p0.createdAt);
+      return p0.partialUpdate()
+        .execute()
+        .then(function (result) {
+          expect(p0.version).to.equal(2);
+          expect(p0.updatedAt).to.not.eql(p0.createdAt);
+        });
+    });
+
+    it('updates metadata on unloaded references', function() {
+      var fiveMinutes = 5 * 60 * 1000;
+      p1 = db2.PartialUpdatePerson.ref(key);
+      expect(p1.version).null;
+      return p1.partialUpdate()
+        .set('age', 25)
+        .execute()
+        .then(function (result) {
+          expect(p1.version).to.equal(2);
+          expect(p1.updatedAt).to.not.eql(p1.createdAt);
+        });
+    });
+
+    it('throws an error if you $set an embedded object', function() {
+      return expect(
+        p0.partialUpdate()
+          .set('address', { zip: 22527, city: 'Stellingen' })
+          .execute()
+      ).rejectedWith('The body can\'t be processed');
     });
 
     it('should perform a $set partial update on numbers', function() {
@@ -780,33 +822,28 @@ describe('Test Partial Updates', function () {
         });
     });
 
-    it('should throw an error if you perform updates on wrong data types', function() {
-      return Promise.resolve(p0)
-      .then(function () {
-        return p0.partialUpdate()
+    it('throws an error if you perform an $add on a number', function() {
+      return expect(
+        p0.partialUpdate()
           .add('bitmask', 85)
           .execute()
-      })
-      .catch(function (response) {
-        expect(response.status).to.equal(400);
-        expect(response.message).to.equal('Unsupported update operation $add on bitmask');
+      ).rejectedWith('Unsupported update operation $add on bitmask');
+    });
 
-        return p0.partialUpdate()
+    it('throws an error if you $add to a list', function () {
+      return expect(
+        p0.partialUpdate()
           .add('listAttr', '')
-          .execute();
-      })
-      .catch(function (response) {
-        expect(response.status).to.equal(400);
-        expect(response.message).to.equal('Unsupported update operation $add on listAttr');
+          .execute()
+      ).rejectedWith('Unsupported update operation $add on listAttr');
+    });
 
-        return p0.partialUpdate()
+    it('throws an error if you $push to a set', function () {
+      return expect(
+        p0.partialUpdate()
           .push('setAttr', '')
-          .execute();
-      })
-      .catch(function (response) {
-        expect(response.status).to.equal(400);
-        expect(response.message).to.equal('Unsupported update operation $push on setAttr');
-      });
+          .execute()
+      ).rejectedWith('Unsupported update operation $push on setAttr');
     });
 
     it('should allow partial updates on unloaded objects', function() {
