@@ -1,7 +1,7 @@
 "use strict";
 const Metadata = require('../../lib/util/Metadata');
 const lib = require('../../lib');
-const util = require('../../lib/util');
+const uuid = require('../../lib/util/uuid').uuid;
 
 /**
  * @alias query.Stream
@@ -103,7 +103,7 @@ class Stream {
 
   static streamObservable(entityManager, query, options, mapper, retryInterval) {
     options = Stream.parseOptions(options);
-    let id = util.uuid();
+    let id = uuid();
 
     const socket = entityManager.entityManagerFactory.websocket;
     const observable = new lib.Observable(subscriber => {
