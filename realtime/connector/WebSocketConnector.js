@@ -2,7 +2,6 @@
 const CommunicationError = require('../../lib/error/CommunicationError');
 const WebSocket = require('./websocket').WebSocket;
 const lib = require('../../lib');
-const util = require('../../lib/util/util');
 
 /**
  * @alias connector.WebSocketConnector

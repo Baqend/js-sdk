@@ -143,10 +143,15 @@ describe("Test toJSON and fromJSON", function() {
         expect(obj.version).eqls(1);
         expect(obj.level1.value).eqls("level1");
         expect(obj.level1.version).eqls(1);
+
         var json = obj.toJSON({depth: 1});
+        expect(json).have.property('id');
+
         json.value = "level0 updated";
         json.level1.value = "level1 updated";
-        obj = db.Level0.fromJSON(json)
+
+        var newObj = db.Level0.fromJSON(json)
+        expect(newObj).equal(obj); // strict equal
         return obj.save({depth: 0})
       }).then(function(obj) {
         expect(obj.value).eqls("level0 updated");

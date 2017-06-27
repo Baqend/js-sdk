@@ -12,7 +12,9 @@
   "browser": {
     "./index.js": "./dist/baqend.js",
     "./realtime.js": "./dist/baqend-realtime.js",
-    "./lib/util/util.js": "./lib/util/util-browser.js",
+    "./lib/util/atob.js": "./lib/util/atob-browser.js",
+    "./lib/util/is-node.js": "./lib/util/is-node-browser.js",
+    "./lib/util/hmac.js": "./lib/util/hmac-browser.js",
     "./realtime/connector/websocket.js": "./realtime/connector/websocket-browser.js",
     "./lib/connector/NodeConnector": false
   },
