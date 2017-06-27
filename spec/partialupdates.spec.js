@@ -72,14 +72,14 @@ describe('Test Partial Updates', function () {
     });
 
     it('should create an entity partial update builder', function() {
-      const pub = p0.partialUpdate();
+      var pub = p0.partialUpdate();
 
       expect(pub).to.be.an.instanceof(DB.partialupdate.EntityPartialUpdateBuilder);
       expect(pub._entity).to.equal(p0);
     });
 
     it('should create an entity factory partial update builder', function() {
-      const pub = db.PartialUpdatePerson.partialUpdate(p0.key);
+      var pub = db.PartialUpdatePerson.partialUpdate(p0.key);
 
       expect(pub).to.be.an.instanceof(DB.partialupdate.EntityPartialUpdateBuilder);
       expect(pub._entity.id).to.equal(p0.id);
@@ -181,7 +181,7 @@ describe('Test Partial Updates', function () {
 
     it('should support set operations', function() {
       var pub;
-      const date = new Date();
+      var date = new Date();
       pub = p0.partialUpdate()
         .set('age', 25)
         .set('name', 'KSM')
@@ -325,7 +325,7 @@ describe('Test Partial Updates', function () {
         bitmask: 15,
         listAttr: ['blue', 'green'],
         setAttr: new Set(['Einstein', 'Planck', 'Bor']),
-        date: new Date(1992, 05, 14, 0, 42, 0),
+        date: new Date(1992, 5, 14, 0, 42, 0),
         mapAttr: new Map([ ['Hamburg', 'Moin'], ['Hannover', 'Hallo'], ['München', 'Grüß Gott'] ]),
         address: new db.PartialUpdateAddress({
           city: 'Cologne',
