@@ -1,7 +1,7 @@
 "use strict";
 const Metadata = require('../../lib/util/Metadata');
 const lib = require('../../lib');
-const util = require('../../lib/util/util');
+const util = require('../../lib/util');
 
 /**
  * @alias query.Stream
