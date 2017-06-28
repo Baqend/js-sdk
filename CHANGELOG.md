@@ -1,3 +1,16 @@
+<a name="v2.8.0"></a>
+# v2.8.0 (2017-6-28)
+
+
+### Bug Fixes
+
+* Fix createdAt and updatedAt are not loaded by inserts and aren't updated after updates
+* Fix Fusetools incompatibilities 
+
+### Features
+
+* Introduces Baqends Partial Update API
+
 <a name="v2.7.3"></a>
 # v2.7.3 (2017-6-12)
 
