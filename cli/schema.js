@@ -31,9 +31,10 @@ module.exports = function(args) {
   })
 }
 
-function uploadSchema(db, args = {}) {
-  let allSchemas = []
-  let filepath = 'baqend/schema/'
+function uploadSchema(db, args) {
+  args = args || {};
+  let allSchemas = [];
+  let filepath = 'baqend/schema/';
   return readDirectory(filepath).then((fileNames) => {
     return Promise.all(
       fileNames.map((fileName) => {
@@ -55,7 +56,7 @@ function uploadSchema(db, args = {}) {
 }
 module.exports.uploadSchema = uploadSchema;
 
-function downloadSchema(db, args = {}) {
+function downloadSchema(db) {
   return db.send(new db.message.GetAllSchemas()).then((res) => {
     return Promise.all(
       res.entity.map((schema) => {
