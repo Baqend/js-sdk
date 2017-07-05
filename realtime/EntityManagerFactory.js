@@ -1,3 +1,4 @@
+"use strict";
 
 const EntityManagerFactory = require('../lib/EntityManagerFactory');
 const WebSocketConnector = require('./connector/WebSocketConnector');
