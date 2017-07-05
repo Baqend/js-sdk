@@ -98,7 +98,7 @@ module.exports = function (grunt) {
     clean: {
       dist: {
         src: [
-          'dist', 'doc'
+          'build', 'dist', 'doc'
         ]
       }
     },
