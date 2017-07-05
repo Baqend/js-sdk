@@ -131,7 +131,7 @@ module.exports = function (grunt) {
           quiet: true,
           reporterOptions: {
             junit_report_name: "Node Tests",
-            junit_report_path: "build/test-results/node.xml",
+            junit_report_path: "build/test-results/node-<%= process.version %>.xml",
             junit_report_stack: 1
           },
           timeout: 4000
@@ -187,6 +187,12 @@ module.exports = function (grunt) {
     // don't fail task when a test failed
     'force:on',
     'karma:test',
+    'force:restore'
+  ]);
+
+  grunt.registerTask('test-node', [
+    // don't fail task when a test failed
+    'force:on',
     'mochaTest:test',
     'force:restore'
   ]);

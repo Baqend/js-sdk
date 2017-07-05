@@ -33,7 +33,12 @@ describe('Test Bloomfilter', function() {
   });
 
   it('should initially not contain objects that were not updated', function() {
-    db.refreshBloomFilter().then(function(BF) {
+    return db.refreshBloomFilter().then(function(BF) {
+      if (db.isCachingDisabled) {
+        expect(BF).not.ok;
+        return; // node do not use a bloomfilter;
+      }
+
       for (var i = 0; i < 5; i++) {
         expect(BF.contains(DB.util.uuid())).equal(false);
       }

@@ -93,7 +93,7 @@
   },
   "scripts": {
     "test": "grunt --no-color test",
-    "mocha": "grunt mochaTest:test",
+    "test-node": "grunt --no-color test-node",
     "karma": "karma start karma.conf.js",
     "dist": "grunt dist && npm run typings && npm run jsdoc",
     "release": "node scripts/release",
