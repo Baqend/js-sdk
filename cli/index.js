@@ -67,6 +67,7 @@ if (!module.parent) {
 
   program
       .command('schema [command] [app]')
+      .description('Upload and download your schema')
       .option('-F, --force', 'overwrite old schema')
       .action((command, app, options) => result = schema(Object.assign({command: command, app: app}, options)))
 
@@ -95,13 +96,13 @@ if (!module.parent) {
 
   program
       .command('start [name] [dir]')
-      .description('clones the starter kit and install it in the given directory')
+      .description('Clones the starter kit and install it in the given directory')
       .action((name, dir) => result = starter(name, dir))
   ;
 
   program
       .command('apps')
-      .description('list all your apps')
+      .description('List all your apps')
       .action(() => result = account.listApps())
   ;
 
