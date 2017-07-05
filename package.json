@@ -84,7 +84,7 @@
     "karma-webdriver-launcher": "^1.0.4",
     "libumd": "^0.6.4",
     "mocha": "^3.0.2",
-    "mocha-jenkins-reporter": "^0.2.4",
+    "mocha-jenkins-reporter": "^0.3.8",
     "phantomjs-prebuilt": "^2.1.12",
     "shelljs": "^0.7.4",
     "through2": "^2.0.1",
