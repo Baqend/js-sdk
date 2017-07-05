@@ -130,7 +130,7 @@ module.exports = function (grunt) {
           reporter: 'mocha-jenkins-reporter',
           quiet: true,
           reporterOptions: {
-            junit_report_name: "Node Tests",
+            junit_report_name: "Node Tests <%= process.version %>",
             junit_report_path: "build/test-results/node-<%= process.version %>.xml",
             junit_report_stack: 1
           },
