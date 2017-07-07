@@ -1,3 +1,11 @@
+<a name="v2.8.1"></a>
+# v2.8.1 (2017-7-7)
+
+
+### Bug Fixes
+
+* Fixed compatibility issues with node 4
+
 <a name="v2.8.0"></a>
 # v2.8.0 (2017-6-28)
 
