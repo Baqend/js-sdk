@@ -26,12 +26,10 @@ function persistLogin(args) {
 }
 
 function getArgsCredentials(args) {
-  if (args.host && args.app) {
-    throw new Error('Only app or host parameter is allowed.');
-  }
+  var isCustomHost = args.app && /^https?:\/\//.test(args.app);
 
-  host = args.host || bbqHost;
-  app = args.app;
+  host = isCustomHost? args.app: bbqHost;
+  app = isCustomHost? null: args.app;
 
   if (args.username && args.password) {
     return Promise.resolve([args.username, args.password]);
@@ -48,7 +46,9 @@ function login(args) {
         return [json[host].username, json[host].password];
       } else {
         console.log('Baqend Login is required. You can skip this step by saving the Login credentials with "baqend login"');
-        showLoginInfo();
+        if (isBbq()) {
+          showLoginInfo();
+        }
         return readInputCredentials();
       }
     });
@@ -147,7 +147,7 @@ function showLoginInfo() {
 }
 
 function readInputCredentials() {
-  return readInput('E-Mail: ')
+  return readInput(isBbq()? 'E-Mail: ': 'Username: ')
       .then((username) => {
         return readInput('Password: ', true).then((password) => {
           console.log();

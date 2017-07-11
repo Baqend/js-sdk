@@ -6,30 +6,24 @@ const path = require('path');
 const filepath = './baqend/schema/';
 
 module.exports = function(args) {
-  return account.login({app: args.app, host: args.host}).then((db) => {
+  return account.login(args).then((db) => {
     if (!fs.existsSync(filepath)){
       createDir(filepath)
     }
     switch(args.command) {
       case 'upload':
-        uploadSchema(db, args).then(() => {
+        return uploadSchema(db, args).then(() => {
           console.log("---------------------------------------")
           console.log("The schema was successfully " + (args.force && "replaced" || "updated") )
-        }, (err) => {
-          console.log("An error occured")
-        })
-        break;
+        });
       case 'download':
-        downloadSchema(db, args).then(() => {
+        return downloadSchema(db, args).then(() => {
           console.log("---------------------------------------")
           console.log("Your schema was successfully downloaded")
-        }, (err) => {
-          console.log("schema.json could not be saved. Did you create a baqend directory already?")
-        })
-        break;
+        });
     }
   })
-}
+};
 
 function uploadSchema(db, args) {
   args = args || {};
@@ -45,7 +39,7 @@ function uploadSchema(db, args) {
     ).then((schemas) => {
       schemas.forEach((schema) => {
         console.log("Uploading " + schema.class.replace('/db/', '') + " Schema")
-      })
+      });
       if (args.force) {
         return db.send(new db.message.ReplaceAllSchemas(schemas))
       } else {

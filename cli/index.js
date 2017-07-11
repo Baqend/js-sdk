@@ -22,7 +22,6 @@ if (!module.parent) {
   program
       .command('login')
       .description('Logs you in and locally saves your credentials')
-      .option('-H, --host <name>', 'Host for custom deployment')
       .action(options => result = account.persistLogin(options))
   ;
 
@@ -35,7 +34,6 @@ if (!module.parent) {
   program
       .command('whoami')
       .alias('me')
-      .option('-H, --host <name>', 'Host for custom deployment')
       .description('Show your login status')
       .action(options => result = account.whoami(options))
   ;
@@ -66,10 +64,10 @@ if (!module.parent) {
   ;
 
   program
-      .command('schema [command] [app]')
+      .command('schema <command> [app]')
       .description('Upload and download your schema')
       .option('-F, --force', 'overwrite old schema')
-      .action((command, app, options) => result = schema(Object.assign({command: command, app: app}, options)))
+      .action((command, app, options) => result = schema(Object.assign({command: command, app: app}, options)));
 
   // program
   //     .command('schema download [app]')
@@ -78,7 +76,6 @@ if (!module.parent) {
   program
       .command('logout')
       .description('Removes your stored credentials')
-      .option('-H, --host <name>', 'Host for custom deployment')
       .action(options => result = account.logout(options))
   ;
 
@@ -112,7 +109,7 @@ if (!module.parent) {
     program.outputHelp();
   } else if (result) {
     if (result.catch) {
-      result.catch((e) => console.error(e.message ||e));
+      result.catch((e) => console.error(e.stack || e));
     }
   }
 }
