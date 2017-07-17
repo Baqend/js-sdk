@@ -1,3 +1,11 @@
+<a name="v2.8.2"></a>
+# v2.8.2 (2017-7-17)
+
+
+### Bug Fixes
+
+* CLI: Allow custom hosted baqend instances as app parameter
+
 <a name="v2.8.1"></a>
 # v2.8.1 (2017-7-7)
 
