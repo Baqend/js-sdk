@@ -21,6 +21,8 @@ module.exports = function(args) {
           console.log("---------------------------------------")
           console.log("Your schema was successfully downloaded")
         });
+      default:
+        throw new Error(`Invalid command: "${args.command}". Please use one of ["upload", "download"].`);
     }
   })
 };
