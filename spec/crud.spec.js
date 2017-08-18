@@ -580,6 +580,46 @@ describe('Test crud', function() {
       }).to.throw("This object " + person.id + " is not available.");
     });
 
+    it('should get referencing classes', function() {
+      var refs = personType.getReferencing(db);
+      expect(refs).to.be.instanceof(Map);
+
+      var array = Array.from(refs);
+      expect(array).to.have.a.lengthOf(3);
+      expect(array.map(function (i) {
+        return [i[0].name, Array.from(i[1])];
+      })).to.eql([
+        ['Person', ['sister', 'child']],
+        ['Child',  ['mother', 'aunt', 'father', 'listSiblings', 'setSiblings', 'mapSiblings']],
+        ['Street', ['neighbor']]
+      ]);
+    });
+
+    it('should get referencing objects', function() {
+      var underTest = new db.Person();
+      var p1 = new db.Person();
+      var p2 = new db.Child();
+      var p3 = new db.Child();
+      p1.sister = underTest;
+      p2.listSiblings = [underTest];
+      p3.setSiblings = new Set([underTest]);
+
+      return Promise.all([underTest.save(), p1.save(), p2.save(), p3.save()]).then(function() {
+        var p = underTest.getReferencing();
+        expect(p).to.be.instanceof(Promise);
+
+        return p;
+      }).then((refs) => {
+        expect(refs).to.be.instanceof(Array);
+        expect(refs).to.have.a.lengthOf(3);
+        expect(refs[0] === p1).to.be.true;
+        expect(refs[1] === p3).to.be.true;
+        expect(refs[2] === p2).to.be.true;
+
+        return p1.getReferencing();
+      });
+    });
+
     it('should retrieved same version in same db context', function() {
       var p1 = db.Person.load(person.id);
       var p2 = db.Person.load(person.id);
