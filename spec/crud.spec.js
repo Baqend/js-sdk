@@ -639,7 +639,7 @@ describe('Test crud', function() {
         expect(p).to.be.instanceof(Promise);
 
         return p;
-      }).then((refs) => {
+      }).then(function (refs) {
         expect(refs).to.be.instanceof(Array);
         expect(refs).to.have.a.lengthOf(4);
         expect(refs).to.include(p1);
@@ -648,7 +648,7 @@ describe('Test crud', function() {
         expect(refs).to.include(p4);
 
         return underTest.getReferencing({ classes: ['/db/Street'] });
-      }).then((refs) => {
+      }).then(function (refs) {
         expect(refs).to.be.instanceof(Array);
         expect(refs).to.have.a.lengthOf(1);
         expect(refs).to.not.include(p1);
