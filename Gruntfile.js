@@ -4,7 +4,7 @@ module.exports = function (grunt) {
   var banner = '/*! <%= pkg.name %> <%= pkg.version %> | <%= copyright %> | <%= pkg.license %> */\n';
   var longBanner = grunt.file.read('tpl/banner.tpl');
 
-  const TEST = 'spec/**/*.spec.js';
+  var TEST = 'spec/**/*.spec.js';
 
   var browserifyOptions = {
     builtins: [],
@@ -41,7 +41,7 @@ module.exports = function (grunt) {
 
       debug: {
         files: {
-          'build/baqend.js': ['realtime/index.js'],
+          'build/baqend.js': ['realtime/index.js']
         },
         options: {
           watch: true,
@@ -55,8 +55,7 @@ module.exports = function (grunt) {
 
       test: {
         files: {
-          // 'build/baqend.js': ['realtime/index.js'],
-          'build/specs.js': 'spec/*.js',
+          'build/baqend.js': ['realtime/index.js']
         }
       },
 
@@ -128,7 +127,6 @@ module.exports = function (grunt) {
     mochaTest: {
       test: {
         options: {
-          require: 'ts-node/register',
           reporter: 'mocha-jenkins-reporter',
           quiet: true,
           reporterOptions: {
