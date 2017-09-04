@@ -1,3 +1,15 @@
+<a name="v2.8.3"></a>
+# v2.8.3 (2017-9-4)
+
+
+### Bug Fixes
+
+* Small fixes in typings
+
+### Features
+
+* Implement Entity#getReferencing() to query reversed references
+
 <a name="v2.8.2"></a>
 # v2.8.2 (2017-7-17)
 
