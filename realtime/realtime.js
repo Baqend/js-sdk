@@ -1,4 +1,4 @@
-module.exports = exports = require('../lib/baqend');
+module.exports = exports = require('baqend');
 
 exports.Observable = require('./observable');
 exports.EntityManagerFactory = require('./EntityManagerFactory');

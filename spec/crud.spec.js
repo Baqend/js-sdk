@@ -589,13 +589,16 @@ describe('Test crud', function() {
 
       array = Array.from(refs);
       expect(array).to.have.a.lengthOf(3);
-      expect(array.map(function (i) {
-        return [i[0].name, Array.from(i[1])];
-      })).to.eql([
-        ['Person', ['sister', 'child']],
-        ['Child',  ['mother', 'aunt', 'father', 'listSiblings', 'setSiblings', 'mapSiblings']],
-        ['Street', ['neighbor']]
-      ]);
+
+      var obj = {};
+      array.forEach(function (i) {
+        obj[i[0].name] = Array.from(i[1]);
+      });
+      expect(obj).to.eql({
+        Person: ['sister', 'child'],
+        Child:  ['mother', 'aunt', 'father', 'listSiblings', 'setSiblings', 'mapSiblings'],
+        Street: ['neighbor']
+      });
 
       // Test with class filter and inheritance
       refs = personType.getReferencing(db, { classes: ['/db/Child'] });
@@ -603,12 +606,14 @@ describe('Test crud', function() {
 
       array = Array.from(refs);
       expect(array).to.have.a.lengthOf(2);
-      expect(array.map(function (i) {
-        return [i[0].name, Array.from(i[1])];
-      })).to.eql([
-        ['Person', ['sister', 'child']],
-        ['Child',  ['mother', 'aunt', 'father', 'listSiblings', 'setSiblings', 'mapSiblings']]
-      ]);
+      obj = {};
+      array.forEach(function (i) {
+        obj[i[0].name] = Array.from(i[1]);
+      });
+      expect(obj).to.eql({
+        Person: ['sister', 'child'],
+        Child: ['mother', 'aunt', 'father', 'listSiblings', 'setSiblings', 'mapSiblings']
+      });
 
       // Test with class filter and no inheritance
       refs = personType.getReferencing(db, { classes: ['/db/Street'] });
@@ -616,11 +621,13 @@ describe('Test crud', function() {
 
       array = Array.from(refs);
       expect(array).to.have.a.lengthOf(1);
-      expect(array.map(function (i) {
-        return [i[0].name, Array.from(i[1])];
-      })).to.eql([
-        ['Street', ['neighbor']]
-      ]);
+      obj = {};
+      array.forEach(function (i) {
+        obj[i[0].name] = Array.from(i[1]);
+      });
+      expect(obj).to.eql({
+        Street: ['neighbor']
+      });
     });
 
     it('should get referencing objects', function() {
