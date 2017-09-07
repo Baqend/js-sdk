@@ -8,3 +8,5 @@
 /index.d.ts
 .DS_Store
 *.iml
+
+.watchmanconfig
