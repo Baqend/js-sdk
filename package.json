@@ -18,6 +18,14 @@
     "./realtime/connector/websocket.js": "./realtime/connector/websocket-browser.js",
     "./lib/connector/NodeConnector": false
   },
+  "react-native": {
+    "./index.js": "./index.js",
+    "./realtime.js": "./realtime.js",
+    "./lib/util/atob.js": "./lib/util/atob-rn.js",
+    "./lib/util/is-node.js": "./lib/util/is-node-browser.js",
+    "./lib/util/hmac.js": "./lib/util/hmac-browser.js",
+    "./lib/util/transform.js": "./lib/util/transform-rn.js"
+  },
   "typings": "index.d.ts",
   "dependencies": {
     "commander": "^2.9.0",
