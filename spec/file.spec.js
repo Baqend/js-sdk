@@ -794,12 +794,27 @@ describe('Test file', function() {
     });
 
     beforeEach(function() {
-      uploadFile = new rootDb.File({name: fileName, data: flames});
+      uploadFile = new rootDb.File({name: 'test/' + fileName, data: flames});
       return uploadFile.upload({force: true});
     });
 
     it('should remove file', function() {
       return uploadFile.delete().then(function() {
+        var file = new rootDb.File(uploadFile.id);
+        return file.download();
+      }).then(function(data) {
+        expect(data).be.null;
+      });
+    });
+
+    it('should remove a removed file', function() {
+      var parent = new rootDb.File("/file" + uploadFile.parent + '/');
+      expect(parent.name).be.equal('test/');
+
+      return parent.delete().then(function(files) {
+        expect(files).length(1);
+        expect(files[0].id).equal(uploadFile.id);
+
         var file = new rootDb.File(uploadFile.id);
         return file.download();
       }).then(function(data) {
