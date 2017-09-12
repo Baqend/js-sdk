@@ -1,3 +1,11 @@
+<a name="v2.8.4"></a>
+# v2.8.4 (2017-9-12)
+
+
+### Bug Fixes
+
+* Support deletion of file folders
+
 <a name="v2.8.3"></a>
 # v2.8.3 (2017-9-4)
 
