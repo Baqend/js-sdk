@@ -790,11 +790,11 @@ describe('Test file', function() {
     var fileName;
 
     before(function() {
-      fileName = rootDb.util.uuid()
+      fileName = 'test/' + rootDb.util.uuid()
     });
 
     beforeEach(function() {
-      uploadFile = new rootDb.File({name: 'test/' + fileName, data: flames});
+      uploadFile = new rootDb.File({name: fileName, data: flames});
       return uploadFile.upload({force: true});
     });
 
