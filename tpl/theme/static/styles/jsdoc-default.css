@@ -230,6 +230,83 @@ h6
 }
 
 /* quickfixes */
+#nav {
+  padding-right: 0;
+}
+h1, h2, h3, h4, h5, h6 {
+  color: inherit;
+}
+a {
+  color: #297dd1;
+}
+body {
+  font-size: 16px;
+  line-height: 1.5;
+}
+@media(min-width: 992px) {
+  #main {
+    padding-left: 245px;
+  }
+}
+@media(min-width: 1200px) {
+  #main {
+    padding-left: 295px;
+  }
+}
+.content {
+  background: white;
+  border: 1px solid #e8e8e8;
+  border-radius: 3px;
+  padding-left: 32px;
+  padding-right: 32px;
+}
+#page-content {
+  overflow: hidden;
+}
+
+.bs-sidebar {
+  z-index: 1;
+}
+.bs-sidenav {
+  font-size: 18px;
+  z-index: 1;
+}
+
+.bs-sidebar .nav .nav>li>a {
+  padding-top: 5px;
+  padding-bottom: 5px;
+  color: #666;
+}
+
+pre {
+  background-color: #f9f9f9;
+  border: 1px solid #e8e8e8;
+  font-size: 16px;
+}
+
+.note, .tip, .warning, pre {
+  margin-top: 24px;
+  margin-bottom: 32px;
+}
+
+.note, .tip, .warning {
+  border: none;
+}
+.note strong, .tip strong, .warning strong {
+  font-size: 17px;
+}
+.note strong::before, .tip strong::before, .warning strong::before {
+  display: none;
+}
+.note {
+  background-color: #e8f4fa;
+}
+.tip {
+  background-color: #ebf6e7;
+}
+.getting-started-list {
+  padding-left: 24px;
+}
 @media (min-width: 1200px) {
   .container {
     width: 100%;
