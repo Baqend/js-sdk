@@ -235,8 +235,11 @@ h6
 }
 
 /* quickfixes */
-.container {
-  width: 1300px;
+@media (min-width: 1200px) {
+  .container {
+    width: 100%;
+    max-width: 1300px;
+  }
 }
 .content {
   padding-top: 16px;
