@@ -41,10 +41,8 @@ section
 }
 
 footer {
+    margin-top: 32px;
     display: block;
-    padding: 6px;
-    margin-top: 12px;
-    font-style: italic;
     font-size: 90%;
 }
 
@@ -360,10 +358,6 @@ article dd {
   float: left;
   margin-left: 8px;
   padding-bottom: 16px;
-}
-
-footer {
-  margin-top: 32px;
 }
 
 .filter {

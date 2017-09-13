@@ -4,8 +4,11 @@ var self = this;
 ?>
 
 <?js if (data.kind === 'package') { ?>
-    <h3><?js= data.name ?> <?js= data.version ?></h3>
+    <h2 style="margin-left: 0"><?js= data.name ?> <?js= data.version ?></h2>
+    <p>To install, embed our CDN-hosted Baqend SDK script into your page.</p>
+    <pre>&lt;script src="//www.baqend.com/js-sdk/<?js= data.version ?>/baqend.min.js"&gt;&lt;/script&gt;</pre>
 <?js } ?>
+
 
 <?js if (data.readme) { ?>
     <section>
