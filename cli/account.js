@@ -35,6 +35,10 @@ function getArgsCredentials(args) {
     return Promise.resolve([args.username, args.password]);
   }
 
+  if (isCustomHost) {
+    return Promise.resolve(['root', 'root']);
+  }
+
   return null;
 }
 
