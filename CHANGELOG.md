@@ -1,3 +1,31 @@
+<a name="v2.8.5"></a>
+# v2.8.5 (2017-9-13)
+
+
+### Other
+
+* New docs styling
+
+<a name="v2.8.4"></a>
+# v2.8.4 (2017-9-12)
+
+
+### Bug Fixes
+
+* Support deletion of file folders
+
+<a name="v2.8.3"></a>
+# v2.8.3 (2017-9-4)
+
+
+### Bug Fixes
+
+* Small fixes in typings
+
+### Features
+
+* Implement Entity#getReferencing() to query reversed references
+
 <a name="v2.8.2"></a>
 # v2.8.2 (2017-7-17)
 

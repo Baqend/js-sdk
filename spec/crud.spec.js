@@ -580,6 +580,91 @@ describe('Test crud', function() {
       }).to.throw("This object " + person.id + " is not available.");
     });
 
+    it('should get referencing classes', function() {
+      var refs, array;
+
+      // Test w/o class filter
+      refs = personType.getReferencing(db);
+      expect(refs).to.be.instanceof(Map);
+
+      array = Array.from(refs);
+      expect(array).to.have.a.lengthOf(3);
+
+      var obj = {};
+      array.forEach(function (i) {
+        obj[i[0].name] = Array.from(i[1]);
+      });
+      expect(obj).to.eql({
+        Person: ['sister', 'child'],
+        Child:  ['mother', 'aunt', 'father', 'listSiblings', 'setSiblings', 'mapSiblings'],
+        Street: ['neighbor']
+      });
+
+      // Test with class filter and inheritance
+      refs = personType.getReferencing(db, { classes: ['/db/Child'] });
+      expect(refs).to.be.instanceof(Map);
+
+      array = Array.from(refs);
+      expect(array).to.have.a.lengthOf(2);
+      obj = {};
+      array.forEach(function (i) {
+        obj[i[0].name] = Array.from(i[1]);
+      });
+      expect(obj).to.eql({
+        Person: ['sister', 'child'],
+        Child: ['mother', 'aunt', 'father', 'listSiblings', 'setSiblings', 'mapSiblings']
+      });
+
+      // Test with class filter and no inheritance
+      refs = personType.getReferencing(db, { classes: ['/db/Street'] });
+      expect(refs).to.be.instanceof(Map);
+
+      array = Array.from(refs);
+      expect(array).to.have.a.lengthOf(1);
+      obj = {};
+      array.forEach(function (i) {
+        obj[i[0].name] = Array.from(i[1]);
+      });
+      expect(obj).to.eql({
+        Street: ['neighbor']
+      });
+    });
+
+    it('should get referencing objects', function() {
+      var underTest = new db.Person();
+      var p1 = new db.Person();
+      var p2 = new db.Child();
+      var p3 = new db.Child();
+      var p4 = new db.Street();
+      p1.sister = underTest;
+      p2.listSiblings = [underTest];
+      p3.setSiblings = new Set([underTest]);
+      p4.neighbor = underTest;
+
+      return Promise.all([underTest.save(), p1.save(), p2.save(), p3.save(), p4.save()]).then(function() {
+        var p = underTest.getReferencing();
+        expect(p).to.be.instanceof(Promise);
+
+        return p;
+      }).then(function (refs) {
+        expect(refs).to.be.instanceof(Array);
+        expect(refs).to.have.a.lengthOf(4);
+        expect(refs).to.include(p1);
+        expect(refs).to.include(p2);
+        expect(refs).to.include(p3);
+        expect(refs).to.include(p4);
+
+        return underTest.getReferencing({ classes: ['/db/Street'] });
+      }).then(function (refs) {
+        expect(refs).to.be.instanceof(Array);
+        expect(refs).to.have.a.lengthOf(1);
+        expect(refs).to.not.include(p1);
+        expect(refs).to.not.include(p2);
+        expect(refs).to.not.include(p3);
+        expect(refs).to.include(p4);
+      });
+    });
+
     it('should retrieved same version in same db context', function() {
       var p1 = db.Person.load(person.id);
       var p2 = db.Person.load(person.id);

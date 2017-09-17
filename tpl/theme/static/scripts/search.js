@@ -77,9 +77,9 @@ require([
     search();
   }
 
-  $searchInput.addEventListener('mouseover', function () {
-    $searchInput.focus();
-  });
+  // $searchInput.addEventListener('mouseover', function () {
+  //   $searchInput.focus();
+  // });
 
   $searchInput.addEventListener('keyup', function (event) {
     // Focus first result on arrow down

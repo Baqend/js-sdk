@@ -790,7 +790,7 @@ describe('Test file', function() {
     var fileName;
 
     before(function() {
-      fileName = rootDb.util.uuid()
+      fileName = 'test/' + rootDb.util.uuid()
     });
 
     beforeEach(function() {
@@ -800,6 +800,21 @@ describe('Test file', function() {
 
     it('should remove file', function() {
       return uploadFile.delete().then(function() {
+        var file = new rootDb.File(uploadFile.id);
+        return file.download();
+      }).then(function(data) {
+        expect(data).be.null;
+      });
+    });
+
+    it('should remove a removed file', function() {
+      var parent = new rootDb.File("/file" + uploadFile.parent + '/');
+      expect(parent.name).be.equal('test/');
+
+      return parent.delete().then(function(files) {
+        expect(files).length(1);
+        expect(files[0].id).equal(uploadFile.id);
+
         var file = new rootDb.File(uploadFile.id);
         return file.download();
       }).then(function(data) {
