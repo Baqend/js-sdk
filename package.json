@@ -24,7 +24,8 @@
     "./lib/util/atob.js": "./lib/util/atob-rn.js",
     "./lib/util/is-node.js": "./lib/util/is-node-browser.js",
     "./lib/util/hmac.js": "./lib/util/hmac-browser.js",
-    "./lib/util/transform.js": "./lib/util/transform-rn.js"
+    "./lib/util/transform.js": "./lib/util/transform-rn.js",
+    "./lib/connector/XMLHttpConnector": "./lib/connector/FalseConnector.js"
   },
   "typings": "index.d.ts",
   "dependencies": {
