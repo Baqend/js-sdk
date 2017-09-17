@@ -6,3 +6,4 @@
 /tpl
 *.iml
 .DS_Store
+.babelrc
