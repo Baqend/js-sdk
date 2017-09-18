@@ -1,3 +1,16 @@
+<a name="v2.8.6"></a>
+# v2.8.6 (2017-9-18)
+
+
+### Features
+
+* Fixed compability with React Native
+* Add experimental FetchConnector
+
+### Bug Fixes
+
+* Fix search in documentation
+
 <a name="v2.8.5"></a>
 # v2.8.5 (2017-9-13)
 
