@@ -16,7 +16,8 @@
     "./lib/util/is-node.js": "./lib/util/is-node-browser.js",
     "./lib/util/hmac.js": "./lib/util/hmac-browser.js",
     "./realtime/connector/websocket.js": "./realtime/connector/websocket-browser.js",
-    "./lib/connector/NodeConnector": false
+    "./lib/connector/NodeConnector": false,
+    "./lib/connector/FetchConnector": false
   },
   "react-native": {
     "./index.js": "./index.js",
@@ -24,8 +25,9 @@
     "./lib/util/atob.js": "./lib/util/atob-rn.js",
     "./lib/util/is-node.js": "./lib/util/is-node-browser.js",
     "./lib/util/hmac.js": "./lib/util/hmac-browser.js",
-    "./lib/util/transform.js": "./lib/util/transform-rn.js",
-    "./lib/connector/XMLHttpConnector": "./lib/connector/FalseConnector.js"
+    "./lib/connector/XMLHttpConnector": false,
+    "./lib/connector/IFrameConnector": false,
+    "./lib/connector/FetchConnector": "./lib/connector/FetchConnector.js"
   },
   "typings": "index.d.ts",
   "dependencies": {
