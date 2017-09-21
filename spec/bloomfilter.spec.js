@@ -97,11 +97,29 @@ describe('Test Bloomfilter', function() {
   it('should correctly implement Murmur3', function() {
     var test1 = "Erik";
     var test2 = "Witt";
+    var test3 = "Hello World";
+    var test4 = "demo";
+    var test5 = "demoo";
+    var test6 = "Lorem ipsum dolor sit amet";
 
     expect(BloomFilter._murmur3(0, test1)).equal(3050897767);
     expect(BloomFilter._murmur3(0, test2)).equal(545263713);
+    expect(BloomFilter._murmur3(0, test3)).equal(427197390);
+    expect(BloomFilter._murmur3(0, test4)).equal(2714225050);
+    expect(BloomFilter._murmur3(0, test5)).equal(1838221292);
+    expect(BloomFilter._murmur3(0, test6)).equal(875169970);
+    expect(BloomFilter._murmur3(42, test1)).equal(3678409999);
+    expect(BloomFilter._murmur3(42, test2)).equal(3132235112);
+    expect(BloomFilter._murmur3(42, test3)).equal(1233774035);
+    expect(BloomFilter._murmur3(42, test4)).equal(2755392248);
+    expect(BloomFilter._murmur3(42, test5)).equal(3694137869);
+    expect(BloomFilter._murmur3(42, test6)).equal(4206322987);
     expect(BloomFilter._murmur3(666, test1)).equal(3471908579);
     expect(BloomFilter._murmur3(666, test2)).equal(2040362262);
+    expect(BloomFilter._murmur3(666, test3)).equal(1460628018);
+    expect(BloomFilter._murmur3(666, test4)).equal(3836085620);
+    expect(BloomFilter._murmur3(666, test5)).equal(244294033);
+    expect(BloomFilter._murmur3(666, test6)).equal(688456789);
     expect(BloomFilter._getHashes(test1, 10000, 5)).eqls([7767, 415, 3063, 5711, 8359]);
   });
 
