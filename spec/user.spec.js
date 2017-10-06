@@ -436,6 +436,21 @@ describe('Test user and roles', function() {
           expect(sessionStorage.getItem('BAT:' + db._connector.origin)).be.not.ok;
         });
       });
+
+      it('should remove token after logout', function() {
+        var username =  helper.makeLogin();
+        var user = new DB.User({ username: username});
+        return DB.User.register(user, 'secret').then(function() {
+          expect(DB.User.me).be.ok;
+          expect(localStorage.getItem('BAT:' + db._connector.origin)).be.ok;
+          return DB.User.logout();
+        }).then(function() {
+          expect(DB.User.me).be.null;
+          expect(DB.token).be.null;
+          expect(localStorage.getItem('BAT:' + db._connector.origin)).be.not.ok;
+          expect(sessionStorage.getItem('BAT:' + db._connector.origin)).be.not.ok;
+        });
+      });
     }
   });
 
