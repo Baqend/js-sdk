@@ -101,7 +101,7 @@ class Stream {
     });
   }
 
-  static streamObservable(entityManager, query, options, mapper, retryInterval) {
+  static streamObservable(entityManager, query, options, mapper) {
     options = Stream.parseOptions(options);
     let id = uuid();
 
@@ -147,19 +147,26 @@ class Stream {
     return new lib.Observable(observer => {
       if (!subscription) {
         let remainingRetries = options.reconnects;
+        let backoff = 1;
         const subscriptionObserver = {
           next(msg) {
-            observers.forEach(o => o.next(msg))
+            //reset the backoff if we get a message
+            backoff = 1;
+            observers.forEach(o => o.next(msg));
           },
           error(e) {
-            observers.forEach(o => o.error(e))
+            observers.forEach(o => o.error(e));
           },
           complete() {
             if (remainingRetries !== 0) {
               remainingRetries = remainingRetries < 0 ? -1 : remainingRetries - 1;
-              subscription = observable.subscribe(subscriptionObserver);
+              backoff = backoff << 1;
+
+              setTimeout(() => {
+                subscription = observable.subscribe(subscriptionObserver);
+              }, backoff * 1000);
             } else {
-              observers.forEach(o => o.complete())
+              observers.forEach(o => o.complete());
             }
           }
         };
