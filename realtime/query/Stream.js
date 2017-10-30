@@ -160,11 +160,12 @@ class Stream {
           complete() {
             if (remainingRetries !== 0) {
               remainingRetries = remainingRetries < 0 ? -1 : remainingRetries - 1;
-              backoff = backoff << 1;
 
               setTimeout(() => {
                 subscription = observable.subscribe(subscriptionObserver);
               }, backoff * 1000);
+
+              backoff = backoff << 1;
             } else {
               observers.forEach(o => o.complete());
             }

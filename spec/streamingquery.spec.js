@@ -1552,7 +1552,7 @@ describe("Streaming Queries", function() {
   });
 
   it("should resume resultStream after disconnect", function() {
-    this.timeout(6000);
+    this.timeout(10000);
 
     var result, otherResult;
     var completions = 0, otherCompletions = 0, errors = 0, otherErrors = 0;
@@ -1593,7 +1593,7 @@ describe("Streaming Queries", function() {
       expect(websocket.socket).to.be.ok;
       websocket.close();
       expect(websocket.socket).to.be.not.ok;
-      return helper.sleep(t);
+      return helper.sleep(2000);
     }).then(function() {
       expect(websocket.socket).to.be.ok;
       expect(result.length).to.be.equal(1);
@@ -1614,7 +1614,7 @@ describe("Streaming Queries", function() {
   });
 
   it("should resume resultStream specific number of times after disconnect", function() {
-    this.timeout(10000);
+    this.timeout(15000);
 
     var result, otherResult;
     var completions = 0, otherCompletions = 0, errors = 0, otherErrors = 0;
@@ -1639,7 +1639,7 @@ describe("Streaming Queries", function() {
     query = db[bucket].find().matches('name', /^reconnection count test/)
         .ascending('name')
         .descending('active')
-        .limit(8)
+        .limit(8);
     subscription = query.resultStream({reconnects: 2}, onNext, onError, onComplete);
     otherSubscription = query.resultStream({reconnects: 0}, onOtherNext, onOtherError, onOtherComplete);
 
@@ -1656,7 +1656,7 @@ describe("Streaming Queries", function() {
       expect(websocket.socket).to.be.ok;
       websocket.close();
       expect(websocket.socket).to.be.not.ok;
-      return helper.sleep(t);
+      return helper.sleep(2000);
     }).then(function() {
       expect(websocket.socket).to.be.ok;
       expect(result.length).to.be.equal(1);
@@ -1673,7 +1673,7 @@ describe("Streaming Queries", function() {
       expect(websocket.socket).to.be.ok;
       websocket.close();
       expect(websocket.socket).to.be.not.ok;
-      return helper.sleep(t);
+      return helper.sleep(2000);
     }).then(function() {
       expect(websocket.socket).to.be.ok;
       expect(result.length).to.be.equal(2);
@@ -1688,7 +1688,7 @@ describe("Streaming Queries", function() {
       expect(websocket.socket).to.be.ok;
       websocket.close();
       expect(websocket.socket).to.be.not.ok;
-      return helper.sleep(t);
+      return helper.sleep(2000);
     }).then(function() {
       expect(result.length).to.be.equal(3);
       expect(otherResult.length).to.be.equal(1);
