@@ -99,7 +99,7 @@
     "phantomjs-prebuilt": "^2.1.12",
     "shelljs": "^0.7.4",
     "through2": "^2.0.1",
-    "typescript": "^2.5.0",
+    "typescript": "~2.5.0",
     "uglify-js": "^2.7.3"
   },
   "scripts": {
