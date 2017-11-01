@@ -60,7 +60,7 @@ function typingsFromMetamodel(metamodel) {
   for (let key of Object.keys(metamodel.entities)) {
     let entity = metamodel.entities[key];
 
-    if (entity.name.startsWith('logs.') || entity.name == 'Object')
+    if (entity.name.indexOf('.') !== -1 || entity.name == 'Object')
       continue;
 
     let isNative = nativeTypes.indexOf(entity.name) != -1;
@@ -74,6 +74,9 @@ function typingsFromMetamodel(metamodel) {
 
   for (let key of Object.keys(metamodel.embeddables)) {
     let embeddable = metamodel.embeddables[key];
+
+    if (embeddable.name.indexOf('.') !== -1)
+      continue;
 
     module.push(`    ${embeddable.name}: binding.ManagedFactory<model.${embeddable.name}>;`)
 
