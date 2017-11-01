@@ -1,3 +1,12 @@
+<a name="v2.8.7"></a>
+# v2.8.7 (2017-11-1)
+
+
+### Bug Fixes
+
+* Fix realtime reconnect was not using a backoff
+* Ignore classes with namespaces in typing generation
+
 <a name="v2.8.6"></a>
 # v2.8.6 (2017-9-18)
 
