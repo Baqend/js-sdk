@@ -75,14 +75,14 @@ describe('Test Partial Updates', function () {
       var pub = p0.partialUpdate();
 
       expect(pub).to.be.an.instanceof(DB.partialupdate.EntityPartialUpdateBuilder);
-      expect(pub._entity).to.equal(p0);
+      expect(pub.entity).to.equal(p0);
     });
 
     it('should create an entity factory partial update builder', function() {
       var pub = db.PartialUpdatePerson.partialUpdate(p0.key);
 
       expect(pub).to.be.an.instanceof(DB.partialupdate.EntityPartialUpdateBuilder);
-      expect(pub._entity.id).to.equal(p0.id);
+      expect(pub.entity.id).to.equal(p0.id);
     });
 
     it('provides an initializer for partial updates', function() {

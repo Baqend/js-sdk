@@ -51,10 +51,10 @@ Node.prototype._createRealTimeQuery = function() {
 
   const query = {
     bucket: type.name,
-    query: this._serializeQuery()
+    query: this.serializeQuery()
   };
 
-  const sort = this._serializeSort();
+  const sort = this.serializeSort();
   if (sort && sort != '{}') {
     query.sort = sort;
   }
