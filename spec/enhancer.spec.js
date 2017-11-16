@@ -151,7 +151,7 @@ describe("Test enhancer", function() {
   it('should add metadata object', function() {
     var testClass = new db.TestClass();
 
-    expect(testClass._metadata).be.ok;
+    expect(testClass.metadata).be.ok;
   });
 
   it("enhanced objects should be enumarable", function() {
@@ -205,7 +205,7 @@ describe("Test enhancer", function() {
     var json = testClass.toJSON();
     expect(json).be.ok;
     expect(json.testValue).eqls(5);
-    expect(json._metadata).be.undefined;
+    expect(json.metadata).be.undefined;
   });
 
   it('should convert metadata to JSON if serialized by JSON.stringify', function() {
@@ -215,7 +215,7 @@ describe("Test enhancer", function() {
     var json = JSON.parse(jsonString);
     expect(json.obj).be.ok;
     expect(json.obj.testValue).eqls(5);
-    expect(json._metadata).be.undefined;
+    expect(json.metadata).be.undefined;
   });
 
   it('should convert embedded to JSON', function() {
@@ -224,7 +224,7 @@ describe("Test enhancer", function() {
     var json = testClass.toJSON();
     expect(json).be.ok;
     expect(json.value).eqls(5);
-    expect(json._metadata).be.undefined;
+    expect(json.metadata).be.undefined;
   });
 
   it('should convert embedded member to JSON', function() {
@@ -236,7 +236,7 @@ describe("Test enhancer", function() {
     var json = testClass.embedded.toJSON();
     expect(json).be.ok;
     expect(json.value).eqls(5);
-    expect(json._metadata).be.undefined;
+    expect(json.metadata).be.undefined;
   });
 
   it('should convert to JSON including metadata', function() {
@@ -247,7 +247,7 @@ describe("Test enhancer", function() {
     var json = testClass.toJSON();
     expect(json).be.ok;
     expect(json.testValue).eqls(testClass.testValue);
-    expect(json._metadata).be.undefined;
+    expect(json.metadata).be.undefined;
     expect(json.id).be.ok;
     expect(json.acl).be.ok;
   });
@@ -260,7 +260,7 @@ describe("Test enhancer", function() {
     var json = testClass.toJSON(true);
     expect(json).be.ok;
     expect(json.testValue).equal(testClass.testValue);
-    expect(json._metadata).be.undefined;
+    expect(json.metadata).be.undefined;
     expect(json.id).be.undefined;
     expect(json.acl).be.undefined;
   });

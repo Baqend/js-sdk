@@ -90,7 +90,7 @@ module.exports.openApp = function(app) {
     return opn(`https://${app}.app.baqend.com`)
   } else {
     return login({}).then(db => {
-      opn(`https://${db._connector.host}`);
+      opn(`https://${db.connector.host}`);
     }).catch(e => console.log(e.message || e));
   }
 };

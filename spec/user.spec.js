@@ -50,8 +50,8 @@ describe('Test user and roles', function() {
         expect(user instanceof DB.binding.User).be.true;
         expect(user.id).be.ok;
         expect(user.version).be.ok;
-        expect(user._metadata.isPersistent).be.true;
-        expect(user._metadata.isDirty).be.false;
+        expect(user.metadata.isPersistent).be.true;
+        expect(user.metadata.isDirty).be.false;
         expect(user.username).equals(login);
         expect(user.password).be.undefined;
         expect(user).equals(db.User.me);
@@ -125,8 +125,8 @@ describe('Test user and roles', function() {
         expect(user instanceof DB.binding.User).be.true;
         expect(user.id).be.ok;
         expect(user.version).be.ok;
-        expect(user._metadata.isPersistent).be.true;
-        expect(user._metadata.isDirty).be.false;
+        expect(user.metadata.isPersistent).be.true;
+        expect(user.metadata.isDirty).be.false;
         expect(user.username).equals(login);
         expect(user.password).be.undefined;
         expect(user).equals(db.User.me);
@@ -399,8 +399,8 @@ describe('Test user and roles', function() {
         var user = new DB.User({ username: helper.makeLogin()});
         return DB.User.register(user, 'secret', false).then(function(u) {
           expect(u.username).eqls(user.username);
-          expect(localStorage.getItem('BAT:' + db._connector.origin)).be.not.ok;
-          expect(sessionStorage.getItem('BAT:' + db._connector.origin)).be.ok;
+          expect(localStorage.getItem('BAT:' + db.connector.origin)).be.not.ok;
+          expect(sessionStorage.getItem('BAT:' + db.connector.origin)).be.ok;
         });
       });
 
@@ -408,8 +408,8 @@ describe('Test user and roles', function() {
         var user = new DB.User({ username: helper.makeLogin()});
         return DB.User.register(user, 'secret', true).then(function(u) {
           expect(u.username).eqls(user.username);
-          expect(localStorage.getItem('BAT:' + db._connector.origin)).be.ok;
-          expect(sessionStorage.getItem('BAT:' + db._connector.origin)).be.not.ok;
+          expect(localStorage.getItem('BAT:' + db.connector.origin)).be.ok;
+          expect(sessionStorage.getItem('BAT:' + db.connector.origin)).be.not.ok;
         });
       });
 
@@ -420,8 +420,8 @@ describe('Test user and roles', function() {
           return DB.User.login(username, 'secret', false);
         }).then(function(u) {
           expect(u.username).eqls(user.username);
-          expect(localStorage.getItem('BAT:' + db._connector.origin)).be.not.ok;
-          expect(sessionStorage.getItem('BAT:' + db._connector.origin)).be.ok;
+          expect(localStorage.getItem('BAT:' + db.connector.origin)).be.not.ok;
+          expect(sessionStorage.getItem('BAT:' + db.connector.origin)).be.ok;
         });
       });
 
@@ -432,8 +432,8 @@ describe('Test user and roles', function() {
           return DB.User.login(username, 'secret', true);
         }).then(function(u) {
           expect(u.username).eqls(user.username);
-          expect(localStorage.getItem('BAT:' + db._connector.origin)).be.ok;
-          expect(sessionStorage.getItem('BAT:' + db._connector.origin)).be.not.ok;
+          expect(localStorage.getItem('BAT:' + db.connector.origin)).be.ok;
+          expect(sessionStorage.getItem('BAT:' + db.connector.origin)).be.not.ok;
         });
       });
 
@@ -442,13 +442,13 @@ describe('Test user and roles', function() {
         var user = new DB.User({ username: username});
         return DB.User.register(user, 'secret').then(function() {
           expect(DB.User.me).be.ok;
-          expect(localStorage.getItem('BAT:' + db._connector.origin)).be.ok;
+          expect(localStorage.getItem('BAT:' + db.connector.origin)).be.ok;
           return DB.User.logout();
         }).then(function() {
           expect(DB.User.me).be.null;
           expect(DB.token).be.null;
-          expect(localStorage.getItem('BAT:' + db._connector.origin)).be.not.ok;
-          expect(sessionStorage.getItem('BAT:' + db._connector.origin)).be.not.ok;
+          expect(localStorage.getItem('BAT:' + db.connector.origin)).be.not.ok;
+          expect(sessionStorage.getItem('BAT:' + db.connector.origin)).be.not.ok;
         });
       });
     }

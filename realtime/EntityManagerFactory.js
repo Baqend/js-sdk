@@ -6,12 +6,12 @@ const WebSocketConnector = require('./connector/WebSocketConnector');
 Object.defineProperty(EntityManagerFactory.prototype, 'websocket', {
   get() {
     if (!this._websocket) {
-      const secure = this._connector.secure;
+      const secure = this.connector.secure;
       let url;
       if (this._connectData.websocket) {
         url = (secure? 'wss:': 'ws:') + this._connectData.websocket;
       } else {
-        url = this._connector.origin.replace(/^http/, 'ws') + this._connector.basePath + '/events';
+        url = this.connector.origin.replace(/^http/, 'ws') + this.connector.basePath + '/events';
       }
       this._websocket = WebSocketConnector.create(url);
     }
