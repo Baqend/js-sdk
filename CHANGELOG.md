@@ -1,3 +1,11 @@
+<a name="v2.9.0"></a>
+# v2.9.0 (2017-11-16)
+
+
+### Features
+
+* Add a new progress which allows changing the username when E-Mail verification is enabled
+
 <a name="v2.8.7"></a>
 # v2.8.7 (2017-11-1)
 
