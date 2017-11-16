@@ -285,6 +285,19 @@ describe('Test user and roles', function() {
     it('should not be allowed to register with an empty password', function() {
       return expect(db.User.register(helper.makeLogin(), "")).be.rejected;
     });
+
+    it('should fail change username with email verification disabled', function () {
+      const login = helper.makeLogin().concat("@baqend.com");
+      const newLogin = helper.makeLogin().concat("@baqend.com");
+      return db.User.register(login, "secret").then(function () {
+        return db.User.logout();
+      }).then(function () {
+        return db.User.login("root", "root");
+      }).then(function () {
+        expect(db.me.username).eqls("root");
+        return expect(db.User.changeUsername(login, newLogin, "secret")).be.rejectedWith("Email verification not enabled")
+      })
+    });
   });
 
   describe('on global DB', function() {
@@ -317,6 +330,19 @@ describe('Test user and roles', function() {
         expect(DB.User.me).be.null;
         expect(DB.token).be.null;
       });
+    });
+
+    it('should fail change username with email verification disabled', function () {
+      const login = helper.makeLogin().concat("@baqend.com");
+      const newLogin = helper.makeLogin().concat("@baqend.com");
+      return db.User.register(login, "secret").then(function () {
+        return db.User.logout();
+      }).then(function () {
+        return db.User.login("root", "root");
+      }).then(function () {
+        expect(db.me.username).eqls("root");
+        return expect(db.User.me.changeUsername(newLogin, "secret")).be.rejectedWith("Email verification not enabled");
+      })
     });
 
     it('should remove token if token is invalid', function() {
