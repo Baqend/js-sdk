@@ -119,6 +119,22 @@ describe('Test Partial Updates', function () {
       }).to.not.throw();
     });
 
+    it('NaN values should throw an exception', function() {
+      expect(function () {
+        p0.partialUpdate().set('tasksToDo', NaN);
+      }).to.throw('NaN is not a supported value');
+    });
+
+    it('Infinity values should throw an exception', function() {
+      expect(function () {
+        p0.partialUpdate().set('tasksToDo', +Infinity);
+      }).to.throw('Infinity is not a supported value');
+
+      expect(function () {
+        p0.partialUpdate().set('tasksToDo', -Infinity);
+      }).to.throw('Infinity is not a supported value');
+    });
+
     it('should support numeric operations', function() {
       var pub;
       pub = p0.partialUpdate()
@@ -191,6 +207,16 @@ describe('Test Partial Updates', function () {
       ;
       expect(pub.toJSON()).eql({
         $set: { age: 25, name: 'KSM', 'address.city': 'Hamburg', 'address.zip': 20259, date: date },
+      });
+
+      pub = p0.partialUpdate()
+        .set('age', 0)
+        .set('name', '')
+        .set('numFriends', false)
+        .set('date', void 0)
+      ;
+      expect(pub.toJSON()).eql({
+        $set: { age: 0, name: '', date: null, numFriends: false },
       });
 
       pub = p0.partialUpdate()
