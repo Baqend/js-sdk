@@ -66,20 +66,22 @@ describe("Streaming Queries", function() {
    * @param name the name of the person
    * @returns {*|Promise.<binding.Entity>|{value}}
    */
-  function newPerson(age, name) {
+  function newPerson(age, name, date) {
     name = name || 'defaultname';
     age = age || 20;
+    date = date || new Date(new Date().getTime() - age * 365 * 24 * 3600 * 1000);
     return new db[bucket]({
       key: helper.randomize(name.toLowerCase()),
       name: name,
       age: age,
+      date: date,
       testID: sameForAll
     });
   }
 
 
-  function insertPerson(age, name) {
-    return newPerson(age, name).insert();
+  function insertPerson(age, name, date) {
+    return newPerson(age, name, date).insert();
   }
 
   /**
@@ -734,6 +736,55 @@ describe("Streaming Queries", function() {
         expect(result.operation).to.be.equal("insert");
         expect(result.date.getTime()).be.ok;
         expect(result.initial).not.be.true;
+      });
+    });
+
+    it("should filter by date", function() {
+      this.timeout(10000);
+      var queryDate = new Date();
+      var result;
+      query = db[bucket].find().equal('date', queryDate);
+      stream = query.eventStream({ initial : false });
+      subscription = stream.subscribe(function(e) {
+        result = e;
+      });
+
+      return helper.sleep(t).then(function() {
+        var event = expectEvent();
+        insertPerson(29, "person", queryDate);
+        return event;
+      }).then(function() {
+        expect(result.data.name).to.be.equal('person');
+      });
+    });
+
+    it("should sort by date", function() {
+      this.timeout(10000);
+      sameForAll = helper.randomize(this.test.title);
+      var result;
+      query = db[bucket].find().equal('testID', sameForAll).ascending('date');
+      stream = query.resultStream();
+      subscription = stream.subscribe(function(e) {
+        result = e;
+      });
+
+      return helper.sleep(t).then(function() {
+        var event = expectEvent();
+        insertPerson(29, "oldest");
+        return event;
+      }).then(function() {
+        var event = expectEvent();
+        insertPerson(22, "youngest");
+        return event;
+      }).then(function() {
+        var event = expectEvent();
+        insertPerson(25, "middle");
+        return event;
+      }).then(function() {
+        expect(result.length).to.be.equal(3);
+        expect(result[0].name).to.be.equal("oldest");
+        expect(result[1].name).to.be.equal("middle");
+        expect(result[2].name).to.be.equal("youngest");
       });
     });
 
