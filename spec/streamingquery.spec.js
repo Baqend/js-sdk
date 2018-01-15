@@ -69,7 +69,7 @@ describe("Streaming Queries", function() {
   function newPerson(age, name, date) {
     name = name || 'defaultname';
     age = age || 20;
-    date = date || new Date(new Date().getTime() - age * 365 * 24 * 3600 * 1000);
+    date = date || new Date(Date.now() - age * 365 * 24 * 3600 * 1000);
     return new db[bucket]({
       key: helper.randomize(name.toLowerCase()),
       name: name,
