@@ -264,7 +264,7 @@ function loadAppName(db) {
 function bbqAppLogin(db, appName) {
   return db.modules.get('apps', { app: app || appName }).then((result) => {
     if (!result) {
-      throw new Error('App not found.');
+      throw new Error('App \'' + (app || appName) + '\' not found.');
     }
 
     let factory = new baqend.EntityManagerFactory({host: result.name, secure: true, tokenStorageFactory: {
