@@ -1,3 +1,15 @@
+<a name="v2.9.1"></a>
+# v2.9.1 (2018-1-22)
+
+
+### Bug Fixes
+
+* CLI: Print the app name if the app was not found
+
+### General
+
+* Update SDK Docs to latest layout
+
 <a name="v2.9.0"></a>
 # v2.9.0 (2017-11-16)
 
