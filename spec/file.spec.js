@@ -633,6 +633,22 @@ describe('Test file', function() {
       });
     });
 
+    it('should allow special characters in signed url', function() {
+      var acl = new DB.Acl()
+          .allowReadAccess(rootDb.User.me)
+          .allowWriteAccess(rootDb.User.me);
+
+      return rootDb.File.saveMetadata('testfolder', {})
+          .then(() => {
+            var file = new rootDb.File({name: 'abc de ' + rootDb.util.uuid() + '.png', data: flames, acl: acl, parent: '/testfolder'});
+            return file.upload();
+          })
+          .then(function(file) {
+            return helper.req(file.url)
+          });
+    });
+
+
     if (helper.isNode) {
       it('should upload stream format', function() {
         var fs = require('fs');
