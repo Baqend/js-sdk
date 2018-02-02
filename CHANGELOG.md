@@ -1,3 +1,11 @@
+<a name="v2.9.2"></a>
+# v2.9.2 (2018-2-2)
+
+
+### Bug Fixes
+
+* Fix resource token generation if the URL contains URL encoded characters
+
 <a name="v2.9.1"></a>
 # v2.9.1 (2018-1-22)
 
