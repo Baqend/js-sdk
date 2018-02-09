@@ -298,6 +298,62 @@ describe('Test user and roles', function() {
         return expect(db.User.changeUsername(login, newLogin, "secret")).be.rejectedWith("Email verification not enabled")
       })
     });
+
+    it('should create api token for root', function() {
+      return db.User.login("root", "root").then(function() {
+        return db.User.me.requestAPIToken();
+      }).then(function(apiToken) {
+        expect(apiToken).not.be.null;
+        return db.User.requestAPIToken(db.User.me);
+      }).then(function(apiToken) {
+        expect(apiToken).not.be.null;
+        return db.User.requestAPIToken("1");
+      }).then(function(apiToken) {
+        expect(apiToken).not.be.null;
+      })
+    });
+
+    it('should create api token for other user', function() {
+      let user = helper.makeLogin();
+      let regUser;
+      return db.User.register(user, 'secret', db.User.LoginOption.NO_LOGIN).then(function(usr) {
+        regUser = usr;
+        return db.User.login('root', 'root');
+      }).then(function() {
+        return db.User.requestAPIToken(regUser);
+      }).then(function(apiToken) {
+        expect(apiToken).not.be.null;
+        return db.User.requestAPIToken(regUser.id);
+      }).then(function(apiToken) {
+        expect(apiToken).not.be.null;
+      })
+    });
+
+    it('should only be allowed for admins to create API token', function() {
+      let user = helper.makeLogin();
+      return db.User.register(user, 'secret').then(function() {
+        return expect(db.User.me.requestAPIToken()).be.rejected;
+      });
+    });
+
+    it('should only be allowed for admins to revoke tokens', function() {
+      let user = helper.makeLogin();
+      return db.User.register(user, 'secret').then(function() {
+        return expect(db.User.revokeTokens(db.User.me)).be.rejected;
+      });
+    });
+
+    it('should return a new token if revoking own tokens', function() {
+      let token;
+      return db.User.login('root', 'root').then(function() {
+        return helper.sleep(1000);
+      }).then(function() {
+        token = db.token;
+        return db.User.revokeTokens(db.User.me);
+      }).then(function() {
+        expect(token).not.equal(db.token);
+      });
+    });
   });
 
   describe('on global DB', function() {
