@@ -782,7 +782,7 @@ describe('Test file', function() {
         expect(file.mimeType).eql('image/png');
         expect(file.size).eql(pngFile.size);
         expect(file.customHeaders['Hello']).eql('World');
-        expect(file.customHeaders['schmukey1']).eql('SchmuSchmu');
+        expect(file.customHeaders['schmukey']).eql('Schmu');
         expect(file.acl.isPublicReadAllowed()).be.true;
         expect(file.acl.isPublicWriteAllowed()).be.true;
       });
@@ -800,7 +800,7 @@ describe('Test file', function() {
         expect(file.mimeType).eql('application/json; charset=UTF-8');
         expect(file.size).eql(jsonFile.size);
         expect(file.customHeaders['Hello']).eql('World');
-        expect(file.customHeaders['schmukey1']).eql('SchmuSchmu');
+        expect(file.customHeaders['schmukey']).eql('Schmu');
         expect(file.acl.isPublicReadAllowed()).be.true;
         expect(file.acl.isPublicWriteAllowed()).be.true;
       });
