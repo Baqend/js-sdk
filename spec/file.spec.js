@@ -758,15 +758,15 @@ describe('Test file', function() {
     before(function() {
       let cHeads = {
         'Hello': 'World',
-        'schmukey1': 'Schmu'
+        'schmukey': 'Schmu'
       };
       pngFile = new rootDb.File({parent: bucket, data: flames, customHeaders: cHeads});
       jsonFile = new rootDb.File({data: json, mimeType: 'application/json', customHeaders: cHeads});
 
       return rootDb.File.saveMetadata(bucket, {}).then(function() {
         return Promise.all([
-          pngFile.upload().catch(reason => console.log(reason)),
-          jsonFile.upload().catch(reason => console.log(reason))
+          pngFile.upload(),
+          jsonFile.upload()
         ]);
       });
     });
@@ -781,6 +781,8 @@ describe('Test file', function() {
         expect(file.createdAt).lt(new Date(Date.now() + 5 * 60 * 1000));
         expect(file.mimeType).eql('image/png');
         expect(file.size).eql(pngFile.size);
+        expect(file.customHeaders['Hello']).eql('World');
+        expect(file.customHeaders['schmukey1']).eql('SchmuSchmu');
         expect(file.acl.isPublicReadAllowed()).be.true;
         expect(file.acl.isPublicWriteAllowed()).be.true;
       });
@@ -797,7 +799,8 @@ describe('Test file', function() {
         expect(file.createdAt).lt(new Date(Date.now() + 5 * 60 * 1000));
         expect(file.mimeType).eql('application/json; charset=UTF-8');
         expect(file.size).eql(jsonFile.size);
-        expect(file.customHeaders.get('Hello')).eql('World');
+        expect(file.customHeaders['Hello']).eql('World');
+        expect(file.customHeaders['schmukey1']).eql('SchmuSchmu');
         expect(file.acl.isPublicReadAllowed()).be.true;
         expect(file.acl.isPublicWriteAllowed()).be.true;
       });
@@ -815,7 +818,7 @@ describe('Test file', function() {
         creationDate = file.createdAt;
         file.acl.allowReadAccess(rootDb.User.me)
             .allowWriteAccess(rootDb.User.me);
-        file.customHeaders.Hello = 'No';
+        file.customHeaders = updatedHeaders;
         return helper.sleep(2000);
       }).then(function() {
         return file.saveMetadata();
@@ -823,8 +826,8 @@ describe('Test file', function() {
         expect(file.acl).eql(testAcls);
         expect(file.createdAt.getTime()).equal(creationDate.getTime());
         expect(file.createdAt.getTime()).not.equal(file.lastModified.getTime());
-        expect(file.customHeaders.get('Hello')).equal('No');
-        expect(file.customHeaders.get('Schmu')).equal('SchmuSchmu');
+        expect(file.customHeaders['Hello']).equal('No');
+        expect(file.customHeaders['Schmu']).equal('SchmuSchmu');
       });
     });
 
