@@ -633,6 +633,52 @@ describe('Test file', function() {
       });
     });
 
+    it('should allow in URI reserved characters in signed url', function() {
+      var acl = new DB.Acl()
+          .allowReadAccess(rootDb.User.me)
+          .allowWriteAccess(rootDb.User.me);
+
+      return rootDb.File.saveMetadata('testfolder', {})
+          .then(() => {
+            var file = new rootDb.File({name: ';,/?:@&=+$#' + rootDb.util.uuid() + '.png', data: flames, acl: acl, parent: '/testfolder'});
+            return file.upload();
+          })
+          .then(function(file) {
+            return helper.req(file.url)
+          });
+    });
+
+    it('should allow in URI unreserved characters in signed url', function() {
+      var acl = new DB.Acl()
+          .allowReadAccess(rootDb.User.me)
+          .allowWriteAccess(rootDb.User.me);
+
+      return rootDb.File.saveMetadata('testfolder', {})
+          .then(() => {
+            var file = new rootDb.File({name: '-_.!~*\'()' + rootDb.util.uuid() + '.png', data: flames, acl: acl, parent: '/testfolder'});
+            return file.upload();
+          })
+          .then(function(file) {
+            return helper.req(file.url)
+          });
+    });
+
+    it('should allow in alphanumeric characters + spaces in signed url', function() {
+      var acl = new DB.Acl()
+          .allowReadAccess(rootDb.User.me)
+          .allowWriteAccess(rootDb.User.me);
+
+      return rootDb.File.saveMetadata('testfolder', {})
+          .then(() => {
+            var file = new rootDb.File({name: 'ABC abc 123' + rootDb.util.uuid() + '.png', data: flames, acl: acl, parent: '/testfolder'});
+            return file.upload();
+          })
+          .then(function(file) {
+          return helper.req(file.url)
+      })
+    });
+
+
     if (helper.isNode) {
       it('should upload stream format', function() {
         var fs = require('fs');
