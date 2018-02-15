@@ -339,7 +339,7 @@ describe('Test user and roles', function() {
     it('should only be allowed for admins to revoke tokens', function() {
       let user = helper.makeLogin();
       return db.User.register(user, 'secret').then(function() {
-        return expect(db.User.revokeTokens(db.User.me)).be.rejected;
+        return expect(db.User.revokeAllTokens(db.User.me)).be.rejected;
       });
     });
 
@@ -349,7 +349,7 @@ describe('Test user and roles', function() {
         return helper.sleep(1000);
       }).then(function() {
         token = db.token;
-        return db.User.revokeTokens(db.User.me);
+        return db.User.revokeAllTokens(db.User.me);
       }).then(function() {
         expect(token).not.equal(db.token);
       });
