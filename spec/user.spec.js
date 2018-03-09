@@ -287,8 +287,8 @@ describe('Test user and roles', function() {
     });
 
     it('should fail change username with email verification disabled', function () {
-      const login = helper.makeLogin().concat("@baqend.com");
-      const newLogin = helper.makeLogin().concat("@baqend.com");
+      var login = helper.makeLogin().concat("@baqend.com");
+      var newLogin = helper.makeLogin().concat("@baqend.com");
       return db.User.register(login, "secret").then(function () {
         return db.User.logout();
       }).then(function () {
@@ -314,8 +314,8 @@ describe('Test user and roles', function() {
     });
 
     it('should create api token for other user', function() {
-      let user = helper.makeLogin();
-      let regUser;
+      var user = helper.makeLogin();
+      var regUser;
       return db.User.register(user, 'secret', db.User.LoginOption.NO_LOGIN).then(function(usr) {
         regUser = usr;
         return db.User.login('root', 'root');
@@ -330,21 +330,21 @@ describe('Test user and roles', function() {
     });
 
     it('should only be allowed for admins to create API token', function() {
-      let user = helper.makeLogin();
+      var user = helper.makeLogin();
       return db.User.register(user, 'secret').then(function() {
         return expect(db.User.me.requestAPIToken()).be.rejected;
       });
     });
 
     it('should only be allowed for admins to revoke tokens', function() {
-      let user = helper.makeLogin();
+      var user = helper.makeLogin();
       return db.User.register(user, 'secret').then(function() {
         return expect(db.User.revokeAllTokens(db.User.me)).be.rejected;
       });
     });
 
     it('should return a new token if revoking own tokens', function() {
-      let token;
+      var token;
       return db.User.login('root', 'root').then(function() {
         return helper.sleep(1000);
       }).then(function() {
@@ -389,8 +389,8 @@ describe('Test user and roles', function() {
     });
 
     it('should fail change username with email verification disabled', function () {
-      const login = helper.makeLogin().concat("@baqend.com");
-      const newLogin = helper.makeLogin().concat("@baqend.com");
+      var login = helper.makeLogin().concat("@baqend.com");
+      var newLogin = helper.makeLogin().concat("@baqend.com");
       return db.User.register(login, "secret").then(function () {
         return db.User.logout();
       }).then(function () {

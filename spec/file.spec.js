@@ -756,7 +756,7 @@ describe('Test file', function() {
     var pngFile, jsonFile, bucket = 'metadataTest';
 
     before(function() {
-      let cHeads = {
+      var cHeads = {
         'hello': 'World',
         'schmukey': 'Schmu'
       };
