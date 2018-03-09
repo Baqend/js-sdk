@@ -756,8 +756,12 @@ describe('Test file', function() {
     var pngFile, jsonFile, bucket = 'metadataTest';
 
     before(function() {
-      pngFile = new rootDb.File({parent: bucket, data: flames});
-      jsonFile = new rootDb.File({data: json, mimeType: 'application/json'});
+      let cHeads = {
+        'hello': 'World',
+        'schmukey': 'Schmu'
+      };
+      pngFile = new rootDb.File({parent: bucket, data: flames, headers: cHeads});
+      jsonFile = new rootDb.File({data: json, mimeType: 'application/json', headers: cHeads});
 
       return rootDb.File.saveMetadata(bucket, {}).then(function() {
         return Promise.all([
@@ -777,6 +781,8 @@ describe('Test file', function() {
         expect(file.createdAt).lt(new Date(Date.now() + 5 * 60 * 1000));
         expect(file.mimeType).eql('image/png');
         expect(file.size).eql(pngFile.size);
+        expect(file.headers['hello']).eql('World');
+        expect(file.headers['schmukey']).eql('Schmu');
         expect(file.acl.isPublicReadAllowed()).be.true;
         expect(file.acl.isPublicWriteAllowed()).be.true;
       });
@@ -793,6 +799,8 @@ describe('Test file', function() {
         expect(file.createdAt).lt(new Date(Date.now() + 5 * 60 * 1000));
         expect(file.mimeType).eql('application/json; charset=UTF-8');
         expect(file.size).eql(jsonFile.size);
+        expect(file.headers['hello']).eql('World');
+        expect(file.headers['schmukey']).eql('Schmu');
         expect(file.acl.isPublicReadAllowed()).be.true;
         expect(file.acl.isPublicWriteAllowed()).be.true;
       });
@@ -809,6 +817,8 @@ describe('Test file', function() {
         creationDate = file.createdAt;
         file.acl.allowReadAccess(rootDb.User.me)
             .allowWriteAccess(rootDb.User.me);
+        file.headers.hello = 'No';
+        file.headers.schmu = 'SchmuSchmu';
         return helper.sleep(2000);
       }).then(function() {
         return file.saveMetadata();
@@ -816,6 +826,8 @@ describe('Test file', function() {
         expect(file.acl).eql(testAcls);
         expect(file.createdAt.getTime()).equal(creationDate.getTime());
         expect(file.createdAt.getTime()).not.equal(file.lastModified.getTime());
+        expect(file.headers['hello']).equal('No');
+        expect(file.headers['schmu']).equal('SchmuSchmu');
       });
     });
 
