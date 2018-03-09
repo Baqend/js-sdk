@@ -1,3 +1,12 @@
+<a name="v2.10.0"></a>
+# v2.10.0 (2018-3-9)
+
+
+### Features
+
+* Add an API to request and revoke API tokens, which do not have an expiration time
+* Allow setting custom HTTP headers on uploaded Files
+
 <a name="v2.9.2"></a>
 # v2.9.2 (2018-2-2)
 
