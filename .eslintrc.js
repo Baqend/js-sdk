@@ -27,7 +27,7 @@ module.exports = {
     strict: ['error', 'global'],
 
     // FIXME allow all currently used _fields for now
-    'no-underscore-dangle': ['error', { allow: ['_metadata'] }],
+    'no-underscore-dangle': ['warn', { allow: ['_metadata'] }],
     // 'no-underscore-dangle': ['error', { allowAfterThis: true }],
 
     // Node 4 does not support backtick therefore disallow them
@@ -47,12 +47,9 @@ module.exports = {
     'prefer-spread': 'off',
     'prefer-rest-params': 'off',
     'prefer-destructuring': 'off',
-    'no-param-reassign': 'error', // TODO: refactor all methods to self calls see example in UserFactory#login
+    'no-param-reassign': ['error', { props: false }],
     'class-methods-use-this': 'off',
 
-    // FIXME: Discuss, if we want to change new Buffer to Buffer.from(), since it is deprecated since node 6.
-    // FIXME: But we must bump required node engine to at least 4.5 since Buffer.from() is not available beforehand
-    // TODO: Lets do it!
     'node/no-deprecated-api': 'error',
     'no-buffer-constructor': 'error',
 
