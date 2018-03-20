@@ -3,6 +3,7 @@
 
 const account = require('./account');
 const deploy = require('./deploy');
+const download = require('./download');
 const schema = require('./schema');
 const typings = require('./typings');
 const starter = require('./starter');
@@ -52,15 +53,23 @@ if (!module.parent) {
 
   program
       .command('deploy [app]')
-      .description('Deploys your baqend code and files')
-      .option('-F, --files', 'deploy files')
-      .option('-C, --code', 'deploy code')
-      .option('-S, --schema', 'deploy schema')
-      .option('-f, --file-dir <dir>', 'path to file directory [default:www]', 'www')
-      .option('-g, --file-glob <pattern>', 'pattern to match files [default:**/*]', '**/*')
-      .option('-b, --bucket-path <path>', 'remote path where the files will be uploaded to.', 'www')
-      .option('-c, --code-dir <dir>', 'path to code directory [default:baqend]', 'baqend')
-      .action((app, options) => result = deploy(Object.assign({app: app}, options)))
+      .description('Deploys your Baqend code and files')
+      .option('-F, --files',                'deploy files')
+      .option('-f, --file-dir <dir>',       'path to file directory [default: www]', 'www')
+      .option('-g, --file-glob <pattern>',  'pattern to match files [default: **/*]', '**/*')
+      .option('-b, --bucket-path <path>',   'remote path where the files will be uploaded to.', 'www')
+      .option('-C, --code',                 'deploy code')
+      .option('-c, --code-dir <dir>',       'path to code directory [default: baqend]', 'baqend')
+      .option('-S, --schema',               'deploy schema')
+      .action((app, options) => result = deploy(Object.assign({ app: app }, options)))
+  ;
+
+  program
+      .command('download [app]')
+      .description('Downloads your Baqend code and files')
+      .option('-C, --code',                 'download code')
+      .option('-c, --code-dir <dir>',       'path to code directory [default: baqend]', 'baqend')
+      .action((app, options) => result = download(Object.assign({ app: app }, options)))
   ;
 
   program
