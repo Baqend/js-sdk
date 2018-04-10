@@ -69,7 +69,7 @@ module.exports = function(config) {
     // - Safari (only Mac; has to be installed with `npm install karma-safari-launcher`)
     // - PhantomJS
     // - IE (only Windows; has to be installed with `npm install karma-ie-launcher`)
-    browsers: ['Chrome', 'Firefox', 'PhantomJS'],
+    browsers: ['Firefox-Win'],
 
     customLaunchers: {
       'Chrome-Linux': {
@@ -109,7 +109,7 @@ module.exports = function(config) {
         config: webdriverConfig,
         browserName: 'firefox',
         platform: 'WINDOWS',
-        version: '',
+        version: '59',
         name: 'Karma'
       },
       'IE9-Win': {

@@ -52,6 +52,7 @@ module.exports = {
 
     'node/no-deprecated-api': 'error',
     'no-buffer-constructor': 'error',
+    'no-console': 'error',
 
     // specify the maximum length of a line in your program
     // http://eslint.org/docs/rules/max-len

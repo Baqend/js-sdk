@@ -117,7 +117,7 @@ describe('Test Push Notifications', function() {
         return device.delete({ force: true });
       }));
     }).then(function() {
-      DB.connector.Connector.connections = {};
+      DB.connection.Connector.connections = {};
       return new DB.EntityManagerFactory({host: env.TEST_SERVER, staleness: 0}).createEntityManager(true).ready();
     }).then(function(newDB) {
       expect(newDB.isDeviceRegistered).be.false;

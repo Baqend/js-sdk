@@ -6,7 +6,7 @@ if (typeof module != 'undefined') {
 
 describe('Test entity type', function () {
   var em, emf, EntityClass, EmbeddedClass, obj, state, metamodel, EntityType, EmbeddedType, types;
-  emf = new DB.EntityManagerFactory({ schema: {}, tokenStorage: {} /* will later be set in the before handler */});
+  emf = new DB.EntityManagerFactory({ schema: [], tokenStorage: {} /* will later be set in the before handler */});
   metamodel = emf.metamodel;
 
   EntityType = new DB.metamodel.EntityType('jstest.Type', metamodel.entity(Object));

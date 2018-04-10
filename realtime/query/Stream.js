@@ -1,7 +1,7 @@
 'use strict';
 
 const Metadata = require('../../lib/util/Metadata');
-const lib = require('../../lib');
+const lib = require('../../lib/baqend');
 const uuid = require('../../lib/util/uuid').uuid;
 
 /**

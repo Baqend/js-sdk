@@ -2,16 +2,16 @@
 
 const CommunicationError = require('../../lib/error/CommunicationError');
 const WebSocket = require('./websocket').WebSocket;
-const lib = require('../../lib');
+const lib = require('../../lib/baqend');
 
 /**
  * @alias connector.WebSocketConnector
  */
 class WebSocketConnector {
   /**
-   * @param {connector.Connector} connector a connector
+   * @param {connection.Connector} connector a connector
    * @param {String=} url The websocket connect script url
-   * @return {connector.WebSocketConnector} a websocket connection
+   * @return {connection.WebSocketConnector} a websocket connection
    */
   static create(url) {
     let websocket = this.websockets[url];
@@ -106,7 +106,7 @@ class WebSocketConnector {
   /**
    * @param {util.TokenStorage} tokenStorage
    * @param {string} id subscription ID
-   * @return {connector.ObservableStream} The channel for sending and receiving messages
+   * @return {connection.ObservableStream} The channel for sending and receiving messages
    */
   openStream(tokenStorage, id) {
     const stream = new lib.Observable((observer) => {
@@ -132,10 +132,10 @@ class WebSocketConnector {
   }
 }
 
-Object.assign(WebSocketConnector, /** @lends connector.WebSocketConnector */ {
+Object.assign(WebSocketConnector, /** @lends connection.WebSocketConnector */ {
   /**
    * Map of all available connectors to their respective websocket connections
-   * @type connector.Connector[]
+   * @type connection.Connector[]
    */
   websockets: {},
 });

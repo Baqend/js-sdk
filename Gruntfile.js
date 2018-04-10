@@ -62,7 +62,9 @@ module.exports = function (grunt) {
       dist: {
         files: {
           'dist/baqend.js': ['lib/index.js'],
-          'dist/baqend-realtime.js': ['realtime/index.js']
+          'dist/baqend-realtime.js': ['realtime/index.js'],
+          'dist/baqend-no-polyfills.js': ['lib/baqend.js'],
+          'dist/baqend-realtime-no-polyfills.js': ['realtime/realtime.js']
         }
       }
     },
@@ -153,10 +155,15 @@ module.exports = function (grunt) {
       },
 
       dist: {
-        files: {
-          'dist/baqend.min.js': 'dist/baqend.js',
-          'dist/baqend-realtime.min.js': 'dist/baqend-realtime.js'
-        }
+        files: [{
+          expand: true,
+          src: ['dist/*.js', '!dist/*.min.js'],
+          dest: '.',
+          cwd: '.',
+          rename: function (dst, src) {
+            return dst + '/' + src.replace('.js', '.min.js')
+          }
+        }]
       }
     }
   });
