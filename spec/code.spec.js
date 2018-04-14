@@ -84,7 +84,7 @@ describe('Test code', function() {
       it('should allow to load before image', function() {
         return code.saveCode(entityType, 'insert', function(module, exports) {
           exports.onInsert = function(db, obj) {
-            return db[obj.metadata.type.name].load(obj.id, function(before) {
+            return db[obj._metadata.type.name].load(obj.id, function(before) {
               if (before != null)
                 throw new Abort('A object was found!');
             });
@@ -125,7 +125,7 @@ describe('Test code', function() {
       it('should allow to load before image', function() {
         return code.saveCode(entityType, 'update', function(module, exports) {
           exports.onUpdate = function(db, obj) {
-            return db[obj.metadata.type.name].load(obj.id, function(before) {
+            return db[obj._metadata.type.name].load(obj.id, function(before) {
               obj.name += ' before ' + before.name;
               return obj;
             });
@@ -166,7 +166,7 @@ describe('Test code', function() {
       it('should allow to load before image', function() {
         return code.saveCode(entityType, 'delete', function(module, exports) {
           exports.onDelete = function(db, obj) {
-            return db[obj.metadata.type.name].load(obj.id, function(obj) {
+            return db[obj._metadata.type.name].load(obj.id, function(obj) {
               if (obj.name != 'test')
                 throw new Abort('name was ' + obj.name + ' not test');
             });

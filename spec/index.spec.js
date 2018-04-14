@@ -12,12 +12,12 @@ describe("Test Index", function() {
   var db, personType, meta;
 
   before(function() {
-    var emf = new DB.EntityManagerFactory({ host: env.TEST_SERVER, schema: {}, tokenStorage: helper.rootTokenStorage });
+    var emf = new DB.EntityManagerFactory({ host: env.TEST_SERVER, schema: [], tokenStorage: helper.rootTokenStorage });
     meta = emf.metamodel;
 
     meta.addType(personType = new DB.metamodel.EntityType(helper.randomize("IndexPerson"), meta.entity(Object)));
     personType.addAttribute(new DB.metamodel.SingularAttribute("name", meta.baseType(String)));
-    
+
     return meta.save().then(function() {
       db = new DB.EntityManagerFactory({host: env.TEST_SERVER, staleness: 0}).createEntityManager();
       return db.ready();

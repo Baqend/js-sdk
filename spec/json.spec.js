@@ -88,7 +88,7 @@ describe("Test toJSON and fromJSON", function() {
       json = obj.toJSON({depth: 0});
       expect(json).be.ok;
       expect(json.value).eqls("test");
-      expect(json.metadata).be.undefined;
+      expect(json._metadata).be.undefined;
     });
 
     it('should create object from JSON', function() {
@@ -157,7 +157,7 @@ describe("Test toJSON and fromJSON", function() {
         expect(obj.value).eqls("level0 updated");
         expect(obj.version).eqls(2);
         expect(obj.level1.version).eqls(1);
-        expect(obj.level1.metadata.isPersistent).eqls(false);
+        expect(obj.level1._metadata.isPersistent).eqls(false);
       })
     })
 
@@ -177,7 +177,7 @@ describe("Test toJSON and fromJSON", function() {
         expect(obj.version).eqls(2);
         expect(obj.level1.value).eqls("level1 updated");
         expect(obj.level1.version).eqls(2);
-        expect(obj.level1.metadata.isPersistent).eqls(true);
+        expect(obj.level1._metadata.isPersistent).eqls(true);
       })
     })
 

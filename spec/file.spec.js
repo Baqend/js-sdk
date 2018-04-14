@@ -401,6 +401,7 @@ describe('Test file', function() {
       var creationDate;
       return file.upload().then(function() {
         creationDate = file.lastModified;
+        expect(file.createdAt).is.defined;
         expect(file.createdAt).eql(creationDate);
         return helper.sleep(2000);
       }).then(function() {

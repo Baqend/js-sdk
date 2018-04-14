@@ -47,7 +47,7 @@ describe('Test Connect', function() {
   });
 
   it('should resume a logged in session with new connection', function() {
-    DB.connection.Connector.connections = {};
+    DB.connector.Connector.connections = {};
 
     var emf = new DB.EntityManagerFactory(env.TEST_SERVER);
     var db = emf.createEntityManager(true);
@@ -60,7 +60,7 @@ describe('Test Connect', function() {
   });
 
   it('should set gzip flag', function() {
-    var connector = DB.connection.Connector.create(env.TEST_SERVER);
+    var connector = DB.connector.Connector.create(env.TEST_SERVER);
     expect(connector.gzip).eql(typeof global == "undefined");
   })
 });

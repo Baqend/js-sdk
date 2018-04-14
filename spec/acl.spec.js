@@ -156,33 +156,33 @@ describe('Test Acl', function() {
       var person = new db.AclPerson();
       var acl = person.acl;
 
-      person.metadata.setPersistent();
+      person._metadata.setPersistent();
       acl.allowReadAccess(db.User.me);
-      expect(person.metadata.isDirty).be.true;
+      expect(person._metadata.isDirty).be.true;
 
-      person.metadata.setPersistent();
+      person._metadata.setPersistent();
       acl.denyReadAccess(db.User.me);
-      expect(person.metadata.isDirty).be.true;
+      expect(person._metadata.isDirty).be.true;
 
-      person.metadata.setPersistent();
+      person._metadata.setPersistent();
       acl.deleteReadAccess(db.User.me);
-      expect(person.metadata.isDirty).be.true;
+      expect(person._metadata.isDirty).be.true;
 
-      person.metadata.setPersistent();
+      person._metadata.setPersistent();
       acl.allowWriteAccess(db.User.me);
-      expect(person.metadata.isDirty).be.true;
+      expect(person._metadata.isDirty).be.true;
 
-      person.metadata.setPersistent();
+      person._metadata.setPersistent();
       acl.denyWriteAccess(db.User.me);
-      expect(person.metadata.isDirty).be.true;
+      expect(person._metadata.isDirty).be.true;
 
-      person.metadata.setPersistent();
+      person._metadata.setPersistent();
       acl.deleteWriteAccess(db.User.me);
-      expect(person.metadata.isDirty).be.true;
+      expect(person._metadata.isDirty).be.true;
 
-      person.metadata.setPersistent();
+      person._metadata.setPersistent();
       acl.clear();
-      expect(person.metadata.isDirty).be.true;
+      expect(person._metadata.isDirty).be.true;
     });
 
 
@@ -195,15 +195,15 @@ describe('Test Acl', function() {
       acl1.write.denyAccess(db.User.me);
       acl2.write.allowAccess(db.User.me);
 
-      acl1.read.metadata.setPersistent();
-      acl1.write.metadata.setPersistent();
-      acl2.read.metadata.setPersistent();
-      acl2.write.metadata.setPersistent();
+      acl1.read._metadata.setPersistent();
+      acl1.write._metadata.setPersistent();
+      acl2.read._metadata.setPersistent();
+      acl2.write._metadata.setPersistent();
 
-      expect(acl1.read.metadata.isDirty).be.false;
-      expect(acl1.write.metadata.isDirty).be.false;
-      expect(acl2.read.metadata.isDirty).be.false;
-      expect(acl2.write.metadata.isDirty).be.false;
+      expect(acl1.read._metadata.isDirty).be.false;
+      expect(acl1.write._metadata.isDirty).be.false;
+      expect(acl2.read._metadata.isDirty).be.false;
+      expect(acl2.write._metadata.isDirty).be.false;
       expect(acl1.isReadAllowed(db.User.me)).to.be.false;
       expect(acl1.isWriteAllowed(db.User.me)).to.be.false;
       expect(acl2.isReadAllowed(db.User.me)).to.be.true;
@@ -211,10 +211,10 @@ describe('Test Acl', function() {
 
       expect(acl1.copy(acl2)).to.equal(acl1);
 
-      expect(acl1.read.metadata.isDirty).be.true;
-      expect(acl1.write.metadata.isDirty).be.true;
-      expect(acl2.read.metadata.isDirty).be.false;
-      expect(acl2.write.metadata.isDirty).be.false;
+      expect(acl1.read._metadata.isDirty).be.true;
+      expect(acl1.write._metadata.isDirty).be.true;
+      expect(acl2.read._metadata.isDirty).be.false;
+      expect(acl2.write._metadata.isDirty).be.false;
       expect(acl1.isReadAllowed(db.User.me)).to.be.true;
       expect(acl1.isWriteAllowed(db.User.me)).to.be.true;
       expect(acl2.isReadAllowed(db.User.me)).to.be.true;
