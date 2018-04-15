@@ -328,6 +328,102 @@ describe('Test file', function() {
       var file = new rootDb.File({parent: '/www', name: ''});
       expect(file.name).not.eql('');
     });
+
+    it('should serialize all properties to json', function() {
+      var acl = new rootDb.Acl();
+      acl.allowReadAccess(rootDb.User.me);
+      acl.allowWriteAccess(rootDb.User.me);
+
+      var date = new Date("2016-01-01");
+
+      var file = new rootDb.File({
+        data: dataBase64,
+        type: 'data-url',
+        name: 'my.png',
+        parent: '/www/test',
+        mimeType: 'text/html',
+        createdAt: date,
+        lastModified: date,
+        acl: acl,
+        eTag: '827598375',
+        size: 12345
+      });
+
+      var json = file.toJSON();
+      expect(json).eql({
+        id: '/file/www/test/my.png',
+        mimeType: 'text/html',
+        createdAt: date.toISOString(),
+        lastModified: date.toISOString(),
+        contentLength: 12345,
+        acl: {
+          "read": {
+            "/db/User/1": "allow"
+          },
+          "write": {
+            "/db/User/1": "allow"
+          }
+        },
+        eTag: '827598375'
+      });
+      expect(json.data).is.undefined;
+      expect(json.type).is.undefined;
+    });
+
+    it('should deserialize all properties from json', function() {
+      var acl = new rootDb.Acl();
+      acl.allowReadAccess(rootDb.User.me);
+      acl.allowWriteAccess(rootDb.User.me);
+
+      var date = new Date("2016-01-01");
+
+      var file = rootDb.File.fromJSON({
+        id: '/file/www/test/my.png',
+        mimeType: 'text/html',
+        createdAt: date.toISOString(),
+        lastModified: date.toISOString(),
+        contentLength: 12345,
+        acl: {
+          "read": {
+            "/db/User/1": "allow"
+          },
+          "write": {
+            "/db/User/1": "allow"
+          }
+        },
+        eTag: '827598375'
+      });
+
+      expect(file.id).eql('/file/www/test/my.png');
+      expect(file.key).eql('test/my.png');
+      expect(file.bucket).eql('www');
+      expect(file.parent).eql('/www/test');
+      expect(file.name).eql('my.png');
+      expect(file.acl).eql(acl);
+      expect(file.lastModified).gte(date);
+      expect(file.lastModified).lte(date);
+      expect(file.createdAt).gte(date);
+      expect(file.createdAt).lte(date);
+      expect(file.eTag).eql('827598375');
+      expect(file.mimeType).eql('text/html');
+    });
+
+    it('should not deserialize json to a wrong file instance', function() {
+      var date = new Date("2016-01-01");
+      var file = new rootDb.File('/file/www/test/other.png');
+
+      expect(function() {
+        file.fromJSON({
+          id: '/file/www/test/my.png',
+          mimeType: 'text/html',
+          createdAt: date.toISOString(),
+          lastModified: date.toISOString(),
+          contentLength: 12345,
+          acl: {},
+          eTag: '827598375'
+        });
+      }).throws('does not match the given json id');
+    });
   });
 
   describe('url', function() {
