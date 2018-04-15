@@ -36,7 +36,7 @@ class Stream {
             initial: true,
           }, msg);
 
-          event.data = Stream._resolveObject(entityManager, obj);
+          event.data = Stream.resolveObject(entityManager, obj);
           if (query.sort) { event.index = index; }
 
           next(event);
@@ -44,7 +44,7 @@ class Stream {
       }
 
       if (messageType === 'match') {
-        msg.data = Stream._resolveObject(entityManager, msg.data);
+        msg.data = Stream.resolveObject(entityManager, msg.data);
         next(msg);
       }
     });
@@ -73,12 +73,12 @@ class Stream {
     const ordered = !!query.sort;
     return Stream.streamObservable(entityManager, query, opt, (event, next) => {
       if (event.type === 'result') {
-        result = event.data.map(obj => Stream._resolveObject(entityManager, obj));
+        result = event.data.map(obj => Stream.resolveObject(entityManager, obj));
         next(result.slice());
       }
 
       if (event.type === 'match') {
-        const obj = Stream._resolveObject(entityManager, event.data);
+        const obj = Stream.resolveObject(entityManager, event.data);
 
         if (event.matchType === 'remove' || event.matchType === 'changeIndex') {
           // if we have removed the instance our self, we do not have the cached instances anymore
@@ -191,7 +191,7 @@ class Stream {
    * Valid options are:
    <ul>
    <li>initial: a Boolean indicating whether or not the initial result set should be delivered on creating the
- subscription</li>
+      subscription</li>
    <li>matchTypes: a list of match types</li>
    <li>operations: a list of operations</li>
    </ul>
@@ -267,7 +267,7 @@ class Stream {
     return li;
   }
 
-  static _resolveObject(entityManager, object) {
+  static resolveObject(entityManager, object) {
     const entity = entityManager.getReference(object.id);
     const metadata = Metadata.get(entity);
     if (!object.version) {

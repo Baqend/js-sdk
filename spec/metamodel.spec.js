@@ -13,7 +13,7 @@ describe("Test metamodel classes", function () {
 
   describe("ModelBuilder", function() {
     it("should create basic and object type", function() {
-      metamodel.init({});
+      metamodel.init([]);
 
       expect(metamodel.baseType(DB.metamodel.BasicType.Date.ref)).equals(DB.metamodel.BasicType.Date);
       expect(metamodel.baseType(DB.metamodel.BasicType.DateTime.ref)).equals(DB.metamodel.BasicType.DateTime);
@@ -320,7 +320,7 @@ describe("Test metamodel classes", function () {
 
   describe("BasicType", function () {
     it("should be accessible by native constructors", function() {
-      metamodel.init({});
+      metamodel.init([]);
 
       expect(metamodel.baseType(Boolean)).equals(DB.metamodel.BasicType.Boolean);
       expect(metamodel.baseType(Number)).equals(DB.metamodel.BasicType.Double);
@@ -334,7 +334,7 @@ describe("Test metamodel classes", function () {
     });
 
     it("should be accessible by simple name", function() {
-      metamodel.init({});
+      metamodel.init([]);
 
       expect(metamodel.baseType('Date')).equals(DB.metamodel.BasicType.Date);
       expect(metamodel.baseType('DateTime')).equals(DB.metamodel.BasicType.DateTime);
@@ -352,7 +352,7 @@ describe("Test metamodel classes", function () {
 
   describe("EntityType", function () {
     it("Object should have metadata fields", function () {
-      metamodel.init({});
+      metamodel.init([]);
 
       var entity = metamodel.entity(DB.metamodel.EntityType.Object.ref);
       expect(entity.declaredId).instanceof(DB.metamodel.SingularAttribute);
@@ -368,7 +368,7 @@ describe("Test metamodel classes", function () {
     });
 
     it("Object metadata fields should be iterable", function() {
-      metamodel.init({});
+      metamodel.init([]);
 
       var entity = metamodel.entity(DB.metamodel.EntityType.Object.ref);
       var names = ["id", "version", "acl"];
@@ -438,7 +438,7 @@ describe('Test Metamodel', function() {
   });
 
   it('not init twice', function() {
-    metamodel.init({});
+    metamodel.init([]);
     expect(metamodel.init.bind(metamodel, {})).throw(Error);
   });
 
@@ -449,7 +449,7 @@ describe('Test Metamodel', function() {
   });
 
   it("should not be allowed to load after save metamodel", function() {
-    metamodel.init({});
+    metamodel.init([]);
     return metamodel.save().then(function() {
       expect(function() { metamodel.load() }).throw(Error);
     });
@@ -461,7 +461,7 @@ describe('Test Metamodel', function() {
   });
 
   it("should not block the entityManager when is ready", function() {
-    var emf = new DB.EntityManagerFactory({ host: env.TEST_SERVER, schema: {}, tokenStorage: new DB.util.TokenStorage() });
+    var emf = new DB.EntityManagerFactory({ host: env.TEST_SERVER, schema: [], tokenStorage: new DB.util.TokenStorage() });
     expect(emf.createEntityManager().isReady).be.true;
   });
 
@@ -600,7 +600,7 @@ describe('Test Metamodel', function() {
     before(function() {
       var emf = new DB.EntityManagerFactory({host: env.TEST_SERVER, tokenStorage: helper.rootTokenStorage});
       metamodel = emf.metamodel;
-      metamodel.init({});
+      metamodel.init([]);
       metamodel.addType(type = new DB.metamodel.EntityType("jstest.Person", metamodel.entity(Object)));
       metamodel.addType(childType = new DB.metamodel.EntityType("jstest.ChildPerson", type));
       metamodel.addType(embeddedType = new DB.metamodel.EmbeddableType("jstest.EmbeddedPerson"));
@@ -767,7 +767,7 @@ describe('Test Metamodel', function() {
         user3 = users[2];
 
         var metamodel = staticEmf.createMetamodel();
-        metamodel.init({});
+        metamodel.init([]);
 
         var type, embeddedType;
         metamodel.addType(type = new DB.metamodel.EntityType(SchemaAclPersonName, metamodel.entity(Object)));

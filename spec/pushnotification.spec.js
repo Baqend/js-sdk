@@ -53,7 +53,8 @@ describe('Test Push Notifications', function() {
   });
 
   it('should save registration in cookie', function() {
-    return db.Device.register("Android", TEST_GCM_DEVICE).then(function() {
+    return db.Device.register("Android", TEST_GCM_DEVICE).then(function(res) {
+      console.log(res)
       return new DB.EntityManagerFactory({host: env.TEST_SERVER, staleness: 0}).createEntityManager(true).ready();
     }).then(function(newDB) {
       expect(newDB.isDeviceRegistered).be.true;

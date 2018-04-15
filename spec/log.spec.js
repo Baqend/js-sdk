@@ -107,6 +107,19 @@ describe('Test logging', function() {
     });
   });
 
+  it('should save additional error data', function() {
+    var msg = helper.randomize('my error message ');
+    var error = new Error('Test error message');
+    db.log('info', msg, error);
+
+    return findLogByMessage(msg).then(function(entry) {
+      expect(entry.message).equal(msg);
+      expect(entry.data.name).equal(error.name);
+      expect(entry.data.message).equal('Test error message');
+      expect(entry.data.stack).equal(error.stack);
+    });
+  });
+
   it('should save logs without message', function() {
     db.log({value: 'Test String'});
 
@@ -204,8 +217,9 @@ describe('Test logging', function() {
     var msg = helper.randomize('my string');
     db.log('test message %s', msg, 'test1', 2, true);
 
-    return findLogByMessage('test message ' + msg + ', test1, 2, true').then(function(entry) {
-      expect(entry.message).equal('test message ' + msg + ', test1, 2, true');
+    return findLogByMessage('test message ' + msg + ', test1, 2').then(function(entry) {
+      expect(entry.message).equal('test message ' + msg + ', test1, 2');
+      expect(entry.data).eql({data: true})
     });
   });
 

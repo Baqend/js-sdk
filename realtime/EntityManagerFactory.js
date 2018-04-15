@@ -3,19 +3,21 @@
 const EntityManagerFactory = require('../lib/EntityManagerFactory');
 const WebSocketConnector = require('./connector/WebSocketConnector');
 
+const WS = Symbol('WebSocket');
+
 Object.defineProperty(EntityManagerFactory.prototype, 'websocket', {
   get() {
-    if (!this._websocket) {
+    if (!this[WS]) {
       const secure = this.connection.secure;
       let url;
-      if (this._connectData.websocket) {
-        url = (secure ? 'wss:' : 'ws:') + this._connectData.websocket;
+      if (this.connectData.websocket) {
+        url = (secure ? 'wss:' : 'ws:') + this.connectData.websocket;
       } else {
         url = this.connection.origin.replace(/^http/, 'ws') + this.connection.basePath + '/events';
       }
-      this._websocket = WebSocketConnector.create(url);
+      this[WS] = WebSocketConnector.create(url);
     }
-    return this._websocket;
+    return this[WS];
   },
 });
 

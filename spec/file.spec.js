@@ -66,6 +66,10 @@ describe('Test file', function() {
       expect(function() {
         file.mimeType;
       }).throw('is not available');
+
+      expect(function() {
+        file.toJSON();
+      }).throw('is not available');
     });
 
     it('should initialize with string parameter', function() {
