@@ -39,10 +39,12 @@ builder.or(q1, q2)
 
 db.Test.load('test').then((entity) => {
     entity.myProp = 'test';
+    const headers = entity.file.headers;
+    headers.test = 'new header';
 });
 
 db['Hallo'].find().singleResult().then(() => {
-    
+
 });
 
 db.User.login("test", "pw").then((user) => {
