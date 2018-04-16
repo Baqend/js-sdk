@@ -14,7 +14,8 @@ const tsTypeMapping = {
   Date: 'Date',
   GeoPoint: 'GeoPoint',
   JsonArray: '[]',
-  JsonObject: '{}'
+  JsonObject: '{}',
+  File: 'binding.File'
 };
 
 const nativeTypes = ['User', 'Role', 'Device'];
