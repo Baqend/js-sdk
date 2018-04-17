@@ -61,6 +61,11 @@ var helper = {
     return new Promise(function(resolve, reject) {
       if (urlParser) {
         var options = urlParser.parse(url);
+        // if urlParse.parse() is called on Node.js, a single quote character is converted to %27, which normally should not happen
+        options.href = options.href.replace(/%27/g, '\'');
+        options.path = options.path.replace(/%27/g, '\'');
+        options.pathname = options.pathname.replace(/%27/g, '\'');
+
         options.method = 'GET';
         var ht = options.protocol == 'http:'? http: https;
         var req = ht.request(options, function(res) {

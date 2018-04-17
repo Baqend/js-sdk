@@ -93,7 +93,7 @@ module.exports = function(config) {
         config: webdriverConfig,
         browserName: 'safari',
         platform: 'MAC',
-        version: '',
+        version: '11',
         name: 'Karma'
       },
       'Chrome-Win': {

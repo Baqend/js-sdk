@@ -1134,6 +1134,23 @@ describe('Test crud', function() {
       });
     });
 
+    it('should find ids with special characters in bloom filter', function() {
+      var person = new db.Person();
+      person.id = helper.randomize("1 1;,/?:@&=+$#-_.!~*\\'()");
+      person.name = "Old Name";
+      return person.save(function() {
+      }).then(function() {
+        return db.Person.load(person.id);
+      }).then(function() {
+        return db.modules.post('updatePerson', {id: person.id, value: 'New Name'});
+      }).then(function() {
+        return db.refreshBloomFilter();
+      }).then(function() {
+        expect(db.bloomFilter.contains(person.id)).be.true;
+        return expect(db.Person.load(person.id)).eventually.have.property('name', 'New Name');
+      });
+    });
+
     it('should disable cache during bloom filter refresh', function() {
       var person = new db.Person();
       person.name = "Old Name";

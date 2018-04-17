@@ -332,6 +332,102 @@ describe('Test file', function() {
       var file = new rootDb.File({parent: '/www', name: ''});
       expect(file.name).not.eql('');
     });
+
+    it('should serialize all properties to json', function() {
+      var acl = new rootDb.Acl();
+      acl.allowReadAccess(rootDb.User.me);
+      acl.allowWriteAccess(rootDb.User.me);
+
+      var date = new Date("2016-01-01");
+
+      var file = new rootDb.File({
+        data: dataBase64,
+        type: 'data-url',
+        name: 'my.png',
+        parent: '/www/test',
+        mimeType: 'text/html',
+        createdAt: date,
+        lastModified: date,
+        acl: acl,
+        eTag: '827598375',
+        size: 12345
+      });
+
+      var json = file.toJSON();
+      expect(json).eql({
+        id: '/file/www/test/my.png',
+        mimeType: 'text/html',
+        createdAt: date.toISOString(),
+        lastModified: date.toISOString(),
+        contentLength: 12345,
+        acl: {
+          "read": {
+            "/db/User/1": "allow"
+          },
+          "write": {
+            "/db/User/1": "allow"
+          }
+        },
+        eTag: '827598375'
+      });
+      expect(json.data).is.undefined;
+      expect(json.type).is.undefined;
+    });
+
+    it('should deserialize all properties from json', function() {
+      var acl = new rootDb.Acl();
+      acl.allowReadAccess(rootDb.User.me);
+      acl.allowWriteAccess(rootDb.User.me);
+
+      var date = new Date("2016-01-01");
+
+      var file = rootDb.File.fromJSON({
+        id: '/file/www/test/my.png',
+        mimeType: 'text/html',
+        createdAt: date.toISOString(),
+        lastModified: date.toISOString(),
+        contentLength: 12345,
+        acl: {
+          "read": {
+            "/db/User/1": "allow"
+          },
+          "write": {
+            "/db/User/1": "allow"
+          }
+        },
+        eTag: '827598375'
+      });
+
+      expect(file.id).eql('/file/www/test/my.png');
+      expect(file.key).eql('test/my.png');
+      expect(file.bucket).eql('www');
+      expect(file.parent).eql('/www/test');
+      expect(file.name).eql('my.png');
+      expect(file.acl).eql(acl);
+      expect(file.lastModified).gte(date);
+      expect(file.lastModified).lte(date);
+      expect(file.createdAt).gte(date);
+      expect(file.createdAt).lte(date);
+      expect(file.eTag).eql('827598375');
+      expect(file.mimeType).eql('text/html');
+    });
+
+    it('should not deserialize json to a wrong file instance', function() {
+      var date = new Date("2016-01-01");
+      var file = new rootDb.File('/file/www/test/other.png');
+
+      expect(function() {
+        file.fromJSON({
+          id: '/file/www/test/my.png',
+          mimeType: 'text/html',
+          createdAt: date.toISOString(),
+          lastModified: date.toISOString(),
+          contentLength: 12345,
+          acl: {},
+          eTag: '827598375'
+        });
+      }).throws('does not match the given json id');
+    });
   });
 
   describe('url', function() {
@@ -638,6 +734,52 @@ describe('Test file', function() {
       });
     });
 
+    it('should allow in URI reserved characters in signed url', function() {
+      var acl = new DB.Acl()
+          .allowReadAccess(rootDb.User.me)
+          .allowWriteAccess(rootDb.User.me);
+
+      return rootDb.File.saveMetadata('testfolder', {})
+        .then(function() {
+          var file = new rootDb.File({name: ';,/?:@&=+$#' + rootDb.util.uuid() + '.png', data: flames, acl: acl, parent: '/testfolder'});
+          return file.upload();
+        })
+        .then(function(file) {
+          return helper.req(file.url)
+        });
+    });
+
+    it('should allow in URI unreserved characters in signed url', function() {
+      var acl = new DB.Acl()
+          .allowReadAccess(rootDb.User.me)
+          .allowWriteAccess(rootDb.User.me);
+
+      return rootDb.File.saveMetadata('testfolder', {})
+        .then(function() {
+          var file = new rootDb.File({name: '-_.!~*\'()' + rootDb.util.uuid() + '.png', data: flames, acl: acl, parent: '/testfolder'});
+          return file.upload();
+        })
+        .then(function(file) {
+          return helper.req(file.url)
+        });
+    });
+
+    it('should allow in alphanumeric characters + spaces in signed url', function() {
+      var acl = new DB.Acl()
+          .allowReadAccess(rootDb.User.me)
+          .allowWriteAccess(rootDb.User.me);
+
+      return rootDb.File.saveMetadata('testfolder', {})
+        .then(function() {
+          var file = new rootDb.File({name: 'ABC abc 123' + rootDb.util.uuid() + '.png', data: flames, acl: acl, parent: '/testfolder'});
+          return file.upload();
+        })
+        .then(function(file) {
+          return helper.req(file.url)
+        });
+    });
+
+
     if (helper.isNode) {
       it('should upload stream format', function() {
         var fs = require('fs');
@@ -715,8 +857,12 @@ describe('Test file', function() {
     var pngFile, jsonFile, bucket = 'metadataTest';
 
     before(function() {
-      pngFile = new rootDb.File({parent: bucket, data: flames});
-      jsonFile = new rootDb.File({data: json, mimeType: 'application/json'});
+      var cHeads = {
+        'hello': 'World',
+        'schmukey': 'Schmu'
+      };
+      pngFile = new rootDb.File({parent: bucket, data: flames, headers: cHeads});
+      jsonFile = new rootDb.File({data: json, mimeType: 'application/json', headers: cHeads});
 
       return rootDb.File.saveMetadata(bucket, {}).then(function() {
         return Promise.all([
@@ -736,6 +882,8 @@ describe('Test file', function() {
         expect(file.createdAt).lt(new Date(Date.now() + 5 * 60 * 1000));
         expect(file.mimeType).eql('image/png');
         expect(file.size).eql(pngFile.size);
+        expect(file.headers['hello']).eql('World');
+        expect(file.headers['schmukey']).eql('Schmu');
         expect(file.acl.isPublicReadAllowed()).be.true;
         expect(file.acl.isPublicWriteAllowed()).be.true;
       });
@@ -752,6 +900,8 @@ describe('Test file', function() {
         expect(file.createdAt).lt(new Date(Date.now() + 5 * 60 * 1000));
         expect(file.mimeType).eql('application/json; charset=UTF-8');
         expect(file.size).eql(jsonFile.size);
+        expect(file.headers['hello']).eql('World');
+        expect(file.headers['schmukey']).eql('Schmu');
         expect(file.acl.isPublicReadAllowed()).be.true;
         expect(file.acl.isPublicWriteAllowed()).be.true;
       });
@@ -768,6 +918,8 @@ describe('Test file', function() {
         creationDate = file.createdAt;
         file.acl.allowReadAccess(rootDb.User.me)
             .allowWriteAccess(rootDb.User.me);
+        file.headers.hello = 'No';
+        file.headers.schmu = 'SchmuSchmu';
         return helper.sleep(2000);
       }).then(function() {
         return file.saveMetadata();
@@ -775,6 +927,8 @@ describe('Test file', function() {
         expect(file.acl).eql(testAcls);
         expect(file.createdAt.getTime()).equal(creationDate.getTime());
         expect(file.createdAt.getTime()).not.equal(file.lastModified.getTime());
+        expect(file.headers['hello']).equal('No');
+        expect(file.headers['schmu']).equal('SchmuSchmu');
       });
     });
 

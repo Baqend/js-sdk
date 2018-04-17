@@ -12,6 +12,7 @@ declare module "../index" {
 
         export interface Test extends binding.Entity {
             myProp: string;
+            file: binding.File;
         }
     }
 

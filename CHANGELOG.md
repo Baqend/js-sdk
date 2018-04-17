@@ -1,3 +1,40 @@
+<a name="v2.10.0"></a>
+# v2.10.0 (2018-3-9)
+
+
+### Features
+
+* Add an API to request and revoke API tokens, which do not have an expiration time
+* Allow setting custom HTTP headers on uploaded Files
+
+<a name="v2.9.2"></a>
+# v2.9.2 (2018-2-2)
+
+
+### Bug Fixes
+
+* Fix resource token generation if the URL contains URL encoded characters
+
+<a name="v2.9.1"></a>
+# v2.9.1 (2018-1-22)
+
+
+### Bug Fixes
+
+* CLI: Print the app name if the app was not found
+
+### General
+
+* Update SDK Docs to latest layout
+
+<a name="v2.9.0"></a>
+# v2.9.0 (2017-11-16)
+
+
+### Features
+
+* Add a new progress which allows changing the username when E-Mail verification is enabled
+
 <a name="v2.8.7"></a>
 # v2.8.7 (2017-11-1)
 

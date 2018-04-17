@@ -285,6 +285,75 @@ describe('Test user and roles', function() {
     it('should not be allowed to register with an empty password', function() {
       return expect(db.User.register(helper.makeLogin(), "")).be.rejected;
     });
+
+    it('should fail change username with email verification disabled', function () {
+      var login = helper.makeLogin().concat("@baqend.com");
+      var newLogin = helper.makeLogin().concat("@baqend.com");
+      return db.User.register(login, "secret").then(function () {
+        return db.User.logout();
+      }).then(function () {
+        return db.User.login("root", "root");
+      }).then(function () {
+        expect(db.me.username).eqls("root");
+        return expect(db.User.changeUsername(login, newLogin, "secret")).be.rejectedWith("Email verification not enabled")
+      })
+    });
+
+    it('should create api token for root', function() {
+      return db.User.login("root", "root").then(function() {
+        return db.User.me.requestAPIToken();
+      }).then(function(apiToken) {
+        expect(apiToken).not.be.null;
+        return db.User.requestAPIToken(db.User.me);
+      }).then(function(apiToken) {
+        expect(apiToken).not.be.null;
+        return db.User.requestAPIToken("1");
+      }).then(function(apiToken) {
+        expect(apiToken).not.be.null;
+      })
+    });
+
+    it('should create api token for other user', function() {
+      var user = helper.makeLogin();
+      var regUser;
+      return db.User.register(user, 'secret', db.User.LoginOption.NO_LOGIN).then(function(usr) {
+        regUser = usr;
+        return db.User.login('root', 'root');
+      }).then(function() {
+        return db.User.requestAPIToken(regUser);
+      }).then(function(apiToken) {
+        expect(apiToken).not.be.null;
+        return db.User.requestAPIToken(regUser.id);
+      }).then(function(apiToken) {
+        expect(apiToken).not.be.null;
+      })
+    });
+
+    it('should only be allowed for admins to create API token', function() {
+      var user = helper.makeLogin();
+      return db.User.register(user, 'secret').then(function() {
+        return expect(db.User.me.requestAPIToken()).be.rejected;
+      });
+    });
+
+    it('should only be allowed for admins to revoke tokens', function() {
+      var user = helper.makeLogin();
+      return db.User.register(user, 'secret').then(function() {
+        return expect(db.User.revokeAllTokens(db.User.me)).be.rejected;
+      });
+    });
+
+    it('should return a new token if revoking own tokens', function() {
+      var token;
+      return db.User.login('root', 'root').then(function() {
+        return helper.sleep(1000);
+      }).then(function() {
+        token = db.token;
+        return db.User.revokeAllTokens(db.User.me);
+      }).then(function() {
+        expect(token).not.equal(db.token);
+      });
+    });
   });
 
   describe('on global DB', function() {
@@ -317,6 +386,19 @@ describe('Test user and roles', function() {
         expect(DB.User.me).be.null;
         expect(DB.token).be.null;
       });
+    });
+
+    it('should fail change username with email verification disabled', function () {
+      var login = helper.makeLogin().concat("@baqend.com");
+      var newLogin = helper.makeLogin().concat("@baqend.com");
+      return db.User.register(login, "secret").then(function () {
+        return db.User.logout();
+      }).then(function () {
+        return db.User.login("root", "root");
+      }).then(function () {
+        expect(db.me.username).eqls("root");
+        return expect(db.User.me.changeUsername(newLogin, "secret")).be.rejectedWith("Email verification not enabled");
+      })
     });
 
     it('should remove token if token is invalid', function() {

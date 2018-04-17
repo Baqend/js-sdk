@@ -90,6 +90,12 @@ function readDirectory(filePath) {
   })
 }
 
+/**
+ * Reads a file from disk.
+ *
+ * @param {string} filePath The file path to read from.
+ * @return {Promise<string>} Resolves with a UTF-8 encoded string of the file contents.
+ */
 function readFile(filePath) {
   return new Promise((resolve, reject) => {
     fs.readFile(filePath, 'utf-8', (err, file) => {
