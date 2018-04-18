@@ -9,9 +9,9 @@ const lib = require('../../lib/baqend');
  */
 class WebSocketConnector {
   /**
-   * @param {connection.Connector} connector a connector
+   * @param {connector.Connector} connector a connector
    * @param {String=} url The websocket connect script url
-   * @return {connection.WebSocketConnector} a websocket connection
+   * @return {connector.WebSocketConnector} a websocket connection
    */
   static create(url) {
     let websocket = this.websockets[url];
@@ -106,7 +106,7 @@ class WebSocketConnector {
   /**
    * @param {util.TokenStorage} tokenStorage
    * @param {string} id subscription ID
-   * @return {connection.ObservableStream} The channel for sending and receiving messages
+   * @return {connector.ObservableStream} The channel for sending and receiving messages
    */
   openStream(tokenStorage, id) {
     const stream = new lib.Observable((observer) => {
@@ -132,10 +132,10 @@ class WebSocketConnector {
   }
 }
 
-Object.assign(WebSocketConnector, /** @lends connection.WebSocketConnector */ {
+Object.assign(WebSocketConnector, /** @lends connector.WebSocketConnector */ {
   /**
    * Map of all available connectors to their respective websocket connections
-   * @type connection.Connector[]
+   * @type connector.Connector[]
    */
   websockets: {},
 });
