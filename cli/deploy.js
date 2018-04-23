@@ -110,21 +110,26 @@ function uploadHandler(db, directoryName, codePath) {
   if (!db[bucket])
     return;
 
-  return readDirectory(path.join(codePath,directoryName)).then((fileNames) => {
-    return Promise.all(fileNames.map((fileName) => {
-      let handlerType = fileName.replace(/.js$/, '');
+  return readDirectory(path.join(codePath, directoryName)).then((fileNames) => {
+    return Promise.all(
+      fileNames.filter((fileName) => !fileName.startsWith("."))
+        .map((fileName) => {
+          let handlerType = fileName.replace(/.js$/, '');
 
-      if (handlerTypes.indexOf(handlerType) == -1)
-        return;
+          if (handlerTypes.indexOf(handlerType) === -1)
+            return;
 
-      return readFile(path.join(codePath, directoryName, fileName))
-          .then((file) => db.code.saveCode(bucket, handlerType, file))
-          .then(() => console.log(`${handlerType} handler for ${bucket} deployed.`));
-    }));
+          return readFile(path.join(codePath, directoryName, fileName))
+            .then((file) => db.code.saveCode(bucket, handlerType, file))
+            .then(() => console.log(`${handlerType} handler for ${bucket} deployed.`));
+        })
+    );
   });
 }
 
 function uploadCode(db, name, codePath) {
+  if (name.startsWith(".")) return Promise.resolve();
+
   let moduleName = name.replace(/.js$/, '');
   return readFile(path.join(codePath, name)).then((file) => {
     return db.code.saveCode(moduleName, 'module', file);
