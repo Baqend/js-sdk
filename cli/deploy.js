@@ -112,7 +112,8 @@ function uploadHandler(db, directoryName, codePath) {
 
   return readDirectory(path.join(codePath, directoryName)).then((fileNames) => {
     return Promise.all(
-      fileNames.filter((fileName) => !fileName.startsWith("."))
+      fileNames
+        .filter((fileName) => !fileName.startsWith("."))
         .map((fileName) => {
           let handlerType = fileName.replace(/.js$/, '');
 
