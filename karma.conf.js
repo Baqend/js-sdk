@@ -2,11 +2,6 @@
 // Generated on Thu Mar 06 2014 17:16:01 GMT+0100 (Mitteleuropäische Zeit)
 
 module.exports = function(config) {
-  var webdriverConfig = {
-    hostname: 'jenkins.baqend.com',
-    port: 4444
-  };
-
   config.set({
 
     // base path, that will be used to resolve files and exclude
@@ -42,8 +37,13 @@ module.exports = function(config) {
     // possible values: 'dots', 'progress', 'junit', 'growl', 'coverage'
     reporters: ['progress'],
 
+    // JUnit reporter output dir
+    junitReporter: {
+      outputDir: 'build/test-results/'
+    },
+
     // web server hostname
-    hostname: 'local.baqend.com',
+    hostname: process.env.KARMA_HOST || 'local.baqend.com',
 
     // web server port
     port: 9876,
@@ -71,78 +71,12 @@ module.exports = function(config) {
     // - IE (only Windows; has to be installed with `npm install karma-ie-launcher`)
     browsers: ['Chrome', 'Firefox', 'PhantomJS'],
 
-    customLaunchers: {
-      'Chrome-Linux': {
-        base: 'WebDriver',
-        config: webdriverConfig,
-        browserName: 'chrome',
-        platform: 'LINUX',
-        version: '',
-        name: 'Karma'
-      },
-      'Firefox-Linux': {
-        base: 'WebDriver',
-        config: webdriverConfig,
-        browserName: 'firefox',
-        platform: 'LINUX',
-        version: '',
-        name: 'Karma'
-      },
-      'Safari-Mac': {
-        base: 'WebDriver',
-        config: webdriverConfig,
-        browserName: 'safari',
-        platform: 'MAC',
-        version: '11',
-        name: 'Karma'
-      },
-      'Chrome-Win': {
-        base: 'WebDriver',
-        config: webdriverConfig,
-        browserName: 'chrome',
-        platform: 'WINDOWS',
-        version: '',
-        name: 'Karma'
-      },
-      'Firefox-Win': {
-        base: 'WebDriver',
-        config: webdriverConfig,
-        browserName: 'firefox',
-        platform: 'WINDOWS',
-        version: '',
-        name: 'Karma'
-      },
-      'IE9-Win': {
-        base: 'WebDriver',
-        config: webdriverConfig,
-        browserName: 'internet explorer',
-        platform: 'WINDOWS',
-        version: '9',
-        name: 'Karma'
-      },
-      'IE10-Win': {
-        base: 'WebDriver',
-        config: webdriverConfig,
-        browserName: 'internet explorer',
-        platform: 'WINDOWS',
-        version: '10',
-        name: 'Karma'
-      },
-      'IE11-Win': {
-        base: 'WebDriver',
-        config: webdriverConfig,
-        browserName: 'internet explorer',
-        platform: 'WINDOWS',
-        version: '11',
-        name: 'Karma'
-      },
-      'Edge-Win': {
-        base: 'WebDriver',
-        config: webdriverConfig,
-        browserName: 'MicrosoftEdge',
-        platform: 'WINDOWS',
-        name: 'Karma'
-      }
+    customLaunchers: Object.assign( {}, require('./localSeleniumBrowser'), require('./testingBotBrowser') ),
+
+    //config for testingBot
+    testingbot: {
+      testName: 'JS SDK',
+      startConnect: false
     },
 
     // How long does Karma wait for a browser to reconnect (in ms).
