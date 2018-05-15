@@ -1,3 +1,19 @@
+<a name="v2.11.0"></a>
+# v2.11.0 (2018-5-15)
+
+
+### Bug Fixes
+
+* Typings: Fix some Typing and jsdoc errors
+* CLI: Fix File references are incorrectly typed in the generated typings model
+* CLI: ignore hidden files while deploying code
+* Docs: Update to latest jsdoc version
+
+### Features
+
+* SDK: Add File#toJSON and File#fromJSON and fix the existing behavior
+* CLI: Allow download of baqend code
+
 <a name="v2.10.0"></a>
 # v2.10.0 (2018-3-9)
 
