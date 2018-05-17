@@ -52,12 +52,13 @@ exports.publish = function(data, opts, tutorials) {
   });
 
   let classes = data({kind: ["class","interface"]}).get();
+
   Object.keys(classes).forEach(function(k) {
     let cls = classes[k];
 
     let longname = cls.longname;
     //skipping classes like EntityManager.EntityManager
-    if (!cls.ignore && longname && longname.indexOf(cls.name) == longname.length - cls.name.length) {
+    if (!cls.ignore && !cls.undocumented && longname && longname.indexOf(cls.name) == longname.length - cls.name.length) {
       let ns = getNamespaceOf(longname);
       let lines = createClass(data, cls, ns);
 

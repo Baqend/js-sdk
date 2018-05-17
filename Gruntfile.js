@@ -104,23 +104,8 @@ module.exports = function (grunt) {
     },
 
     karma: {
-      dev: {
-        configFile: 'karma.conf.js'
-      },
       test: {
-        hostname: 'jenkins.baqend.com',
-        configFile: 'karma.conf.js',
-        client: {
-          mocha: {
-            timeout: 30000
-          }
-        },
-        browsers: ['PhantomJS', 'Edge-Win', 'IE10-Win', 'IE11-Win', 'Firefox-Win', 'Chrome-Win', 'Chrome-Linux', 'Firefox-Linux', 'Safari-Mac'],
-        reporters: ['junit'],
-        singleRun: true,
-        junitReporter: {
-          outputDir: 'build/test-results/'
-        }
+        configFile: 'karma.conf.js'
       }
     },
 
@@ -166,7 +151,6 @@ module.exports = function (grunt) {
   grunt.loadNpmTasks('grunt-contrib-clean');
   grunt.loadNpmTasks('grunt-browserify');
   grunt.loadNpmTasks('grunt-template');
-  grunt.loadNpmTasks('grunt-karma');
   grunt.loadNpmTasks('grunt-mocha-test');
 
   grunt.registerTask('debug', [
@@ -181,34 +165,5 @@ module.exports = function (grunt) {
     'uglify:dist'
   ]);
 
-  grunt.registerTask('test', [
-    'browserify:test',
-
-    // don't fail task when a test failed
-    'force:on',
-    'karma:test',
-    'force:restore'
-  ]);
-
-  grunt.registerTask('test-node', [
-    // don't fail task when a test failed
-    'force:on',
-    'mochaTest:test',
-    'force:restore'
-  ]);
-
   grunt.registerTask('default', 'debug');
-
-  var previous_force_state = grunt.option("force");
-
-  grunt.registerTask("force", 'A helper task for temporary en/disabling the force flag', function(set){
-    if (set === "on") {
-      grunt.option("force", true);
-    } else if (set === "off") {
-      grunt.option("force", false);
-    } else if (set === "restore") {
-      grunt.option("force", previous_force_state);
-    }
-  });
-
 };

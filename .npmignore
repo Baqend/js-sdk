@@ -7,3 +7,6 @@
 *.iml
 .DS_Store
 .babelrc
+Gruntfile.js
+testingBotBrowser.js
+localSeleniumBrowser.js
