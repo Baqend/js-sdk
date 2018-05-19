@@ -118,7 +118,7 @@ function register(args) {
             saveCredentials(appInfo, credentials)
           ]);
         });
-    }).catch(e => console.log(e.message || e));
+    });
 }
 
 function connect(args) {
