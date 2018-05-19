@@ -123,8 +123,10 @@ if (!module.parent) {
     program.outputHelp();
   } else if (result) {
     if (result.catch) {
-      result.catch((e) => console.error(e.stack || e));
-      process.exit(1);
+      result.catch((e) => {
+        console.error(e.stack || e);
+        process.exit(1);
+      });
     }
   }
 }
