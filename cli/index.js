@@ -21,22 +21,22 @@ if (!module.parent) {
   ;
 
   program
-      .command('login')
+      .command('login [app]')
       .description('Logs you in and locally saves your credentials')
-      .action(options => result = account.persistLogin(options))
+      .action(app => result = account.persistLogin({app: app}))
   ;
 
   program
       .command('register')
       .description('Registers an account and locally saves your credentials')
-      .action(options => result = account.register())
+      .action(options => result = account.register(options))
   ;
 
   program
-      .command('whoami')
+      .command('whoami [app]')
       .alias('me')
       .description('Show your login status')
-      .action(options => result = account.whoami(options))
+      .action(app => result = account.whoami({app: app}))
   ;
 
   program
@@ -48,7 +48,7 @@ if (!module.parent) {
   program
       .command('dashboard')
       .description('Opens the url to the baqend dashboard')
-      .action(() => result = account.openDashboard())
+      .action(options => result = account.openDashboard(options))
   ;
 
   program
@@ -83,9 +83,9 @@ if (!module.parent) {
   //     .action((app, options) => result = schema.download(Object.assign({app: app}, options)))
 
   program
-      .command('logout')
+      .command('logout [app]')
       .description('Removes your stored credentials')
-      .action(options => result = account.logout(options))
+      .action(app => result = account.logout({app: app}))
   ;
 
   program
@@ -97,7 +97,12 @@ if (!module.parent) {
 
   program
       .usage('[command] [options] <args...>')
-      .description('Type in one of the above commands followed by --help to get more information')
+      .description(
+        'Type in one of the above commands followed by --help to get more information\n' +
+        '  The optional [app] parameter can be passed to define the target of a command.\n' +
+        '  It can be either an app name or a custom domain location like\n' +
+        '  http://my-baqend-domain:8080/v1.'
+      )
   ;
 
   program
@@ -109,7 +114,7 @@ if (!module.parent) {
   program
       .command('apps')
       .description('List all your apps')
-      .action(() => result = account.listApps())
+      .action(options => result = account.listApps(options))
   ;
 
   program.parse(process.argv);

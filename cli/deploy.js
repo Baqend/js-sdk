@@ -9,7 +9,7 @@ const readline = require('readline');
 
 module.exports = function(args) {
 
-  return account.login({app: args.app, host: args.host}).then((db) => {
+  return account.login(args).then((db) => {
     let promises = []
     if (!args.code && !args.files || args.code && args.files) {
       promises.push(deployFiles(db, args.bucketPath, args.fileDir, args.fileGlob))
