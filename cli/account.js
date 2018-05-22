@@ -1,4 +1,4 @@
-"use strict";
+'use strict';
 const os = require('os');
 const fs = require('fs');
 const baqend = require('../lib/baqend');
@@ -9,153 +9,253 @@ const opn = require('opn');
 const algorithm = 'aes-256-ctr';
 const password = 'N2Ki=za[8iy4ff4jYn/3,y;';
 const bbqHost = 'bbq';
-let host;
-let app;
 
-function persistLogin(args) {
-  let inputPromise = getArgsCredentials(args);
+function getAppInfo(args) {
+  const isCustomHost = args.app && /^https?:\/\//.test(args.app);
 
-  if (!inputPromise) {
-    showLoginInfo();
-    inputPromise = readInputCredentials();
-  }
-
-  return inputPromise.then(credentials => {
-    return connect(host, credentials[0], credentials[1]).then(() =>  saveCredentials(credentials[0], credentials[1]))
-  }).then(() => console.log('You have successfully been logged in.'), e => console.log(e.message || e))
+  return {
+    isCustomHost: !!isCustomHost,
+    host: isCustomHost? args.app: bbqHost,
+    app: isCustomHost? null: args.app
+  };
 }
 
 function getArgsCredentials(args) {
-  var isCustomHost = args.app && /^https?:\/\//.test(args.app);
-
-  host = isCustomHost? args.app: bbqHost;
-  app = isCustomHost? null: args.app;
-
   if (args.username && args.password) {
-    return Promise.resolve([args.username, args.password]);
+    return {
+      username: args.username,
+      password: args.password
+    };
   }
 
-  if (isCustomHost) {
-    return Promise.resolve(['root', 'root']);
+  if (args.token) {
+    return {token: args.token};
   }
 
   return null;
 }
 
-function login(args) {
-  let inputPromise = getArgsCredentials(args || {});
-  if (!inputPromise){
-    inputPromise = readFile().then((json) => {
-      if (json[host] && json[host].password && json[host].username) {
-        return [json[host].username, json[host].password];
-      } else {
-        console.log('Baqend Login is required. You can skip this step by saving the Login credentials with "baqend login"');
-        if (isBbq()) {
-          showLoginInfo();
-        }
-        return readInputCredentials();
-      }
-    });
+function getEnvCredentials() {
+  const token = process.env.BAQEND_TOKEN || process.env.BAT;
+  if (token) {
+    return { token: token };
   }
 
-  return inputPromise.then((credentials) => {
-    return dbLogin(credentials[0], credentials[1]);
+  return null;
+}
+
+function getProfileCredentials(appInfo) {
+  return readProfileFile().then(json => {
+    const credentials = json[appInfo.host];
+
+    if (!credentials) {
+      return null;
+    }
+
+    if (credentials.password) {
+      credentials.password = decrypt(credentials.password);
+    }
+
+    return credentials;
+  }).catch(() => null);
+}
+
+function getLocalCredentials(appInfo) {
+  if (appInfo.isCustomHost) {
+    return {username: 'root', password: 'root'};
+  }
+
+  return null;
+}
+
+function getInputCredentials(appInfo, showLoginInfo) {
+  if (!process.stdout.isTTY) {
+    return Promise.reject(new Error('Can\'t interactive login into baqend, no tty session was detected.'));
+  }
+
+  if (showLoginInfo) {
+    console.log('Baqend Login is required. You can skip this step by saving the Login credentials with "baqend login"');
+  }
+
+  if (!appInfo.isCustomHost) {
+    console.log('If you have created your Baqend Account with OAuth:');
+    console.log(' 1. Login to the dashboard with OAuth.');
+    console.log(' 2. Go to your account settings (top right corner)');
+    console.log(' 3. Add a password to your account, which you can then use with the CLI.');
+    console.log('');
+  }
+
+  return readInputCredentials(appInfo);
+}
+
+function getCredentials(appInfo, args) {
+  let providers = Promise.resolve(null)
+    .then(credentials => credentials || getArgsCredentials(args))
+    .then(credentials => credentials || getEnvCredentials())
+    .then(credentials => credentials || getProfileCredentials(appInfo))
+    .then(credentials => credentials || getLocalCredentials(appInfo));
+
+  if (!args.skipInput && process.stdout.isTTY) {
+    providers = providers
+      .then(credentials => credentials || getInputCredentials(appInfo, true))
+  }
+
+  return providers;
+}
+
+function register(args) {
+  const appInfo = getAppInfo(args);
+
+  return getInputCredentials(appInfo)
+    .then(credentials => {
+      return appConnect(appInfo)
+        .then(db => {
+          return db.User.register(credentials.username, credentials.password).then(() => db);
+        })
+        .then(db => {
+          return Promise.all([
+            getDefaultApp(db).then(name => console.log('Your app name is ' + name)),
+            saveCredentials(appInfo, credentials)
+          ]);
+        });
+    });
+}
+
+function connect(args) {
+  const appInfo = getAppInfo(args);
+  return getCredentials(appInfo, args)
+    .then(credentials => {
+      if (!credentials)
+        throw new Error('Login information are missing. Login with baqend login or pass a baqend token via BAQEND_TOKEN environment variable');
+
+      return appConnect(appInfo.host, credentials);
+    });
+}
+
+function appConnect(host, credentials) {
+  let factory = new baqend.EntityManagerFactory({host: host, secure: true});
+  return factory.createEntityManager(true).ready().then(db => {
+    if (!credentials)
+      return db;
+
+    if (credentials.token) {
+      return db.User.loginWithToken(credentials.token)
+        .then((me) => {
+          if (me) {
+            return db;
+          }
+          throw new Error('Login with Baqend token failed.')
+        });
+    } else {
+      return db.User.login(credentials.username, credentials.password).then(() => db);
+    }
   });
 }
 
-module.exports.login = login;
-module.exports.persistLogin = persistLogin;
+function login(args) {
+  const appInfo = getAppInfo(args);
+  return connect(args)
+    .then((db) => {
+      if (appInfo.isCustomHost) {
+        return db;
+      }
 
-module.exports.register = function() {
-  host = bbqHost;
-  return readInputCredentials().then(credentials => {
-    return register(credentials[0], credentials[1]).then(db => {
-      loadAppName(db).then(name => console.log('Your app name is ' + name));
-      return saveCredentials(credentials[0], credentials[1]);
+      if (appInfo.app) {
+        return bbqAppLogin(db, appInfo.app)
+      }
+
+      return getDefaultApp(db).then(appName => bbqAppLogin(db, appName));
+    }).catch((e) => {
+      // if the login failed try to directly login into the app
+      if (appInfo.app && !appInfo.isCustomHost) {
+        return login(Object.assign({}, args, {app: `https://${appInfo.app}.app.baqend.com/v1`}))
+      }
+      throw e;
     });
-  }).catch(e => console.log(e.message || e));
-};
+}
 
-module.exports.logout = function(args) {
-  host = args.host || bbqHost;
+function bbqAppLogin(db, appName) {
+  return db.modules.get('apps', { app: appName }).then((result) => {
+    if (!result) {
+      throw new Error(`App (${appName}) not found.`);
+    }
 
-  return readFile().then((json) => {
-    delete json[host];
-    return writeFile(json);
+    return appConnect(result.name, {token: result.token});
   });
-};
+}
 
-module.exports.openApp = function(app) {
+function logout(args) {
+  const appInfo = getAppInfo(args);
+  return readProfileFile().then((json) => {
+    delete json[appInfo.host];
+    return writeProfileFile(json);
+  });
+}
+
+function persistLogin(args) {
+  const appInfo = getAppInfo(args);
+  let credentials = getArgsCredentials(args);
+
+  if (!credentials) {
+    credentials = getInputCredentials(appInfo, false);
+  }
+
+  return Promise.resolve(credentials)
+    .then(credentials => {
+      return appConnect(appInfo, credentials).then(() => {
+        return saveCredentials(appInfo, credentials);
+      });
+    }).then(() => console.log('You have successfully been logged in.'));
+}
+
+function openApp(app) {
   if (app) {
-    return opn(`https://${app}.app.baqend.com`)
+    return opn(`https://${app}.app.baqend.com`);
   } else {
     return login({}).then(db => {
       opn(`https://${db._connector.host}`);
-    }).catch(e => console.log(e.message || e));
+    });
   }
-};
+}
 
-module.exports.openDashboard = function() {
-  host = 'bbq';
-  return readFile().then(json => {
-    if (json[host] && json[host].password && json[host].username) {
-      connect(host, json[host].username, json[host].password).then(db => {
-        opn("https://dashboard.baqend.com/login?token=" + db.token);
-      });
-    } else {
-      opn("https://dashboard.baqend.com");
-    }
-  })
-};
+function openDashboard(args) {
+  return connect(args).then(db => {
+    opn(`https://dashboard.baqend.com/login?token=${db.token}`);
+  }).catch(() => {
+    opn('https://dashboard.baqend.com');
+  });
+}
 
-module.exports.listApps = function() {
-  host = bbqHost;
+function listApps(args) {
+  return connect(args)
+    .then(db => getApps(db))
+    .then(apps => apps.forEach(app => console.log(app)))
+}
 
-  return readFile().then(json => {
-    if (!json || !json[host]) {
-      throw new Error("You are not logged in.");
-    }
-    return connect(host, json[host].username, json[host].password)
-  }).then(db =>  db.modules.get('apps'))
-    .then(apps => apps.forEach(app => console.log(app.name)))
-    .catch(e => console.log(e.message || e));
-};
+function whoami(args) {
+  return connect(Object.assign({skipInput: true}, args))
+    .then(db => console.log(db.User.me.username), () => console.log('You are not logged in.'));
+}
 
-module.exports.whoami = function(args) {
-  host = args.host || bbqHost;
-
-  return readFile().then(json => {
-    if (!json) {
-      throw new Error();
-    }
-
-    return connect(host, json[host].username, json[host].password);
-  }).then(db => console.log(db.User.me.username), () => console.log('You are not logged in.'));
-};
+function getApps(db) {
+  return db.modules.get('apps').then(apps => apps.map(app => app.name));
+}
 
 function getDefaultApp(db) {
-  return db.modules.get('apps').then(apps => {
+  return getApps(db).then(apps => {
     if (apps.length === 1) {
-      return apps[0].name;
+      return apps[0];
     }
     throw new Error('Please add the name of your app as a parameter.');
   });
 }
 
-function showLoginInfo() {
-  console.log('If you have created your Baqend Account with OAuth:');
-  console.log(' 1. Login to the dashboard with OAuth.');
-  console.log(' 2. Go to your account settings (top right corner)');
-  console.log(' 3. Add a password to your account, which you can then use with the CLI.');
-  console.log('');
-}
-
-function readInputCredentials() {
-  return readInput(isBbq()? 'E-Mail: ': 'Username: ')
+function readInputCredentials(appInfo) {
+  return readInput(appInfo.isCustomHost ? 'Username: ' : 'E-Mail: ')
       .then((username) => {
         return readInput('Password: ', true).then((password) => {
           console.log();
-          return [username, password];
+          return { username: username, password: password };
         });
       });
 }
@@ -198,84 +298,52 @@ function readInput(question, hidden) {
       rl.close();
       resolve(answer);
     });
+    rl.on('SIGINT', () => {
+      rl.close();
+      reject(new Error('Input is aborted.'))
+    });
     mutableStdout.muted = hidden;
   });
 }
 
-function writeFile(json) {
+function writeProfileFile(json) {
   return new Promise((resolve, reject) => {
     fs.writeFile(fileName, JSON.stringify(json), function(err) {
       if (err) {
-        reject(err)
+        console.warn('Baqend Profile file can\'t be written', err);
+        reject(err);
       }
       resolve();
     });
   });
 }
 
-function readFile() {
+function readProfileFile() {
   return new Promise((resolve, reject) => {
-    fs.readFile(fileName, function(err, data) {
-      let json = data ? JSON.parse(data.toString()) : {};
-      if (json[host] && json[host].password) {
-        json[host].password = decrypt(json[host].password);
+    fs.readFile(fileName, (err, data) => {
+      if (err) {
+        console.warn('Baqend Profile file can\'t be read', err);
+        reject(err);
       }
-
-      resolve(json);
+      resolve(data ? JSON.parse(data.toString()) : {});
     });
-  })
+  });
 }
 
-function saveCredentials(username, password) {
-  return readFile().then((json) => {
-    json[host] = json[host] || {};
-    json[host].username = username;
-    json[host].password = encrypt(password);
-    return writeFile(json);
-  })
+function saveCredentials(appInfo, credentials) {
+  return readProfileFile().then((json) => {
+    json[appInfo.host] = Object.assign({}, json[appInfo.host], credentials, {
+      password: encrypt(credentials.password)
+    });
+    return writeProfileFile(json);
+  });
 }
 
-function connect(hostName, username, password) {
-  return baqend.connect(hostName, true)
-      .then(db => db.login(username, password).then(() => db))
-}
-
-function dbLogin(username, password) {
-  return connect(host, username, password)
-      .then(db => {
-        if (isBbq()) {
-          return app? bbqAppLogin(db) : getDefaultApp(db).then(appName => bbqAppLogin(db, appName));
-        }
-        return db;
-      });
-}
-
-function register(username, password) {
-  return baqend.connect(host, true)
-      .then(db => {
-        return db.User.register(username, password).then(() => db)
-      });
-}
-
-function loadAppName(db) {
-  return db.modules.get('apps').then(apps => apps[0].name);
-}
-
-function bbqAppLogin(db, appName) {
-  return db.modules.get('apps', { app: app || appName }).then((result) => {
-    if (!result) {
-      throw new Error('App \'' + (app || appName) + '\' not found.');
-    }
-
-    let factory = new baqend.EntityManagerFactory({host: result.name, secure: true, tokenStorageFactory: {
-      create(origin) {
-        return new baqend.util.TokenStorage(origin, result.token);
-      }
-    }});
-    return factory.createEntityManager(true).ready();
-  })
-}
-
-function isBbq() {
-  return host === bbqHost;
-}
+exports.login = login;
+exports.register = register;
+exports.logout = logout;
+exports.openApp = openApp;
+exports.persistLogin = persistLogin;
+exports.whoami = whoami;
+exports.listApps = listApps;
+exports.openDashboard = openDashboard;

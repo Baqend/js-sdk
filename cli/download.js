@@ -19,7 +19,7 @@ function download(args) {
       promises.push(downloadCode(db, args.codeDir));
     }
     return Promise.all(promises);
-  }).catch(e => console.error(e.message ||e));
+  });
 }
 
 /**
