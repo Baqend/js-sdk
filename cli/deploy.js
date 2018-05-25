@@ -8,8 +8,7 @@ const path = require('path');
 const readline = require('readline');
 
 module.exports = function(args) {
-
-  return account.login({app: args.app, host: args.host}).then((db) => {
+  return account.login(args).then((db) => {
     let promises = []
     if (!args.code && !args.files || args.code && args.files) {
       promises.push(deployFiles(db, args.bucketPath, args.fileDir, args.fileGlob))
@@ -23,7 +22,7 @@ module.exports = function(args) {
       promises.push(schema.uploadSchema(db))
     }
     return Promise.all(promises);
-  }).catch(e => console.error(e.message ||e));
+  });
 };
 
 function deployFiles(db, path, cwd, pattern) {
@@ -67,7 +66,7 @@ function deployCode(db, codePath) {
     })).then(() => {
       console.log('Code deployment completed.');
     }).catch((e) => {
-      console.error(`Failed to deploy code: ${e.message}`);
+      throw new Error(`Failed to deploy code: ${e.message}`);
     });
   }).catch(() => {
     console.warn('Your specified backend code folder is empty, no backend code was deployed.');
@@ -182,6 +181,6 @@ function uploadFile(db, bucket, filePath, cwd) {
 
   let file = new db.File({path: `/${bucket}/${filePath}`, data: fs.createReadStream(fullFilePath), size: stat.size, type: 'stream'});
   return file.upload({ force: true }).catch(function(e) {
-    console.error(`Failed to upload file ${filePath}: ${e.message}`);
+    throw new Error(`Failed to upload file ${filePath}: ${e.message}`);
   });
 }
