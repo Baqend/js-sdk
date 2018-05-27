@@ -28,6 +28,11 @@ describe('Test Push Notifications', function() {
     }).then(function() {
       var msg = new DB.message.GCMAKey(TEST_GCM_APIKEY);
       return emf.send(msg);
+    }).then(function() {
+      return db.Device.loadWebPushKey().catch(function() {
+        var msg = new DB.message.VAPIDKeys();
+        return emf.send(msg);
+      });
     });
 
     function createLock() {
@@ -53,11 +58,15 @@ describe('Test Push Notifications', function() {
   });
 
   it('should save registration in cookie', function() {
-    return db.Device.register("Android", TEST_GCM_DEVICE).then(function() {
+    var deviceId;
+    return db.Device.register("Android", TEST_GCM_DEVICE).then(function(device) {
+      deviceId = device.id;
       return new DB.EntityManagerFactory({host: env.TEST_SERVER, staleness: 0}).createEntityManager(true).ready();
     }).then(function(newDB) {
       expect(newDB.isDeviceRegistered).be.true;
       expect(newDB.Device.isRegistered).be.true;
+      expect(newDB.Device.me).be.ok;
+      expect(newDB.Device.me.id).eql(deviceId);
     });
   });
 
@@ -79,25 +88,21 @@ describe('Test Push Notifications', function() {
   });
 
   it('should create correct json from push message', function() {
-    return db.login('root', 'root').then(function() {
-      return db.Device.register("Android", TEST_GCM_DEVICE);
-    }).then(function() {
-      return db.Device.find().equal("deviceOs", "Android").resultList();
-    }).then(function(result) {
-      var msg1 = new db.Device.PushMessage();
-      msg1.addDevice(result[0]);
-      msg1.message = "TestMSG";
-      msg1.subject = "TestSubject";
-      msg1.badge = 5;
-      msg1.data = {
-        "test": "test"
-      };
-      msg1.sound = "test";
-      var msg2 = new db.Device.PushMessage(result[0], "TestMSG", "TestSubject", "test", 5, { test: "test" });
-      expect(msg2.toJSON()).eql(msg1.toJSON());
-    });
+    return db.Device.register("Android", TEST_GCM_DEVICE)
+      .then(function(device) {
+        var msg1 = new db.Device.PushMessage();
+        msg1.addDevice(device);
+        msg1.message = "TestMSG";
+        msg1.subject = "TestSubject";
+        msg1.badge = 5;
+        msg1.data = {
+          "test": "test"
+        };
+        msg1.sound = "test";
+        var msg2 = new db.Device.PushMessage(device, "TestMSG", "TestSubject", "test", 5, { test: "test" });
+        expect(msg2.toJSON()).eql(msg1.toJSON());
+      });
   });
-
 
   it('should not be allowed to insert device', function() {
     var device = new db.Device();
@@ -110,19 +115,27 @@ describe('Test Push Notifications', function() {
     }).then(function(newDB) {
       expect(newDB.isDeviceRegistered).be.true;
       expect(newDB.Device.isRegistered).be.true;
-      return db.Device.find().resultList();
-    }).then(function(result) {
-      expect(result).not.empty;
-      return Promise.all(result.map(function(device) {
-        return device.delete({ force: true });
-      }));
+      expect(newDB.Device.me).be.ok;
+
+      return newDB.Device.me.delete({ force: true });
     }).then(function() {
       DB.connector.Connector.connections = {};
       return new DB.EntityManagerFactory({host: env.TEST_SERVER, staleness: 0}).createEntityManager(true).ready();
     }).then(function(newDB) {
       expect(newDB.isDeviceRegistered).be.false;
       expect(newDB.Device.isRegistered).be.false;
+      expect(newDB.Device.me).be.null;
     });
   });
 
+  if (typeof ArrayBuffer === 'undefined') {
+    return;
+  }
+
+  it('should provide the WebPush key as an ArrayBuffer array', function() {
+    return db.Device.loadWebPushKey().then(function(webPushKey) {
+      expect(webPushKey).be.ok;
+      expect(webPushKey).instanceOf(ArrayBuffer);
+    });
+  });
 });
