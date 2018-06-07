@@ -1,3 +1,17 @@
+<a name="v2.12.0"></a>
+# v2.12.0 (2018-6-7)
+
+
+### Bug Fixes
+
+* CLI: Improve error handling and reflect them with a proper exit code
+
+### Features
+
+* SDK: Add WebPush support 
+* SDK: Improve the Device#register method to support all WebPush message properties
+* CLI: Add `BAQEND_TOKEN` and `BAT` as new environment variables which can be used to provide Baqend credentials to the CLI for automation 
+
 <a name="v2.11.0"></a>
 # v2.11.0 (2018-5-15)
 
