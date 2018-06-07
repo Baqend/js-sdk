@@ -2,6 +2,8 @@
 const fs = require('fs');
 const account = require('./account');
 const path = require('path');
+const Confirm = require('prompt-confirm');
+const prompt = new Confirm("This will delete ALL of your App data. Are you sure?");
 
 const filepath = './baqend/schema/';
 
@@ -43,7 +45,14 @@ function uploadSchema(db, args) {
         console.log("Uploading " + schema.class.replace('/db/', '') + " Schema")
       });
       if (args.force) {
-        return db.send(new db.message.ReplaceAllSchemas(schemas))
+        return prompt.run()
+          .then(answer => {
+            if (answer) {
+              return db.send(new db.message.ReplaceAllSchemas(schemas));
+            } else {
+              return Promise.reject("Schema not updated");
+            }
+          });
       } else {
         return db.send(new db.message.UpdateAllSchemas(schemas))
       }
