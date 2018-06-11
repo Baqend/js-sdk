@@ -2,8 +2,7 @@
 const fs = require('fs');
 const account = require('./account');
 const path = require('path');
-const Confirm = require('prompt-confirm');
-const prompt = new Confirm("This will delete ALL of your App data. Are you sure?");
+const helper = require('./helper');
 
 const filepath = './baqend/schema/';
 
@@ -45,12 +44,16 @@ function uploadSchema(db, args) {
         console.log("Uploading " + schema.class.replace('/db/', '') + " Schema")
       });
       if (args.force) {
-        return prompt.run()
-          .then(answer => {
-            if (answer) {
-              return db.send(new db.message.ReplaceAllSchemas(schemas));
-            } else {
-              return Promise.reject("Schema not updated");
+
+        return helper.readInput("This will delete ALL your App data. Are you sure you want to continue? (yes/no)")
+          .then((answer) => {
+            switch (answer.toLowerCase()) {
+              case "yes":
+                return db.send(new db.message.ReplaceAllSchemas(schemas));
+              case "no":
+                return Promise.reject("Schema not updated");
+              default:
+                return Promise.reject("Only yes or no allowed");
             }
           });
       } else {
