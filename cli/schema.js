@@ -40,23 +40,27 @@ function uploadSchema(db, args) {
         })
       })
     ).then((schemas) => {
-      schemas.forEach((schema) => {
-        console.log("Uploading " + schema.class.replace('/db/', '') + " Schema")
-      });
       if (args.force) {
 
         return helper.readInput("This will delete ALL your App data. Are you sure you want to continue? (yes/no)")
           .then((answer) => {
             switch (answer.toLowerCase()) {
               case "yes":
+                schemas.forEach((schema) => {
+                  console.log("Uploading " + schema.class.replace('/db/', '') + " Schema")
+                });
                 return db.send(new db.message.ReplaceAllSchemas(schemas));
               case "no":
-                return Promise.reject("Schema not updated");
+                console.log("Schema not updated");
+                return Promise.reject("");
               default:
-                return Promise.reject("Only yes or no allowed");
+                throw new Error("Only yes or no allowed");
             }
           });
       } else {
+        schemas.forEach((schema) => {
+          console.log("Uploading " + schema.class.replace('/db/', '') + " Schema")
+        });
         return db.send(new db.message.UpdateAllSchemas(schemas))
       }
     })
