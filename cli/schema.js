@@ -2,6 +2,7 @@
 const fs = require('fs');
 const account = require('./account');
 const path = require('path');
+const helper = require('./helper');
 
 const filepath = './baqend/schema/';
 
@@ -12,9 +13,13 @@ module.exports = function(args) {
     }
     switch(args.command) {
       case 'upload':
-        return uploadSchema(db, args).then(() => {
+        return uploadSchema(db, args).then((deployed) => {
           console.log("---------------------------------------")
-          console.log("The schema was successfully " + (args.force && "replaced" || "updated") )
+          if (deployed) {
+            console.log("The schema was successfully " + (args.force && "replaced" || "updated") )
+          } else {
+            console.log("The schema update was aborted")
+          }
         });
       case 'download':
         return downloadSchema(db, args).then(() => {
@@ -29,7 +34,6 @@ module.exports = function(args) {
 
 function uploadSchema(db, args) {
   args = args || {};
-  let allSchemas = [];
   let filepath = 'baqend/schema/';
   return readDirectory(filepath).then((fileNames) => {
     return Promise.all(
@@ -39,12 +43,21 @@ function uploadSchema(db, args) {
         })
       })
     ).then((schemas) => {
-      schemas.forEach((schema) => {
-        console.log("Uploading " + schema.class.replace('/db/', '') + " Schema")
-      });
       if (args.force) {
-        return db.send(new db.message.ReplaceAllSchemas(schemas))
+        return helper.readInput("This will delete ALL your App data. Are you sure you want to continue? (yes/no)")
+          .then((answer) => {
+            if (answer.toLowerCase() === 'yes') {
+              schemas.forEach((schema) => {
+                console.log("Replacing " + schema.class.replace('/db/', '') + " Schema")
+              });
+              return db.send(new db.message.ReplaceAllSchemas(schemas));
+            }
+            return false;
+          });
       } else {
+        schemas.forEach((schema) => {
+          console.log("Updating " + schema.class.replace('/db/', '') + " Schema")
+        });
         return db.send(new db.message.UpdateAllSchemas(schemas))
       }
     })

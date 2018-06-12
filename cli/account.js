@@ -3,12 +3,12 @@ const os = require('os');
 const fs = require('fs');
 const baqend = require('../lib/baqend');
 const fileName = os.homedir() + '/.baqend';
-const readline = require('readline');
 const crypto = require('crypto');
 const opn = require('opn');
 const algorithm = 'aes-256-ctr';
 const password = 'N2Ki=za[8iy4ff4jYn/3,y;';
 const bbqHost = 'bbq';
+const helper = require('./helper');
 
 function getAppInfo(args) {
   const isCustomHost = args.app && /^https?:\/\//.test(args.app);
@@ -251,9 +251,9 @@ function getDefaultApp(db) {
 }
 
 function readInputCredentials(appInfo) {
-  return readInput(appInfo.isCustomHost ? 'Username: ' : 'E-Mail: ')
+  return helper.readInput(appInfo.isCustomHost ? 'Username: ' : 'E-Mail: ')
       .then((username) => {
-        return readInput('Password: ', true).then((password) => {
+        return helper.readInput('Password: ', true).then((password) => {
           console.log();
           return { username: username, password: password };
         });
@@ -272,38 +272,6 @@ function decrypt(input) {
   let decrypted = decipher.update(input, 'base64', 'utf8');
   decrypted += decipher.final('utf8');
   return decrypted;
-}
-
-function readInput(question, hidden) {
-  let Writable = require('stream').Writable;
-
-  let mutableStdout = new Writable({
-    write: function(chunk, encoding, callback) {
-      if (!this.muted) {
-        process.stdout.write(chunk, encoding);
-      }
-      callback();
-    }
-  });
-
-  let rl = readline.createInterface({
-    input: process.stdin,
-    output: mutableStdout,
-    terminal: true
-  });
-
-  return new Promise((resolve, reject) => {
-    mutableStdout.muted = false;
-    rl.question(question, (answer) => {
-      rl.close();
-      resolve(answer);
-    });
-    rl.on('SIGINT', () => {
-      rl.close();
-      reject(new Error('Input is aborted.'))
-    });
-    mutableStdout.muted = hidden;
-  });
 }
 
 function writeProfileFile(json) {
