@@ -17,7 +17,7 @@ describe("Test Index", function() {
 
     meta.addType(personType = new DB.metamodel.EntityType(helper.randomize("IndexPerson"), meta.entity(Object)));
     personType.addAttribute(new DB.metamodel.SingularAttribute("name", meta.baseType(String)));
-    
+
     return meta.save().then(function() {
       db = new DB.EntityManagerFactory({host: env.TEST_SERVER, staleness: 0}).createEntityManager();
       return db.ready();
@@ -41,8 +41,9 @@ describe("Test Index", function() {
     }).then(function(indexes) {
       expect(indexes).have.length(2);
       var index = indexes.filter(function(el) { return el.keys[0].name })[0];
-      expect(index.isCompound).be.false;
+      expect(index.isCompound).be.true;
       expect(index.keys[0].name).eqls(DB.metamodel.DbIndex.ASC);
+      expect(index.keys[1].id).eqls(DB.metamodel.DbIndex.ASC);
     });
   });
 
@@ -126,6 +127,7 @@ describe("Test Index", function() {
       expect(index.isCompound).be.true;
       expect(index.keys[0].name).eqls(DB.metamodel.DbIndex.ASC);
       expect(index.keys[1].age).eqls(DB.metamodel.DbIndex.DESC);
+      expect(index.keys[2].id).eqls(DB.metamodel.DbIndex.DESC);
     });
   });
 
