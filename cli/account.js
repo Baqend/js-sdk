@@ -128,12 +128,13 @@ function connect(args) {
       if (!credentials)
         throw new Error('Login information are missing. Login with baqend login or pass a baqend token via BAQEND_TOKEN environment variable');
 
-      return appConnect(appInfo.host, credentials);
+      return appConnect(appInfo, credentials);
     });
 }
 
-function appConnect(host, credentials) {
-  let factory = new baqend.EntityManagerFactory({host: host, secure: true});
+function appConnect(appInfo, credentials) {
+  // do not use the global token storage here, to prevent login collisions on the bbq app
+  let factory = new baqend.EntityManagerFactory({host: appInfo.host, secure: true, tokenStorageFactory: baqend.util.TokenStorage});
   return factory.createEntityManager(true).ready().then(db => {
     if (!credentials)
       return db;
@@ -180,7 +181,7 @@ function bbqAppLogin(db, appName) {
       throw new Error(`App (${appName}) not found.`);
     }
 
-    return appConnect(result.name, {token: result.token});
+    return appConnect({host: result.name}, {token: result.token});
   });
 }
 
