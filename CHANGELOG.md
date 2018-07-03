@@ -1,3 +1,13 @@
+<a name="v2.12.1"></a>
+# v2.12.1 (2018-7-3)
+
+
+### Bug Fixes
+
+* CLI: Prompt before the user can replace the entire schema
+* CLI: Fix signup handling
+* Docs: Document vibrate options on push notifications 
+
 <a name="v2.12.0"></a>
 # v2.12.0 (2018-6-7)
 
