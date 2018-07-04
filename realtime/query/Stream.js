@@ -103,10 +103,10 @@ class Stream {
 
   static streamObservable(entityManager, query, options, mapper) {
     options = Stream.parseOptions(options);
-    let id = uuid();
 
     const socket = entityManager.entityManagerFactory.websocket;
     const observable = new lib.Observable(subscriber => {
+      let id = uuid();
       const stream = socket.openStream(entityManager.tokenStorage, id);
 
       stream.send(Object.assign({
