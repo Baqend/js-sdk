@@ -6,6 +6,8 @@ const fileName = os.homedir() + '/.baqend';
 const crypto = require('crypto');
 const opn = require('opn');
 const algorithm = 'aes-256-ctr';
+const cipherKey = Buffer.from('08cb2e72b03e90df6b4a4112d2933056574748707276fbdc62d1096d16ca18b1', 'hex');
+const cipherIv  = Buffer.from('fcc8e0479287f4809b77e1e23777e519', 'hex');
 const password = 'N2Ki=za[8iy4ff4jYn/3,y;';
 const bbqHost = 'bbq';
 const helper = require('./helper');
@@ -262,7 +264,7 @@ function readInputCredentials(appInfo) {
 }
 
 function encrypt(input) {
-  let cipher = crypto.createCipher(algorithm, password);
+  const cipher = crypto.createCipheriv(algorithm, cipherKey, cipherIv);
   let encrypted = cipher.update(input, 'utf8', 'base64');
   encrypted += cipher.final('base64');
   return encrypted;
