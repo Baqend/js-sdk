@@ -2,6 +2,7 @@
 "use strict";
 
 const account = require('./account');
+const copy = require('./copy');
 const deploy = require('./deploy');
 const download = require('./download');
 const schema = require('./schema');
@@ -62,6 +63,13 @@ if (!module.parent) {
       .option('-c, --code-dir <dir>',       'path to code directory [default: baqend]', 'baqend')
       .option('-S, --schema',               'deploy schema')
       .action((app, options) => result = deploy(Object.assign({ app: app }, options)))
+  ;
+
+  program
+      .command('copy <source> <dest>')
+      .alias('cp')
+      .description('Copies files to and from Baqend')
+      .action((source, dest, options) => result = copy(Object.assign({ source: source, dest: dest }, options)))
   ;
 
   program
