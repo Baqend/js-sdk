@@ -20,12 +20,80 @@ function splitArg(arg) {
 
     // Add www bucket prefix if path is relative
     const absolutePath = path.startsWith('/') ? path : `/www/${path}`;
+    if (!absolutePath.match(/^\/\w+\//)) {
+      throw new Error('The path must begin with a bucket.');
+    }
 
     return [app, absolutePath];
   }
 
   // Has local part?
   return [null, arg];
+}
+
+/**
+ * @param {EntityManager | null} db
+ * @param {string} path
+ * @return {Promise<boolean>}
+ */
+function isDirectory(db, path) {
+  if (db) {
+    return Promise.resolve(path.endsWith('/'));
+  }
+
+  return new Promise((resolve, reject) => {
+    fs.stat(path, (err, stat) => {
+      if (!err) {
+        resolve(stat.isDirectory());
+      } else if (err.code === 'ENOENT') {
+        resolve(false);
+      } else {
+        reject(err);
+      }
+    });
+  });
+}
+
+/**
+ * @param {string} path
+ * @return {string}
+ */
+function extractFilename(path) {
+  const index = path.lastIndexOf('/');
+  if (index >= 0) {
+    return path.substring(index + 1);
+  }
+
+  return path;
+}
+
+/**
+ * @param {string} path
+ * @return {string}
+ */
+function removeTrailingSlash(path) {
+  if (path.endsWith('/')) {
+    return path.substring(0, path.length - 1);
+  }
+
+  return path;
+}
+
+/**
+ * @param {EntityManager | null} sourceDB
+ * @param {string} sourcePath
+ * @param {EntityManager | null} destDB
+ * @param {string} destPath
+ */
+function normalizeArgs(sourceDB, sourcePath, destDB, destPath) {
+  return isDirectory(destDB, destPath).then((isDirectory) => {
+    if (isDirectory) {
+      const sourceFilename = extractFilename(sourcePath);
+      destPath = `${removeTrailingSlash(destPath)}/${sourceFilename}`;
+    }
+
+    return [sourcePath, destPath];
+  });
 }
 
 /**
@@ -83,7 +151,7 @@ function streamFrom(db, path) {
 function streamTo(db, path, rs, size) {
   if (db) {
     const file = new db.File({ path: path, data: rs, size: size, type: 'stream' });
-    return file.upload();
+    return file.upload({ force: true });
   }
 
   return new Promise((resolve, reject) => {
@@ -114,11 +182,16 @@ function copy(args) {
     const sourceDB = dbs[0];
     const destDB = dbs[1];
 
-    return streamFrom(sourceDB, sourcePath).then((args) => {
-      const rs = args[0];
-      const size = args[1];
+    return normalizeArgs(sourceDB, sourcePath, destDB, destPath).then((paths) => {
+      const sourcePath = paths[0];
+      const destPath = paths[1];
 
-      return streamTo(destDB, destPath, rs, size);
+      return streamFrom(sourceDB, sourcePath).then((args) => {
+        const rs = args[0];
+        const size = args[1];
+
+        return streamTo(destDB, destPath, rs, size);
+      });
     });
   });
 }
