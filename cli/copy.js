@@ -12,12 +12,20 @@ const readline = require('readline');
  * @return {[string, string]}
  */
 function splitArg(arg) {
-  const args = arg.split(':', 2);
-  if (args.length < 2) {
-    return [null, args[0]];
+  const index = arg.lastIndexOf(':');
+  // Has app and path part?
+  if (index >= 0) {
+    const app = arg.substring(0, index);
+    const path = arg.substring(index + 1);
+
+    // Add www bucket prefix if path is relative
+    const absolutePath = path.startsWith('/') ? path : `/www/${path}`;
+
+    return [app, absolutePath];
   }
 
-  return args;
+  // Has local part?
+  return [null, arg];
 }
 
 /**
