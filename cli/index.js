@@ -65,18 +65,17 @@ if (!module.parent) {
       .action((app, options) => result = deploy(Object.assign({ app: app }, options)))
   ;
 
-  program
-      .command('copy <source> <dest>')
-      .alias('cp')
-      .description('Copies files to and from Baqend')
-      .help((str) => `
-  Usage: cp [OPTIONS] SRC_PATH     DEST_PATH
-         cp [OPTIONS] APP:SRC_PATH DEST_PATH
-         cp [OPTIONS] SRC_PATH     APP:DEST_PATH
-         cp [OPTIONS] APP:SRC_PATH APP:DEST_PATH
-         
-  Copies single files to and from Baqend
-  
+  const copyCommand = program
+    .command('copy <source> <dest>')
+    .alias('cp')
+    .description(`Copies single files to and from Baqend`)
+    .usage(`[OPTIONS] SRC_PATH     DEST_PATH
+         copy|cp [OPTIONS] APP:SRC_PATH DEST_PATH
+         copy|cp [OPTIONS] SRC_PATH     APP:DEST_PATH
+         copy|cp [OPTIONS] APP:SRC_PATH APP:DEST_PATH`)
+    .action((source, dest, options) => result = copy(Object.assign({ source: source, dest: dest }, options)))
+    .on('--help', () => {
+        console.log(`
   You can specify local paths without colon and app paths with a colon.
   For APP, you can use either your Baqend app's name or an API endpoint: "https://example.org/v1".
   If the app path is relative, it is assumed you are using the "www" bucket:
@@ -88,11 +87,8 @@ if (!module.parent) {
     baqend cp my-app:/www/index.html .
     
   If you target a directory, the filename of the source file will be used.
-  You can also copy files between different apps, or between community editions and apps.
-         
-  ${str.substring(82)}
-`)
-      .action((source, dest, options) => result = copy(Object.assign({ source: source, dest: dest }, options)))
+  You can also copy files between different apps, or between community editions and apps.`)
+    })
   ;
 
   program
