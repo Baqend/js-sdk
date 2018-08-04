@@ -1,0 +1,746 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>Baqend JavaScript SDK 2.12.2 - Source: lib/query/Query.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+
+    <link rel="shortcut icon" type="image/x-icon" href="img/favicon.ico">
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/bootstrap-baqend.min.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+    <link type="text/css" rel="stylesheet" href="styles/font-awesome-4.7.0.css">
+</head>
+
+<body>
+
+<nav class="navbar navbar-default navbar-fixed-top" role="navigation">
+    <div class="navbar-inner container">
+
+        <!-- Collapsed navigation -->
+        <div class="navbar-header">
+            <!-- Expander button -->
+            <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+
+            <!-- Main title -->
+            <a class="navbar-brand" href="/"><img src="img/logo.png"></a>
+        </div>
+
+        <!-- Expanded navigation -->
+        <div id="nav" class="navbar-collapse collapse">
+            <!-- Search -->
+            <form class="navbar-right form-inline search-form">
+                <div class="form-group search-form-group">
+                    <input type="search" class="form-control search-input" id="search-query" placeholder="Search Guide" name="q" autocomplete="off">
+                    <div id="search-results" class="search-results">
+                        <p class="search-no-results">Please enter a search query ...</p>
+                    </div>
+                    <i class="search-icon fa fa-search"></i>
+                </div>
+            </form>
+
+            <!-- Main navigation -->
+            <ul class="nav navbar-nav">
+                <li>
+                    <a href="https://dashboard.baqend.com/">Dashboard</a>
+                </li>
+
+                <!-- Guide Navigation -->
+                <li class="dropdown">
+                    <a href="#" class="dropdown-toggle" data-toggle="dropdown">Guide <b class="caret"></b></a>
+                    <ul class="dropdown-menu">
+                        <li><a href="https://www.baqend.com/guide/">Home</a></li>
+                        <li><a href="https://www.baqend.com/guide/#speed-kit">Speed Kit</a></li>
+                        <li><a href="https://www.baqend.com/guide/#platform">Platform</a></li>
+                        <li><a href="https://www.baqend.com/guide/roadmap/">Roadmap</a></li>
+                        <li><a href="https://www.baqend.com/guide/topics/faq/">FAQ</a></li>
+                    </ul>
+                </li>
+
+                <!-- Starter Kits -->
+                <li class="dropdown">
+                    <a href="#" class="dropdown-toggle" data-toggle="dropdown">Starter Kits <b class="caret"></b></a>
+                    <ul class="dropdown-menu">
+                        <li><a href="https://www.baqend.com/guide/starter-kits/">Starter Kits Overview</a></li>
+                        <li><a href="https://www.baqend.com/guide/starter-kits/angular2/">Angular 2 Starter Kit</a></li>
+                        <li><a href="https://www.baqend.com/guide/starter-kits/react/">React and Redux Starter Kit</a></li>
+                        <li><a href="https://www.baqend.com/guide/starter-kits/bootstrap/">Bootstrap Starter Kit</a></li>
+                        <li><a href="https://www.baqend.com/guide/starter-kits/ionic2/">Ionic 2 Starter Kit</a></li>
+                        <li><a href="https://www.baqend.com/guide/starter-kits/ionic/">Ionic Starter Kit</a></li>
+                    </ul>
+                </li>
+
+                <li class="active">
+                    <a href="baqend.html">JS API</a>
+                </li>
+                <li>
+                    <a href="https://www.baqend.com/tutorial.html">Tutorial</a>
+                </li>
+            </ul>
+        </div>
+    </div>
+</nav>
+
+<div class="box gray pt-32 pb-32">
+  <div class="container">
+    <div class="row">
+      <!-- <div class="col-md-3"></div> -->
+      <div class="bs-sidebar hidden-print fixed affix" role="complementary">
+          <input class="filter form-control input-sm" type="text" placeholder="FILTER"/>
+
+          <ul class="nav bs-sidenav">
+          
+          
+              
+                  
+                      <li class=""><a href="Acl.html" class="nav-name">Acl</a></li>
+                  
+                      <li class=""><a href="EntityManager.html" class="nav-name">EntityManager</a></li>
+                  
+                      <li class=""><a href="EntityManagerFactory.html" class="nav-name">EntityManagerFactory</a></li>
+                  
+                      <li class=""><a href="EntityTransaction.html" class="nav-name">EntityTransaction</a></li>
+                  
+                      <li class=""><a href="GeoPoint.html" class="nav-name">GeoPoint</a></li>
+                  
+                      <li class=""><a href="RealtimeEvent.html" class="nav-name">RealtimeEvent</a></li>
+                  
+                      <li class=""><a href="baqend.html" class="nav-name">baqend</a></li>
+                  
+              
+          
+              
+                  <li class="">
+                      <a href="binding.html" class="nav-name">binding</a>
+                      <ul class="nav">
+                        
+                          <li class=""><a href="binding.Accessor.html" class="nav-name">Accessor</a></li>
+                        
+                          <li class=""><a href="binding.DeviceFactory.html" class="nav-name">DeviceFactory</a></li>
+                        
+                          <li class=""><a href="binding.Enhancer.html" class="nav-name">Enhancer</a></li>
+                        
+                          <li class=""><a href="binding.Entity.html" class="nav-name">Entity</a></li>
+                        
+                          <li class=""><a href="binding.EntityFactory.html" class="nav-name">EntityFactory</a></li>
+                        
+                          <li class=""><a href="binding.Factory.html" class="nav-name">Factory</a></li>
+                        
+                          <li class=""><a href="binding.File.html" class="nav-name">File</a></li>
+                        
+                          <li class=""><a href="binding.FileFactory.html" class="nav-name">FileFactory</a></li>
+                        
+                          <li class=""><a href="binding.Managed.html" class="nav-name">Managed</a></li>
+                        
+                          <li class=""><a href="binding.ManagedFactory.html" class="nav-name">ManagedFactory</a></li>
+                        
+                          <li class=""><a href="binding.Role.html" class="nav-name">Role</a></li>
+                        
+                          <li class=""><a href="binding.User.html" class="nav-name">User</a></li>
+                        
+                          <li class=""><a href="binding.UserFactory.html" class="nav-name">UserFactory</a></li>
+                        
+                      </ul>
+                  </li>
+              
+          
+              
+                  <li class="">
+                      <a href="caching.html" class="nav-name">caching</a>
+                      <ul class="nav">
+                        
+                          <li class=""><a href="caching.BloomFilter.html" class="nav-name">BloomFilter</a></li>
+                        
+                      </ul>
+                  </li>
+              
+          
+              
+                  <li class="">
+                      <a href="connector.html" class="nav-name">connector</a>
+                      <ul class="nav">
+                        
+                          <li class=""><a href="connector.Connector.html" class="nav-name">Connector</a></li>
+                        
+                          <li class=""><a href="connector.FetchConnector.html" class="nav-name">FetchConnector</a></li>
+                        
+                          <li class=""><a href="connector.IFrameConnector.html" class="nav-name">IFrameConnector</a></li>
+                        
+                          <li class=""><a href="connector.Message.html" class="nav-name">Message</a></li>
+                        
+                          <li class=""><a href="connector.NodeConnector.html" class="nav-name">NodeConnector</a></li>
+                        
+                          <li class=""><a href="connector.ObservableStream.html" class="nav-name">ObservableStream</a></li>
+                        
+                          <li class=""><a href="connector.WebSocketConnector.html" class="nav-name">WebSocketConnector</a></li>
+                        
+                          <li class=""><a href="connector.XMLHttpConnector.html" class="nav-name">XMLHttpConnector</a></li>
+                        
+                          <li class=""><a href="connector.ChannelMessage.html" class="nav-name">ChannelMessage</a></li>
+                        
+                      </ul>
+                  </li>
+              
+          
+              
+                  <li class="">
+                      <a href="error.html" class="nav-name">error</a>
+                      <ul class="nav">
+                        
+                          <li class=""><a href="error.CommunicationError.html" class="nav-name">CommunicationError</a></li>
+                        
+                          <li class=""><a href="error.EntityExistsError.html" class="nav-name">EntityExistsError</a></li>
+                        
+                          <li class=""><a href="error.IllegalEntityError.html" class="nav-name">IllegalEntityError</a></li>
+                        
+                          <li class=""><a href="error.PersistentError.html" class="nav-name">PersistentError</a></li>
+                        
+                          <li class=""><a href="error.RollbackError.html" class="nav-name">RollbackError</a></li>
+                        
+                      </ul>
+                  </li>
+              
+          
+              
+                  <li class="">
+                      <a href="metamodel.html" class="nav-name">metamodel</a>
+                      <ul class="nav">
+                        
+                          <li class=""><a href="metamodel.Attribute.html" class="nav-name">Attribute</a></li>
+                        
+                          <li class=""><a href="metamodel.BasicType.html" class="nav-name">BasicType</a></li>
+                        
+                          <li class=""><a href="metamodel.CollectionAttribute.html" class="nav-name">CollectionAttribute</a></li>
+                        
+                          <li class=""><a href="metamodel.DbIndex.html" class="nav-name">DbIndex</a></li>
+                        
+                          <li class=""><a href="metamodel.EmbeddableType.html" class="nav-name">EmbeddableType</a></li>
+                        
+                          <li class=""><a href="metamodel.EntityType.html" class="nav-name">EntityType</a></li>
+                        
+                          <li class=""><a href="metamodel.ListAttribute.html" class="nav-name">ListAttribute</a></li>
+                        
+                          <li class=""><a href="metamodel.ManagedType.html" class="nav-name">ManagedType</a></li>
+                        
+                          <li class=""><a href="metamodel.MapAttribute.html" class="nav-name">MapAttribute</a></li>
+                        
+                          <li class=""><a href="metamodel.Metamodel.html" class="nav-name">Metamodel</a></li>
+                        
+                          <li class=""><a href="metamodel.ModelBuilder.html" class="nav-name">ModelBuilder</a></li>
+                        
+                          <li class=""><a href="metamodel.PluralAttribute.html" class="nav-name">PluralAttribute</a></li>
+                        
+                          <li class=""><a href="metamodel.SetAttribute.html" class="nav-name">SetAttribute</a></li>
+                        
+                          <li class=""><a href="metamodel.SingularAttribute.html" class="nav-name">SingularAttribute</a></li>
+                        
+                          <li class=""><a href="metamodel.Type.html" class="nav-name">Type</a></li>
+                        
+                      </ul>
+                  </li>
+              
+          
+              
+                  <li class="">
+                      <a href="model.html" class="nav-name">model</a>
+                      <ul class="nav">
+                        
+                          <li class=""><a href="model.Device.html" class="nav-name">Device</a></li>
+                        
+                          <li class=""><a href="model.Role.html" class="nav-name">Role</a></li>
+                        
+                          <li class=""><a href="model.User.html" class="nav-name">User</a></li>
+                        
+                      </ul>
+                  </li>
+              
+          
+              
+                  <li class="">
+                      <a href="partialupdate.html" class="nav-name">partialupdate</a>
+                      <ul class="nav">
+                        
+                          <li class=""><a href="partialupdate.EntityPartialUpdateBuilder.html" class="nav-name">EntityPartialUpdateBuilder</a></li>
+                        
+                          <li class=""><a href="partialupdate.PartialUpdateBuilder.html" class="nav-name">PartialUpdateBuilder</a></li>
+                        
+                          <li class=""><a href="partialupdate.UpdateOperation.html" class="nav-name">UpdateOperation</a></li>
+                        
+                      </ul>
+                  </li>
+              
+          
+              
+                  <li class="">
+                      <a href="query.html" class="nav-name">query</a>
+                      <ul class="nav">
+                        
+                          <li class=""><a href="query.Builder.html" class="nav-name">Builder</a></li>
+                        
+                          <li class=""><a href="query.Condition.html" class="nav-name">Condition</a></li>
+                        
+                          <li class=""><a href="query.Filter.html" class="nav-name">Filter</a></li>
+                        
+                          <li class=""><a href="query.Node.html" class="nav-name">Node</a></li>
+                        
+                          <li class=""><a href="query.Operator.html" class="nav-name">Operator</a></li>
+                        
+                          <li class=""><a href="query.Query.html" class="nav-name">Query</a></li>
+                        
+                          <li class=""><a href="query.Stream.html" class="nav-name">Stream</a></li>
+                        
+                      </ul>
+                  </li>
+              
+          
+              
+                  <li class="">
+                      <a href="util.html" class="nav-name">util</a>
+                      <ul class="nav">
+                        
+                          <li class=""><a href="util.Code.html" class="nav-name">Code</a></li>
+                        
+                          <li class=""><a href="util.Lockable.html" class="nav-name">Lockable</a></li>
+                        
+                          <li class=""><a href="util.Logger.html" class="nav-name">Logger</a></li>
+                        
+                          <li class=""><a href="util.Metadata.html" class="nav-name">Metadata</a></li>
+                        
+                          <li class=""><a href="util.Modules.html" class="nav-name">Modules</a></li>
+                        
+                          <li class=""><a href="util.Permission.html" class="nav-name">Permission</a></li>
+                        
+                          <li class=""><a href="util.PushMessage.html" class="nav-name">PushMessage</a></li>
+                        
+                          <li class=""><a href="util.TokenStorage.html" class="nav-name">TokenStorage</a></li>
+                        
+                          <li class=""><a href="util.ValidationResult.html" class="nav-name">ValidationResult</a></li>
+                        
+                          <li class=""><a href="util.Validator.html" class="nav-name">Validator</a></li>
+                        
+                          <li class=""><a href="util.TokenStorageFactory.html" class="nav-name">TokenStorageFactory</a></li>
+                        
+                      </ul>
+                  </li>
+              
+          
+          </ul>
+      </div>
+    <div class="col-md-12" id="main">
+      <div class="content">
+        <h1 class="page-title">Source: lib/query/Query.js</h1>
+
+        
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>"use strict";
+
+/**
+ * @alias query.Query&lt;T>
+ */
+class Query {
+  constructor(entityManager, resultClass) {
+    /**
+     * The owning EntityManager of this query
+     * @type EntityManager
+     */
+    this.entityManager = entityManager;
+
+    /**
+     * The result class of this query
+     * @type Class&lt;T>
+     */
+    this.resultClass = resultClass;
+  }
+
+  /**
+   * Add an ascending sort for the specified field to this query
+   * @param {string} field The field to sort
+   * @return {query.Query&lt;T>} The resulting Query
+   */
+  ascending(field) {
+    return this._addOrder(field, 1);
+  }
+
+  /**
+   * Add an decending sort for the specified field to this query
+   * @param {string} field The field to sort
+   * @return {query.Query&lt;T>} The resulting Query
+   */
+  descending(field) {
+    return this._addOrder(field, -1);
+  }
+
+  /**
+   * Sets the sort of the query and discard all existing paramaters
+   * @param {Object} sort The new sort of the query
+   * @return {query.Query&lt;T>} The resulting Query
+   *
+   * @see http://docs.mongodb.org/manual/reference/method/cursor.sort/
+   */
+  sort(sort) {
+    if (!(sort instanceof Object) || Object.getPrototypeOf(sort) != Object.prototype)
+      throw new Error('sort must be an object.');
+
+    return this._addOrder(sort);
+  }
+
+  /**
+   * Sets the offset of the query, i.e. how many elements should be skipped
+   * @param {number} offset The offset of this query
+   * @return {query.Query&lt;T>} The resulting Query
+   *
+   * @see http://docs.mongodb.org/manual/reference/method/cursor.skip/
+   */
+  offset(offset) {
+    if (offset &lt; 0)
+      throw new Error("The offset can't be nagative.");
+
+    return this._addOffset(offset);
+  }
+
+  /**
+   * Sets the limit of this query, i.e hox many objects should be returnd
+   * @param {number} limit The limit of this query
+   * @return {query.Query&lt;T>} The resulting Query
+   *
+   * @see http://docs.mongodb.org/manual/reference/method/cursor.limit/
+   */
+  limit(limit) {
+    if (limit &lt; 0)
+      throw new Error("The limit can't be nagative.");
+
+    return this._addLimit(limit);
+  }
+
+  /**
+   * Execute the query and return the query results as a List.
+   * Note: All local unsaved changes on matching objects, will be discarded.
+   * @param {Object} [options] The query options
+   * @param {number|boolean} [options.depth=0] The object depth which will be loaded. Depth 0 load only the found
+   * objects, &lt;code>true&lt;/code> loads the objects by reachability.
+   * @param {query.Query~resultListCallback=} doneCallback Called when the operation succeed.
+   * @param {query.Query~failCallback=} failCallback Called when the operation failed.
+   * @return {Promise&lt;Array&lt;T>>} A promise that will be resolved with the query result as a list
+   */
+  resultList(options, doneCallback, failCallback) {}
+
+  /**
+   * Execute the query and return the query results as a List.
+   * Note: All local unsaved changes on matching objects, will be discarded.
+   * @param {query.Query~resultListCallback=} doneCallback Called when the operation succeed.
+   * @param {query.Query~failCallback=} failCallback Called when the operation failed.
+   * @return {Promise&lt;Array&lt;T>>} A promise that will be resolved with the query result as a list
+   * @name resultList
+   * @memberOf query.Query&lt;T>.prototype
+   * @method
+   */
+
+  /**
+   * Execute the query that returns a single result.
+   * Note: All local unsaved changes on the matched object, will be discarded.
+   * @param {Object} [options] The query options
+   * @param {number|boolean} [options.depth=0] The object depth which will be loaded. Depth 0 load only the found
+   * object, &lt;code>true&lt;/code> loads the objects by reachability.
+   * @param {query.Query~singleResultCallback=} doneCallback Called when the operation succeed.
+   * @param {query.Query~failCallback=} failCallback Called when the operation failed.
+   * @return {Promise&lt;T>} A promise that will be resolved with the query result as a single result
+   */
+  singleResult(options, doneCallback, failCallback) {}
+
+  /**
+   * Execute the query that returns a single result.
+   * Note: All local unsaved changes on the matched object, will be discarded.
+   * @param {query.Query~singleResultCallback=} doneCallback Called when the operation succeed.
+   * @param {query.Query~failCallback=} failCallback Called when the operation failed.
+   * @return {Promise&lt;T>} A promise that will be resolved with the query result as a single result
+   * @name singleResult
+   * @memberOf query.Query&lt;T>.prototype
+   * @method
+   */
+
+  /**
+   * Returns an observable that receives change events for a real-time query. Multiple subscriptions can be created on top of this observable:
+   *
+   &lt;pre>&lt;code>
+   var query = DB.Todo.find();
+   var options = { ... };
+   var stream = query.eventStream(options);
+   var sub = stream.subscribe(onNext, onError, onComplete);
+   var otherSub = stream.subscribe(otherOnNext, otherOnError, otherOnComplete);
+   &lt;/code>&lt;/pre>
+   *
+   * @param {Object} [options] options to narrow down the events you will receive
+   * @param {boolean} [options.initial=true] whether or not you want to receive the initial result set (i.e. the entities matching the query at subscription time)
+   * @param {(string|Array&lt;string>)} [options.matchTypes=['all']] the match types you are interested in; accepts the default ('all'/['all']) or any combination of 'match', 'add', 'change', 'changeIndex' and 'remove'
+   * @param {(string|Array&lt;string>)} [options.operations=['any']] the operations you are interested in; accepts the default ('any'/['any']) or any combination of 'insert', 'update', 'delete' and 'none'
+   * @return {Observable&lt;RealtimeEvent&lt;T>>} an observable
+   */
+  eventStream(options) {}
+
+  /**
+   * Returns a subscription that handles change events for a real-time query.
+   *
+   * The underlying stream object is hidden. To create multiple subscriptions on the same stream, create the stream object first and then subscribe to the stream (see the other signature {@link #eventStream(options)}).
+
+   * @param {Object} [options] options to narrow down the events you will receive
+   * @param {boolean} [options.initial=true] whether or not you want to receive the initial result set (i.e. the entities matching the query at subscription time)
+   * @param {(string|Array&lt;string>)} [options.matchTypes=['all']] the match types you are interested in; accepts the default ('all'/['all']) or any combination of 'match', 'add', 'change', 'changeIndex' and 'remove'
+   * @param {(string|Array&lt;string>)} [options.operations=['any']] the operations you are interested in; accepts the default ('any'/['any']) or any combination of 'insert', 'update', 'delete' and 'none'
+   * @param {query.Query~nextEventCallback=} onNext Called when an event is received
+   * @param {query.Query~failCallback=} onError Called when there is a server-side error
+   * @param {query.Query~completeCallback=} onComplete Called when the network connection is closed (e.g. because of lost Wi-Fi connection)
+   * @return {Subscription} a real-time query subscription
+   * @name eventStream
+   * @memberOf query.Query&lt;T>.prototype
+   * @method
+   */
+
+
+  /**
+   * Returns a subscription that handles change events for a real-time query.
+   *
+   * The underlying stream object is hidden. To create multiple subscriptions on the same stream, create the stream object first and then subscribe to the stream (see the other signature {@link #eventStream(options)}).
+
+   * @param {query.Query~nextEventCallback=} onNext Called when an event is received
+   * @param {query.Query~failCallback=} onError Called when there is a server-side error
+   * @param {query.Query~completeCallback=} onComplete Called when the network connection is closed (e.g. because of lost Wi-Fi connection)
+   * @return {Subscription} a real-time query subscription
+   * @name eventStream
+   * @memberOf query.Query&lt;T>.prototype
+   * @method
+   */
+
+  /**
+   * Returns an observable that receives the complete real-time query result. The full result is received initially (i.e. on subscription) and on every change.
+   *Will
+   var query = DB.Todo.find();
+   var stream = query.resultStream();
+   var sub = stream.subscribe(onNext, onError, onComplete);
+   var otherSub = stream.subscribe(otherOnNext, otherOnError, otherOnComplete);
+   &lt;/code>&lt;/pre>
+   *
+   * @param {Object} [options] additional options
+   * @param {number} [options.reconnects=-1] the number of times that a real-time query subscription should be renewed after connection loss, before it is downgraded to a regular query that does not maintain itself; negative numbers represent infinite reconnection attempts
+   * @return {Observable&lt;Array&lt;T>>} an observable on which multiple subscriptions can be created on
+   */
+  resultStream(options) {}
+
+  /**
+   * Returns a subscription that handles the complete real-time query result. The full result is received initially (i.e. on subscription) and on every change.
+   *
+   * The underlying stream object is hidden. To create multiple subscriptions on the same stream, create the stream object first and then subscribe to the stream (see the other signature {@link #resultStream(options)}).
+   *
+   * @param {Object} [options] additional options
+   * @param {number} [options.reconnects=-1] the number of times that a real-time query subscription should be renewed after connection loss, before it is downgraded to a regular query that does not maintain itself; negative numbers represent infinite reconnection attempts
+   * @param {query.Query~nextResultCallback=} onNext Called when the query result changes in any way
+   * @param {query.Query~failCallback=} onError Called when there is a server-side error
+   * @param {query.Query~completeCallback=} onComplete Called when the network connection is closed (e.g. because of network timeout or lost Wi-Fi connection) and the specified number of reconnects have been exhausted; will never be called when infinite reconnects are configured (default)
+   * @return {Subscription} a real-time query subscription handling complete query results.
+   * @name resultStream
+   * @memberOf query.Query&lt;T>.prototype
+   * @method
+   */
+
+  /**
+   * Returns a subscription that handles the complete real-time query result. The full result is received initially (i.e. on subscription) and on every change.
+   *
+   * The underlying stream object is hidden. To create multiple subscriptions on the same stream, create the stream object first and then subscribe to the stream (see the other signature {@link #resultStream(options)}).
+   *
+   * As the real-time query will reconnect infinitely often, there is no onComplete callback. (In other words, the observable will never complete.)
+   *
+   * @param {query.Query~nextResultCallback=} onNext Called when the query result changes in any way
+   * @param {query.Query~failCallback=} onError Called when there is a server-side error
+   * @return {Subscription} a real-time query subscription handling complete query results.
+   * @name resultStream
+   * @memberOf query.Query&lt;T>.prototype
+   * @method
+   */
+
+  /**
+   * Execute the query that returns the matching objects count.
+   * @param {query.Query~countCallback=} doneCallback Called when the operation succeed.
+   * @param {query.Query~failCallback=} failCallback Called when there is a server-side error
+   * @return {Promise&lt;number>} The total number of matched objects
+   */
+  count(doneCallback, failCallback) {}
+}
+
+Query.MAX_URI_SIZE = 2000;
+
+Query.varargs = function varargs(offset, args) {
+  return Array.prototype.concat.apply([], Array.prototype.slice.call(args, offset));
+};
+
+module.exports = Query;
+
+/**
+ * The resultList callback is called, when the asynchronous query operation completes successfully
+ * @callback query.Query~resultListCallback
+ * @param {Array&lt;T>} result The query result list, an empty list if no match was found
+ * @return {Promise&lt;*>|*} A Promise, result or undefined
+ */
+
+/**
+ * The singleResult callback is called, when the asynchronous query operation completes successfully
+ * @callback query.Query~singleResultCallback
+ * @param {T} entity The matching object or null id no matching object was found
+ * @return {Promise&lt;*>|*} A Promise, result or undefined
+ */
+
+/**
+ * The count callback is called, when the asynchronous query operation completes successfully
+ * @callback query.Query~countCallback
+ * @param {number} count the matching object count
+ * @return {Promise&lt;*>|*} A Promise, result or undefined
+ */
+
+/**
+ * The fail callback is called, when the asynchronous query operation is rejected by an error
+ * @callback query.Query~failCallback
+ * @param {error.PersistentError} error The error which reject the operation
+ * @return {Promise&lt;*>|*} A Promise, result or undefined
+ */
+
+/**
+ * This callback is called whenever the result of the real-time query changes. The received event contains information on how the query result changed.
+ * @callback query.Query~nextEventCallback
+ * @param {RealtimeEvent&lt;T>} event The real-time query event
+ */
+
+/**
+ * This callback is called whenever the result of the real-time query changes. The full result set is received.
+ * @callback query.Query~nextResultCallback
+ * @param {Array&lt;T>} result The updated real-time query result
+ */
+
+/**
+ * This callback is called when the network connection is closed (e.g. because of network timeout or lost Wi-Fi connection)
+ * @callback query.Query~completeCallback
+ */
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+
+        <!-- <footer>
+          <strong>Baqend JavaScript SDK 2.12.2</strong><br>
+          &copy 2018 Baqend GmbH<br>
+          Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.5</a> on Sat, 04 Aug 2018 11:00:14 GMT
+        </footer> -->
+      </div>
+    </div>
+    </div>
+  </div>
+</div>
+
+<div id="footer" style="position:relative; z-index:1;">
+  <div class="container">
+    <div class="row">
+
+      <div class="col-xs-6 col-sm-3 sitemap">
+        <h4>Product</h4>
+        <a href="https://www.baqend.com/platform.html">Platform</a>
+        <a href="https://www.baqend.com/speedkit.html">Speed Kit</a>
+        <a href="https://www.baqend.com/features.html">Features</a>
+        <a href="https://www.baqend.com/pricing.html">Platform Pricing</a>
+        <a href="https://www.baqend.com/pricing_speedkit.html">Speed Kit Pricing</a>
+        <a href="https://www.baqend.com/agencies.html">Agencies</a>
+        <a href="https://www.baqend.com/enterprise.html">Enterprise</a>
+        <a href="https://www.baqend.com/features.html#download">Community Edition</a>
+        <a href="https://www.baqend.com/support.html">Support</a>
+      </div>
+
+      <div class="col-xs-6 col-sm-3 sitemap">
+        <h4>Company</h4>
+        <a href="https://www.baqend.com/about.html">About us</a>
+        <a href="https://medium.baqend.com">Baqend Blog</a>
+        <a href="https://www.baqend.com/hiring.html">Jobs</a>
+        <a href="https://www.baqend.com/press.html">Press</a>
+        <a href="https://thesis.app.baqend.com/">Bachelor/Master theses</a>
+        <a href="https://www.weblabs.hamburg/">WebLabs.Hamburg</a>
+      </div>
+
+      <div class="col-xs-6 col-sm-3 sitemap">
+        <h4>Developer</h4>
+        <a href="https://dashboard.baqend.com/login">Login</a>
+        <a href="https://dashboard.baqend.com/register">Sign Up</a>
+        <a href="https://www.baqend.com/guide">Developer Docs</a>
+        <a href="https://www.baqend.com/guide/roadmap/">Roadmap</a>
+        <a href="https://www.baqend.com/guide/starter-kits">Starter Kits</a>
+        <a href="https://www.baqend.com/js-sdk/latest/baqend.html">JS SDK</a>
+        <a href="https://stackoverflow.com/questions/tagged/baqend/">Stackoverflow</a>
+      </div>
+
+      <div class="col-xs-6 col-sm-3 contact">
+        <h4>Contact</h4>
+        <p class="contact-information">
+          <span>
+            Baqend GmbH<br />
+            Stresemannstr. 23<br />
+            22769 Hamburg<br />
+            Germany
+          </span>
+        </p>
+        <p class="contact-information">
+          Email: <a style="display: inline-block" href="mailto:support@baqend.com">support@baqend.com</a>
+        </p>
+        <p class="contact-information">
+          Tel: <a style="display: inline-block" href="tel:+494060940539">+49 40 60940539</a>
+        </p>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="col-md-12 text-center social">
+        <a href="https://twitter.com/baqendcom"><i class="fa fa-twitter fa-fw"></i></a>
+        <a href="https://github.com/Baqend"><i class="fa fa-github fa-fw"></i></a>
+        <a href="https://medium.baqend.com/"><i class="fa fa-medium fa-fw"></i></a>
+        <a href="https://www.facebook.com/baqend"><i class="fa fa-facebook fa-fw"></i></a>
+        <a href="https://www.youtube.com/channel/UCsImg6Ts8UEp6-7LE9CP2-Q"><i class="fa fa-youtube fa-fw"></i></a>
+      </div>
+    </div>
+
+  </div>
+  <footer>
+    <div class="container">
+      <div class="legal text-center">
+        <div>
+          <strong>Baqend JavaScript SDK 2.12.2</strong><br>
+          &copy 2018 Baqend GmbH<br>
+          Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.5</a> on Sat, 04 Aug 2018 11:00:14 GMT
+        </div>
+        <a href="mailto:info@baqend.com">Contact</a> -
+        <a href="https://dashboard.baqend.com/privacy">Privacy Policy</a> -
+        <a href="https://dashboard.baqend.com/terms">Terms of Service</a> -
+        <a href="https://dashboard.baqend.com/imprint">Imprint</a>
+      </div>
+    </div>
+  </footer>
+</div>
+
+<script> prettyPrint(); </script>
+<script src="https://code.jquery.com/jquery-1.12.1.min.js"></script>
+<script src="scripts/bootstrap.min.js"> </script>
+<script src="scripts/linenumber.js"> </script>
+<script src="scripts/filter.js"> </script>
+<script data-main="scripts/search.js" src="scripts/require.js"></script>
+</body>
+</html>

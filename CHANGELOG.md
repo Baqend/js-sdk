@@ -1,3 +1,16 @@
+<a name="v2.12.2"></a>
+# v2.12.2 (2018-8-4)
+
+
+### Bug Fixes
+
+* SDK: Fix a potential bug while handling resubscriptions after connection loss
+* CLI: Fix an ugly deprecation warning when baqend credentials are stored
+
+### Features
+
+* CLI: Add a `cp` command to copy files between apps and the local file system
+
 <a name="v2.12.1"></a>
 # v2.12.1 (2018-7-3)
 
