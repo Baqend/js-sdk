@@ -927,14 +927,20 @@ describe('Test file', function() {
       });
     });
 
-    it('should not allow file acls in www bucket', function() {
+    it('should allow file acls in www bucket', function() {
+      var testAcls = new rootDb.Acl()
+        .allowReadAccess(rootDb.User.me)
+        .allowWriteAccess(rootDb.User.me);
+
       var file = new rootDb.File(jsonFile.id);
 
       return file.loadMetadata().then(function() {
         file.acl.allowReadAccess(rootDb.User.me)
             .allowWriteAccess(rootDb.User.me);
-        return expect(file.saveMetadata()).be.rejectedWith('File acls are not allowed in www bucket');
-      });
+        return file.saveMetadata();
+      }).then(() => {
+        expect(file.acl).eql(testAcls);
+      })
     });
   });
 
@@ -1046,17 +1052,11 @@ describe('Test file', function() {
         });
       });
 
-      it('should deny setting www bucket to private', function() {
-        return rootDb.File.loadMetadata('www').then(function(acls) {
-          acls.load = new rootDb.util.Permission().allowAccess(rootDb.User.me);
-          return expect(rootDb.File.saveMetadata('www', acls)).be.rejectedWith('The www cannot be private.');
-        });
-      });
-
-      it('should allow setting www bucket write access', function() {
+      it('should allow setting www bucket access', function() {
         return rootDb.File.saveMetadata('www', {}).then(function() {
           return rootDb.File.loadMetadata('www');
         }).then(function(acls) {
+          acls.load = new rootDb.util.Permission();
           acls.insert = new rootDb.util.Permission();
           acls.delete = new rootDb.util.Permission();
           acls.query = new rootDb.util.Permission();
@@ -1065,6 +1065,7 @@ describe('Test file', function() {
         }).then(function() {
           return rootDb.File.loadMetadata('www');
         }).then(function(acls) {
+          expect(acls.load.isPublicAllowed()).to.be.true;
           expect(acls.insert.isPublicAllowed()).to.be.true;
           expect(acls.delete.isPublicAllowed()).to.be.true;
           expect(acls.query.isPublicAllowed()).to.be.true;
@@ -1072,6 +1073,7 @@ describe('Test file', function() {
         }).then(function() {
           return rootDb.File.loadMetadata('www');
         }).then(function(acls) {
+          acls.load = new rootDb.util.Permission().allowAccess(rootDb.User.me);
           acls.insert = new rootDb.util.Permission().allowAccess(rootDb.User.me);
           acls.delete = new rootDb.util.Permission().allowAccess(rootDb.User.me);
           acls.query = new rootDb.util.Permission().allowAccess(rootDb.User.me);
@@ -1080,11 +1082,14 @@ describe('Test file', function() {
         }).then(function() {
           return rootDb.File.loadMetadata('www');
         }).then(function(acls) {
+          expect(acls.load.isPublicAllowed()).to.be.false;
           expect(acls.insert.isPublicAllowed()).to.be.false;
           expect(acls.delete.isPublicAllowed()).to.be.false;
           expect(acls.query.isPublicAllowed()).to.be.false;
           expect(acls.update.isPublicAllowed()).to.be.false;
-        });
+        }).then(() => {
+          return rootDb.File.saveMetadata('www', {});
+        })
       });
 
       it('should allow load with load permission', function() {
