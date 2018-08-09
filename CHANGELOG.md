@@ -1,3 +1,14 @@
+<a name="v2.12.3"></a>
+# v2.12.3 (2018-8-9)
+
+
+### Bug Fixes
+
+* CLI: fix a bug that a missing profile file crashes the login call
+* Typings: fix typings for Entity#partialUpdate and PartialUpdateBuilder#set
+
+
+
 <a name="v2.12.2"></a>
 # v2.12.2 (2018-8-4)
 
