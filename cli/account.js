@@ -291,10 +291,14 @@ function writeProfileFile(json) {
 
 function readProfileFile() {
   return new Promise((resolve, reject) => {
+    if (!fs.existsSync(fileName)) {
+      resolve({});
+      return;
+    }
+
     fs.readFile(fileName, (err, data) => {
       if (err) {
         console.warn('Baqend Profile file can\'t be read', err);
-        reject(err);
       }
       resolve(data ? JSON.parse(data.toString()) : {});
     });
