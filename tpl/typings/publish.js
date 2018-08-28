@@ -223,13 +223,14 @@ function createMembers(data, prefix, fullClassName, exportIt) {
           line += 'static ';
         }
 
-        // console.log(member);
-
         if (!member.type) //skip setter
           continue;
 
-        if (exportIt)
+        if (exportIt) {
           line += 'export const ';
+        } else if (member.readonly) {
+          line += 'readonly ';
+        }
 
         line += member.name + ': ' + createType(member.type) + ';';
         lines.push(line);
@@ -250,6 +251,9 @@ function createMembers(data, prefix, fullClassName, exportIt) {
         } else {
           // Method
           line += '  ';
+          if (member.scope == 'static') {
+            line += 'static ';
+          }
         }
 
         line += member.name;
