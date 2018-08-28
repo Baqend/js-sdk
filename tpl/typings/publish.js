@@ -1,114 +1,124 @@
-"use strict";
+/** @typedef {{ names: string[] }} TypeSpecification */
+/** @typedef {{ name: string, longname: string, prefix: string, namespaces: Object<string, Namespace>, body: string[] }} Namespace */
 
 const fs = require('fs');
 const os = require('os');
 
+/** @type {Namespace} */
 const rootNs = {
+  name: '',
   longname: '',
   prefix: '',
   namespaces: {},
-  body: []
+  body: [],
 };
 
 const typeDefs = {};
 const push = Function.prototype.apply.bind(Array.prototype.push);
 
+/**
+ * @param {string} longname
+ * @return {Namespace}
+ */
 function getNamespaceOf(longname) {
-  let nsIndex = longname.lastIndexOf(".");
+  const nsIndex = longname.lastIndexOf('.');
 
   if (nsIndex == -1) {
     return rootNs;
   }
 
-  let ns = longname.substring(0, nsIndex);
-  let name = ns.substring(ns.lastIndexOf('.') + 1, nsIndex);
+  const ns = longname.substring(0, nsIndex);
+  const name = ns.substring(ns.lastIndexOf('.') + 1, nsIndex);
 
-  let parentNamespace = getNamespaceOf(ns);
+  const parentNamespace = getNamespaceOf(ns);
 
-  let namespace = parentNamespace.namespaces[name];
-  if (!namespace) {
-    namespace = parentNamespace.namespaces[name] = {
-      name: name,
-      longname: (parentNamespace.lognname? parentNamespace + '.': '') + name,
-      prefix: parentNamespace.prefix + '  ',
-      namespaces: {},
-      body: []
-    };
+  const namespace = parentNamespace.namespaces[name];
+  if (namespace) {
+    return namespace;
   }
 
-  return namespace;
+  return parentNamespace.namespaces[name] = {
+    name: name,
+    longname: (parentNamespace.lognname ? parentNamespace + '.' : '') + name,
+    prefix: parentNamespace.prefix + '  ',
+    namespaces: {},
+    body: [],
+  };
 }
 
 /**
- @param {TAFFY} taffyData See <http://taffydb.com/>.
+ @param {TAFFY} data See <http://taffydb.com/>.
  @param {object} opts
  @param {Tutorial} tutorials
  */
-exports.publish = function(data, opts, tutorials) {
-  let types = data({kind: "typedef"}).get();
-  Object.keys(types).forEach(function(k) {
+function publish(data, opts, tutorials) {
+  // Process all callback definitions
+  let types = data({ kind: 'typedef' }).get();
+  Object.keys(types).forEach(function (k) {
     let type = types[k];
     typeDefs[type.longname] = '(' + createParams(type) + ') => ' + createReturn(type);
   });
 
-  let classes = data({kind: ["class","interface"]}).get();
-
-  Object.keys(classes).forEach(function(k) {
-    let cls = classes[k];
-
-    let longname = cls.longname;
+  // Process all classes and interfaces
+  const classes = data({ kind: ['class', 'interface'] }).get();
+  for (const cls of classes) {
+    const { longname } = cls;
     //skipping classes like EntityManager.EntityManager
     if (!cls.ignore && !cls.undocumented && longname && longname.indexOf(cls.name) == longname.length - cls.name.length) {
-      let ns = getNamespaceOf(longname);
+      const ns = getNamespaceOf(longname);
       let lines = createClass(data, cls, ns);
 
       ns.body.push('');
       push(ns.body, lines);
     }
-  });
+  }
 
-  let enums = data({isEnum: true}).get();
-  Object.keys(enums).forEach(function(k) {
-    let enu = enums[k];
-
-    let longname = enu.longname;
+  // Process all enumerations
+  const enums = data({ isEnum: true }).get();
+  for (const enumeration of enums) {
+    const { longname } = enumeration;
     //skipping classes like EntityManager.EntityManager
-    if (!enu.ignore && longname && longname.indexOf(enu.name) == longname.length - enu.name.length) {
-      let ns = getNamespaceOf(longname);
+    if (!enumeration.ignore && longname && longname.indexOf(enumeration.name) == longname.length - enumeration.name.length) {
+      const ns = getNamespaceOf(longname);
 
-      let lines = createEnum(enu, ns);
+      let lines = createEnum(enumeration, ns);
       if (ns.body.length) {
         ns.body.push('');
       }
 
       push(ns.body, lines);
     }
-  });
+  }
 
+  // Load template for file header
   let text = fs.readFileSync(__dirname + '/' + opts.destination.replace('.ts', '.tpl'));
+
   text += createNs(data, rootNs).join(os.EOL);
 
   fs.writeFileSync(opts.destination, text);
   //fs.writeFileSync('doc.json', JSON.stringify(data().get(), null, '  '));
 
   return null;
-};
+}
 
+/**
+ * @param {*} data
+ * @param {Namespace} namespace
+ * @return {string[]}
+ */
 function createNs(data, namespace) {
-  let lines = [];
-  let prefix = namespace.prefix;
+  const lines = [];
+  const prefix = namespace.prefix;
 
   push(lines, namespace.body);
 
-  Object.keys(namespace.namespaces).forEach((k) => {
-    let ns = namespace.namespaces[k];
-
+  for (const ns of Object.values(namespace.namespaces)) {
     lines.push('');
     if (ns.name) {
       lines.push(prefix + 'export namespace ' + ns.name + ' {');
     }
 
-    let isClassNameSpace = data({kind: ["class","interface"], longname: ns.longname}).get().length;
+    const isClassNameSpace = data({ kind: ['class', 'interface'], longname: ns.longname }).get().length;
     if (!isClassNameSpace) {
       push(lines, createMembers(data, ns.prefix, ns.longname, true));
     }
@@ -118,14 +128,33 @@ function createNs(data, namespace) {
     if (ns.name) {
       lines.push(prefix + '}');
     }
-  });
+  }
 
   return lines;
 }
 
+/**
+ * @param {*} data
+ * @param {*} cls
+ * @param {Namespace} ns
+ * @return {string[]}
+ */
 function createClass(data, cls, ns) {
+  const lines = [];
+  const isInterface = cls.kind == 'interface' || cls.longname.startsWith('binding') && cls.longname.indexOf('Factory') != -1;
+
+  // Print out class description
+  const description = cls.classdesc || cls.description;
+  if (description) {
+    lines.push(`${ns.prefix}/**`);
+    for (const descriptionLine of description.split('\n')) {
+      lines.push(`${ns.prefix} * ${descriptionLine}`);
+    }
+    lines.push(`${ns.prefix} */`);
+  }
+
+  // Create class declaration
   let classLine = ns.prefix + 'export ';
-  let isInterface = cls.kind == 'interface' || cls.longname.startsWith('binding') && cls.longname.indexOf('Factory') != -1;
   if (isInterface) {
     classLine += 'interface ' + cls.name;
   } else {
@@ -137,7 +166,7 @@ function createClass(data, cls, ns) {
       classLine += ' extends ';
       classLine += [].concat(
         (cls.augments || []),
-        (cls.implements || [])
+        (cls.implements || []),
       ).join(', ');
     } else {
       if (cls.augments) {
@@ -151,13 +180,14 @@ function createClass(data, cls, ns) {
   }
 
   classLine += ' {';
+  lines.push(classLine);
 
-  let lines = [classLine];
-
+  // Create constructor
   if (!isInterface) {
-    lines.push(ns.prefix + '  constructor(' + createParams(cls) + ')');
+    lines.push(ns.prefix + '  constructor(' + createParams(cls) + ');');
   }
 
+  // Create class members
   push(lines, createMembers(data, ns.prefix, cls.longname));
   if (!isInterface && cls.augments && cls.augments.length > 1) {
     for (let i = 1, len = cls.augments.length; i < len; ++i) {
@@ -173,54 +203,83 @@ function createClass(data, cls, ns) {
 }
 
 function createMembers(data, prefix, fullClassName, exportIt) {
-  let name = fullClassName.substring(fullClassName.lastIndexOf('.') + 1);
+  const name = fullClassName.substring(fullClassName.lastIndexOf('.') + 1);
 
-  let lines = [];
-  let members = data({memberof: fullClassName}).get() || [];
-  let hiddenMembers = data({memberof: fullClassName + '.' + name}).get() || [];
-  members = [].concat(hiddenMembers, members);
+  const lines = [];
+  const members = data({ memberof: fullClassName }).get() || [];
+  const hiddenMembers = data({ memberof: fullClassName + '.' + name }).get() || [];
 
-  members.forEach(function(member) {
-    if (member.inherited || member.ignore || member.isEnum || member.access == 'private' || member.undocumented)
-      return;
+  const allMembers = [].concat(hiddenMembers, members);
 
-    let line = prefix + '  ';
-    if (member.scope == 'static')
-      line += 'static ';
+  for (const member of allMembers) {
+    if (member.inherited || member.ignore || member.isEnum || member.access == 'private' || member.undocumented) {
+      continue;
+    }
 
     switch (member.kind) {
-      case 'member':
+      case 'member': {
+        let line = prefix + '  ';
+        if (member.scope == 'static') {
+          line += 'static ';
+        }
+
+        // console.log(member);
+
         if (!member.type) //skip setter
-          return;
+          continue;
 
         if (exportIt)
-          line += 'export let ';
+          line += 'export const ';
 
         line += member.name + ': ' + createType(member.type) + ';';
-        break;
-      case 'function':
-        if (exportIt)
-          line += 'export function ';
+        lines.push(line);
 
-        line += '' + member.name + '(';
+        break;
+      }
+      case 'function': {
+        let line = prefix;
+        if (exportIt) {
+          lines.push('');
+          if (member.description) {
+            lines.push(`${prefix}/**`);
+            lines.push(`${prefix} * ${member.description}`);
+            lines.push(`${prefix} */`);
+          }
+          // Exported function
+          line += 'export function ';
+        } else {
+          // Method
+          line += '  ';
+        }
+
+        line += member.name;
+        line += '(';
         line += createParams(member);
         line += '): ' + createReturn(member) + ';';
+        lines.push(line);
+
         break;
+      }
       default:
-        return;
+        continue;
     }
-    lines.push(line);
-  });
+
+  }
 
   return lines;
 }
 
-function createEnum(enu, ns) {
-  let lines = [];
-  lines.push(`${ns.prefix}export enum ${enu.name} {`);
+/**
+ * @param {*} enumeration
+ * @param {Namespace} ns
+ * @return {string[]}
+ */
+function createEnum(enumeration, ns) {
+  const lines = [];
+  lines.push(`${ns.prefix}export enum ${enumeration.name} {`);
 
-  for (let i = 0, len = enu.properties.length; i < len; ++i) {
-    let prop = enu.properties[i];
+  for (let i = 0, len = enumeration.properties.length; i < len; ++i) {
+    const prop = enumeration.properties[i];
     let line = `${ns.prefix}  ${prop.name} = ${prop.defaultvalue}`;
     if (i < len - 1)
       line += ',';
@@ -235,7 +294,7 @@ function createParams(member) {
   if (!member.params)
     return '';
 
-  let params = {};
+  const params = {};
 
   member.params.forEach((param) => {
     const names = param.name.split('.');
@@ -244,11 +303,11 @@ function createParams(member) {
     const type = createType(param.type);
     if (names.length > 1) {
       let obj = params[name];
-      if (typeof obj != "object") {
+      if (typeof obj != 'object') {
         obj = params[name] = {};
       }
 
-      obj[names[1]] = {type: type, optional: param.optional};
+      obj[names[1]] = { type: type, optional: param.optional };
     } else {
       params[name] = type;
     }
@@ -257,7 +316,7 @@ function createParams(member) {
   return member.params.filter((param) => {
     return params[param.name];
   }).map((param) => {
-    let paramSpec = params[param.name];
+    const paramSpec = params[param.name];
     let p = '';
     if (param.variable) {
       p += '...';
@@ -268,53 +327,74 @@ function createParams(member) {
     }
     p += ': ';
 
-    if (param.variable) {
-      p += 'Array<';
-    }
-
-    if (typeof paramSpec == "string") {
+    if (typeof paramSpec == 'string') {
       p += paramSpec;
     } else {
-      p += '{' + Object.keys(paramSpec).map(key => {
-        let subParam = paramSpec[key];
-        return key + (subParam.optional? '?': '') + ': ' + subParam.type;
-      }).join(', ') + '}';
+      p += '{ ' + Object.keys(paramSpec).map(key => {
+        const subParam = paramSpec[key];
+        return key + (subParam.optional ? '?' : '') + ': ' + subParam.type;
+      }).join(', ') + ' }';
     }
 
     if (param.variable) {
-      p += '>';
+      p += '[]';
     }
 
     return p;
   }).join(', ');
 }
 
+/**
+ * @param {*} member
+ * @return {string}
+ */
 function createReturn(member) {
   if (member.returns) {
     return createType(member.returns[0].type);
-  } else {
-    return 'any';
   }
+
+  console.warn('No return type for ' + member.longname)
+  return 'any';
 }
 
+/**
+ * @param {string} name
+ * @return {string}
+ */
+function createSingleType(name) {
+  let type = typeDefs[name];
+  if (!type) {
+    type = name;
+
+    type = type.replace(/function/g, 'Function');
+    type = type.replace(/Function\(\)/g, 'Function');
+    type = type.replace(/\*/g, 'any');
+    type = type.replace(/\.</g, '<');
+
+    type = type.replace(/Object\.?<([^,]+),\s*([^>]+)>/g, '{ [key: $1]: $2 }');
+    type = type.replace(/^Array<(.*)>$/, '$1[]');
+
+    typeDefs[name] = type;
+  }
+
+  return type;
+}
+
+/**
+ * @param {TypeSpecification} typeSpec
+ * @return {string}
+ */
 function createType(typeSpec) {
   if (!typeSpec) {
-    console.warn("Unknown type spec");
-    return 'unknown'
+    console.warn('Unknown type spec occured.');
+    return 'unknown';
   }
 
-  return typeSpec.names.map((name) => {
-    let type = typeDefs[name];
-    if (!type) {
-      type = name;
-      type = type.replace(/function/g, 'Function');
-      type = type.replace(/Function\(\)/g, 'Function');
-      type = type.replace(/\*/g, 'any');
-      type = type.replace(/\.</g, '<');
-    }
+  if (typeSpec.names.length > 1) {
+    return `(${typeSpec.names.map((name) => createSingleType(name)).join(' | ')})`;
+  }
 
-    type = type.replace(/Object\.?<([^,]+),\s*([^>]+)>/g, '{ [key: $1]: $2}');
-
-    return type;
-  }).join('|');
+  return createSingleType(typeSpec.names[0]);
 }
+
+exports.publish = publish;
