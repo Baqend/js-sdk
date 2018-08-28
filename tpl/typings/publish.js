@@ -232,7 +232,12 @@ function createMembers(data, prefix, fullClassName, exportIt) {
           line += 'readonly ';
         }
 
-        line += member.name + ': ' + createType(member.type) + ';';
+        line += member.name
+        if (member.nullable) {
+          line += '?'
+        }
+
+        line += ': ' + createType(member.type) + ';';
         lines.push(line);
 
         break;
