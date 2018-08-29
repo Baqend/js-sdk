@@ -66,6 +66,10 @@ describe('Test file', function() {
       expect(function() {
         file.mimeType;
       }).throw('is not available');
+
+      expect(function() {
+        file.toJSON();
+      }).throw('is not available');
     });
 
     it('should initialize with string parameter', function() {
@@ -346,7 +350,10 @@ describe('Test file', function() {
         lastModified: date,
         acl: acl,
         eTag: '827598375',
-        size: 12345
+        size: 12345,
+        headers: {
+          'test-header': 'value'
+        }
       });
 
       var json = file.toJSON();
@@ -355,7 +362,7 @@ describe('Test file', function() {
         mimeType: 'text/html',
         createdAt: date.toISOString(),
         lastModified: date.toISOString(),
-        contentLength: 12345,
+        size: 12345,
         acl: {
           "read": {
             "/db/User/1": "allow"
@@ -364,7 +371,10 @@ describe('Test file', function() {
             "/db/User/1": "allow"
           }
         },
-        eTag: '827598375'
+        eTag: '827598375',
+        headers: {
+          'test-header': 'value'
+        }
       });
       expect(json.data).is.undefined;
       expect(json.type).is.undefined;
@@ -382,7 +392,7 @@ describe('Test file', function() {
         mimeType: 'text/html',
         createdAt: date.toISOString(),
         lastModified: date.toISOString(),
-        contentLength: 12345,
+        size: 12345,
         acl: {
           read: {
             '/db/User/1': 'allow',
@@ -392,6 +402,9 @@ describe('Test file', function() {
           },
         },
         eTag: '827598375',
+        headers: {
+          'test-header': 'value',
+        },
       });
 
       expect(file.id).eql('/file/www/test/my.png');
@@ -406,6 +419,7 @@ describe('Test file', function() {
       expect(file.createdAt).lte(date);
       expect(file.eTag).eql('827598375');
       expect(file.mimeType).eql('text/html');
+      expect(file.headers).eql({'test-header': 'value'});
     });
 
     it('should not deserialize json to a wrong file instance', function() {
@@ -497,6 +511,7 @@ describe('Test file', function() {
       var creationDate;
       return file.upload().then(function() {
         creationDate = file.lastModified;
+        expect(file.createdAt).is.defined;
         expect(file.createdAt).eql(creationDate);
         return helper.sleep(2000);
       }).then(function() {

@@ -1,3 +1,5 @@
+'use strict';
+
 exports.WebSocketConnector = require('./WebSocketConnector');
 
 /**

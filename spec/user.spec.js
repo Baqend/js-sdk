@@ -61,7 +61,7 @@ describe('Test user and roles', function() {
 
     it('should not set token and me when loginOption is NO_LOGIN', function() {
       var user = new db.User({ username: helper.makeLogin(), email: "test@mail.de" });
-      db.User.register(user, 'secret', db.User.LoginOption.NO_LOGIN).then(function() {
+      return db.User.register(user, 'secret', db.User.LoginOption.NO_LOGIN).then(function() {
         expect(db.me).not.ok;
         expect(db.token).not.ok;
       });
@@ -481,8 +481,8 @@ describe('Test user and roles', function() {
         var user = new DB.User({ username: helper.makeLogin()});
         return DB.User.register(user, 'secret', false).then(function(u) {
           expect(u.username).eqls(user.username);
-          expect(localStorage.getItem('BAT:' + db._connector.origin)).be.not.ok;
-          expect(sessionStorage.getItem('BAT:' + db._connector.origin)).be.ok;
+          expect(localStorage.getItem('BAT:' + db.connection.origin)).be.not.ok;
+          expect(sessionStorage.getItem('BAT:' + db.connection.origin)).be.ok;
         });
       });
 
@@ -490,8 +490,8 @@ describe('Test user and roles', function() {
         var user = new DB.User({ username: helper.makeLogin()});
         return DB.User.register(user, 'secret', true).then(function(u) {
           expect(u.username).eqls(user.username);
-          expect(localStorage.getItem('BAT:' + db._connector.origin)).be.ok;
-          expect(sessionStorage.getItem('BAT:' + db._connector.origin)).be.not.ok;
+          expect(localStorage.getItem('BAT:' + db.connection.origin)).be.ok;
+          expect(sessionStorage.getItem('BAT:' + db.connection.origin)).be.not.ok;
         });
       });
 
@@ -502,8 +502,8 @@ describe('Test user and roles', function() {
           return DB.User.login(username, 'secret', false);
         }).then(function(u) {
           expect(u.username).eqls(user.username);
-          expect(localStorage.getItem('BAT:' + db._connector.origin)).be.not.ok;
-          expect(sessionStorage.getItem('BAT:' + db._connector.origin)).be.ok;
+          expect(localStorage.getItem('BAT:' + db.connection.origin)).be.not.ok;
+          expect(sessionStorage.getItem('BAT:' + db.connection.origin)).be.ok;
         });
       });
 
@@ -514,8 +514,8 @@ describe('Test user and roles', function() {
           return DB.User.login(username, 'secret', true);
         }).then(function(u) {
           expect(u.username).eqls(user.username);
-          expect(localStorage.getItem('BAT:' + db._connector.origin)).be.ok;
-          expect(sessionStorage.getItem('BAT:' + db._connector.origin)).be.not.ok;
+          expect(localStorage.getItem('BAT:' + db.connection.origin)).be.ok;
+          expect(sessionStorage.getItem('BAT:' + db.connection.origin)).be.not.ok;
         });
       });
 
@@ -524,13 +524,13 @@ describe('Test user and roles', function() {
         var user = new DB.User({ username: username});
         return DB.User.register(user, 'secret').then(function() {
           expect(DB.User.me).be.ok;
-          expect(localStorage.getItem('BAT:' + db._connector.origin)).be.ok;
+          expect(localStorage.getItem('BAT:' + db.connection.origin)).be.ok;
           return DB.User.logout();
         }).then(function() {
           expect(DB.User.me).be.null;
           expect(DB.token).be.null;
-          expect(localStorage.getItem('BAT:' + db._connector.origin)).be.not.ok;
-          expect(sessionStorage.getItem('BAT:' + db._connector.origin)).be.not.ok;
+          expect(localStorage.getItem('BAT:' + db.connection.origin)).be.not.ok;
+          expect(sessionStorage.getItem('BAT:' + db.connection.origin)).be.not.ok;
         });
       });
     }

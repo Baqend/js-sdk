@@ -1,7 +1,7 @@
 // Karma configuration
 // Generated on Thu Mar 06 2014 17:16:01 GMT+0100 (Mitteleuropäische Zeit)
 
-module.exports = function(config) {
+module.exports = function (config) {
   config.set({
 
     // base path, that will be used to resolve files and exclude
@@ -12,8 +12,8 @@ module.exports = function(config) {
 
     client: {
       mocha: {
-        timeout: 30000
-      }
+        timeout: 30000,
+      },
     },
 
     // list of files / patterns to load in the browser
@@ -22,12 +22,12 @@ module.exports = function(config) {
       'spec/env.js',
       'spec/helper.js',
       'spec/**/*.spec.js',
-      {pattern: 'build/*.html', included: false, watched: false},
-      {pattern: 'spec/assets/*', watched: false, included: false, served: true, nocache: false}
+      { pattern: 'build/*.html', included: false, watched: false },
+      { pattern: 'spec/assets/*', watched: false, included: false, served: true, nocache: false },
     ],
 
     proxies: {
-      "/spec/": "/base/spec/"
+      '/spec/': '/base/spec/',
     },
 
     // list of files to exclude
@@ -39,7 +39,7 @@ module.exports = function(config) {
 
     // JUnit reporter output dir
     junitReporter: {
-      outputDir: 'build/test-results/'
+      outputDir: 'build/test-results/',
     },
 
     // web server hostname
@@ -69,14 +69,14 @@ module.exports = function(config) {
     // - Safari (only Mac; has to be installed with `npm install karma-safari-launcher`)
     // - PhantomJS
     // - IE (only Windows; has to be installed with `npm install karma-ie-launcher`)
-    browsers: ['Chrome', 'Firefox', 'PhantomJS'],
+    browsers: ['Chrome'],
 
-    customLaunchers: Object.assign( {}, require('./localSeleniumBrowser'), require('./testingBotBrowser') ),
+    customLaunchers: Object.assign({}, require('./localSeleniumBrowser'), require('./testingBotBrowser')),
 
     //config for testingBot
     testingbot: {
       testName: 'JS SDK',
-      startConnect: false
+      startConnect: false,
     },
 
     // How long does Karma wait for a browser to reconnect (in ms).
@@ -85,11 +85,11 @@ module.exports = function(config) {
     // If browser does not capture in given timeout [ms], kill it
     captureTimeout: 10 * 60 * 1000,
 
-    browserDisconnectTimeout : 30 * 1000, // default 2000
-    browserDisconnectTolerance : 5, // default 0
+    browserDisconnectTimeout: 30 * 1000, // default 2000
+    browserDisconnectTolerance: 5, // default 0
 
     // Continuous Integration mode
     // if true, it capture browsers, run tests and exit
-    singleRun: false
+    singleRun: false,
   });
 };

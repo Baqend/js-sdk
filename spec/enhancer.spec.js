@@ -143,11 +143,9 @@ describe("Test enhancer", function() {
   });
 
   it('should add ref', function() {
-    var classFactory = new DB.binding.Enhancer();
-
     var testClass = new db.TestClass();
 
-    expect(classFactory.getIdentifier(testClass.constructor)).be.ok;
+    expect(DB.binding.Enhancer.getIdentifier(testClass.constructor)).be.ok;
   });
 
   it('should add metadata object', function() {

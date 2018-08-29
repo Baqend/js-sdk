@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Test</title>
+</head>
+<body>
+<script type="application/javascript" src="https://www.baqend.com/js-sdk/2.9.0/baqend.js"></script>
+<script type="application/javascript">
+
+  var appName = 'your-app-name';
+  var emf = new DB.EntityManagerFactory({host: appName});
+
+  emf.createEntityManager(true).ready().then(function(em) {
+    // the adminUser needs at least subclassing rights on the Object class
+    return em.User.login('adminUser', 'password');
+  }).then(function() {
+    var metamodel = emf.metamodel;
+    var personType = new DB.metamodel.EntityType("Person", metamodel.entity(Object));
+    metamodel.addType(personType);
+
+    personType.addAttribute(new DB.metamodel.SingularAttribute("name", metamodel.baseType(String)));
+    personType.addAttribute(new DB.metamodel.SingularAttribute("age", metamodel.baseType(Number)));
+    personType.addAttribute(new DB.metamodel.SingularAttribute("date", metamodel.baseType(Date)));
+    personType.addAttribute(new DB.metamodel.SingularAttribute("sister", personType));
+    personType.addAttribute(new DB.metamodel.SingularAttribute("child", personType));
+
+    return metamodel.save(personType);
+  }).then(function() {
+    // we must create a new db instance to reflect the new schema
+    DB = emf.createEntityManager(true);
+    // logout from the previously created admin session
+    DB.User.logout();
+
+    var newPerson = new DB.Person({
+      name: 'testName',
+      age: 23,
+      date: new Date()
+    });
+
+    return newPerson.save();
+  })
+
+</script>
+
+</body>
+</html>

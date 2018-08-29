@@ -392,7 +392,7 @@ describe("Streaming Queries", function() {
       this.timeout(10000);
       return new DB.EntityManagerFactory({
         host: env.TEST_SERVER,
-        schema: {},
+        schema: [],
         tokenStorage: helper.rootTokenStorage,
         websocket: '//events.localhost'
       }).createEntityManager().ready().then(function(db) {
