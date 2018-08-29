@@ -938,7 +938,7 @@ describe('Test file', function() {
         file.acl.allowReadAccess(rootDb.User.me)
             .allowWriteAccess(rootDb.User.me);
         return file.saveMetadata();
-      }).then(() => {
+      }).then(function() {
         expect(file.acl).eql(testAcls);
       })
     });
@@ -1087,7 +1087,7 @@ describe('Test file', function() {
           expect(acls.delete.isPublicAllowed()).to.be.false;
           expect(acls.query.isPublicAllowed()).to.be.false;
           expect(acls.update.isPublicAllowed()).to.be.false;
-        }).then(() => {
+        }).then(function() {
           return rootDb.File.saveMetadata('www', {});
         })
       });
