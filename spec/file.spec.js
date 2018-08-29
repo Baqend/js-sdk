@@ -375,7 +375,7 @@ describe('Test file', function() {
       acl.allowReadAccess(rootDb.User.me);
       acl.allowWriteAccess(rootDb.User.me);
 
-      var date = new Date("2016-01-01");
+      var date = new Date('2016-01-01');
 
       var file = rootDb.File.fromJSON({
         id: '/file/www/test/my.png',
@@ -384,14 +384,14 @@ describe('Test file', function() {
         lastModified: date.toISOString(),
         contentLength: 12345,
         acl: {
-          "read": {
-            "/db/User/1": "allow"
+          read: {
+            '/db/User/1': 'allow',
           },
-          "write": {
-            "/db/User/1": "allow"
-          }
+          write: {
+            '/db/User/1': 'allow',
+          },
         },
-        eTag: '827598375'
+        eTag: '827598375',
       });
 
       expect(file.id).eql('/file/www/test/my.png');
@@ -856,8 +856,8 @@ describe('Test file', function() {
         'hello': 'World',
         'schmukey': 'Schmu'
       };
-      pngFile = new rootDb.File({parent: bucket, data: flames, headers: cHeads});
-      jsonFile = new rootDb.File({data: json, mimeType: 'application/json', headers: cHeads});
+      pngFile = new rootDb.File({ parent: bucket, data: flames, headers: cHeads });
+      jsonFile = new rootDb.File({ data: json, mimeType: 'application/json', headers: cHeads });
 
       return rootDb.File.saveMetadata(bucket, {}).then(function() {
         return Promise.all([
