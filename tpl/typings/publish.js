@@ -1,5 +1,4 @@
-/** @typedef {{ names: string[] }} TypeSpecification */
-/** @typedef {{ name: string, longname: string, prefix: string, namespaces: Object<string, Namespace>, body: string[] }} Namespace */
+/// <reference path="jsdoc.d.ts"/>
 
 const fs = require('fs');
 const os = require('os');
@@ -15,6 +14,20 @@ const rootNs = {
 
 const typeDefs = {};
 const push = Function.prototype.apply.bind(Array.prototype.push);
+
+/**
+ * @param {string} str
+ * @return {string[]}
+ */
+function getDescriptionLines(str) {
+  const lines = str.split('\n').map(line => line.trim());
+  const idx = lines.findIndex((line, idx) => idx > 0 && !line && lines[idx + 1].length > 0);
+  if (idx > -1) {
+    return lines.slice(0, idx - 1);
+  }
+
+  return lines;
+}
 
 /**
  * @param {string} longname
@@ -39,7 +52,7 @@ function getNamespaceOf(longname) {
 
   return parentNamespace.namespaces[name] = {
     name: name,
-    longname: (parentNamespace.lognname ? parentNamespace + '.' : '') + name,
+    longname: (parentNamespace.longname ? parentNamespace + '.' : '') + name,
     prefix: parentNamespace.prefix + '  ',
     namespaces: {},
     body: [],
@@ -47,17 +60,17 @@ function getNamespaceOf(longname) {
 }
 
 /**
- @param {TAFFY} data See <http://taffydb.com/>.
+ @param {Taffy} data See <http://taffydb.com/>.
  @param {object} opts
- @param {Tutorial} tutorials
  */
-function publish(data, opts, tutorials) {
+function publish(data, opts) {
   // Process all callback definitions
-  let types = data({ kind: 'typedef' }).get();
-  Object.keys(types).forEach(function (k) {
-    let type = types[k];
-    typeDefs[type.longname] = '(' + createParams(type) + ') => ' + createReturn(type);
-  });
+  const types = data({ kind: 'typedef' }).get();
+  for (const type of types) {
+    if (type.longname) {
+      typeDefs[type.longname] = '(' + createParams(type) + ') => ' + createReturn(type);
+    }
+  }
 
   // Process all classes and interfaces
   const classes = data({ kind: ['class', 'interface'] }).get();
@@ -91,7 +104,7 @@ function publish(data, opts, tutorials) {
   }
 
   // Load template for file header
-  let text = fs.readFileSync(__dirname + '/' + opts.destination.replace('.ts', '.tpl'));
+  let text = fs.readFileSync(__dirname + '/' + opts.destination.replace('.ts', '.tpl'), 'utf8');
 
   text += createNs(data, rootNs).join(os.EOL);
 
@@ -102,15 +115,16 @@ function publish(data, opts, tutorials) {
 }
 
 /**
- * @param {*} data
+ * @param {Taffy} data
  * @param {Namespace} namespace
  * @return {string[]}
  */
 function createNs(data, namespace) {
+  /** @type {string[]} */
   const lines = [];
   const prefix = namespace.prefix;
 
-  push(lines, namespace.body);
+  lines.push(...namespace.body);
 
   for (const ns of Object.values(namespace.namespaces)) {
     lines.push('');
@@ -134,20 +148,22 @@ function createNs(data, namespace) {
 }
 
 /**
- * @param {*} data
- * @param {*} cls
+ * @param {Taffy} data
+ * @param {Definition} cls
  * @param {Namespace} ns
  * @return {string[]}
  */
 function createClass(data, cls, ns) {
+  /** @type {string[]} */
   const lines = [];
-  const isInterface = cls.kind == 'interface' || cls.longname.startsWith('binding') && cls.longname.indexOf('Factory') != -1;
+  const { longname = '', augments = [], implements: interfaces = [] } = cls;
+  const isInterface = cls.kind == 'interface' || longname.startsWith('binding') && longname.indexOf('Factory') != -1;
 
   // Print out class description
   const description = cls.classdesc || cls.description;
   if (description) {
     lines.push(`${ns.prefix}/**`);
-    for (const descriptionLine of description.split('\n')) {
+    for (const descriptionLine of getDescriptionLines(description)) {
       lines.push(`${ns.prefix} * ${descriptionLine}`);
     }
     lines.push(`${ns.prefix} */`);
@@ -161,20 +177,17 @@ function createClass(data, cls, ns) {
     classLine += 'class ' + cls.name;
   }
 
-  if (cls.augments || cls.implements) {
+  if (augments.length || interfaces.length) {
     if (isInterface) {
       classLine += ' extends ';
-      classLine += [].concat(
-        (cls.augments || []),
-        (cls.implements || []),
-      ).join(', ');
+      classLine += augments.concat(interfaces).join(', ');
     } else {
-      if (cls.augments) {
-        classLine += ' extends ' + cls.augments[0];
+      if (augments.length) {
+        classLine += ' extends ' + augments[0];
       }
 
-      if (cls.implements) {
-        classLine += ' implements ' + cls.implements.join(', ');
+      if (interfaces.length) {
+        classLine += ' implements ' + interfaces.join(', ');
       }
     }
   }
@@ -188,10 +201,10 @@ function createClass(data, cls, ns) {
   }
 
   // Create class members
-  push(lines, createMembers(data, ns.prefix, cls.longname));
-  if (!isInterface && cls.augments && cls.augments.length > 1) {
-    for (let i = 1, len = cls.augments.length; i < len; ++i) {
-      push(lines, createMembers(data, ns.prefix, cls.augments[i]));
+  push(lines, createMembers(data, ns.prefix, longname));
+  if (!isInterface && augments.length > 1) {
+    for (let i = 1, len = augments.length; i < len; ++i) {
+      push(lines, createMembers(data, ns.prefix, augments[i]));
     }
   }
 
@@ -202,6 +215,13 @@ function createClass(data, cls, ns) {
   return lines;
 }
 
+/**
+ * @param {Taffy} data
+ * @param {string} prefix
+ * @param {string} fullClassName
+ * @param {boolean=} exportIt
+ * @return {Array}
+ */
 function createMembers(data, prefix, fullClassName, exportIt) {
   const name = fullClassName.substring(fullClassName.lastIndexOf('.') + 1);
 
@@ -209,7 +229,7 @@ function createMembers(data, prefix, fullClassName, exportIt) {
   const members = data({ memberof: fullClassName }).get() || [];
   const hiddenMembers = data({ memberof: fullClassName + '.' + name }).get() || [];
 
-  const allMembers = [].concat(hiddenMembers, members);
+  const allMembers = hiddenMembers.concat(members);
 
   for (const member of allMembers) {
     if (member.inherited || member.ignore || member.isEnum || member.access == 'private' || member.undocumented) {
@@ -232,12 +252,12 @@ function createMembers(data, prefix, fullClassName, exportIt) {
           line += 'readonly ';
         }
 
-        line += member.name
+        line += member.name;
         if (member.nullable) {
-          line += '?'
+          line += '?';
         }
 
-        line += ': ' + createType(member.type) + ';';
+        line += ': ' + joinTypes(createType(member.type)) + ';';
         lines.push(line);
 
         break;
@@ -279,7 +299,7 @@ function createMembers(data, prefix, fullClassName, exportIt) {
 }
 
 /**
- * @param {*} enumeration
+ * @param {Definition} enumeration
  * @param {Namespace} ns
  * @return {string[]}
  */
@@ -287,82 +307,88 @@ function createEnum(enumeration, ns) {
   const lines = [];
   lines.push(`${ns.prefix}export enum ${enumeration.name} {`);
 
-  for (let i = 0, len = enumeration.properties.length; i < len; ++i) {
-    const prop = enumeration.properties[i];
-    let line = `${ns.prefix}  ${prop.name} = ${prop.defaultvalue}`;
-    if (i < len - 1)
-      line += ',';
-    lines.push(line);
+  if (enumeration.properties) {
+    for (const [i, prop] of enumeration.properties.entries()) {
+      let line = `${ns.prefix}  ${prop.name} = ${prop.defaultvalue}`;
+      if (i < enumeration.properties.length - 1) {
+        line += ',';
+      }
+      lines.push(line);
+    }
   }
 
   lines.push(ns.prefix + '}');
   return lines;
 }
 
+/**
+ * @param {Definition} member
+ * @return {string}
+ */
 function createParams(member) {
-  if (!member.params)
+  if (!member.params) {
     return '';
+  }
 
-  const params = {};
+  const paramTypes = {};
+  const objTypes = {};
 
-  member.params.forEach((param) => {
+  for (const param of member.params) {
     const names = param.name.split('.');
-    const name = names[0];
+    const [name, property] = names;
 
     const type = createType(param.type);
-    if (names.length > 1) {
-      let obj = params[name];
-      if (typeof obj != 'object') {
-        obj = params[name] = {};
+    if (!paramTypes[name]) {
+      paramTypes[name] = type;
+    }
+
+    if (property) {
+      let obj = objTypes[name];
+      if (typeof obj !== 'object') {
+        obj = objTypes[name] = {};
+        paramTypes[name].push(obj);
       }
 
-      obj[names[1]] = { type: type, optional: param.optional };
-    } else {
-      params[name] = type;
+      obj[property] = { type, optional: param.optional };
     }
-  });
+  }
 
-  return member.params.filter((param) => {
-    return params[param.name];
-  }).map((param) => {
-    const paramSpec = params[param.name];
-    let p = '';
-    if (param.variable) {
-      p += '...';
-    }
-    p += param.name;
-    if (param.optional) {
-      p += '?';
-    }
-    p += ': ';
+  return member.params
+    .filter((param) => paramTypes[param.name])
+    .map((param) => {
+      const paramType = paramTypes[param.name];
+      let p = '';
+      if (param.variable) {
+        p += '...';
+      }
+      p += param.name;
+      if (param.optional) {
+        p += '?';
+      }
+      p += ': ';
 
-    if (typeof paramSpec == 'string') {
-      p += paramSpec;
-    } else {
-      p += '{ ' + Object.keys(paramSpec).map(key => {
-        const subParam = paramSpec[key];
-        return key + (subParam.optional ? '?' : '') + ': ' + subParam.type;
-      }).join(', ') + ' }';
-    }
+      if (param.variable) {
+        p += makeArray(paramType);
+      } else {
+        p += joinTypes(paramType);
+      }
 
-    if (param.variable) {
-      p += '[]';
-    }
-
-    return p;
-  }).join(', ');
+      return p;
+    })
+    .join(', ');
 }
 
 /**
- * @param {*} member
+ * @param {Definition} member
  * @return {string}
  */
 function createReturn(member) {
-  if (member.returns) {
-    return createType(member.returns[0].type);
+  const { returns = [], longname } = member
+  if (returns.length > 0) {
+    return joinTypes(createType(returns[0].type));
   }
 
-  console.warn('No return type for ' + member.longname)
+  console.warn(`No return type for ${longname}.`);
   return 'any';
 }
 
@@ -390,20 +416,54 @@ function createSingleType(name) {
 }
 
 /**
- * @param {TypeSpecification} typeSpec
- * @return {string}
+ * @param {TypeSpecification=} typeSpec
+ * @return {string[]}
  */
 function createType(typeSpec) {
   if (!typeSpec) {
     console.warn('Unknown type spec occured.');
-    return 'unknown';
+    return ['unknown'];
   }
 
-  if (typeSpec.names.length > 1) {
-    return `(${typeSpec.names.map((name) => createSingleType(name)).join(' | ')})`;
+  return typeSpec.names
+    .map(name => createSingleType(name))
+    .filter(name => name !== 'object' && name !== 'Object');
+}
+
+/**
+ * @param {ObjectTypeSpecification} type
+ */
+function objectType(type) {
+  const subParams = Object.entries(type).map(([key, subParam]) => {
+    return `${key}${subParam.optional ? '?' : ''}: ${joinTypes(subParam.type)}`;
+  });
+  return `{ ${subParams.join(', ')} }`
+}
+
+/**
+ * @param {string[]} types
+ * @return {string}
+ */
+function joinTypes(types) {
+  if (!types.length) {
+    return 'object';
   }
 
-  return createSingleType(typeSpec.names[0]);
+  return types
+    .map(type => typeof type === 'string' ? type : objectType(type))
+    .join(' | ');
+}
+
+/**
+ * @param {string[]} types
+ * @return {string}
+ */
+function makeArray(types) {
+  if (types.length > 1) {
+    return `(${joinTypes(types)})[]`
+  }
+
+  return `${joinTypes(types)}[]`
 }
 
 exports.publish = publish;
