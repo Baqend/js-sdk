@@ -1,4 +1,4 @@
-'use strict';
+'use strict'
 
 module.exports = {
   plugins: ['node'],
@@ -64,4 +64,56 @@ module.exports = {
       ignoreTemplateLiterals: true,
     }],
   },
-};
+
+  overrides: [
+    {
+      files: ['spec/*.js'],
+
+      globals: {
+        'Abort': true,
+        'ArrayBuffer': true,
+        'DB': true,
+        'env': true,
+        'expect': true,
+        'helper': true,
+        'Map': true,
+        'Promise': true,
+        'Set': true,
+      },
+
+      env: {
+        es5: true,
+        es6: false,
+        node: true,
+        mocha: true,
+      },
+
+      rules: {
+        'consistent-return': 'off',
+        'func-names': 'off',
+        'global-require': 'off',
+        'guard-for-in': 'warn',
+        'new-cap': 'warn',
+        'no-console': 'warn',
+        'no-empty': ['error', { allowEmptyCatch: true }],
+        'no-eval': 'warn',
+        'no-mixed-operators': 'off',
+        'no-multi-str': 'off',
+        'no-new': 'off',
+        'no-restricted-syntax': 'off',
+        'no-shadow': 'warn',
+        'no-unused-expressions': 'off',
+        'no-unused-vars': 'warn',
+        'no-use-before-define': 'warn',
+        'no-var': 'off',
+        'node/no-unpublished-require': 'off',
+        'object-shorthand': 'off',
+        'one-var': 'off',
+        'one-var-declaration-per-line': 'off',
+        'prefer-arrow-callback': 'off',
+        'prefer-promise-reject-errors': 'warn',
+        'vars-on-top': 'off',
+      },
+    },
+  ],
+}

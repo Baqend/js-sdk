@@ -122,7 +122,7 @@
     "typings:test": "tsc --version && tsc --target es6 --strict -m commonjs --skipLibCheck spec-ts/typings.spec.ts spec-ts/realtime.spec.ts",
     "jsdoc": "jsdoc -t tpl/theme -r lib realtime -c tpl/jsdoc.conf.json --package package.json -d doc",
     "baqend": "node cli/index.js",
-    "lint": "eslint lib realtime"
+    "lint": "eslint lib spec realtime"
   },
   "engines": {
     "node": ">=4.5.0"
