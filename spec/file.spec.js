@@ -14,7 +14,7 @@ describe('Test file', function () {
 
   this.timeout(20 * 1000);
 
-  var flames, rocket, emf, rootDb;
+  var flames, emf, rootDb;
   var dataBase64 = 'data:image/gif;base64,R0lGODlhDAAeALMAAGUJC/SHGvJZI18NDP347fifGeyqlfqqFdjHx/FhIu98HuLY1/NwHvN5G2AMDP///yH5BAAAAAAALAAAAAAMAB4AAARM8MlJ63SWOpzf3t3HVSKolab0qel6mS7LxR6I0OuCw2k9967dj+cYvFAUAJKEGnkKh0OJQggEHgSaRNHoPBheSsJrEIQf5nD6zKZEAAA7';
   var dataSvg = 'data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%201%201%22%3E%3Cpath%20d%3D%22m0%2C0v1h1V0%22%2F%3E%3C%2Fsvg%3E';
   var dataSvgTotal = 86;
@@ -33,7 +33,6 @@ describe('Test file', function () {
       helper.asset('test.json', 'text'),
     ]).then(function (data) {
       flames = data[0];
-      rocket = data[1];
       arrayBuffer = data[2];
       json = JSON.parse(data[3]);
     }).then(function () {
@@ -386,8 +385,8 @@ describe('Test file', function () {
         },
       });
 
-      var json = file.toJSON();
-      expect(json).eql({
+      var jsonOfFile = file.toJSON();
+      expect(jsonOfFile).eql({
         id: '/file/www/test/my.png',
         mimeType: 'text/html',
         createdAt: date.toISOString(),
@@ -406,8 +405,8 @@ describe('Test file', function () {
           'test-header': 'value',
         },
       });
-      expect(json.data).is.undefined;
-      expect(json.type).is.undefined;
+      expect(jsonOfFile.data).is.undefined;
+      expect(jsonOfFile.type).is.undefined;
     });
 
     it('should deserialize all properties from json', function () {
@@ -839,8 +838,6 @@ describe('Test file', function () {
 
     if (helper.isNode) {
       it('should upload stream format', function () {
-        var fs = require('fs');
-
         var file = new rootDb.File(pngFile.id);
         return file.download({ type: 'stream' }).then(function (stream) {
           expect(file.mimeType.toLowerCase()).eql('image/png');
@@ -1351,10 +1348,7 @@ describe('Test file', function () {
 
 
     it('should list buckets', function () {
-      var intialBucketCount;
-      return rootDb.File.listBuckets().then(function (buckets) {
-        intialBucketCount = buckets.length;
-
+      return rootDb.File.listBuckets().then(function () {
         return rootDb.File.saveMetadata('listBucketTest', {
           load: new rootDb.util.Permission().allowAccess(rootDb.User.me),
           insert: new rootDb.util.Permission().allowAccess(rootDb.User.me),
@@ -1390,10 +1384,10 @@ describe('Test file', function () {
       var rootEmf = new DB.EntityManagerFactory({ host: env.TEST_SERVER, tokenStorage: helper.rootTokenStorage });
       rootEmf.ready().then(function () {
         return rootEmf.code.saveCode('updateFile', 'module', function (module, exports) {
-          exports.call = function (db, data) {
+          exports.call = function (codeDb, data) {
             var fileId = data.id;
             var newValue = data.value;
-            return new db.File(fileId).upload({ type: 'json', data: newValue, force: true });
+            return new codeDb.File(fileId).upload({ type: 'json', data: newValue, force: true });
           };
         });
       }).then(function () {
