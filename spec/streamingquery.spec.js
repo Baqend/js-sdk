@@ -941,7 +941,7 @@ describe("Streaming Queries", function() {
       sameForAll = helper.randomize(this.test.title);
       var people = [newPerson(), newPerson(), newPerson(), newPerson()];
       return helper.sleep(t, Promise.all(people.map(function(p) {
-        p.insert();
+        return p.insert();
       }))).then(function() {
         var received = [];
         query = db[bucket].find().equal('testID', sameForAll).limit(3);
