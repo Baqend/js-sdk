@@ -8,7 +8,9 @@ if (typeof module !== 'undefined') {
 
 describe('Test file', function () {
   // Skip IE9 and IE11 multiple file uploads in one session crashes the ie
-  if ((typeof Blob === 'undefined' && typeof Buffer === 'undefined') || helper.isIE11) { return; }
+  if ((typeof Blob === 'undefined' && typeof Buffer === 'undefined') || helper.isIE11) {
+    return;
+  }
 
   this.timeout(20 * 1000);
 
@@ -41,6 +43,28 @@ describe('Test file', function () {
         });
       });
     });
+  });
+
+  it('parses E-Tags correctly', function () {
+    var parseETag = DB.binding.File.parseETag;
+
+    expect(parseETag()).to.be.null;
+    expect(parseETag(false)).to.be.null;
+    expect(parseETag(null)).to.be.null;
+    expect(parseETag(undefined)).to.be.null;
+
+    expect(parseETag('"hello"')).to.eql('hello');
+    expect(parseETag('"12345"')).to.eql('12345');
+    expect(parseETag('\'hello\'')).to.eql('hello');
+    expect(parseETag('\'12345\'')).to.eql('12345');
+    expect(parseETag('w/"hello"')).to.eql('hello');
+    expect(parseETag('w/"12345"')).to.eql('12345');
+    expect(parseETag('w/\'hello\'')).to.eql('hello');
+    expect(parseETag('w/\'12345\'')).to.eql('12345');
+    expect(parseETag('W/"hello"')).to.eql('hello');
+    expect(parseETag('W/"12345"')).to.eql('12345');
+    expect(parseETag('W/\'hello\'')).to.eql('hello');
+    expect(parseETag('W/\'12345\'')).to.eql('12345');
   });
 
   describe('object', function () {
@@ -887,9 +911,9 @@ describe('Test file', function () {
   });
 
   describe('metadata', function () {
-    var pngFile,
-      jsonFile,
-      bucket = 'metadataTest';
+    var bucket = 'metadataTest';
+    var pngFile;
+    var jsonFile;
 
     before(function () {
       var cHeads = {
@@ -910,6 +934,7 @@ describe('Test file', function () {
     it('should be loaded', function () {
       var file = new rootDb.File(pngFile.id);
       return file.loadMetadata().then(function () {
+        expect(file !== pngFile).to.be.true;
         expect(file.eTag).eql(pngFile.eTag);
         expect(file.lastModified).gt(new Date(Date.now() - 5 * 60 * 1000));
         expect(file.lastModified).lt(new Date(Date.now() + 5 * 60 * 1000));
@@ -927,6 +952,7 @@ describe('Test file', function () {
     it('should be loaded by download', function () {
       var file = new rootDb.File(jsonFile.id);
       return file.download().then(function () {
+        expect(file !== jsonFile).to.be.true;
         expect(file.eTag).not.contains('--gzip');
         expect(file.eTag).eql(jsonFile.eTag);
         expect(file.lastModified).gt(new Date(Date.now() - 5 * 60 * 1000));
@@ -1023,7 +1049,7 @@ describe('Test file', function () {
     });
 
     it('should remove a removed file', function () {
-      var file = new rootDb.File({ name: 'unknown' });
+      new rootDb.File({ name: 'unknown' });
       return uploadFile.delete();
     });
 
@@ -1285,9 +1311,12 @@ describe('Test file', function () {
       var file3 = new rootDb.File({ parent: '/wwww/images', name: 'test2.png', data: flames });
 
       return Promise.all([
-        file1.upload().catch(function () {}),
-        file2.upload().catch(function () {}),
-        file3.upload().catch(function () {}),
+        file1.upload().catch(function () {
+        }),
+        file2.upload().catch(function () {
+        }),
+        file3.upload().catch(function () {
+        }),
       ]).then(function () {
         var folder = new rootDb.File('/file/wwww/');
         return rootDb.File.listFiles(folder);
