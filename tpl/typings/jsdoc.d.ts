@@ -30,6 +30,7 @@ interface Definition {
   description?: string
   classdesc?: string
   undocumented?: boolean
+  deprecated?: boolean
   ignore?: boolean
   type?: TypeSpecification
   params?: Param[]
