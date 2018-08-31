@@ -1,0 +1,12 @@
+{
+  "compilerOptions": {
+    "target": "es6",
+    "module": "commonjs",
+    "strict": true,
+    "skipLibCheck": true
+  },
+  "files": [
+    "typings.spec.ts",
+    "realtime.spec.ts"
+  ]
+}
