@@ -484,11 +484,20 @@ function createClass(data, cls, ns) {
     lines.push(ns.prefix + '  constructor(' + createParams(cls) + ');');
   }
 
-  // Create class members
-  push(lines, createMembers(data, ns.prefix, longname));
+  // Create own members
+  lines.push(...createMembers(data, ns.prefix, longname));
+
+  // Create multi-polymorph classes's members
   if (!isInterface && augments.length > 1) {
-    for (let i = 1, len = augments.length; i < len; i += 1) {
-      push(lines, createMembers(data, ns.prefix, augments[i]));
+    for (const className of augments) {
+      lines.push(...createMembers(data, ns.prefix, className, false));
+    }
+  }
+
+  // Create implemented interfaces's members
+  if (!isInterface && interfaces.length) {
+    for (const className of interfaces) {
+      lines.push(...createMembers(data, ns.prefix, className, false));
     }
   }
 
