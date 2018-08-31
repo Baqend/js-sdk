@@ -38,7 +38,7 @@
     "karma-webdriverio-launcher": "0.0.1",
     "opn": "^4.0.2",
     "rimraf": "^2.5.4",
-    "rxjs": "^5.5.2",
+    "rxjs": "^5.5.12",
     "simple-git": "^1.62.0",
     "uuid": "^3.0.1",
     "validator": "^4.9.0",
@@ -62,7 +62,7 @@
     "backend-as-a-service"
   ],
   "devDependencies": {
-    "@types/node": "^10.9.3",
+    "@types/node": "^10.9.4",
     "babel-core": "^6.14.0",
     "babel-plugin-external-helpers": "^6.8.0",
     "babel-plugin-transform-proto-to-assign": "^6.9.0",
@@ -107,7 +107,7 @@
     "phantomjs-prebuilt": "^2.1.12",
     "shelljs": "^0.7.4",
     "through2": "^2.0.1",
-    "typescript": "^3.0.1",
+    "typescript": "^3.0.3",
     "uglify-js": "^2.7.3"
   },
   "scripts": {
