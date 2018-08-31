@@ -23,40 +23,129 @@ const push = Function.prototype.apply.bind(Array.prototype.push);
 
 /**
  * @param {string} name
- * @return {string}
+ * @return {string[]}
  */
-function createSingleType(name) {
-  let type = typeDefs[name];
-  if (!type) {
-    type = name;
-
-    type = type.replace(/function/g, 'Function');
-    type = type.replace(/Function\(\)/g, 'Function');
-    type = type.replace(/\*/g, 'any');
-    type = type.replace(/\.</g, '<');
-
-    type = type.replace(/Object\.?<([^,]+),\s*([^>]+)>/g, '{ [key: $1]: $2 }');
-    type = type.replace(/^Array<(.*)>$/, '$1[]');
-
-    typeDefs[name] = type;
+function splitOptionalType(name) {
+  if (name.startsWith('?')) {
+    // console.log(name);
+    return [name.substr(1), 'null'];
   }
 
-  return type;
+  return [name];
+}
+
+/**
+ * @param {T[][]} arrayOfArrays
+ * @return {T[]}
+ * @template T
+ */
+function flatten(arrayOfArrays) {
+  return [].concat.apply([], arrayOfArrays);
+}
+
+/**
+ * @param {string} inner
+ * @return {string[]}
+ */
+function splitGenericInner(inner) {
+  const parameters = [];
+  let level = 0;
+  let start = 0;
+  for (let i = 0; i < inner.length; i += 1) {
+    const char = inner[i];
+    if (char === ',') {
+      if (level === 0) {
+        parameters.push(inner.substr(start, i));
+        i += 1;
+        while (inner[i] === ' ') {
+          i += 1;
+        }
+        start = i;
+      }
+    } else if (char === '<') {
+      level += 1;
+    } else if (char === '>') {
+      level -= 1;
+    }
+  }
+  parameters.push(inner.substr(start));
+
+  return parameters;
+}
+
+/**
+ * @param {string} name
+ * @return {string}
+ */
+function normalizeType(name) {
+  if (typeDefs[name]) {
+    return typeDefs[name];
+  }
+
+  if (name === '*') {
+    return 'any';
+  }
+
+  if (name === 'void' || name === 'null' || name === 'true' || name === 'false' || name === 'boolean' || name === 'number') {
+    return name;
+  }
+
+  const type = name
+    .replace(/function/g, 'Function')
+    .replace(/Function\(\)/g, 'Function')
+    .replace(/\.</g, '<');
+
+  const isGeneric = type.match(/^([^<]+)<(.*)>$/);
+  if (isGeneric) {
+    const [, genericName, parameterStr] = isGeneric;
+    const parameters = splitGenericInner(parameterStr);
+    const types = parameters
+      .map(subtype => createType(subtype))
+      .map(subtypes => joinTypes(subtypes));
+
+    if (genericName === 'Object') {
+      return `{ [key: ${types[0]}]: ${types[1]} }`;
+    } else if (genericName === 'Array') {
+      return `${types[0]}[]`;
+    }
+
+    return `${genericName}<${types.join(', ')}>`;
+  }
+
+  return type
+    .replace('Object', 'object');
+}
+
+/**
+ * @param {string} type
+ * @return {string[]}
+ */
+function createType(type) {
+  // Find "?Foo" types and split them into "Foo | null"
+  return splitOptionalType(type)
+    .map(name => normalizeType(name))
+    .filter(name => name !== 'object');
+}
+
+/**
+ * @param {TypeSpecification} typeSpec
+ * @return {string[]}
+ */
+function parseType(typeSpec) {
+  return flatten(typeSpec.names.map(name => createType(name)));
 }
 
 /**
  * @param {TypeSpecification=} typeSpec
  * @return {string[]}
  */
-function createType(typeSpec) {
+function createTypes(typeSpec) {
   if (!typeSpec) {
     console.warn('Unknown type spec occured.');
     return ['unknown'];
   }
 
-  return typeSpec.names
-    .map(name => createSingleType(name))
-    .filter(name => name !== 'object' && name !== 'Object');
+  return parseType(typeSpec);
 }
 
 /**
@@ -155,7 +244,7 @@ function createParams(member) {
     const names = param.name.split('.');
     const [name, property] = names;
 
-    const type = createType(param.type);
+    const type = createTypes(param.type);
     if (!paramTypes[name]) {
       paramTypes[name] = type;
     }
@@ -204,7 +293,7 @@ function createParams(member) {
 function createReturn(member) {
   const { returns = [], longname } = member;
   if (returns.length > 0) {
-    return joinTypes(createType(returns[0].type));
+    return joinTypes(createTypes(returns[0].type));
   }
 
   console.warn(`No return type for ${longname}.`);
@@ -252,7 +341,7 @@ function createMembers(data, prefix, fullClassName, exportIt) {
             line += '?';
           }
 
-          line += ': ' + joinTypes(createType(member.type)) + ';';
+          line += ': ' + joinTypes(createTypes(member.type)) + ';';
           lines.push(line);
 
           break;
@@ -464,7 +553,7 @@ function publish(data, opts) {
       if (type.params) {
         typeDefs[type.longname] = '(' + createParams(type) + ') => ' + createReturn(type);
       } else {
-        typeDefs[type.longname] = joinTypes(createType(type.type));
+        typeDefs[type.longname] = joinTypes(createTypes(type.type));
       }
     }
   }
