@@ -939,6 +939,7 @@ describe('Test file', function () {
         expect(file.createdAt).lt(new Date(Date.now() + 5 * 60 * 1000));
         expect(file.mimeType).eql('image/png');
         expect(file.size).eql(pngFile.size);
+        expect(file.encoding).eql(DB.File.Encoding.IDENTITY);
         expect(file.headers.hello).eql('World');
         expect(file.headers.schmukey).eql('Schmu');
         expect(file.acl.isPublicReadAllowed()).be.true;
@@ -958,6 +959,7 @@ describe('Test file', function () {
         expect(file.createdAt).lt(new Date(Date.now() + 5 * 60 * 1000));
         expect(file.mimeType).eql('application/json; charset=UTF-8');
         expect(file.size).eql(jsonFile.size);
+        expect(file.encoding).eql(DB.File.Encoding.IDENTITY);
         expect(file.headers.hello).eql('World');
         expect(file.headers.schmukey).eql('Schmu');
         expect(file.acl.isPublicReadAllowed()).be.true;
