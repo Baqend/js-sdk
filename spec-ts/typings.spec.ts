@@ -24,6 +24,22 @@ db.User.find()
         user.username;
     });
 
+db.code.loadCode('foo', 'module', true)
+    .then((code) => {
+        code.name;
+        code.call('test', 'world');
+    })
+
+db.code.loadCode('foo', 'module', false)
+    .then((code) => {
+        code.includes('stuff');
+    })
+
+db.code.loadCode('foo', 'module')
+    .then((code) => {
+        code.includes('stuff');
+    })
+
 let builder:query.Builder<model.Role> = db.Role.find();
 
 let q1 = builder.notIn('age', [3,4,5])
