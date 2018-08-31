@@ -412,25 +412,43 @@ function createClass(data, cls, ns) {
 }
 
 /**
+ * @param {*} value
+ * @return {string}
+ */
+function stringify(value) {
+  if (typeof value === 'number') {
+    return value.toString();
+  }
+
+  if (typeof value === 'string') {
+    return `'${value}'`;
+  }
+
+  throw new Error('Cannot handle ' + value);
+}
+
+/**
  * @param {Definition} enumeration
  * @param {Namespace} ns
  * @return {string[]}
  */
 function createEnum(enumeration, ns) {
   const lines = [];
+  if (enumeration.description) {
+    lines.push(`${ns.prefix}/**`);
+    lines.push(`${ns.prefix} * ${enumeration.description}`);
+    lines.push(`${ns.prefix} */`);
+  }
   lines.push(`${ns.prefix}export enum ${enumeration.name} {`);
 
   if (enumeration.properties) {
-    for (const [i, prop] of enumeration.properties.entries()) {
-      let line = `${ns.prefix}  ${prop.name} = ${prop.defaultvalue}`;
-      if (i < enumeration.properties.length - 1) {
-        line += ',';
-      }
+    for (const prop of enumeration.properties) {
+      const line = `${ns.prefix}  ${prop.name} = ${stringify(prop.defaultvalue)},`;
       lines.push(line);
     }
   }
 
-  lines.push(ns.prefix + '}');
+  lines.push(`${ns.prefix}}`);
   return lines;
 }
 
