@@ -10,6 +10,7 @@ const uuid = require('../../lib/util/uuid').uuid;
 class Stream {
   /**
    * Creates a live updating object stream for a query
+   *
    * @alias query.Stream.createStream<T>
    * @param {EntityManager} entityManager The owning entity manager of this query
    * @param {string} query The query options
@@ -52,6 +53,7 @@ class Stream {
 
   /**
    * Creates a live updating result stream for a query
+   *
    * @alias query.Stream.createStreamResult<T>
    * @param {EntityManager} entityManager The owning entity manager of this query
    * @param {string} query The query options
@@ -187,19 +189,6 @@ class Stream {
     });
   }
 
-  /**
-   * Valid options are:
-   <ul>
-   <li>initial: a Boolean indicating whether or not the initial result set should be delivered on creating the
-      subscription</li>
-   <li>matchTypes: a list of match types</li>
-   <li>operations: a list of operations</li>
-   </ul>
-   *
-   *
-   * @param {Object} options object containing options
-   * @returns {Object} an object containing VALID options
-   */
   static parseOptions(options) {
     const opt = options || {};
 

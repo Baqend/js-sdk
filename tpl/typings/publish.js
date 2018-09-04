@@ -190,7 +190,7 @@ function getDescriptionLines(str) {
   const lines = str.split('\n').map(line => line.trim());
   const index = lines.findIndex((line, idx) => idx > 0 && !line && lines[idx + 1].length > 0);
   if (index > -1) {
-    return lines.slice(0, index - 1);
+    return lines.slice(0, index);
   }
 
   return lines;
@@ -310,12 +310,15 @@ function createReturn(member) {
 function createMembers(data, prefix, fullClassName, exportIt) {
   const name = fullClassName.substring(fullClassName.lastIndexOf('.') + 1);
 
-  const lines = [];
   const members = data({ memberof: fullClassName }).get() || [];
   const hiddenMembers = data({ memberof: fullClassName + '.' + name }).get() || [];
 
   const allMembers = hiddenMembers.concat(members);
+  if (!allMembers.length) {
+    return [];
+  }
 
+  const lines = [];
   for (const member of allMembers) {
     if (!member.inherited && !member.ignore && !member.isEnum && member.access !== 'private' && !member.undocumented) {
       switch (member.kind) {
@@ -360,9 +363,14 @@ function createMembers(data, prefix, fullClassName, exportIt) {
           } else {
             // Method
             if (member.deprecated) {
-              lines.push(`${prefix}  /**`);
-              lines.push(`${prefix}   * @deprecated${typeof member.deprecated === 'string' ? ' ' + member.deprecated : ''}`);
-              lines.push(`${prefix}   */`);
+              lines.push(`${prefix}  /** @deprecated${typeof member.deprecated === 'string' ? ' ' + member.deprecated : ''} */`);
+            } else if (member.description) {
+              const descriptionLines = getDescriptionLines(member.description);
+              if (descriptionLines.length > 1) {
+                console.warn('Description of ' + fullClassName + '#' + member.name + ' is too long.');
+              }
+
+              lines.push(`${prefix}  /** ${descriptionLines.join(' ')} */`);
             }
 
             line += '  ';
@@ -551,20 +559,30 @@ function createEnum(enumeration, ns) {
 }
 
 /**
+ * @param {Definition} typedef
+ */
+function createTypedef(typedef) {
+  if (!typedef.longname) {
+    return;
+  }
+
+  if (typedef.params) {
+    typeDefs[typedef.longname] = '(' + createParams(typedef) + ') => ' + createReturn(typedef);
+    return;
+  }
+
+  typeDefs[typedef.longname] = joinTypes(createTypes(typedef.type));
+}
+
+/**
  @param {Taffy} data See <http://taffydb.com/>.
  @param {object} opts
  */
 function publish(data, opts) {
   // Process all callback definitions
-  const types = data({ kind: 'typedef' }).get();
-  for (const type of types) {
-    if (type.longname) {
-      if (type.params) {
-        typeDefs[type.longname] = '(' + createParams(type) + ') => ' + createReturn(type);
-      } else {
-        typeDefs[type.longname] = joinTypes(createTypes(type.type));
-      }
-    }
+  const typedefs = data({ kind: 'typedef' }).get();
+  for (const typedef of typedefs) {
+    createTypedef(typedef);
   }
 
   // Process all classes and interfaces
