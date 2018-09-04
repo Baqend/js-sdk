@@ -5,6 +5,15 @@ const lib = require('../../lib/baqend');
 const uuid = require('../../lib/util/uuid').uuid;
 
 /**
+ * @typedef {object} StreamOptions
+ * @property {boolean} initial          Indicates whether or not the initial result set should be delivered on
+ *                                      creating the subscription.
+ * @property {Array<string>} matchTypes A list of match types.
+ * @property {Array<string>} operations A list of operations.
+ * @property {number} reconnects        The number of reconnects.
+ */
+
+/**
  * @alias query.Stream
  */
 class Stream {
@@ -20,7 +29,7 @@ class Stream {
    * @param {number=} query.limit the count, i.e. the number of items in the result
    * @param {number=} query.offset offset, i.e. the number of items to skip
    * @param {boolean=} query.initial Indicates if the initial result should be returned
-   * @param {Object} options an object containing parameters
+   * @param {Partial<StreamOptions>} options an object containing parameters
    * @return {Observable<RealtimeEvent<T>>} The query result as a live updating stream of objects
    */
   static createEventStream(entityManager, query, options) {
@@ -62,7 +71,7 @@ class Stream {
    * @param {string=} query.sort the sort string
    * @param {number=} query.limit the count, i.e. the number of items in the result
    * @param {number=} query.offset offset, i.e. the number of items to skip
-   * @param {Object} options an object containing parameters
+   * @param {Partial<StreamOptions>} options an object containing parameters
    * @return {Observable<Array<T>>} The query result as a live updating query result
    */
   static createResultStream(entityManager, query, options) {
@@ -189,6 +198,12 @@ class Stream {
     });
   }
 
+  /**
+   * Parses the StreamOptions
+   *
+   * @param {Partial<StreamOptions>=} [options] object containing partial options
+   * @returns {StreamOptions} an object containing VALID options
+   */
   static parseOptions(options) {
     const opt = options || {};
 

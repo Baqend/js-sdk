@@ -39,6 +39,7 @@ interface Definition {
   access?: string
   readonly?: boolean
   nullable?: boolean
+  optional?: boolean
   returns?: Definition[]
   properties?: Definition[]
   defaultvalue?: string

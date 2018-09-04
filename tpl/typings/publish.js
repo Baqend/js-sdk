@@ -571,6 +571,20 @@ function createTypedef(typedef) {
     return;
   }
 
+  if (typedef.properties) {
+    const obj = {};
+    for (const property of typedef.properties) {
+      const type = createTypes(property.type);
+      const optional = !!property.optional;
+
+      obj[property.name] = { type, optional };
+    }
+
+    // { type, optional: param.optional };
+    typeDefs[typedef.longname] = obj;
+    return;
+  }
+
   typeDefs[typedef.longname] = joinTypes(createTypes(typedef.type));
 }
 
