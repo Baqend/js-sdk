@@ -48,16 +48,18 @@ class WebSocketConnector {
         Object.keys(this.observers).forEach((id) => {
           const observer = this.observers[id];
           delete this.observers[id]; // unsubscribe to allow resubscriptions
-          try {
-            if (observer) {
+          if (observer) {
+            try {
               if (isError) {
                 observer.error(new CommunicationError(null, error));
               } else {
                 observer.complete();
               }
+            } catch (e) {
+              if (!firstErr) {
+                firstErr = e;
+              }
             }
-          } catch (e) {
-            if (!firstErr) { firstErr = e; }
           }
         });
 
