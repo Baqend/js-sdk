@@ -49,10 +49,12 @@ class WebSocketConnector {
           const observer = this.observers[id];
           delete this.observers[id]; // unsubscribe to allow resubscriptions
           try {
-            if (isError) {
-              observer.error(new CommunicationError(null, error));
-            } else {
-              observer.complete();
+            if (observer) {
+              if (isError) {
+                observer.error(new CommunicationError(null, error));
+              } else {
+                observer.complete();
+              }
             }
           } catch (e) {
             if (!firstErr) { firstErr = e; }
