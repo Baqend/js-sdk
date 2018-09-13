@@ -1721,18 +1721,19 @@ describe('Test crud', function () {
     })
 
     it('should map to the returned server reference', function () {
-      const person = new db.Person();
+      var person = new db.Person();
       person.id = myId;
-      const id = person.id;
+      var id = person.id;
       person.name = "Custom Person";
-      const newId = 123456;
-
-      db._connector.send = (message) => {
-        message.id = newId;
-        return message;
+      var newId = 123456;
+      var dbsend = db.send;
+      db.send = function (message) {
+        message.request.entity.id = newId;
+        return Promise.resolve({status: 200, headers: {}, entity: message.request.entity});
       };
 
       return person.save({refresh: true, depth: true}, function (result) {
+        db.send = dbsend;
         expect(person.id).equals(newId);
         expect(person.name).equals("Custom Person");
       });
