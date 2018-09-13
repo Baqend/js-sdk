@@ -1,54 +1,60 @@
+'use strict';
+
 var DB;
-if (typeof module != 'undefined') {
+if (typeof module !== 'undefined') {
   require('./node');
   DB = require('../lib');
 }
 
-describe("Test enhancer", function() {
+describe('Test enhancer', function () {
   var db, model = [
     {
-      "class": "/db/TestClass",
-      "fields": {
-        "testValue": {
-          "name": "testValue",
-          "type": "/db/Integer"
+      class: '/db/TestClass',
+      fields: {
+        testValue: {
+          name: 'testValue',
+          type: '/db/Integer',
         },
-        "embeddedValue": {
-          "name": "embedded",
-          "type": "/db/TestEmbeddedClass"
-        }
-      }
+        embeddedValue: {
+          name: 'embedded',
+          type: '/db/TestEmbeddedClass',
+        },
+      },
     },
     {
-      "class": "/db/test.NsClass",
-      "fields": {
-        "value": {
-          "name": "value",
-          "type": "/db/Integer"
-        }
-      }
+      class: '/db/test.NsClass',
+      fields: {
+        value: {
+          name: 'value',
+          type: '/db/Integer',
+        },
+      },
     },
     {
-      "class": "/db/TestEmbeddedClass",
-      "embedded": true,
-      "fields": {
-        "value": {
-          "name": "value",
-          "type": "/db/Integer"
-        }
-      }
-    }
+      class: '/db/TestEmbeddedClass',
+      embedded: true,
+      fields: {
+        value: {
+          name: 'value',
+          type: '/db/Integer',
+        },
+      },
+    },
   ];
 
-  beforeEach(function() {
-    var emf = new DB.EntityManagerFactory({host: env.TEST_SERVER, schema: model, tokenStorage: helper.rootTokenStorage});
-    return emf.metamodel.save().then(function() {
+  beforeEach(function () {
+    var emf = new DB.EntityManagerFactory({
+      host: env.TEST_SERVER,
+      schema: model,
+      tokenStorage: helper.rootTokenStorage,
+    });
+    return emf.metamodel.save().then(function () {
       db = emf.createEntityManager();
       expect(db.isReady).be.true;
     });
   });
 
-  it('should add DAO methods', function() {
+  it('should add DAO methods', function () {
     expect(db.TestClass).be.ok;
     expect(db.TestClass.find).be.ok;
     expect(db.TestClass.load).be.ok;
@@ -62,7 +68,7 @@ describe("Test enhancer", function() {
     var testClass = new TestClass();
     expect(testClass).be.ok;
 
-    expect("testValue" in testClass).be.true;
+    expect('testValue' in testClass).be.true;
     expect(testClass.save).be.ok;
     expect(testClass.insert).be.ok;
     expect(testClass.update).be.ok;
@@ -71,7 +77,7 @@ describe("Test enhancer", function() {
     expect(testClass.attr).be.ok;
   });
 
-  it('should provide EntityFactory instances', function() {
+  it('should provide EntityFactory instances', function () {
     var testClass = new db.TestClass();
 
     expect(testClass instanceof DB.binding.Entity).be.true;
@@ -81,7 +87,7 @@ describe("Test enhancer", function() {
     expect(null instanceof db.TestClass).be.false;
   });
 
-  it('should not enhance dao methods to embedded objects', function() {
+  it('should not enhance dao methods to embedded objects', function () {
     expect(db.TestEmbeddedClass).be.ok;
     expect(db.TestEmbeddedClass.find).be.undefined;
     expect(db.TestEmbeddedClass.get).be.undefined;
@@ -95,7 +101,7 @@ describe("Test enhancer", function() {
     var testClass = new TestEmbeddedClass();
     expect(testClass).be.ok;
 
-    expect("value" in testClass).be.true;
+    expect('value' in testClass).be.true;
     expect(testClass.toJSON).be.ok;
     expect(testClass.save).be.undefined;
     expect(testClass.insert).be.undefined;
@@ -105,7 +111,7 @@ describe("Test enhancer", function() {
     expect(testClass.attr).be.undefined;
   });
 
-  it('should provide EmbeddedFactory instances', function() {
+  it('should provide EmbeddedFactory instances', function () {
     var testClass = new db.TestEmbeddedClass();
 
     expect(testClass instanceof DB.binding.Entity).be.false;
@@ -115,10 +121,10 @@ describe("Test enhancer", function() {
     expect(null instanceof db.TestEmbeddedClass).be.false;
   });
 
-  it('should add property constructor on proxy classes', function() {
+  it('should add property constructor on proxy classes', function () {
     var testClass = new db.TestClass({
       testValue: 3,
-      notEnhanced: 'testString'
+      notEnhanced: 'testString',
     });
 
     expect(testClass.testValue).equals(3);
@@ -126,14 +132,14 @@ describe("Test enhancer", function() {
 
     testClass = new db.TestEmbeddedClass({
       value: 3,
-      notEnhanced: 'testString'
+      notEnhanced: 'testString',
     });
 
     expect(testClass.value).equals(3);
     expect(testClass.notEnhanced).equals('testString');
   });
 
-  it('should class in namespaces to be enhanced', function() {
+  it('should class in namespaces to be enhanced', function () {
     var testClass = new db['test.NsClass']();
 
     expect(db['test.NsClass']).be.ok;
@@ -142,28 +148,26 @@ describe("Test enhancer", function() {
     expect(testClass).be.ok;
   });
 
-  it('should add ref', function() {
-    var classFactory = new DB.binding.Enhancer();
-
+  it('should add ref', function () {
     var testClass = new db.TestClass();
 
-    expect(classFactory.getIdentifier(testClass.constructor)).be.ok;
+    expect(DB.binding.Enhancer.getIdentifier(testClass.constructor)).be.ok;
   });
 
-  it('should add metadata object', function() {
+  it('should add metadata object', function () {
     var testClass = new db.TestClass();
 
     expect(testClass._metadata).be.ok;
   });
 
-  it("enhanced objects should be enumarable", function() {
+  it('enhanced objects should be enumarable', function () {
     var obj = new db.TestClass();
 
     var expected = ['id', 'version', 'acl', 'testValue', 'embedded'];
     var count = 0;
     for (var prop in obj) {
       if (!(obj[prop] instanceof Function)) {
-        count++;
+        count += 1;
         expect(expected).include(prop);
       }
     }
@@ -171,11 +175,11 @@ describe("Test enhancer", function() {
     expect(count).equals(expected.length);
   });
 
-  it('should add new methods', function() {
+  it('should add new methods', function () {
     var TestClass = db.TestClass;
 
-    var returnVal = "testMethod";
-    var newMethod = function() {
+    var returnVal = 'testMethod';
+    var newMethod = function () {
       return returnVal;
     };
 
@@ -185,11 +189,11 @@ describe("Test enhancer", function() {
 
     TestClass.addMethods({
       newMethod2: newMethod,
-      newMethod3: newMethod
+      newMethod3: newMethod,
     });
 
     TestClass.addMethods({
-      newMethod4: newMethod
+      newMethod4: newMethod,
     });
 
     var testClass = new TestClass();
@@ -201,7 +205,7 @@ describe("Test enhancer", function() {
     expect(testClass.newMethod4()).equal(returnVal);
   });
 
-  it('should convert to JSON', function() {
+  it('should convert to JSON', function () {
     var testClass = new db.TestClass();
     testClass.testValue = 5;
     var json = testClass.toJSON();
@@ -210,17 +214,17 @@ describe("Test enhancer", function() {
     expect(json._metadata).be.undefined;
   });
 
-  it('should convert metadata to JSON if serialized by JSON.stringify', function() {
+  it('should convert metadata to JSON if serialized by JSON.stringify', function () {
     var testClass = new db.TestClass();
     testClass.testValue = 5;
-    var jsonString = JSON.stringify({obj: testClass});
+    var jsonString = JSON.stringify({ obj: testClass });
     var json = JSON.parse(jsonString);
     expect(json.obj).be.ok;
     expect(json.obj.testValue).eqls(5);
     expect(json._metadata).be.undefined;
   });
 
-  it('should convert embedded to JSON', function() {
+  it('should convert embedded to JSON', function () {
     var testClass = new db.TestEmbeddedClass();
     testClass.value = 5;
     var json = testClass.toJSON();
@@ -229,10 +233,10 @@ describe("Test enhancer", function() {
     expect(json._metadata).be.undefined;
   });
 
-  it('should convert embedded member to JSON', function() {
+  it('should convert embedded member to JSON', function () {
     var testClass = new db.TestClass();
     testClass.embedded = new db.TestEmbeddedClass({
-      value: 5
+      value: 5,
     });
 
     var json = testClass.embedded.toJSON();
@@ -241,7 +245,7 @@ describe("Test enhancer", function() {
     expect(json._metadata).be.undefined;
   });
 
-  it('should convert to JSON including metadata', function() {
+  it('should convert to JSON including metadata', function () {
     var testClass = new db.TestClass();
     testClass.attach(db);
 
@@ -254,7 +258,7 @@ describe("Test enhancer", function() {
     expect(json.acl).be.ok;
   });
 
-  it('should convert to JSON excluding metadata', function() {
+  it('should convert to JSON excluding metadata', function () {
     var testClass = new db.TestClass();
     testClass.attach(db);
 
@@ -267,7 +271,7 @@ describe("Test enhancer", function() {
     expect(json.acl).be.undefined;
   });
 
-  it('should convert from JSON including metadata', function() {
+  it('should convert from JSON including metadata', function () {
     var testClass = new db.TestClass();
     testClass.attach(db);
 
@@ -278,7 +282,7 @@ describe("Test enhancer", function() {
     expect(newTestClass.testValue).equal(testClass.testValue);
   });
 
-  it('should convert from JSON excluding metadata', function() {
+  it('should convert from JSON excluding metadata', function () {
     var testClass = new db.TestClass();
     testClass.attach(db);
 
@@ -289,36 +293,36 @@ describe("Test enhancer", function() {
     expect(newTestClass.testValue).eql(testClass.testValue);
   });
 
-  it('should convert embedded from JSON', function() {
-    var newTestClass = db.TestEmbeddedClass.fromJSON({value: 5});
+  it('should convert embedded from JSON', function () {
+    var newTestClass = db.TestEmbeddedClass.fromJSON({ value: 5 });
     expect(newTestClass.value).eql(5);
   });
 
-  describe('ES5 classes', function() {
-    it('should enhance custom classes', function() {
-      var myClass = function() {
+  describe('ES5 classes', function () {
+    it('should enhance custom classes', function () {
+      var myClass = function () {
         DB.binding.Entity.init(this);
         this.test = 'hallo';
       };
 
       var subClass = DB.binding.Entity.extend(myClass);
 
-      myClass.prototype.firstName = function() {
-        return "firstName";
+      myClass.prototype.firstName = function () {
+        return 'firstName';
       };
 
       db.TestClass = myClass;
 
-      db.TestClass.prototype.lastName = function() {
-        return "lastName";
+      db.TestClass.prototype.lastName = function () {
+        return 'lastName';
       };
 
       expect(subClass).equals(myClass);
 
       var testClass = new db.TestClass();
-      expect(testClass.firstName()).equal("firstName");
-      expect(testClass.lastName()).equal("lastName");
-      expect("testValue" in testClass).be.true;
+      expect(testClass.firstName()).equal('firstName');
+      expect(testClass.lastName()).equal('lastName');
+      expect('testValue' in testClass).be.true;
       expect(testClass.test).equals('hallo');
       expect(testClass.save).be.ok;
       expect(testClass.insert).be.ok;
@@ -332,63 +336,63 @@ describe("Test enhancer", function() {
       expect(testClass instanceof myClass).be.true;
     });
 
-    it('should call custom classes constructor', function() {
-      db.TestClass = DB.binding.Entity.extend(function(a,b,c) {
+    it('should call custom classes constructor', function () {
+      db.TestClass = DB.binding.Entity.extend(function (a, b, c) {
         DB.binding.Entity.init(this);
         this.a = a;
         this.b = b;
         this.c = c;
       });
 
-      var testClass = new db.TestClass(1,2,3);
+      var testClass = new db.TestClass(1, 2, 3);
       expect(testClass.a).equals(1);
       expect(testClass.b).equals(2);
       expect(testClass.c).equals(3);
     });
 
-    it('should reject none entity classes', function() {
-      var myClass = function(a) {
+    it('should reject none entity classes', function () {
+      var myClass = function (a) {
         this.a = a;
       };
 
-      expect(function() {
+      expect(function () {
         db.TestClass = myClass;
       }).throw('must extends the Entity class');
     });
 
-    it('should reject none embaddable classes', function() {
-      var myClass = function(a) {
+    it('should reject none embaddable classes', function () {
+      var myClass = function (a) {
         this.a = a;
       };
 
-      expect(function() {
+      expect(function () {
         db.TestEmbeddedClass = myClass;
       }).throw('must extends the Managed class');
     });
 
-    it('should reject none embaddable classes', function() {
-      var myClass = DB.binding.Entity.extend(function(a) {
+    it('should reject none embaddable classes', function () {
+      var myClass = DB.binding.Entity.extend(function (a) {
         this.a = a;
       });
 
-      expect(function() {
+      expect(function () {
         db.TestEmbeddedClass = myClass;
       }).throw('must extends the Managed class');
     });
 
-    it('should be allowed once to set a class', function() {
-      db.TestClass = DB.binding.Entity.extend(function() {});
+    it('should be allowed once to set a class', function () {
+      db.TestClass = DB.binding.Entity.extend(function () {});
 
-      expect(function() {
-        db.TestClass = DB.binding.Entity.extend(function() {});
+      expect(function () {
+        db.TestClass = DB.binding.Entity.extend(function () {});
       }).throw('already been set');
     });
 
-    it('should allow adding classes before initialization', function() {
-      var emf = new DB.EntityManagerFactory({schema: model});
+    it('should allow adding classes before initialization', function () {
+      var emf = new DB.EntityManagerFactory({ schema: model });
 
       var db = emf.createEntityManager();
-      db.TestClass = DB.binding.Entity.extend(function(a,b,c) {
+      db.TestClass = DB.binding.Entity.extend(function (a, b, c) {
         DB.binding.Entity.init(this);
         this.a = a;
         this.b = b;
@@ -398,8 +402,8 @@ describe("Test enhancer", function() {
       expect(db.isReady).be.false;
       emf.connect(env.TEST_SERVER);
 
-      return db.ready().then(function() {
-        var testClass = new db.TestClass(1,2,3);
+      return db.ready().then(function () {
+        var testClass = new db.TestClass(1, 2, 3);
         expect(testClass.a).equals(1);
         expect(testClass.b).equals(2);
         expect(testClass.c).equals(3);
@@ -420,23 +424,23 @@ describe("Test enhancer", function() {
   } catch (e) {}
 
   if (supportsES6Classes) {
-    describe('ES6 classes', function() {
-      it('should enhance custom es6 classes', function() {
+    describe('ES6 classes', function () {
+      it('should enhance custom es6 classes', function () {
         var myClass = defineEntityClass();
 
-        myClass.prototype.firstName = function() {
-          return "firstName";
+        myClass.prototype.firstName = function () {
+          return 'firstName';
         };
 
         db.TestClass = myClass;
-        db.TestClass.prototype.lastName = function() {
-          return "lastName";
+        db.TestClass.prototype.lastName = function () {
+          return 'lastName';
         };
 
         var testClass = new db.TestClass('hallo');
-        expect(testClass.firstName()).equal("firstName");
-        expect(testClass.lastName()).equal("lastName");
-        expect("testValue" in testClass).be.true;
+        expect(testClass.firstName()).equal('firstName');
+        expect(testClass.lastName()).equal('lastName');
+        expect('testValue' in testClass).be.true;
         expect(testClass.a).equals('hallo');
         expect(testClass.save).be.ok;
         expect(testClass.insert).be.ok;
@@ -450,51 +454,51 @@ describe("Test enhancer", function() {
         expect(testClass instanceof myClass).be.true;
       });
 
-      it('should call custom es6 classes constructor', function() {
+      it('should call custom es6 classes constructor', function () {
         db.TestClass = defineEntityClass();
 
-        var testClass = new db.TestClass(1,2,3);
+        var testClass = new db.TestClass(1, 2, 3);
         expect(testClass.a).equals(1);
         expect(testClass.b).equals(2);
         expect(testClass.c).equals(3);
       });
 
-      it('should reject none entity classes', function() {
+      it('should reject none entity classes', function () {
         var myClass = defineClass();
 
-        expect(function() {
+        expect(function () {
           db.TestClass = myClass;
         }).throw('must extends the Entity class');
       });
 
-      it('should reject none embaddable classes', function() {
+      it('should reject none embaddable classes', function () {
         var myClass = defineClass();
 
-        expect(function() {
+        expect(function () {
           db.TestEmbeddedClass = myClass;
         }).throw('must extends the Managed class');
       });
 
-      it('should reject none embaddable classes', function() {
+      it('should reject none embaddable classes', function () {
         var myClass = defineEntityClass();
 
-        expect(function() {
+        expect(function () {
           db.TestEmbeddedClass = myClass;
         }).throw('must extends the Managed class');
       });
 
-      it('should be allowed once to set a class', function() {
+      it('should be allowed once to set a class', function () {
         var myClass = defineEntityClass();
 
         db.TestClass = myClass;
 
-        expect(function() {
+        expect(function () {
           db.TestClass = defineEntityClass();
         }).throw('already been set');
       });
 
-      it('should allow adding classes before initialization', function() {
-        var emf = new DB.EntityManagerFactory({schema: model});
+      it('should allow adding classes before initialization', function () {
+        var emf = new DB.EntityManagerFactory({ schema: model });
 
         var db = emf.createEntityManager();
         db.TestClass = defineEntityClass();
@@ -502,8 +506,8 @@ describe("Test enhancer", function() {
         expect(db.isReady).be.false;
         emf.connect(env.TEST_SERVER);
 
-        return db.ready().then(function() {
-          var testClass = new db.TestClass(1,2,3);
+        return db.ready().then(function () {
+          var testClass = new db.TestClass(1, 2, 3);
           expect(testClass.a).equals(1);
           expect(testClass.b).equals(2);
           expect(testClass.c).equals(3);
@@ -540,6 +544,6 @@ describe("Test enhancer", function() {
           this.a = a;\
         }\
       };\
-      Test');  // add Test as last statement so firefox returns the class properly
+      Test'); // add Test as last statement so firefox returns the class properly
   }
 });

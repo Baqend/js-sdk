@@ -1,3 +1,5 @@
+'use strict';
+
 exports.WebSocketConnector = require('./WebSocketConnector');
 
 /**
@@ -8,6 +10,7 @@ exports.WebSocketConnector = require('./WebSocketConnector');
 /**
  * Sends a message
  * @param {connector.ChannelMessage} The message to send
+ * @return {*}
  * @name send
  * @method
  * @memberOf connector.ObservableStream.prototype

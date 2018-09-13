@@ -1,12 +1,20 @@
-import {Observable, Subscription} from 'rxjs';
+import { Observable, Subscription } from 'rxjs';
 
-export type json = Object|Array<any>;
+/**
+ * The global JSON type.
+ */
+export type json = object | any[];
 
+/**
+ * A generic class type.
+ */
 export interface Class<T> {
     new(...args: Array<any>): T;
 }
 
-export let db:baqend;
+/**
+ * The global DB object to use.
+ */
+export const db: baqend;
+
 export default db;
-
-

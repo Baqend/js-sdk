@@ -24,10 +24,27 @@ db.User.find()
         user.username;
     });
 
+db.code.loadCode('foo', 'module', true)
+    .then((code) => {
+        code.name;
+        code.call('test', 'world');
+    })
+
+db.code.loadCode('foo', 'module', false)
+    .then((code) => {
+        code.includes('stuff');
+    })
+
+db.code.loadCode('foo', 'module')
+    .then((code) => {
+        code.includes('stuff');
+    })
+
 let builder:query.Builder<model.Role> = db.Role.find();
 
 let q1 = builder.notIn('age', [3,4,5])
-    .in('places', 2, 3, 4);
+    .in('places', 2, 3, 4)
+    .gt('ref', db.User.me);
 
 let q2 = builder.equal('name', 'test')
     .notEqual('street', 'Mainroad');
@@ -51,5 +68,13 @@ db.User.login("test", "pw").then((user) => {
 
 });
 
-var user = new db.User();
+const user = new db.User();
+
+db.log.trace('A message');
+db.log.debug('A message');
+db.log.info('A message');
+db.log.warn('A message');
+db.log.error('A message');
+db.log.info('A message with data', {some: "data"});
+db.log.info('A message with placeholders %d %s', 1, 'string', {some: "data"});
 

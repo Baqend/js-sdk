@@ -1,126 +1,129 @@
+'use strict';
+
 var DB;
-if (typeof module != 'undefined') {
+if (typeof module !== 'undefined') {
   require('./node');
   DB = require('../lib');
 }
 
-describe('Test Bloomfilter', function() {
+describe('Test Bloomfilter', function () {
   var BloomFilter = DB.caching.BloomFilter;
   var db, type;
 
-  //skip fo IE 9
+  // Skip fo IE 9
   if (!DB.util.atob) {
     return;
   }
 
-  before(function() {
-    var emf = new DB.EntityManagerFactory({host: env.TEST_SERVER, tokenStorage: helper.rootTokenStorage});
+  before(function () {
+    var emf = new DB.EntityManagerFactory({ host: env.TEST_SERVER, tokenStorage: helper.rootTokenStorage });
 
-    return emf.ready().then(function() {
+    return emf.ready().then(function () {
       var metamodel = emf.metamodel;
-      type = helper.randomize("BFObject");
+      type = helper.randomize('BFObject');
       var objectType = new DB.metamodel.EntityType(type, metamodel.entity(Object));
       metamodel.addType(objectType);
-      objectType.addAttribute(new DB.metamodel.SingularAttribute("value", metamodel.baseType(String)));
+      objectType.addAttribute(new DB.metamodel.SingularAttribute('value', metamodel.baseType(String)));
       return metamodel.save();
-    }).then(function() {
+    }).then(function () {
       db = emf.createEntityManager();
     });
   });
 
-  after(function() {
+  after(function () {
 
   });
 
-  it('should initially not contain objects that were not updated', function() {
-    return db.refreshBloomFilter().then(function(BF) {
+  it('should initially not contain objects that were not updated', function () {
+    return db.refreshBloomFilter().then(function (BF) {
       if (db.isCachingDisabled) {
         expect(BF).not.ok;
-        return; // node do not use a bloomfilter;
+        return; // Node do not use a bloomfilter;
       }
 
-      for (var i = 0; i < 5; i++) {
+      for (var i = 0; i < 5; i += 1) {
         expect(BF.contains(DB.util.uuid())).equal(false);
       }
     });
   });
 
-  it('should contain updated objects', function() {
-    if (db.isCachingDisabled)
-      return;
+  it('should contain updated objects', function () {
+    if (db.isCachingDisabled) { return; }
 
     var obj = new db[type]();
-    return db.insert(obj).then(function() {
-      return obj.load({refresh: true});
-    }).then(function() {
+    return db.insert(obj).then(function () {
+      return obj.load({ refresh: true });
+    }).then(function () {
       return db.refreshBloomFilter();
-    }).then(function(bf) {
+    }).then(function (bf) {
       expect(bf.contains(obj.id)).equal(false);
-      obj.value = "Felix an Erik were here.";
+      obj.value = 'Felix an Erik were here.';
       return obj.save();
-    }).then(function() {
-      return db.refreshBloomFilter();
-    }).then(function(bf) {
-      expect(bf.contains(obj.id)).equal(true);
-    });
+    })
+      .then(function () {
+        return db.refreshBloomFilter();
+      })
+      .then(function (bf) {
+        expect(bf.contains(obj.id)).equal(true);
+      });
   });
 
-  it('should perform fast lookups', function() {
-    if (db.isCachingDisabled)
-      return;
+  it('should perform fast lookups', function () {
+    if (db.isCachingDisabled) { return; }
 
     var obj = new db[type]();
-    return db.insert(obj).then(function() {
-      return obj.load({refresh: true});
-    }).then(function() {
-      obj.value = "Muh.";
+    return db.insert(obj).then(function () {
+      return obj.load({ refresh: true });
+    }).then(function () {
+      obj.value = 'Muh.';
       return obj.save();
-    }).then(function() {
+    }).then(function () {
       return db.refreshBloomFilter();
-    }).then(function(bf) {
-      expect(bf.contains(obj.id)).equal(true);
-      //Do many contains
-      for (var i = 0; i < 100000; i++) {
-        bf.contains(Math.random());
-      }
-    });
+    })
+      .then(function (bf) {
+        expect(bf.contains(obj.id)).equal(true);
+        // Do many contains
+        for (var i = 0; i < 100000; i += 1) {
+          bf.contains(Math.random());
+        }
+      });
   });
 
-  it('should contain everything when full', function() {
-    var raw = {"m": 240, "h": 4, "b": "////////////////////////////////////////"};
+  it('should contain everything when full', function () {
+    var raw = { m: 240, h: 4, b: '////////////////////////////////////////' };
     var bf = new BloomFilter(raw);
-    for (var i = 0; i < 100; i++) {
+    for (var i = 0; i < 100; i += 1) {
       expect(bf.contains(DB.util.uuid())).to.be.true;
     }
   });
 
-  it('should correctly implement Murmur3', function() {
-    var test1 = "Erik";
-    var test2 = "Witt";
-    var test3 = "Hello World";
-    var test4 = "demo";
-    var test5 = "demoo";
-    var test6 = "Lorem ipsum dolor sit amet";
+  it('should correctly implement Murmur3', function () {
+    var test1 = 'Erik';
+    var test2 = 'Witt';
+    var test3 = 'Hello World';
+    var test4 = 'demo';
+    var test5 = 'demoo';
+    var test6 = 'Lorem ipsum dolor sit amet';
 
-    expect(BloomFilter._murmur3(0, test1)).equal(3050897767);
-    expect(BloomFilter._murmur3(0, test2)).equal(545263713);
-    expect(BloomFilter._murmur3(0, test3)).equal(427197390);
-    expect(BloomFilter._murmur3(0, test4)).equal(2714225050);
-    expect(BloomFilter._murmur3(0, test5)).equal(1838221292);
-    expect(BloomFilter._murmur3(0, test6)).equal(875169970);
-    expect(BloomFilter._murmur3(42, test1)).equal(3678409999);
-    expect(BloomFilter._murmur3(42, test2)).equal(3132235112);
-    expect(BloomFilter._murmur3(42, test3)).equal(1233774035);
-    expect(BloomFilter._murmur3(42, test4)).equal(2755392248);
-    expect(BloomFilter._murmur3(42, test5)).equal(3694137869);
-    expect(BloomFilter._murmur3(42, test6)).equal(4206322987);
-    expect(BloomFilter._murmur3(666, test1)).equal(3471908579);
-    expect(BloomFilter._murmur3(666, test2)).equal(2040362262);
-    expect(BloomFilter._murmur3(666, test3)).equal(1460628018);
-    expect(BloomFilter._murmur3(666, test4)).equal(3836085620);
-    expect(BloomFilter._murmur3(666, test5)).equal(244294033);
-    expect(BloomFilter._murmur3(666, test6)).equal(688456789);
-    expect(BloomFilter._getHashes(test1, 10000, 5)).eqls([7767, 415, 3063, 5711, 8359]);
+    expect(BloomFilter.murmur3(0, test1)).equal(3050897767);
+    expect(BloomFilter.murmur3(0, test2)).equal(545263713);
+    expect(BloomFilter.murmur3(0, test3)).equal(427197390);
+    expect(BloomFilter.murmur3(0, test4)).equal(2714225050);
+    expect(BloomFilter.murmur3(0, test5)).equal(1838221292);
+    expect(BloomFilter.murmur3(0, test6)).equal(875169970);
+    expect(BloomFilter.murmur3(42, test1)).equal(3678409999);
+    expect(BloomFilter.murmur3(42, test2)).equal(3132235112);
+    expect(BloomFilter.murmur3(42, test3)).equal(1233774035);
+    expect(BloomFilter.murmur3(42, test4)).equal(2755392248);
+    expect(BloomFilter.murmur3(42, test5)).equal(3694137869);
+    expect(BloomFilter.murmur3(42, test6)).equal(4206322987);
+    expect(BloomFilter.murmur3(666, test1)).equal(3471908579);
+    expect(BloomFilter.murmur3(666, test2)).equal(2040362262);
+    expect(BloomFilter.murmur3(666, test3)).equal(1460628018);
+    expect(BloomFilter.murmur3(666, test4)).equal(3836085620);
+    expect(BloomFilter.murmur3(666, test5)).equal(244294033);
+    expect(BloomFilter.murmur3(666, test6)).equal(688456789);
+    expect(BloomFilter.getHashes(test1, 10000, 5)).eqls([7767, 415, 3063, 5711, 8359]);
 
     var hashes = [
       1364076727, 3831157163, 1814548639, 1579843702, 962700458, 1405797717, 2851871033, 1753412482,
@@ -154,12 +157,11 @@ describe('Test Bloomfilter', function() {
       1926798079, 164179502, 1907703051, 773096242, 2716524810, 245607123, 1530964421, 2185527759,
       4048057607, 1153881266, 3391667916, 3227303743, 1778247493, 3122299611, 797608481, 1065090666,
       198014573, 1351441008, 2378749789, 144209364, 116478471, 836216331, 1941745834, 156162024,
-      842253482, 1598088655, 2210059883, 1343041090, 3226243446, 1254380909, 1172860420, 4251775245
+      842253482, 1598088655, 2210059883, 1343041090, 3226243446, 1254380909, 1172860420, 4251775245,
     ];
 
-    for (var i = 0; i < hashes.length; i++) {
-      expect(BloomFilter._murmur3(0, String.fromCharCode(i))).to.equal(hashes[i]);
+    for (var i = 0; i < hashes.length; i += 1) {
+      expect(BloomFilter.murmur3(0, String.fromCharCode(i))).to.equal(hashes[i]);
     }
   });
-
 });

@@ -216,7 +216,7 @@ function openApp(app) {
     return opn(`https://${app}.app.baqend.com`);
   } else {
     return login({}).then(db => {
-      opn(`https://${db._connector.host}`);
+      opn(`https://${db.connection.host}`);
     });
   }
 }
