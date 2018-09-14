@@ -42,7 +42,7 @@
     "simple-git": "^1.62.0",
     "uuid": "^3.0.1",
     "validator": "^4.9.0",
-    "websocket": "^1.0.25"
+    "websocket": "^1.0.26"
   },
   "peerDependencies": {
     "websocket": "^1.0.22"
@@ -111,7 +111,7 @@
     "uglify-js": "^2.7.3"
   },
   "scripts": {
-    "test": "npm npm run test:build && npm run test:node && npm run test:karma",
+    "test": "npm run test:build && npm run test:node && npm run test:karma",
     "test:build": "grunt browserify:test",
     "test:node": "grunt mochaTest:test",
     "test:karma": "karma start",
