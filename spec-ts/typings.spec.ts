@@ -1,6 +1,6 @@
 /// <reference path="./types.d.ts" />
 
-import {binding, query, model, baqend} from '../index';
+import { binding, query, model, baqend, metamodel, message } from '../index';
 import {db} from '../index';
 
 db.connect('test', true).then(() => {
@@ -78,3 +78,11 @@ db.log.error('A message');
 db.log.info('A message with data', {some: "data"});
 db.log.info('A message with placeholders %d %s', 1, 'string', {some: "data"});
 
+const file = new db.File('test');
+file.upload({ force: true });
+
+db.modules.get('test', 'test=bla');
+db.modules.get('test', {"test": "bla"}, { responseType: 'json' });
+db.modules.post('test', {"test": "bla"}, { responseType: 'json' });
+
+new metamodel.EmbeddableType("Type");
