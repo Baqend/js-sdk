@@ -101,7 +101,8 @@ describe('Test enhancer', function () {
     var testClass = new TestEmbeddedClass();
     expect(testClass).be.ok;
 
-    expect('value' in testClass).be.true;
+    // embedded object will not be enhanced
+    expect('value' in testClass).be.false;
     expect(testClass.toJSON).be.ok;
     expect(testClass.save).be.undefined;
     expect(testClass.insert).be.undefined;
