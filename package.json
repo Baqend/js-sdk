@@ -111,7 +111,8 @@
     "uglify-js": "^2.7.3"
   },
   "scripts": {
-    "test": "npm npm run test:build && npm run test:node && npm run test:karma",
+    "debug": "grunt debug",
+    "test": "npm run test:build && npm run test:node && npm run test:karma",
     "test:build": "grunt browserify:test",
     "test:node": "grunt mochaTest:test",
     "test:karma": "karma start",
