@@ -1,3 +1,22 @@
+<a name="v2.13.0"></a>
+# v2.13.0 (2018-9-20)
+
+
+### Bug Fixes
+
+* Avoid exceptions when closing a websocket connection
+* Fix file metadata (was sometimes fetched and saved incorrectly)
+
+### Features
+
+* Major typing overhaul and improved documentation in query namespace
+* Add no-polyfill builds
+
+### Miscellaneous
+
+* Major refactoring & add ESLint for unifying code style
+* Deprecate several internal APIs
+
 <a name="v2.12.3"></a>
 # v2.12.3 (2018-8-9)
 

@@ -1,6 +1,6 @@
 {
   "name": "baqend",
-  "version": "2.12.4-0",
+  "version": "2.13.1-0",
   "description": "Baqend JavaScript SDK",
   "license": "MIT",
   "author": {
@@ -42,7 +42,7 @@
     "simple-git": "^1.62.0",
     "uuid": "^3.0.1",
     "validator": "^4.9.0",
-    "websocket": "^1.0.25"
+    "websocket": "^1.0.26"
   },
   "peerDependencies": {
     "websocket": "^1.0.22"

@@ -1216,14 +1216,14 @@ describe('Test crud', function () {
           return db.refreshBloomFilter();
         })
         .then(function () {
-        // BloomFilter forces revalidation.
+          // BloomFilter forces revalidation.
           return expect(db.Person.load(person.id)).eventually.have.property('name', 'New Name');
         })
         .then(function () {
           return db.modules.post('updatePerson', { id: person.id, value: 'Very New Name' });
         })
         .then(function () {
-        // Now the object must be on the cache white list
+          // Now the object must be on the cache white list
           return expect(db.Person.load(person.id)).eventually.have.property('name', 'New Name');
         });
     });
@@ -1244,18 +1244,18 @@ describe('Test crud', function () {
           return loaded.save();
         })
         .then(function () {
-        // updates the object again
+          // updates the object again
           return db.modules.post('updatePerson', { id: person.id, value: 'Very New Name' });
         })
         .then(function () {
-        // loads the obj from sever and removes it from the blacklist.
+          // loads the obj from sever and removes it from the blacklist.
           return expect(db.Person.load(person.id)).eventually.have.property('name', 'Very New Name');
         })
         .then(function () {
           return db.modules.post('updatePerson', { id: person.id, value: 'Extremely New Name' });
         })
         .then(function () {
-        // Now the object must be loaded from cache again
+          // Now the object must be loaded from cache again
           return expect(db.Person.load(person.id)).eventually.have.property('name', 'Very New Name');
         });
     });
@@ -1642,7 +1642,9 @@ describe('Test crud', function () {
 
     afterEach(function () {
       return db.Person.load(myId).then(function (obj) {
-        if (obj) { return obj.delete(); }
+        if (obj) {
+          return obj.delete();
+        }
       });
     });
 
@@ -1717,6 +1719,25 @@ describe('Test crud', function () {
         return db.Person.load(person.child.id);
       }).then(function (obj) {
         expect(obj).be.null;
+      });
+    });
+
+    it('should map to the returned server reference', function () {
+      var person = new db.Person();
+      person.id = myId;
+      var id = person.id;
+      person.name = 'Custom Person';
+      var newId = 123456;
+      var dbsend = db.send;
+      db.send = function (message) {
+        message.request.entity.id = newId;
+        return Promise.resolve({ status: 200, headers: {}, entity: message.request.entity });
+      };
+
+      return person.save({ refresh: true, depth: true }, function (result) {
+        db.send = dbsend;
+        expect(person.id).equals(newId);
+        expect(person.name).equals('Custom Person');
       });
     });
   });
