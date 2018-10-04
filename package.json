@@ -123,7 +123,7 @@
     "jsdoc": "jsdoc -t tpl/theme -r lib realtime -c tpl/jsdoc.conf.json --package package.json -d doc",
     "baqend": "node cli/index.js",
     "lint": "eslint lib spec realtime",
-    "prepack": "npm run dist"
+    "prepare": "npm run dist"
   },
   "engines": {
     "node": ">=4.5.0"
