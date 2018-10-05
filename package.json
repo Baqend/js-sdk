@@ -118,7 +118,7 @@
     "dist": "grunt dist && npm run typings && npm run jsdoc",
     "release": "node scripts/release",
     "typings": "npm run typings:generate && npm run typings:test",
-    "typings:generate": "jsdoc -t tpl/typings -r lib realtime -d index.d.ts",
+    "typings:generate": "jsdoc -c tpl/jsdoc.conf.json -t tpl/typings -r lib realtime -d index.d.ts",
     "typings:test": "tsc --version && tsc -p spec-ts/tsconfig.json",
     "jsdoc": "jsdoc -t tpl/theme -r lib realtime -c tpl/jsdoc.conf.json --package package.json -d doc",
     "baqend": "node cli/index.js",

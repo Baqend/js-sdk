@@ -3,6 +3,10 @@
     "allowUnknownTags" : false,
     "dictionaries": ["jsdoc"]
   },
+  "source": {
+    "includePattern": ".+\\.js(doc|x)?$",
+    "excludePattern": ""
+  },
   "plugins": ["plugins/markdown"],
   "templates": {
     "cleverLinks": true,
