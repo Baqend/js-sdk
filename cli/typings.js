@@ -30,7 +30,7 @@ module.exports = function(args) {
 };
 
 function createTypings(app, dest) {
-  const factory = new baqend.EntityManagerFactory({host: app});
+  const factory = new baqend.EntityManagerFactory({host: app, secure: true});
 
   return factory.ready().then(() => {
     let typings = typingsFromMetamodel(factory.metamodel);
