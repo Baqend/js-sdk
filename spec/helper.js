@@ -130,7 +130,7 @@ before(function () {
     }),
     DB.connect(env.TEST_SERVER).then(function (localDb) {
       expect(localDb).equal(DB);
-    })
+    }),
   ]);
 });
 
