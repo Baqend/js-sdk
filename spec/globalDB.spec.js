@@ -6,12 +6,6 @@ if (typeof module !== 'undefined') {
   DB = require('../lib');
 }
 
-before(function () {
-  return DB.connect(env.TEST_SERVER).then(function (localDb) {
-    expect(localDb).equal(DB);
-  });
-});
-
 describe('Test Global DB', function () {
   it('should export global DB', function () {
     expect(DB).be.ok;
