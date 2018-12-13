@@ -61,7 +61,7 @@
     "backend-as-a-service"
   ],
   "devDependencies": {
-    "@types/node": "^10.12.12",
+    "@types/node": "^10.12.14",
     "babel-core": "^6.14.0",
     "babel-plugin-external-helpers": "^6.8.0",
     "babel-plugin-transform-proto-to-assign": "^6.9.0",
@@ -73,7 +73,7 @@
     "bundle-collapser": "^1.2.1",
     "chai": "^4.2.0",
     "chai-as-promised": "^7.1.1",
-    "eslint": "^5.9.0",
+    "eslint": "^5.10.0",
     "eslint-plugin-import": "^2.8.0",
     "eslint-plugin-node": "^8.0.0",
     "grunt": "^1.0.2",
@@ -106,7 +106,7 @@
     "phantomjs-prebuilt": "^2.1.12",
     "shelljs": "^0.8.3",
     "through2": "^3.0.0",
-    "typescript": "^3.2.1",
+    "typescript": "^3.2.2",
     "uglify-js": "^3.4.9"
   },
   "scripts": {
