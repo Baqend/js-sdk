@@ -70,7 +70,7 @@ describe('Test file', function () {
     it('should initialize with default parameters', function () {
       var file = new rootDb.File();
       expect(file.id).eql('/file/www/' + file.key);
-      expect(file.key).is.defined;
+      expect(file.key).is.not.undefined;
       expect(file.bucket).eql('www');
       expect(file.parent).eql('/www');
       expect(file.name).eql(file.key);
@@ -172,7 +172,7 @@ describe('Test file', function () {
       expect(file.bucket).eql('www');
       expect(file.parent).eql('/www');
       expect(file.name).eql('test.png');
-      expect(file.acl).is.defined;
+      expect(file.acl).is.not.undefined;
       expect(file.acl.isPublicReadAllowed()).be.true;
       expect(file.acl.isPublicWriteAllowed()).be.true;
       expect(file.lastModified).be.undefined;
@@ -192,7 +192,7 @@ describe('Test file', function () {
           expect(file.bucket).eql('www');
           expect(file.parent).eql('/www');
           expect(file.name).eql('file.png');
-          expect(file.acl).is.defined;
+          expect(file.acl).is.not.undefined;
           expect(file.acl.isPublicReadAllowed()).be.true;
           expect(file.acl.isPublicWriteAllowed()).be.true;
           expect(file.lastModified).be.undefined;
@@ -219,7 +219,7 @@ describe('Test file', function () {
         expect(file.bucket).eql('www');
         expect(file.parent).eql('/www');
         expect(file.name).eql('test.png');
-        expect(file.acl).is.defined;
+        expect(file.acl).is.not.undefined;
         expect(file.acl.isPublicReadAllowed()).be.true;
         expect(file.acl.isPublicWriteAllowed()).be.true;
         expect(file.lastModified).be.undefined;
@@ -231,11 +231,11 @@ describe('Test file', function () {
     it('should initialize with base64 parameter', function () {
       var file = new rootDb.File({ data: svgBase64, type: 'base64', mimeType: 'image/svg+xml' });
       expect(file.id).eql('/file/www/' + file.key);
-      expect(file.key).is.defined;
+      expect(file.key).is.not.undefined;
       expect(file.bucket).eql('www');
       expect(file.parent).eql('/www');
       expect(file.name).eql(file.key);
-      expect(file.acl).is.defined;
+      expect(file.acl).is.not.undefined;
       expect(file.acl.isPublicReadAllowed()).be.true;
       expect(file.acl.isPublicWriteAllowed()).be.true;
       expect(file.lastModified).be.undefined;
@@ -246,11 +246,11 @@ describe('Test file', function () {
     it('should initialize with data-url base64 parameter', function () {
       var file = new rootDb.File({ data: dataBase64, type: 'data-url' });
       expect(file.id).eql('/file/www/' + file.key);
-      expect(file.key).is.defined;
+      expect(file.key).is.not.undefined;
       expect(file.bucket).eql('www');
       expect(file.parent).eql('/www');
       expect(file.name).eql(file.key);
-      expect(file.acl).is.defined;
+      expect(file.acl).is.not.undefined;
       expect(file.acl.isPublicReadAllowed()).be.true;
       expect(file.acl.isPublicWriteAllowed()).be.true;
       expect(file.lastModified).be.undefined;
@@ -261,11 +261,11 @@ describe('Test file', function () {
     it('should initialize with data-url parameter', function () {
       var file = new rootDb.File({ data: dataSvg, type: 'data-url' });
       expect(file.id).eql('/file/www/' + file.key);
-      expect(file.key).is.defined;
+      expect(file.key).is.not.undefined;
       expect(file.bucket).eql('www');
       expect(file.parent).eql('/www');
       expect(file.name).eql(file.key);
-      expect(file.acl).is.defined;
+      expect(file.acl).is.not.undefined;
       expect(file.acl.isPublicReadAllowed()).be.true;
       expect(file.acl.isPublicWriteAllowed()).be.true;
       expect(file.lastModified).be.undefined;
@@ -540,7 +540,7 @@ describe('Test file', function () {
       var creationDate;
       return file.upload().then(function () {
         creationDate = file.lastModified;
-        expect(file.createdAt).is.defined;
+        expect(file.createdAt).is.not.undefined;
         expect(file.createdAt).eql(creationDate);
         return helper.sleep(2000);
       }).then(function () {
@@ -598,7 +598,7 @@ describe('Test file', function () {
     it('should upload blob/buffer format', function () {
       var file = new rootDb.File({ data: flames });
       return file.upload().then(function () {
-        expect(file.eTag).is.defined;
+        expect(file.eTag).is.not.undefined;
         expect(file.lastModified).gt(new Date(Date.now() - 5 * 60 * 1000));
         expect(file.lastModified).lt(new Date(Date.now() + 5 * 60 * 1000));
         expect(file.mimeType).eql('image/png');
@@ -618,7 +618,7 @@ describe('Test file', function () {
         });
 
         return file.upload().then(function () {
-          expect(file.eTag).is.defined;
+          expect(file.eTag).is.not.undefined;
           expect(file.lastModified).gt(new Date(Date.now() - 5 * 60 * 1000));
           expect(file.lastModified).lt(new Date(Date.now() + 5 * 60 * 1000));
           expect(file.mimeType).eql('image/png');
