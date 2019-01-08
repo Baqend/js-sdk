@@ -208,8 +208,7 @@ describe('Test file', function () {
 
         var file = new rootDb.File({
           name: 'test.png',
-          data:
-            fs.createReadStream('spec/asset/flames.png'),
+          data: fs.createReadStream('spec/assets/flames.png'),
           type: 'stream',
           mimeType: 'image/png',
         });
