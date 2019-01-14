@@ -59,7 +59,7 @@ module.exports = function (config) {
     autoWatch: false,
 
     // How many browsers Karma launches in parallel.
-    concurrency: 4,
+    concurrency: 1,
 
     // Start these browsers, currently available:
     // - Chrome
@@ -73,10 +73,10 @@ module.exports = function (config) {
 
     customLaunchers: Object.assign({}, require('./localSeleniumBrowser'), require('./browserstack')),
 
-    //config for testingBot
-    testingbot: {
-      testName: 'JS SDK',
-      startConnect: false,
+    // config for browserstack
+    browserStack: {
+      startTunnel: false,
+      timeout: 1800,
     },
 
     // How long does Karma wait for a browser to reconnect (in ms).
