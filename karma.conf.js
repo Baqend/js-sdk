@@ -71,7 +71,7 @@ module.exports = function (config) {
     // - IE (only Windows; has to be installed with `npm install karma-ie-launcher`)
     browsers: ['Chrome'],
 
-    customLaunchers: Object.assign({}, require('./localSeleniumBrowser'), require('./testingBotBrowser')),
+    customLaunchers: Object.assign({}, require('./localSeleniumBrowser'), require('./browserstack')),
 
     //config for testingBot
     testingbot: {
