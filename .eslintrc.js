@@ -82,7 +82,6 @@ module.exports = {
       },
 
       env: {
-        es5: true,
         es6: false,
         node: true,
         mocha: true,
@@ -113,6 +112,7 @@ module.exports = {
         'prefer-arrow-callback': 'off',
         'prefer-promise-reject-errors': 'warn',
         'vars-on-top': 'off',
+        'node/no-deprecated-api': 'warn',
       },
     },
   ],

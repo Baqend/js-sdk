@@ -79,7 +79,7 @@ var helper = {
           });
           res.on('end', function () {
             if (res.statusCode >= 400) {
-              reject({ status: res.statusCode });
+              reject(new Error({ status: res.statusCode }));
             } else {
               resolve(Buffer.concat(chunks));
             }
