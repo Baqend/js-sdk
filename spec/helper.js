@@ -63,6 +63,7 @@ var helper = {
   req: function (url, responseType) {
     return new Promise(function (resolve, reject) {
       if (urlParser) {
+        // eslint-disable-next-line node/no-deprecated-api
         var options = urlParser.parse(url);
         // If urlParse.parse() is called on Node.js, a single quote character is converted to %27,
         // which normally should not happen
