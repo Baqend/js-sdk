@@ -46,6 +46,7 @@ function createTypings(app, dest) {
 
 function typingsFromMetamodel(metamodel) {
   let typings = [];
+  let namespaces = {};
   //import all native types, so they can be easily used in definitions
   typings.push(`import {binding, GeoPoint} from "baqend";`);
   typings.push('');
@@ -61,15 +62,22 @@ function typingsFromMetamodel(metamodel) {
   for (let key of Object.keys(metamodel.entities)) {
     let entity = metamodel.entities[key];
 
-    if (entity.name.indexOf('.') !== -1 || entity.name == 'Object')
+    if (entity.name === 'Object')
       continue;
 
     let isNative = nativeTypes.indexOf(entity.name) != -1;
     //register only user defined types
     if (!isNative)
-      module.push(`    ${entity.name}: binding.EntityFactory<model.${entity.name}>;`);
-
-    push(model, typingsFromSchema(entity, 'Entity'));
+      if (entity.name.indexOf('.') !== -1) {
+        const [namespace, entityName] = entity.name.split(".");
+        module.push(`    ["${entity.name}"]: binding.EntityFactory<model.${entity.name}>;`);
+        entity.name = entityName;
+        if (!namespaces[namespace]) namespaces[namespace] = [];
+        push(namespaces[namespace], typingsFromSchema(entity, 'Entity'));
+      } else {
+        module.push(`    ${entity.name}: binding.EntityFactory<model.${entity.name}>;`);
+        push(model, typingsFromSchema(entity, 'Entity'));
+      }
     model.push('');
   }
 
@@ -87,7 +95,11 @@ function typingsFromMetamodel(metamodel) {
 
   module.push('  }');
   module.push('');
-
+  for (let key in namespaces) {
+    model.push(`  namespace ${key} {`);
+    push(model, namespaces[key]);
+    model.push('  }');
+  }
   model.push('  }');
 
   push(module, model);
