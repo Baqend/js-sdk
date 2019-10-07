@@ -82,7 +82,6 @@ module.exports = {
       },
 
       env: {
-        es5: true,
         es6: false,
         node: true,
         mocha: true,
