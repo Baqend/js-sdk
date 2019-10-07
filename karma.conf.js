@@ -75,7 +75,7 @@ module.exports = function (config) {
 
     // config for browserstack
     browserStack: {
-      startTunnel: false,
+      // startTunnel: false,
       timeout: 1800,
     },
 
