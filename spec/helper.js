@@ -80,7 +80,7 @@ var helper = {
           });
           res.on('end', function () {
             if (res.statusCode >= 400) {
-              reject({ status: res.statusCode });
+              reject(new Error({ status: res.statusCode }));
             } else {
               resolve(Buffer.concat(chunks));
             }
@@ -124,9 +124,15 @@ var helper = {
 before(function () {
   helper.rootTokenStorage = new DB.util.TokenStorage();
   var emf = new DB.EntityManagerFactory({ host: env.TEST_SERVER, tokenStorage: helper.rootTokenStorage });
-  return emf.createEntityManager(true).ready().then(function (em) {
-    return em.User.login('root', 'root');
-  });
+
+  return Promise.all([
+    emf.createEntityManager(true).ready().then(function (em) {
+      return em.User.login('root', 'root');
+    }),
+    DB.connect(env.TEST_SERVER).then(function (localDb) {
+      expect(localDb).equal(DB);
+    }),
+  ]);
 });
 
 if (typeof module !== 'undefined') {
