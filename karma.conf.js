@@ -75,7 +75,8 @@ module.exports = function (config) {
 
     // config for browserstack
     browserStack: {
-      name: 'JS SDK',
+      build: 'JS SDK build',
+      project: 'JS SDK project',
       // startTunnel: false,
       timeout: 1800,
     },
