@@ -8,5 +8,5 @@
 .DS_Store
 .babelrc
 Gruntfile.js
-testingBotBrowser.js
+browserstack.js
 localSeleniumBrowser.js
