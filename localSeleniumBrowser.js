@@ -10,7 +10,18 @@ module.exports = {
     browserName: 'chrome',
     platform: 'LINUX',
     version: '',
-    name: 'Karma'
+    name: 'Karma',
+  },
+  'Chrome-Docker': {
+    base: 'WebDriver',
+    config: {
+      hostname: 'localhost',
+      port: 4444,
+    },
+    browserName: 'chrome',
+    platform: 'LINUX',
+    version: '',
+    name: 'Karma',
   },
   'Firefox-Linux': {
     base: 'WebDriver',
@@ -26,7 +37,7 @@ module.exports = {
     browserName: 'safari',
     platform: 'MAC',
     version: '11',
-    name: 'Karma'
+    name: 'Karma',
   },
   'SafariTechnologyPreview-Mac': {
     base: 'WebDriver',
@@ -35,7 +46,7 @@ module.exports = {
     browserName: 'safari',
     platform: 'MAC',
     version: 'TP',
-    name: 'Karma'
+    name: 'Karma',
   },
   'Safari-iOS': {
     base: 'WebDriver',
@@ -81,7 +92,7 @@ module.exports = {
     browserName: 'chrome',
     platform: 'WINDOWS',
     version: '',
-    name: 'Karma'
+    name: 'Karma',
   },
   'Firefox-Win': {
     base: 'WebDriver',
@@ -89,14 +100,14 @@ module.exports = {
     browserName: 'firefox',
     platform: 'WINDOWS',
     version: '',
-    name: 'Karma'
+    name: 'Karma',
   },
   'Edge-Win': {
     base: 'WebDriver',
     config: webdriverConfig,
     browserName: 'MicrosoftEdge',
     platform: 'WINDOWS',
-    name: 'Karma'
+    name: 'Karma',
   },
   'Edge-Win-Preview': {
     base: 'WebDriver',
@@ -104,19 +115,19 @@ module.exports = {
     browserName: 'MicrosoftEdge',
     version: 'DevPreview',
     platform: 'WINDOWS',
-    name: 'Karma'
+    name: 'Karma',
   },
   'Chrome-Mobile-Linux': {
     base: 'WebDriver',
     config: webdriverConfig,
     chromeOptions: {
       mobileEmulation: {
-        deviceName: "iPhone 6"
-      }
+        deviceName: "iPhone 6",
+      },
     },
     browserName: 'chrome',
     platform: 'LINUX',
     version: '',
-    name: 'Karma'
-  }
+    name: 'Karma',
+  },
 };
