@@ -1,0 +1,216 @@
+'use strict';
+
+import { hmac } from "./hmac";
+import { deprecated } from "./deprecated";
+
+export interface TokenStorageFactory {
+  /**
+   * Creates a new tokenStorage which persist tokens for the given origin
+   * @param {string} origin The origin where the token contains to
+   * @return {Promise<TokenStorage>} The initialized token storage
+   */
+  create(origin: string): Promise<TokenStorage>
+}
+
+export class TokenStorage {
+  static GLOBAL: typeof GlobalStorage;
+  static WEB_STORAGE: typeof WebStorage;
+
+  /**
+   * The actual stored token
+   */
+  tokenData: { val: any; sig: string; createdAt: number; data: string; expireAt: number } | null;
+  /**
+   * The origin of the token
+   */
+  origin: string;
+  /**
+   * Indicates if the token should keep temporary only or should be persisted for later sessions
+   */
+  temporary: boolean;
+
+  /**
+   * Parse a token string in its components
+   * @param {string} token The token string to parse, time values are returned as timestamps
+   * @return {{data: string, createdAt: int, expireAt: int, sig: string}}
+   */
+  static parse(token) {
+    return {
+      val: token,
+      createdAt: parseInt(token.substring(0, 8), 16) * 1000,
+      expireAt: parseInt(token.substring(8, 16), 16) * 1000,
+      sig: token.substring(token.length - 40),
+      data: token.substring(0, token.length - 40),
+    };
+  }
+
+  /**
+   * Get the stored token
+   * @return {string} The token or undefined, if no token is available
+   */
+  get token() {
+    return this.tokenData ? this.tokenData.val : null;
+  }
+
+  static create(origin) {
+    return Promise.resolve(new TokenStorage(origin));
+  }
+
+  /**
+   * @param {string} origin The origin where the token belongs to
+   * @param {string} token The initial token
+   * @param {boolean=} temporary If the token should be saved temporary or permanently
+   */
+  constructor(origin: string, token?, temporary?) {
+    this.tokenData = token ? TokenStorage.parse(token) : null;
+    this.origin = origin;
+    this.temporary = temporary;
+  }
+
+  /**
+   * Use the underlying storage implementation to save the token
+   * @param {string} origin The origin where the token belongs to
+   * @param {string} token The initial token
+   * @param {boolean} temporary If the token should be saved temporary or permanently
+   * @return {void}
+   * @protected
+   * @abstract
+   */
+  saveToken(origin, token, temporary) {
+    // eslint-disable-next-line no-underscore-dangle
+    if (this._saveToken !== TokenStorage.prototype._saveToken) {
+      // eslint-disable-next-line no-console
+      console.log('Using deprecated TokenStorage._saveToken implementation.');
+      // eslint-disable-next-line no-underscore-dangle
+      this._saveToken(origin, token, temporary);
+    }
+  }
+
+  /**
+   * Use the underlying storage implementation to save the token
+   * @param {string} origin The origin where the token belongs to
+   * @param {string} token The initial token
+   * @param {boolean} temporary If the token should be saved temporary or permanently
+   * @return {void}
+   * @deprecated Use TokenStorage#saveToken instead
+   * @protected
+   * @abstract
+   */
+  _saveToken(origin, token, temporary) {} // eslint-disable-line no-unused-vars
+
+  /**
+   * Update the token for the givin origin, the operation may be asynchronous
+   * @param token The token to store or <code>null</code> to remove the token
+   */
+  update(token: string | null) {
+    const t = token ? TokenStorage.parse(token) : null;
+    if (this.tokenData && t && this.tokenData.expireAt > t.expireAt) {
+      // an older token was fetched from the cache, so ignore it
+      return;
+    }
+
+    this.tokenData = t;
+    this.saveToken(this.origin, token, this.temporary);
+  }
+
+  /**
+   * Derives a resource token from the stored origin token and signs the resource with the generated resource token
+   *
+   * @param {string} resource The resource which will be accessible with the returned token
+   * @return {string} A resource token which can only be used to access the specified resource
+   */
+  signPath(resource) {
+    if (this.tokenData) {
+      const path = resource.split('/').map(encodeURIComponent).join('/');
+      return path + '?BAT=' + (this.tokenData.data + hmac(path + this.tokenData.data, this.tokenData.sig));
+    }
+    return resource;
+  }
+}
+
+deprecated(TokenStorage.prototype, '_token', 'tokenData');
+deprecated(TokenStorage.prototype, '_origin', 'origin');
+
+
+class GlobalStorage extends TokenStorage {
+  private static tokens = {};
+
+  /**
+   * Creates a global token storage instance for the given origin
+   * A global token storage use a global variable to store the actual origin tokens
+   * @param origin
+   * @return {Promise.<GlobalStorage>}
+   */
+  static create(origin) {
+    return Promise.resolve(new GlobalStorage(origin, GlobalStorage.tokens[origin]));
+  }
+
+  /**
+   * @inheritDoc
+   */
+  saveToken(origin, token, temporary) {
+    if (!temporary) {
+      if (token) {
+        GlobalStorage.tokens[origin] = token;
+      } else {
+        delete GlobalStorage.tokens[origin];
+      }
+    }
+  }
+}
+
+TokenStorage.GLOBAL = GlobalStorage;
+
+/**
+ * @ignore
+ */
+class WebStorage extends TokenStorage {
+  static isAvailable() {
+    try {
+      // firefox throws an exception if cookies are disabled
+      if (typeof localStorage === 'undefined') {
+        return false;
+      }
+
+      localStorage.setItem('bq_webstorage_test', 'bq');
+      localStorage.removeItem('bq_webstorage_test');
+      return true;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  /**
+   * Creates a global web storage instance for the given origin
+   * A web token storage use the localStorage or sessionStorage to store the origin tokens
+   * @param origin
+   * @return {Promise.<WebStorage>}
+   */
+  static create(origin) {
+    let temporary = false;
+    let token = localStorage.getItem('BAT:' + origin);
+
+    if (!token && typeof sessionStorage !== 'undefined') {
+      token = sessionStorage.getItem('BAT:' + origin);
+      temporary = !!token;
+    }
+
+    return Promise.resolve(new WebStorage(origin, token, temporary));
+  }
+
+  /**
+   * @inheritDoc
+   */
+  saveToken(origin, token, temporary) {
+    const webStorage = temporary ? sessionStorage : localStorage;
+    if (token) {
+      webStorage.setItem('BAT:' + origin, token);
+    } else {
+      webStorage.removeItem('BAT:' + origin);
+    }
+  }
+}
+
+if (WebStorage.isAvailable()) {
+  TokenStorage.WEB_STORAGE = WebStorage;
+}

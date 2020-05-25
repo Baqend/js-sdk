@@ -1,7 +1,7 @@
 'use strict';
 
-const EntityManagerFactory = require('../lib/EntityManagerFactory');
-const WebSocketConnector = require('./connector/WebSocketConnector');
+import { EntityManagerFactory } from "../lib";
+import WebSocketConnector from "./connector/WebSocketConnector";
 
 const WS = Symbol('WebSocket');
 
@@ -21,4 +21,4 @@ Object.defineProperty(EntityManagerFactory.prototype, 'websocket', {
   },
 });
 
-module.exports = EntityManagerFactory;
+export default EntityManagerFactory;

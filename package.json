@@ -1,6 +1,6 @@
 {
   "name": "baqend",
-  "version": "2.13.1-0",
+  "version": "3.0.0-0",
   "description": "Baqend JavaScript SDK",
   "license": "MIT",
   "author": {
@@ -8,7 +8,9 @@
     "email": "info@baqend.com"
   },
   "homepage": "http://baqend.com",
-  "main": "index.js",
+  "main": "./dist/index.js",
+  "type": "commonjs",
+  "typings": "./dist/index.d.ts",
   "browser": {
     "./index.js": "./dist/baqend.js",
     "./realtime.js": "./dist/baqend-realtime.js",
@@ -29,7 +31,6 @@
     "./lib/connector/IFrameConnector": false,
     "./lib/connector/FetchConnector": "./lib/connector/FetchConnector.js"
   },
-  "typings": "index.d.ts",
   "dependencies": {
     "commander": "^2.19.0",
     "core-js": "^2.6.0",
@@ -40,6 +41,7 @@
     "rimraf": "^2.5.4",
     "rxjs": ">= 5.5.12",
     "simple-git": "^1.107.0",
+    "tsd-jsdoc": "^2.5.0",
     "uuid": "^3.0.1",
     "validator": "^4.9.0",
     "websocket": "^1.0.28"
@@ -62,7 +64,7 @@
     "backend-as-a-service"
   ],
   "devDependencies": {
-    "@types/node": "^10.12.14",
+    "@types/node": "^10.17.24",
     "babel-core": "^6.14.0",
     "babel-plugin-external-helpers": "^6.8.0",
     "babel-plugin-transform-proto-to-assign": "^6.9.0",
@@ -86,7 +88,7 @@
     "grunt-mocha-test": "^0.13.3",
     "grunt-template": "^1.0.0",
     "jquery": "^3.1.0",
-    "jsdoc": "^3.5.5",
+    "jsdoc": "^3.6.4",
     "karma": "^3.1.3",
     "karma-browserstack-launcher": "^1.4.0",
     "karma-chai": "^0.1.0",
@@ -108,10 +110,12 @@
     "phantomjs-prebuilt": "^2.1.12",
     "shelljs": "^0.8.3",
     "through2": "^3.0.0",
-    "typescript": "^3.2.2",
+    "typescript": "^3.9.3",
     "uglify-js": "^3.4.9"
   },
   "scripts": {
+    "build": "tsc",
+    "watch": "tsc --watch",
     "test": "npm run test:build && npm run test:node && npm run test:karma",
     "test:build": "grunt browserify:test",
     "test:node": "grunt mochaTest:test",
@@ -119,7 +123,7 @@
     "dist": "grunt dist && npm run typings && npm run jsdoc",
     "release": "node scripts/release",
     "typings": "npm run typings:generate && npm run typings:test",
-    "typings:generate": "jsdoc -c tpl/jsdoc.conf.json -t tpl/typings -r lib realtime -d index.d.ts",
+    "typings:generate": "jsdoc -c tpl/jsdoc.conf.json -t ./node_modules/tsd-jsdoc/dist -r lib realtime -d ./",
     "typings:test": "tsc --version && tsc -p spec-ts/tsconfig.json",
     "jsdoc": "jsdoc -t tpl/theme -r lib realtime -c tpl/jsdoc.conf.json --package package.json -d doc",
     "baqend": "node cli/index.js",
@@ -127,14 +131,9 @@
     "prepare": "npm run dist"
   },
   "engines": {
-    "node": ">=4.5.0"
+    "node": ">=10.0.0"
   },
   "bin": {
     "baqend": "./cli/index.js"
-  },
-  "browserify": {
-    "transform": [
-      "babelify"
-    ]
   }
 }

@@ -1,0 +1,123 @@
+'use strict';
+
+import { Filter } from "./Filter";
+import { Condition } from "./Condition";
+import { Operator } from "./Operator";
+import {
+  CompleteCallback,
+  FailCallback,
+  NextEventCallback,
+  NextResultCallback,
+  Query,
+  EventStreamOptions,
+  ResultStreamOptions, ResultOptions, ResultListCallback, SingleResultCallback, CountCallback, varargs
+} from "./Query";
+import { deprecated } from "../util/deprecated";
+import { Entity } from "../binding";
+
+/**
+ * The Query Builder allows creating filtered and combined queries
+ */
+export interface Builder<T extends Entity> extends Query<T>, Condition<T> {} // mixin the condition implementation
+export class Builder<T extends Entity> extends Query<T> {
+
+  /**
+   * Joins the conditions by an logical AND
+   * @param args The query nodes to join
+   * @return {Operator<T>} Returns a new query which joins the given queries by a logical AND
+   */
+  and(...args: Array<Query<T> | Query<T>[]>) {
+    return this.addOperator('$and', varargs(0, arguments));
+  }
+
+  /**
+   * Joins the conditions by an logical OR
+   * @param args The query nodes to join
+   * @return {Operator<T>} Returns a new query which joins the given queries by a logical OR
+   */
+  or(...args: Array<Query<T> | Query<T>[]>) {
+    return this.addOperator('$or', varargs(0, arguments));
+  }
+
+  /**
+   * Joins the conditions by an logical NOR
+   * @param args The query nodes to join
+   * @return {Operator<T>} Returns a new query which joins the given queries by a logical NOR
+   */
+  nor(...args: Array<Query<T> | Query<T>[]>) {
+    return this.addOperator('$nor', varargs(0, arguments));
+  }
+
+  /**
+   * @inheritDoc
+   */
+  eventStream(options?: EventStreamOptions | NextEventCallback<T>, onNext?: NextEventCallback<T> | FailCallback, onError?: FailCallback | CompleteCallback, onComplete?: CompleteCallback) {
+    return this.where({}).eventStream(options, onNext, onError, onComplete);
+  }
+
+  /**
+   * @inheritDoc
+   */
+  resultStream(options?: ResultStreamOptions | NextResultCallback<T>, onNext?: NextResultCallback<T> | FailCallback, onError?: FailCallback | CompleteCallback, onComplete?: CompleteCallback) {
+    return this.where({}).resultStream(options, onNext, onError, onComplete);
+  }
+
+  /**
+   * @inheritDoc
+   */
+  resultList(options?: ResultOptions | ResultListCallback<T>, doneCallback?: ResultListCallback<T> | FailCallback, failCallback?: FailCallback) {
+    return this.where({}).resultList(options, doneCallback, failCallback);
+  }
+
+  /**
+   * @inheritDoc
+   */
+  singleResult(options?: ResultOptions | SingleResultCallback<T>, doneCallback?: SingleResultCallback<T> | FailCallback, failCallback?: FailCallback) {
+    return this.where({}).singleResult(options, doneCallback, failCallback);
+  }
+
+  /**
+   * @inheritDoc
+   */
+  count(doneCallback?: CountCallback, failCallback?: FailCallback) {
+    return this.where({}).count(doneCallback, failCallback);
+  }
+
+  addOperator(operator: string, args: Query<T>[]) {
+    if (args.length < 2) {
+      throw new Error('Only two or more queries can be joined with an ' + operator + ' operator.');
+    }
+
+    args.forEach((arg, index) => {
+      if (!(arg instanceof Query)) {
+        throw new Error('Argument at index ' + index + ' is not a query.');
+      }
+    });
+
+    return new Operator(this.entityManager, this.resultClass, operator, args);
+  }
+
+  addOrder(fieldOrSort, order?) {
+    return new Filter(this.entityManager, this.resultClass).addOrder(fieldOrSort, order);
+  }
+
+  addFilter(field, filter, value) {
+    return new Filter(this.entityManager, this.resultClass).addFilter(field, filter, value);
+  }
+
+  addOffset(offset) {
+    return new Filter(this.entityManager, this.resultClass).addOffset(offset);
+  }
+
+  addLimit(limit) {
+    return new Filter(this.entityManager, this.resultClass).addLimit(limit);
+  }
+}
+
+Object.assign(Builder.prototype, Condition);
+
+deprecated(Builder.prototype, '_addOperator', 'addOperator');
+deprecated(Builder.prototype, '_addOrder', 'addOrder');
+deprecated(Builder.prototype, '_addFilter', 'addFilter');
+deprecated(Builder.prototype, '_addOffset', 'addOffset');
+deprecated(Builder.prototype, '_addLimit', 'addLimit');

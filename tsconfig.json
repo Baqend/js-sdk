@@ -1,0 +1,24 @@
+{
+  "compilerOptions": {
+    "target": "es2017",
+    "module": "commonjs",
+    "strict": true,
+    "allowJs": true,
+    "checkJs": true,
+    "moduleResolution": "node",
+    "esModuleInterop": true,
+    "outDir": "./dist",
+    "rootDir": "./lib",
+    "sourceMap": true,
+    "declaration": true,
+    "declarationMap": true,
+    "noImplicitAny": false,
+    "experimentalDecorators": true,
+    "typeRoots": [
+      "./node_modules/@types"
+    ]
+  },
+  "include": [
+    "lib/"
+  ]
+}
