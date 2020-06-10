@@ -1,3 +1,22 @@
+<a name="v2.14.0"></a>
+# v2.14.0 (2020-6-10)
+
+
+### Bug Fixes
+
+* fix(typings): Generate correct File metadata typings
+* fix(node-connector): Trim cookie parts to allow spaces
+* fix(oauth): Bump Facebook and LinkedIn API versions
+
+### Features
+ 
+* feat(typings): Generate Typings for dotted class names (e.g. Device.Type) as well
+* feat(oauth): Add Salesforce as OAuth provider
+
+### Miscellaneous
+
+* chore(node): Update dependencies
+
 <a name="v2.13.0"></a>
 # v2.13.0 (2018-9-20)
 
