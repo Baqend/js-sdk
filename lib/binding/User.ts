@@ -2,6 +2,8 @@
 
 import { enumerable } from "../util/enumerable";
 import { Entity } from "./Entity";
+import { model } from "../model";
+import { JsonMap } from "../util";
 
 export class User extends Entity {
   /**
@@ -17,28 +19,28 @@ export class User extends Entity {
   /**
    * Change the password of the given user
    *
-   * @param {string} currentPassword Current password of the user
-   * @param {string} password New password of the user
+   * @param currentPassword Current password of the user
+   * @param password New password of the user
    * @param {Entity~doneCallback=} doneCallback Called when the operation succeed.
    * @param {Entity~failCallback=} failCallback Called when the operation failed.
-   * @return {Promise<model.User>}
+   * @return
    */
   @enumerable(false)
-  newPassword(currentPassword, password, doneCallback, failCallback) {
+  newPassword(currentPassword: string, password: string, doneCallback?, failCallback?): Promise<model.User> {
     return this._metadata.db.newPassword(this.username, currentPassword, password).then(doneCallback, failCallback);
   }
 
   /**
    * Change the username of the current user
    *
-   * @param {string} newUsername New username for the current user
-   * @param {string} password The password of the current user
+   * @param newUsername New username for the current user
+   * @param password The password of the current user
    * @param {Entity~doneCallback=} doneCallback Called when the operation succeed.
    * @param {Entity~failCallback=} failCallback Called when the operation failed.
-   * @return {Promise<*>}
+   * @return
    */
   @enumerable(false)
-  changeUsername(newUsername, password, doneCallback, failCallback) {
+  changeUsername(newUsername: string, password: string, doneCallback?, failCallback?): Promise<any> {
     return this._metadata.db.changeUsername(this.username, newUsername, password).then(doneCallback, failCallback);
   }
 
@@ -49,10 +51,10 @@ export class User extends Entity {
    *
    * @param {Entity~doneCallback=} doneCallback Called when the operation succeed.
    * @param {Entity~failCallback=} failCallback Called when the operation failed.
-   * @return {Promise<*>}
+   * @return
    */
   @enumerable(false)
-  requestAPIToken(doneCallback, failCallback) {
+  requestAPIToken(doneCallback?, failCallback?): Promise<JsonMap> {
     return this._metadata.db.requestAPIToken(this.constructor, this).then(doneCallback, failCallback);
   }
 }

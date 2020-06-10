@@ -19,12 +19,12 @@ export class IFrameConnector extends XMLHttpConnector {
 
   /**
    * Indicates if this connector implementation is usable for the given host and port
-   * @param {string} host
-   * @param {number} port
-   * @param {boolean} secure
-   * @return {boolean}
+   * @param host
+   * @param port
+   * @param secure
+   * @return
    */
-  static isUsable(host: string, port: number, secure: boolean) {
+  static isUsable(host: string, port: number, secure: boolean): boolean {
     // we use location directly here, since there exists environments, which provide a location and a document but
     // no window object
     if (typeof location === 'undefined' || typeof document === 'undefined') {

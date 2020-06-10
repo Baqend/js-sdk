@@ -95,9 +95,11 @@ export abstract class Type<T> {
    *  a new instance will be created
    * @param options additional options which are applied through the conversion
    * @param [options.onlyMetadata=false] Indicates that only the metadata should be updated of the object
+   * @param [options.persisting=false] indicates if the current state will be persisted.
+   * Used to update the internal change tracking state of collections and mark the object persistent or dirty afterwards
    * @return The merged object instance
    */
-  abstract fromJsonValue(state: Metadata, jsonValue: Json, currentValue: T | null, options: { onlyMetadata: boolean }) : T | null;
+  abstract fromJsonValue(state: Metadata, jsonValue: Json, currentValue: T | null, options: { persisting?: boolean, onlyMetadata?: boolean }) : T | null;
 
   /**
    * Converts the given object to json
@@ -106,7 +108,9 @@ export abstract class Type<T> {
    * @param options additional options which are applied through the conversion
    * @param [options.excludeMetadata=false] Indicates that no metadata should be exposed on the generated json
    * @param [options.depth=0] The object depth to serialize
+   * @param [options.persisting=false] indicates if the current state will be persisted.
+   *  Used to update the internal change tracking state of collections and mark the object persistent if its true
    * @return The converted object as json
    */
-  abstract toJsonValue(state: Metadata, object: T | null, options: { excludeMetadata?: boolean, depth?: number | boolean }): Json;
+  abstract toJsonValue(state: Metadata, object: T | null, options: { excludeMetadata?: boolean, depth?: number | boolean, persisting: boolean }): Json;
 }

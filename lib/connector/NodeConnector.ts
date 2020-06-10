@@ -110,10 +110,9 @@ export class NodeConnector extends Connector {
 
   /**
    * Parse the cookie header
-   * @param {string} header
-   * @return {(string|null)}
-   */
-  parseCookie(header) {
+   * @param header
+   * @return    */
+  parseCookie(header: string): string | null {
     const parts = header.split(';');
 
     for (let i = 0, len = parts.length; i < len; i += 1) {

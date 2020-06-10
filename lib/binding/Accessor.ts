@@ -1,22 +1,24 @@
 'use strict';
 
+import { Managed } from "./Managed";
+import { Attribute } from "../metamodel";
+
 export class Accessor {
   /**
-   * @param {Object} object
-   * @param {Attribute} attribute
-   * @return {*}
+   * @param object
+   * @param attribute
+   * @return
    */
-  getValue(object, attribute) {
+  getValue<T>(object: Managed, attribute: Attribute<T>): T | null {
     return object[attribute.name];
   }
 
   /**
-   * @param {Object} object
-   * @param {Attribute} attribute
-   * @param {*} value
-   * @return {void}
+   * @param object
+   * @param attribute
+   * @param value
    */
-  setValue(object, attribute, value) {
+  setValue<T>(object: Managed, attribute: Attribute<T>, value: T): void {
     object[attribute.name] = value;
   }
 }

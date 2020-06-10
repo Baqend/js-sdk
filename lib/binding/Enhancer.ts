@@ -1,50 +1,50 @@
 'use strict';
 
 import { Class } from "../util";
+import { Attribute, ManagedType } from "../metamodel";
+import { Managed } from "./Managed";
 
 const BAQEND_ID = Symbol('BaqendId');
 const BAQEND_TYPE = Symbol('BaqendType');
 
 export class Enhancer {
   /**
-   * @param {Class<*>} superClass
-   * @return {Class<*>} typeConstructor
+   * @param superClass
+   * @return typeConstructor
    */
   createProxy<T extends S, S>(superClass: Class<S>): Class<T> {
     return class Proxy extends (superClass as any) {} as Class<T>;
   }
 
   /**
-   * @param {Class<*>} typeConstructor
-   * @returns {ManagedType} type the managed type metadata for this class
+   * @param typeConstructor
+   * @returns type the managed type metadata for this class
    */
-  static getBaqendType(typeConstructor) {
+  static getBaqendType(typeConstructor: Class<any>): ManagedType<any> | null {
     return typeConstructor[BAQEND_TYPE];
   }
 
   /**
-   * @param {Class<*>} typeConstructor
-   * @return {string}
+   * @param typeConstructor
+   * @return
    */
-  static getIdentifier(typeConstructor) {
+  static getIdentifier(typeConstructor: Class<any>): string | null {
     return typeConstructor[BAQEND_ID];
   }
 
   /**
-   * @param {Class<*>} typeConstructor
-   * @param {string} identifier
-   * @return {void}
+   * @param typeConstructor
+   * @param identifier
    */
-  static setIdentifier(typeConstructor, identifier) {
+  static setIdentifier(typeConstructor: Class<any>, identifier: string): void {
     typeConstructor[BAQEND_ID] = identifier;
   }
 
   /**
-   * @param {ManagedType} type
-   * @param {Class<*>} typeConstructor
-   * @return {void}
+   * @param type
+   * @param typeConstructor
    */
-  enhance(type, typeConstructor) {
+  enhance<T extends Managed>(type: ManagedType<T>, typeConstructor: Class<T>): void {
     if (typeConstructor[BAQEND_TYPE] === type) {
       return;
     }
@@ -61,11 +61,10 @@ export class Enhancer {
 
   /**
    * Enhance the prototype of the type
-   * @param {Object} proto
-   * @param {ManagedType} type
-   * @return {void}
+   * @param proto
+   * @param type
    */
-  enhancePrototype(proto, type) {
+  enhancePrototype<T extends Managed>(proto: T, type: ManagedType<T>): void {
     if (proto.toString === Object.prototype.toString) {
       // implements a better convenience toString method
       Object.defineProperty(proto, 'toString', {
@@ -92,11 +91,10 @@ export class Enhancer {
   }
 
   /**
-   * @param {Object} proto
-   * @param {Attribute} attribute
-   * @return {void}
+   * @param proto
+   * @param attribute
    */
-  enhanceProperty(proto, attribute) {
+  enhanceProperty<T>(proto: T, attribute: Attribute<any>): void {
     const name = '$' + attribute.name;
     Object.defineProperty(proto, attribute.name, {
       get() {

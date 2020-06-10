@@ -27,9 +27,8 @@ export class Acl {
   /**
    * Removes all acl rules, read and write access is public afterwards
    *
-   * @return {void}
-   */
-  clear() {
+   * @return    */
+  clear(): void {
     this.read.clear();
     this.write.clear();
   }
@@ -49,7 +48,7 @@ export class Acl {
   /**
    * Gets whenever all users and roles have the permission to read the object
    *
-   * @return {boolean} <code>true</code> If public access is allowed
+   * @return <code>true</code> If public access is allowed
    */
   isPublicReadAllowed(): boolean {
     return this.read.isPublicAllowed();
@@ -60,8 +59,7 @@ export class Acl {
    *
    * Note: All other allow read rules will be removed.
    *
-   * @return {void}
-   */
+   * @return    */
   setPublicReadAllowed(): void {
     return this.read.setPublicAllowed();
   }
@@ -122,9 +120,9 @@ export class Acl {
   /**
    * Gets whenever all users and roles have the permission to write the object
    *
-   * @return {boolean} <code>true</code> If public access is allowed
+   * @return <code>true</code> If public access is allowed
    */
-  isPublicWriteAllowed() {
+  isPublicWriteAllowed(): boolean {
     return this.write.isPublicAllowed();
   }
 
@@ -133,9 +131,8 @@ export class Acl {
    *
    * Note: All other allow write rules will be removed.
    *
-   * @return {void}
-   */
-  setPublicWriteAllowed() {
+   * @return    */
+  setPublicWriteAllowed(): void {
     return this.write.setPublicAllowed();
   }
 
@@ -143,9 +140,9 @@ export class Acl {
    * Checks whenever the user or role is explicit allowed to write the object
    *
    * @param userOrRole The user or role to check for
-   * @return {boolean} <code>true</code> if write access is explicitly allowed for the given user or role
+   * @return <code>true</code> if write access is explicitly allowed for the given user or role
    */
-  isWriteAllowed(userOrRole: TrustedEntity) {
+  isWriteAllowed(userOrRole: TrustedEntity): boolean {
     return this.write.isAllowed(userOrRole);
   }
 
@@ -153,9 +150,9 @@ export class Acl {
    * Checks whenever the user or role is explicit denied to write the object
    *
    * @param userOrRole The user or role to check for
-   * @return {boolean} <code>true</code> if write access is explicitly denied for the given user or role
+   * @return <code>true</code> if write access is explicitly denied for the given user or role
    */
-  isWriteDenied(userOrRole: TrustedEntity) {
+  isWriteDenied(userOrRole: TrustedEntity): boolean {
     return this.write.isDenied(userOrRole);
   }
 
@@ -163,7 +160,7 @@ export class Acl {
    * Allows the given user or rule to write the object
    *
    * @param userOrRole The user or role to allow
-   * @return {Acl} this acl object
+   * @return this acl object
    */
   allowWriteAccess(...userOrRole: TrustedEntity[]): this {
     this.write.allowAccess(...userOrRole);
@@ -174,7 +171,7 @@ export class Acl {
    * Denies the given user or rule to write the object
    *
    * @param userOrRole The user or role to deny
-   * @return {Acl} this acl object
+   * @return this acl object
    */
   denyWriteAccess(...userOrRole: TrustedEntity[]): this {
     this.write.denyAccess(...userOrRole);
@@ -185,7 +182,7 @@ export class Acl {
    * Deletes any write allow/deny rule for the given user or role
    *
    * @param userOrRole The user or role
-   * @return {Acl} this acl object
+   * @return this acl object
    */
   deleteWriteAccess(...userOrRole: TrustedEntity[]): this {
     this.write.deleteAccess(...userOrRole);
@@ -208,9 +205,8 @@ export class Acl {
    * Sets the acl rules form JSON
    *
    * @param json The json encoded acls
-   * @return {void}
-   */
-  fromJSON(json: JsonMap) {
+   * @return    */
+  fromJSON(json: JsonMap): void {
     this.read.fromJSON(json.read as JsonMap || {});
     this.write.fromJSON(json.write as JsonMap || {});
   }

@@ -18,7 +18,7 @@ export class Permission {
 
   /**
    * Creates a new Permission object, with an empty rule set
-   * @param {Metadata=} metadata The metadata of the object
+   * @param metadata The metadata of the object
    */
   constructor(metadata?: Metadata) {
     this._metadata = metadata || null;

@@ -51,9 +51,9 @@ export class Logger {
 
   /**
    * Sets the log level which will be logged
-   * @param {string} value
+   * @param value
    */
-  set level(value) {
+  set level(value: string) {
     const index = Logger.LEVELS.indexOf(value);
     if (index === -1) {
       throw new Error('Unknown logging level ' + value);

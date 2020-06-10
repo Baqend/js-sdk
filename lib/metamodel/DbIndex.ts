@@ -1,6 +1,6 @@
 'use strict';
 
-import { JsonArray, JsonMap } from "../util";
+import { Json, JsonArray, JsonMap } from "../util";
 
 type IndexSpec = {[name: string]: string}[];
 
@@ -22,10 +22,10 @@ export class DbIndex {
 
   /**
    * Returns DbIndex Object created from the given JSON
-   * @param {json} json
-   * @return {DbIndex}
+   * @param json
+   * @return
    */
-  public static fromJSON(json: JsonMap) {
+  public static fromJSON(json: JsonMap): DbIndex {
     return new DbIndex(json.keys as IndexSpec, json.unique as boolean);
   }
 
@@ -55,10 +55,10 @@ export class DbIndex {
 
   /**
    * Indicates if this index is for the given field or includes it in a compound index
-   * @param {string} name The name of the field to check for
-   * @return {boolean} <code>true</code> if the index contains this field
+   * @param name The name of the field to check for
+   * @return <code>true</code> if the index contains this field
    */
-  hasKey(name) {
+  hasKey(name: string): boolean {
     for (let i = 0; i < this.keys.length; i += 1) {
       if (this.keys[i][name]) {
         return true;
@@ -88,9 +88,9 @@ export class DbIndex {
   /**
    * Returns a JSON representation of the Index object
    *
-   * @return {json} A Json of this Index object
+   * @return A Json of this Index object
    */
-  toJSON() {
+  toJSON(): Json {
     return {
       unique: this.unique,
       keys: this.keys,

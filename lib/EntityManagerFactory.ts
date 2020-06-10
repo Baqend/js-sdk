@@ -8,6 +8,7 @@ import { Code, JsonMap, Lockable, TokenStorage } from "./util";
 import { TokenStorageFactory } from "./util/TokenStorage";
 import { Metamodel } from "./metamodel/Metamodel";
 import { Response } from "./connector/Connector";
+import { WebSocketConnector } from "../realtime/connector/WebSocketConnector";
 
 const CONNECTED = Symbol('Connected') as any;
 
@@ -18,6 +19,14 @@ export type ConnectData = {
   device?: JsonMap,
   user?: JsonMap,
   bloomFilter?: JsonMap,
+  websocket?: string,
+}
+
+export interface EntityManagerFactory extends Lockable {
+  /**
+   * Retrieves the websocket connection if the websocket SDK is available
+   */
+  readonly websocket: WebSocketConnector;
 }
 
 export class EntityManagerFactory extends Lockable {
@@ -32,16 +41,16 @@ export class EntityManagerFactory extends Lockable {
 
   /**
    * Creates a new EntityManagerFactory connected to the given destination
-   * @param {string|Object} [options] The destination to connect with, or an options object
-   * @param {string} [options.host] The destination to connect with
-   * @param {number} [options.port=80|443] The optional destination port to connect with
-   * @param {boolean} [options.secure=false] <code>true</code> To use a secure ssl encrypted connection
-   * @param {string} [options.basePath="/v1"] The base path of the api
-   * @param {Object} [options.schema=null] The serialized schema as json used to initialize the metamodel
-   * @param {TokenStorage} [options.tokenStorage] The tokenStorage which should be used by this emf
-   * @param {TokenStorageFactory} [options.tokenStorageFactory] The tokenStorage factory implementation which
+   * @param [options] The destination to connect with, or an options object
+   * @param [options.host] The destination to connect with
+   * @param [options.port=80|443] The optional destination port to connect with
+   * @param [options.secure=false] <code>true</code> To use a secure ssl encrypted connection
+   * @param [options.basePath="/v1"] The base path of the api
+   * @param [options.schema=null] The serialized schema as json used to initialize the metamodel
+   * @param [options.tokenStorage] The tokenStorage which should be used by this emf
+   * @param [options.tokenStorageFactory] The tokenStorage factory implementation which
    * should be used for token storage
-   * @param {number} [options.staleness=60] The maximum staleness of objects that are acceptable while reading cached
+   * @param [options.staleness=60] The maximum staleness of objects that are acceptable while reading cached
    * data
    */
   constructor(options: {
@@ -117,15 +126,14 @@ export class EntityManagerFactory extends Lockable {
 
   /**
    * Apply additional configurations to this EntityManagerFactory
-   * @param {Object} options The additional configuration options
-   * @param {TokenStorage} [options.tokenStorage] The tokenStorage which should be used by this emf
-   * @param {TokenStorageFactory} [options.tokenStorageFactory] The tokenStorage factory implementation which
+   * @param options The additional configuration options
+   * @param [options.tokenStorage] The tokenStorage which should be used by this emf
+   * @param [options.tokenStorageFactory] The tokenStorage factory implementation which
    * should be used for token storage
-   * @param {number} [options.staleness=60] The maximum staleness of objects that are acceptable while reading cached
+   * @param [options.staleness=60] The maximum staleness of objects that are acceptable while reading cached
    * data, <code>0</code> to always bypass the browser cache
-   * @return {void}
-   */
-  configure(options: { tokenStorage?: TokenStorage, tokenStorageFactory?: TokenStorageFactory, staleness?: number }) {
+   * @return    */
+  configure(options: { tokenStorage?: TokenStorage, tokenStorageFactory?: TokenStorageFactory, staleness?: number }): void {
     if (this.connection) {
       throw new Error('The EntityManagerFactory can only be configured before is is connected.');
     }
@@ -145,21 +153,19 @@ export class EntityManagerFactory extends Lockable {
 
   /**
    * Connects this EntityManager to the given destination
-   * @param {string} hostOrApp The host or the app name to connect with
-   * @param {boolean} [secure=false] <code>true</code> To use a secure connection
-   * @param {string} [basePath="/v1"] The base path of the api
-   * @return {Promise<this>}
-   */
+   * @param hostOrApp The host or the app name to connect with
+   * @param [secure=false] <code>true</code> To use a secure connection
+   * @param [basePath="/v1"] The base path of the api
+   * @return    */
   connect(hostOrApp: string, secure: boolean, basePath?: string): Promise<this>;
 
   /**
    * Connects this EntityManager to the given destination
-   * @param {string} hostOrApp The host or the app name to connect with
-   * @param {number} [port=80|443] The port to connect to
-   * @param {boolean} [secure=false] <code>true</code> To use a secure connection
-   * @param {string} [basePath="/v1"] The base path of the api
-   * @return {Promise<this>}
-   */
+   * @param hostOrApp The host or the app name to connect with
+   * @param [port=80|443] The port to connect to
+   * @param [secure=false] <code>true</code> To use a secure connection
+   * @param [basePath="/v1"] The base path of the api
+   * @return    */
   connect(hostOrApp: string, port?: number, secure?: boolean, basePath?: string): Promise<this>;
 
   connect(hostOrApp, port?, secure?, basePath?): Promise<this> {
@@ -193,9 +199,9 @@ export class EntityManagerFactory extends Lockable {
    * <code>true</code> To use the shared token storage of the emf.
    * <code>false</code> To use a instance based storage.
    *
-   * @return {EntityManager} a new entityManager
+   * @return a new entityManager
    */
-  createEntityManager(useSharedTokenStorage?: boolean) {
+  createEntityManager(useSharedTokenStorage?: boolean): EntityManager {
     const em = new EntityManager(this);
 
     if (this.isReady) {

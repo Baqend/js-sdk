@@ -1,61 +1,115 @@
 'use strict';
 
-const Metadata = require('../../lib/util/Metadata');
-const lib = require('../../lib/baqend');
-const uuid = require('../../lib/util/uuid').uuid;
+import { Json, JsonMap, Metadata } from "../../lib/util";
+import { uuid } from "../../lib/util/uuid";
+import { Observable, Subscription, Subscriber } from "rxjs";
+import { Entity } from "../../lib/binding";
+import { EntityManager } from "../../lib";
+import { EventStreamOptions, MatchType, Node, Operation, RealtimeEvent, ResultStreamOptions } from "../../lib/query";
+import { ChannelMessage } from "../connector/WebSocketConnector";
 
-/**
- * @typedef {object} StreamOptions
- * @property {boolean} initial          Indicates whether or not the initial result set should be delivered on
- *                                      creating the subscription.
- * @property {Array<string>} matchTypes A list of match types.
- * @property {Array<string>} operations A list of operations.
- * @property {number} reconnects        The number of reconnects.
- */
+type InitialResultEvent = ChannelMessage & {
+  /**
+   * The event type can be initial result, match event or an error
+   */
+  type: 'result';
 
-/**
- * @alias query.Stream
- */
-class Stream {
+  /**
+   * the database entity this event was generated for, e.g. an entity that just entered or left the result set, or
+   * an array of entities, if this event type is an initial result
+   */
+  data: JsonMap[];
+}
+
+type MatchEvent = ChannelMessage & {
+  /**
+   * The event type can be initial result, match event or an error
+   */
+  type: 'match';
+
+  /**
+   * the database entity this event was generated for, e.g. an entity that just entered or left the result set, or
+   * an array of entities, if this event type is an initial result
+   */
+  data: JsonMap;
+
+  /**
+   * the operation by which the entity was altered
+   * 'none' if unknown or not applicable
+   */
+  operation: Operation;
+
+  /**
+   * indicates how the transmitted entity relates to the query result.
+   Every event is delivered with one of the following match types:
+   <ul>
+   <li> 'match': the entity matches the query. </li>
+   <li> 'add': the entity entered the result set, i.e. it did not match before and is matching now. </li>
+   <li> 'change': the entity was updated, but remains a match </li>
+   <li> 'changeIndex' (for sorting queries only): the entity was updated and remains a match, but changed its position
+   within the query result </li>
+   <li> 'remove': the entity was a match before, but is not matching any longer </li>
+   </ul>
+   */
+  matchType: MatchType;
+
+  /**
+   * for sorting queries only: the position of the matching entity in the ordered result (-1 for non-matching entities)
+   */
+  index: number;
+}
+
+type ErrorEvent = ChannelMessage & {
+  /**
+   * The event type can be initial result, match event or an error
+   */
+  type: 'error';
+}
+
+type BaseEvent = InitialResultEvent | MatchEvent | ErrorEvent;
+
+export class Stream {
   /**
    * Creates a live updating object stream for a query
    *
-   * @alias query.Stream.createStream<T>
-   * @param {EntityManager} entityManager The owning entity manager of this query
-   * @param {string} query The query options
-   * @param {string} query.query The serialized query
-   * @param {string} query.bucket The Bucket on which the streaming query is performed
-   * @param {string=} query.sort the sort string
-   * @param {number=} query.limit the count, i.e. the number of items in the result
-   * @param {number=} query.offset offset, i.e. the number of items to skip
-   * @param {boolean=} query.initial Indicates if the initial result should be returned
-   * @param {Partial<StreamOptions>} options an object containing parameters
-   * @return {Observable<RealtimeEvent<T>>} The query result as a live updating stream of objects
+   * @param entityManager The owning entity manager of this query
+   * @param query The query options
+   * @param query.query The serialized query
+   * @param query.bucket The Bucket on which the streaming query is performed
+   * @param query.sort the sort string
+   * @param query.limit the count, i.e. the number of items in the result
+   * @param query.offset offset, i.e. the number of items to skip
+   * @param query.initial Indicates if the initial result should be returned
+   * @param options an object containing parameters
+   * @return The query result as a live updating stream of objects
    */
-  static createEventStream(entityManager, query, options) {
+  static createEventStream<T extends Entity>(entityManager: EntityManager, query: JsonMap, options?: EventStreamOptions): Observable<RealtimeEvent<T>> {
     const opt = options || {};
     opt.reconnects = 0;
-    return Stream.streamObservable(entityManager, query, opt, (msg, next) => {
-      const messageType = msg.type;
-      delete msg.type;
-      if (messageType === 'result') {
+    return Stream.streamObservable<T, RealtimeEvent<T>>(entityManager, query, opt, (msg, next) => {
+      const { type, ...eventProps } = msg;
+
+      if (msg.type === 'result') {
         msg.data.forEach((obj, index) => {
-          const event = Object.assign({
+          const event: RealtimeEvent<T> = {
             matchType: 'add',
             operation: 'none',
             initial: true,
-          }, msg);
-
-          event.data = Stream.resolveObject(entityManager, obj);
-          if (query.sort) { event.index = index; }
+            ...eventProps,
+            data: Stream.resolveObject(entityManager, obj),
+            ...(query.sort && { index })
+          };
 
           next(event);
         });
       }
 
-      if (messageType === 'match') {
-        msg.data = Stream.resolveObject(entityManager, msg.data);
-        next(msg);
+      if (msg.type === 'match') {
+        next({
+          initial: false,
+          ...(eventProps as MatchEvent),
+          data: Stream.resolveObject(entityManager, msg.data),
+        });
       }
     });
   }
@@ -64,25 +118,25 @@ class Stream {
    * Creates a live updating result stream for a query
    *
    * @alias query.Stream.createStreamResult<T>
-   * @param {EntityManager} entityManager The owning entity manager of this query
-   * @param {string} query The query options
-   * @param {string} query.query The serialized query
-   * @param {string} query.bucket The Bucket on which the streaming query is performed
-   * @param {string=} query.sort the sort string
-   * @param {number=} query.limit the count, i.e. the number of items in the result
-   * @param {number=} query.offset offset, i.e. the number of items to skip
-   * @param {Partial<StreamOptions>} options an object containing parameters
-   * @return {Observable<Array<T>>} The query result as a live updating query result
+   * @param entityManager The owning entity manager of this query
+   * @param query The query options
+   * @param query.query The serialized query
+   * @param query.bucket The Bucket on which the streaming query is performed
+   * @param query.sort the sort string
+   * @param query.limit the count, i.e. the number of items in the result
+   * @param query.offset offset, i.e. the number of items to skip
+   * @param options an object containing parameters
+   * @return The query result as a live updating query result
    */
-  static createResultStream(entityManager, query, options) {
-    const opt = options || {};
+  static createResultStream<T extends Entity>(entityManager: EntityManager, query: JsonMap, options?: ResultStreamOptions): Observable<T[]> {
+    const opt: EventStreamOptions = options || {};
     opt.initial = true;
     opt.matchTypes = 'all';
     opt.operations = 'any';
 
     let result;
     const ordered = !!query.sort;
-    return Stream.streamObservable(entityManager, query, opt, (event, next) => {
+    return Stream.streamObservable<T, T[]>(entityManager, query, opt, (event: BaseEvent, next) => {
       if (event.type === 'result') {
         result = event.data.map(obj => Stream.resolveObject(entityManager, obj));
         next(result.slice());
@@ -115,17 +169,19 @@ class Stream {
     });
   }
 
-  static streamObservable(entityManager, query, options, mapper) {
+  static streamObservable<T extends Entity, R>(entityManager: EntityManager, query: JsonMap, options: EventStreamOptions, mapper: (event: BaseEvent, next: (result: R) => any) => any): Observable<R> {
     const opt = Stream.parseOptions(options);
 
     const socket = entityManager.entityManagerFactory.websocket;
-    const observable = new lib.Observable((subscriber) => {
+    const observable = new Observable<R>((subscriber) => {
       const id = uuid();
       const stream = socket.openStream(entityManager.tokenStorage, id);
 
-      stream.send(Object.assign({
+      stream.send({
         type: 'subscribe',
-      }, query, opt));
+        ...query,
+        ...opt
+      });
 
       let closed = false;
       const next = subscriber.next.bind(subscriber);
@@ -139,7 +195,7 @@ class Stream {
           subscriber.error(e);
         },
         next(msg) {
-          mapper(msg, next);
+          mapper(msg as BaseEvent, next);
         },
       });
 
@@ -155,10 +211,10 @@ class Stream {
     return Stream.cachedObservable(observable, opt);
   }
 
-  static cachedObservable(observable, options) {
-    let subscription = null;
-    const observers = [];
-    return new lib.Observable((observer) => {
+  static cachedObservable<T>(observable: Observable<T>, options): Observable<T> {
+    let subscription: Subscription | null = null;
+    const observers: Subscriber<T>[] = [];
+    return new Observable<T>((observer) => {
       if (!subscription) {
         let remainingRetries = options.reconnects;
         let backoff = 1;
@@ -190,7 +246,7 @@ class Stream {
       observers.push(observer);
       return () => {
         observers.splice(observers.indexOf(observer), 1);
-        if (!observers.length) {
+        if (!observers.length && subscription) {
           subscription.unsubscribe();
           subscription = null;
         }
@@ -201,10 +257,10 @@ class Stream {
   /**
    * Parses the StreamOptions
    *
-   * @param {Partial<StreamOptions>=} [options] object containing partial options
-   * @returns {StreamOptions} an object containing VALID options
+   * @param [options] object containing partial options
+   * @returns an object containing VALID options
    */
-  static parseOptions(options) {
+  static parseOptions(options?: EventStreamOptions): JsonMap {
     const opt = options || {};
 
     const verified = {
@@ -271,17 +327,15 @@ class Stream {
     return li;
   }
 
-  static resolveObject(entityManager, object) {
-    const entity = entityManager.getReference(object.id);
+  static resolveObject<T extends Entity>(entityManager: EntityManager, object: JsonMap): T {
+    const entity: T = entityManager.getReference(object.id as string);
     const metadata = Metadata.get(entity);
     if (!object.version) {
       metadata.setRemoved();
       entityManager.removeReference(entity);
-    } else if (entity.version <= object.version) {
+    } else if (entity.version! <= object.version) {
       metadata.setJson(object, { persisting: true });
     }
     return entity;
   }
 }
-
-module.exports = Stream;

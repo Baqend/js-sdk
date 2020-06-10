@@ -8,23 +8,25 @@ import { ManagedType } from "../metamodel/ManagedType";
 import { EntityManager } from "../EntityManager";
 import { EntityType } from "../metamodel/EntityType";
 import { Factory } from "./Factory";
+import { Builder } from "../query";
+import { EntityPartialUpdateBuilder } from "../partialupdate";
 
 export class EntityFactory<T extends Entity> extends ManagedFactory<T> {
 
   /**
    * Loads the instance for the given id, or null if the id does not exists.
-   * @param {string} id The id to query
-   * @param {Object} [options] The load options
-   * @param {number|boolean} [options.depth=0] The object depth which will be loaded. Depth 0 loads only this object,
+   * @param id The id to query
+   * @param [options] The load options
+   * @param [options.depth=0] The object depth which will be loaded. Depth 0 loads only this object,
    * <code>true</code> loads the objects by reachability.
-   * @param {boolean} [options.refresh=false] Indicates whether the object should be revalidated (cache bypass).
-   * @param {boolean} [options.local=false] Indicates whether the local copy (from the entity manager)
+   * @param [options.refresh=false] Indicates whether the object should be revalidated (cache bypass).
+   * @param [options.local=false] Indicates whether the local copy (from the entity manager)
    * of an object should be returned if it exists. This value might be stale.
-   * @param {EntityFactory~doneCallback=} doneCallback Called when the operation succeed.
-   * @param {EntityFactory~failCallback=} failCallback Called when the operation failed.
-   * @return {Promise<T>} A Promise that will be fulfilled when the asynchronous operation completes.
+   * @param doneCallback Called when the operation succeed.
+   * @param failCallback Called when the operation failed.
+   * @return A Promise that will be fulfilled when the asynchronous operation completes.
    */
-  load(id, options, doneCallback, failCallback) {
+  load(id: string, options?: { depth?: number | boolean, refresh?: boolean, local?: boolean,  }, doneCallback?, failCallback?): Promise<T | null> {
     if (options instanceof Function) {
       return this.load(id, {}, options, doneCallback);
     }
@@ -34,10 +36,10 @@ export class EntityFactory<T extends Entity> extends ManagedFactory<T> {
 
   /**
    * Gets an unloaded reference for the given id.
-   * @param {string} id The id of an object to get a reference for.
-   * @return {T} An unloaded reference to the object with the given id.
+   * @param id The id of an object to get a reference for.
+   * @return An unloaded reference to the object with the given id.
    */
-  ref(id) {
+  ref(id: string): T {
     return this.db.getReference(this.managedType.ref, id);
   }
 
@@ -53,34 +55,19 @@ export class EntityFactory<T extends Entity> extends ManagedFactory<T> {
 
   /**
    * Creates a new query for this class
-   * @return {Builder<T>} The query builder
+   * @return The query builder
    */
-  find() {
+  find(): Builder<T> {
     return this.db.createQueryBuilder(this.managedType.typeConstructor);
   }
 
   /**
    * Creates a new partial update for this class
-   * @param {string} id The id to partial update
+   * @param id The id to partial update
    * @param [partialUpdate] An initial partial update to execute
-   * @return {EntityPartialUpdateBuilder<T>}
+   * @return A partial update builder for the given entity id
    */
-  partialUpdate(id, partialUpdate?: Json) {
+  partialUpdate(id: string, partialUpdate?: Json): EntityPartialUpdateBuilder<T> {
     return this.ref(id).partialUpdate(partialUpdate);
   }
 }
-
-
-/**
- * The entity callback is called, when the asynchronous operation completes successfully
- * @callback EntityFactory~doneCallback
- * @param {T} entity The entity
- * @return {Promise<*>|*} A Promise or result
- */
-
-/**
- * The fail callback is called, when the asynchronous operation is rejected by an error
- * @callback EntityFactory~failCallback
- * @param {PersistentError} error The error which reject the operation
- * @return {Promise<*>|*} A Promise or result
- */

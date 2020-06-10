@@ -8,13 +8,10 @@ export type Operation = 'insert' | 'update' | 'delete' | 'none';
  * An event for a real-time query.
  */
 export type RealtimeEvent<T extends Entity> = {
-    /**
-     * the query on which .eventStream([options]) was invoked
-     */
-    target: Node<T>;
 
     /**
-     * the database entity this event was generated for, e.g. an entity that just entered or left the result set
+     * the database entity this event was generated for, e.g. an entity that just entered or left the result set, or
+     * an array of entities, if this event type is an initial result
      */
     data: T;
 
@@ -47,7 +44,7 @@ export type RealtimeEvent<T extends Entity> = {
     /**
      * for sorting queries only: the position of the matching entity in the ordered result (-1 for non-matching entities)
      */
-    index: number;
+    index?: number;
 
     /**
      * server-time from the instant at which the event was generated

@@ -1,7 +1,7 @@
 'use strict';
 
-import { Accessor } from "../binding";
-import { JsonMap } from "../util";
+import { Accessor, Entity, Managed } from "../binding";
+import { Json, JsonMap } from "../util";
 import { Metadata } from "../util";
 import { ManagedType } from "./ManagedType";
 
@@ -56,11 +56,10 @@ export abstract class Attribute<T> {
   }
 
   /**
-   * @param {ManagedType} declaringType The type that owns this attribute
-   * @param {number} order Position of the attribute
-   * @return {void}
-   */
-  init(declaringType, order) {
+   * @param declaringType The type that owns this attribute
+   * @param order Position of the attribute
+   * @return    */
+  init(declaringType: ManagedType<any>, order: number): void {
     if (this.declaringType) {
       throw new Error('The attribute is already initialized.');
     }
@@ -71,38 +70,38 @@ export abstract class Attribute<T> {
   }
 
   /**
-   * @param {Object} entity
-   * @return {*}
+   * @param entity
+   * @return
    */
-  getValue(entity): T {
+  getValue(entity: Managed): T | null {
     return this.accessor!!.getValue(entity, this);
   }
 
   /**
-   * @param {Object} entity
+   * @param entity
    * @param value
    */
-  setValue(entity, value: T | null): void {
+  setValue(entity: Managed, value: T | null): void {
     this.accessor!!.setValue(entity, this, value);
   }
 
   /**
    * Retrieves whether this type has specific metadata
    *
-   * @param {string} key
-   * @return {boolean}
+   * @param key
+   * @return
    */
-  hasMetadata(key) {
+  hasMetadata(key): boolean {
     return this.metadata && !!this.metadata[key];
   }
 
   /**
    * Gets some metadata of this type
    *
-   * @param {string} key
-   * @return {null|string}
+   * @param key
+   * @return
    */
-  getMetadata(key) {
+  getMetadata(key: string): string | null {
     if (!this.hasMetadata(key)) {
       return null;
     }
@@ -113,21 +112,21 @@ export abstract class Attribute<T> {
   /**
    * Gets this attribute value form the object as json
    * @param state The root object state
-   * @param {*} object The object which contains the value of this attribute
-   * @param {Object} options additional options which are applied through the conversion
-   * @return {*} The converted json value
+   * @param object The object which contains the value of this attribute
+   * @param options additional options which are applied through the conversion
+   * @return The converted json value
    */
-  abstract getJsonValue(state: Metadata, object, options);
+  abstract getJsonValue(state: Metadata, object: Managed, options: { excludeMetadata?: boolean; depth?: number | boolean }): Json;
 
   /**
    * Sets this attribute value from json to the object
    * @param state The root state
-   * @param {*} object The object which contains the attribute
-   * @param {*} jsonValue The json value to convert an set
-   * @param {Object} options additional options which are applied through the conversion
-   * @return {void}
+   * @param object The object which contains the attribute
+   * @param jsonValue The json value to convert an set
+   * @param options additional options which are applied through the conversion
+   * @return
    */
-  abstract setJsonValue(state: Metadata, object, jsonValue, options);
+  abstract setJsonValue(state: Metadata, object: Managed, jsonValue: Json, options: { onlyMetadata: boolean }): void;
 
   /**
    * Converts this attribute field to json

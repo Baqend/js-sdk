@@ -1,17 +1,49 @@
 'use strict';
 
-const CommunicationError = require('../../lib/error/CommunicationError');
-const WebSocket = require('./websocket').WebSocket;
-const lib = require('../../lib/baqend');
+import { CommunicationError } from "../../lib/error";
+import { WebSocket } from "./websocket";
+import { Observable } from "rxjs";
+import { Json } from "../../lib/util";
 
-/**
- * @alias connector.WebSocketConnector
- */
-class WebSocketConnector {
+export interface ObservableStream extends Observable<ChannelMessage> {
   /**
-   * @param {connector.Connector} connector a connector
+   * Sends a message through the websocket channel
+   * @param message - The message to send
+   */
+  send(message: Json): void;
+}
+
+export type ChannelMessage = {
+  /**
+   * The unique channel id of the message
+   */
+  id: string;
+
+  /**
+   * The message type
+   */
+  type: string;
+
+  /**
+   * server-time from the instant at which the event was generated
+   */
+  date: Date;
+}
+
+export class WebSocketConnector {
+  /**
+   * Map of all available connectors to their respective websocket connections
+   * @type Connector[]
+   */
+  private static websockets: { [origin: string]: WebSocketConnector } = {};
+
+  private observers: {};
+  private socket: WebSocket;
+  private url: string;
+
+  /**
    * @param {String=} url The websocket connect script url
-   * @return {connector.WebSocketConnector} a websocket connection
+   * @return {WebSocketConnector} a websocket connection
    */
   static create(url) {
     let websocket = this.websockets[url];
@@ -47,7 +79,7 @@ class WebSocketConnector {
         let firstErr;
         Object.keys(this.observers).forEach((id) => {
           const observer = this.observers[id];
-          delete this.observers[id]; // unsubscribe to allow resubscriptions
+          delete this.observers[id]; // unsubscribe to allow re subscriptions
           if (!observer) {
             return;
           }
@@ -109,40 +141,32 @@ class WebSocketConnector {
   }
 
   /**
-   * @param {util.TokenStorage} tokenStorage
+   * @param {TokenStorage} tokenStorage
    * @param {string} id subscription ID
    * @return {connector.ObservableStream} The channel for sending and receiving messages
    */
   openStream(tokenStorage, id) {
-    const stream = new lib.Observable((observer) => {
+    const stream = new Observable((observer) => {
       if (this.observers[id]) { throw new Error('Only one subscription per stream is allowed.'); }
 
       this.observers[id] = observer;
       return () => {
-        // cleanup only our subscription and handle resubscription on the same stream id correctly
+        // cleanup only our subscription and handle re subscription on the same stream id correctly
         if (this.observers[id] === observer) { delete this.observers[id]; }
       };
     });
+    
+    Object.assign(stream, {
+      send: (message) => {
+        this.open().then((socket) => {
+          message.id = id;
+          if (tokenStorage.token) { message.token = tokenStorage.token; }
+          const jsonMessage = JSON.stringify(message);
+          socket.send(jsonMessage);
+        });
+      }
+    })
 
-    stream.send = (message) => {
-      this.open().then((socket) => {
-        message.id = id;
-        if (tokenStorage.token) { message.token = tokenStorage.token; }
-        const jsonMessage = JSON.stringify(message);
-        socket.send(jsonMessage);
-      });
-    };
-
-    return stream;
+    return stream as ObservableStream;
   }
 }
-
-Object.assign(WebSocketConnector, /** @lends connector.WebSocketConnector */ {
-  /**
-   * Map of all available connectors to their respective websocket connections
-   * @type connector.Connector[]
-   */
-  websockets: {},
-});
-
-module.exports = WebSocketConnector;

@@ -7,9 +7,9 @@ import { JsonArray } from "../util";
 export class SetAttribute<T> extends PluralAttribute<Set<T | null>, T> {
   /**
    * Get the type id for this set type
-   * @return {string}
+   * @return
    */
-  static get ref() {
+  static get ref(): string {
     return '/db/collection.Set';
   }
 

@@ -5,6 +5,7 @@ import { EntityManager } from "../EntityManager";
 import { Class } from "../util";
 import { PersistentError } from "../error";
 import { MatchType, Operation, RealtimeEvent } from "./RealtimeEvent";
+import { Observable, Subscription } from "rxjs"
 
 /**
  * An abstract Query which allows retrieving results
@@ -23,31 +24,31 @@ export abstract class Query<T extends Entity> {
 
   /**
    * Add an ascending sort for the specified field to this query
-   * @param {string} field The field to sort
-   * @return {this} The resulting Query
+   * @param field The field to sort
+   * @return The resulting Query
    */
-  ascending(field) {
+  ascending(field: string): this {
     return this.addOrder(field, 1);
   }
 
   /**
    * Add an decending sort for the specified field to this query
-   * @param {string} field The field to sort
-   * @return {this} The resulting Query
+   * @param field The field to sort
+   * @return The resulting Query
    */
-  descending(field) {
+  descending(field: string): this {
     return this.addOrder(field, -1);
   }
 
   /**
    * Sets the sort of the query and discard all existing paramaters
-   * @param {Object<string,number>} sort The new sort of the query which is an object whose keys are fields and the
+   * @param sort The new sort of the query which is an object whose keys are fields and the
    * values are either +1 for ascending order or -1 for descending order
-   * @return {this} The resulting Query
+   * @return The resulting Query
    *
    * @see http://docs.mongodb.org/manual/reference/method/cursor.sort/
    */
-  sort(sort) {
+  sort(sort: {[field: string]: number}): this {
     if (!(sort instanceof Object) || Object.getPrototypeOf(sort) !== Object.prototype) {
       throw new Error('sort must be an object.');
     }
@@ -57,12 +58,12 @@ export abstract class Query<T extends Entity> {
 
   /**
    * Sets the offset of the query, i.e. how many elements should be skipped
-   * @param {number} offset The offset of this query
-   * @return {this} The resulting Query
+   * @param offset The offset of this query
+   * @return The resulting Query
    *
    * @see http://docs.mongodb.org/manual/reference/method/cursor.skip/
    */
-  offset(offset) {
+  offset(offset: number): this {
     if (offset < 0) {
       throw new Error('The offset can\'t be nagative.');
     }
@@ -72,12 +73,12 @@ export abstract class Query<T extends Entity> {
 
   /**
    * Sets the limit of this query, i.e hox many objects should be returnd
-   * @param {number} limit The limit of this query
-   * @return {this} The resulting Query
+   * @param limit The limit of this query
+   * @return The resulting Query
    *
    * @see http://docs.mongodb.org/manual/reference/method/cursor.limit/
    */
-  limit(limit) {
+  limit(limit: number): this {
     if (limit < 0) {
       throw new Error('The limit can\'t be nagative.');
     }
@@ -95,9 +96,9 @@ export abstract class Query<T extends Entity> {
    * objects, <code>true</code> loads the objects by reachability.
    * @param doneCallback Called when the operation succeed.
    * @param failCallback Called when the operation failed.
-   * @return {Promise<Array<T>>} A promise that will be resolved with the query result as a list
+   * @return A promise that will be resolved with the query result as a list
    */
-  abstract resultList(options?: ResultOptions, doneCallback?: ResultListCallback<T>, failCallback?: FailCallback);
+  abstract resultList(options?: ResultOptions, doneCallback?: ResultListCallback<T>, failCallback?: FailCallback): Promise<T[]>;
 
   /**
    * Execute the query and return the query results as a List
@@ -106,23 +107,23 @@ export abstract class Query<T extends Entity> {
    *
    * @param doneCallback Called when the operation succeed.
    * @param failCallback Called when the operation failed.
-   * @return {Promise<Array<T>>} A promise that will be resolved with the query result as a list
+   * @return A promise that will be resolved with the query result as a list
    */
-  abstract resultList(doneCallback?: ResultListCallback<T>, failCallback?: FailCallback);
+  abstract resultList(doneCallback?: ResultListCallback<T>, failCallback?: FailCallback): Promise<T[]>;
 
   /**
    * Execute the query that returns a single result
    *
    * Note: All local unsaved changes on the matched object, will be discarded.
    *
-   * @param {Object} [options] The query options
-   * @param {number|boolean} [options.depth=0] The object depth which will be loaded. Depth 0 load only the found
+   * @param [options] The query options
+   * @param [options.depth=0] The object depth which will be loaded. Depth 0 load only the found
    * object, <code>true</code> loads the objects by reachability.
    * @param doneCallback Called when the operation succeed.
    * @param failCallback Called when the operation failed.
-   * @return {Promise<?T>} A promise that will be resolved with the query result as a single result
+   * @return A promise that will be resolved with the query result as a single result
    */
-  abstract singleResult(options?: ResultOptions, doneCallback?: SingleResultCallback<T>, failCallback?: FailCallback);
+  abstract singleResult(options?: ResultOptions, doneCallback?: SingleResultCallback<T>, failCallback?: FailCallback): Promise<T | null>;
 
   /**
    * Execute the query that returns a single result
@@ -131,9 +132,9 @@ export abstract class Query<T extends Entity> {
    *
    * @param doneCallback Called when the operation succeed.
    * @param failCallback Called when the operation failed.
-   * @return {Promise<?T>} A promise that will be resolved with the query result as a single result
+   * @return A promise that will be resolved with the query result as a single result
    */
-  abstract singleResult(doneCallback?: SingleResultCallback<T>, failCallback?: FailCallback);
+  abstract singleResult(doneCallback?: SingleResultCallback<T>, failCallback?: FailCallback): Promise<T | null>;
 
   /**
    * Returns an observable that receives change events for a real-time query
@@ -148,36 +149,36 @@ export abstract class Query<T extends Entity> {
    * var otherSub = stream.subscribe(otherOnNext, otherOnError, otherOnComplete);
    * </code></pre>
    *
-   * @param {Object} [options] options to narrow down the events you will receive
-   * @param {boolean} [options.initial=true] whether or not you want to receive the initial result set (i.e. the
+   * @param [options] options to narrow down the events you will receive
+   * @param [options.initial=true] whether or not you want to receive the initial result set (i.e. the
    * entities matching the query at subscription time)
-   * @param {(string|Array<string>)} [options.matchTypes=['all']] the match types you are interested in; accepts the
+   * @param [options.matchTypes=['all']] the match types you are interested in; accepts the
    * default ('all'/['all']) or any combination of 'match', 'add', 'change', 'changeIndex' and 'remove'
-   * @param {(string|Array<string>)} [options.operations=['any']] the operations you are interested in; accepts the
+   * @param [options.operations=['any']] the operations you are interested in; accepts the
    * default ('any'/['any']) or any combination of 'insert', 'update', 'delete' and 'none'
-   * @return {Observable<RealtimeEvent<T>>} an observable
+   * @return an observable
    */
-  abstract eventStream(options?: EventStreamOptions);
+  abstract eventStream(options?: EventStreamOptions): Observable<RealtimeEvent<T>>;
 
   /**
    * Returns a subscription that handles change events for a real-time query.
    *
    * The underlying stream object is hidden. To create multiple subscriptions on the same stream, create the stream
    * object first and then subscribe to the stream (see the other signature {@link #eventStream(options)}).
-   * @param {Object} [options] options to narrow down the events you will receive
-   * @param {boolean} [options.initial=true] whether or not you want to receive the initial result set (i.e. the
+   * @param [options] options to narrow down the events you will receive
+   * @param [options.initial=true] whether or not you want to receive the initial result set (i.e. the
    * entities matching the query at subscription time)
-   * @param {(string|Array<string>)} [options.matchTypes=['all']] the match types you are interested in; accepts the
+   * @param [options.matchTypes=['all']] the match types you are interested in; accepts the
    * default ('all'/['all']) or any combination of 'match', 'add', 'change', 'changeIndex' and 'remove'
-   * @param {(string|Array<string>)} [options.operations=['any']] the operations you are interested in; accepts the
+   * @param [options.operations=['any']] the operations you are interested in; accepts the
    * default ('any'/['any']) or any combination of 'insert', 'update', 'delete' and 'none'
    * @param onNext Called when an event is received
    * @param onError Called when there is a server-side error
    * @param onComplete Called when the network connection is closed (e.g. because of
    * lost Wi-Fi connection)
-   * @return {Subscription} a real-time query subscription
+   * @return a real-time query subscription
    */
-  abstract eventStream(options?: EventStreamOptions, onNext?: NextEventCallback<T>, onError?: FailCallback, onComplete?: CompleteCallback);
+  abstract eventStream(options?: EventStreamOptions, onNext?: NextEventCallback<T>, onError?: FailCallback, onComplete?: CompleteCallback): Subscription;
 
   /**
    * Returns a subscription that handles change events for a real-time query.
@@ -189,9 +190,9 @@ export abstract class Query<T extends Entity> {
    * @param onError Called when there is a server-side error
    * @param onComplete Called when the network connection is closed (e.g. because of
    * lost Wi-Fi connection)
-   * @return {Subscription} a real-time query subscription
+   * @return a real-time query subscription
    */
-  abstract eventStream(onNext?: NextEventCallback<T>, onError?: FailCallback, onComplete?: CompleteCallback);
+  abstract eventStream(onNext?: NextEventCallback<T>, onError?: FailCallback, onComplete?: CompleteCallback): Subscription;
 
   /**
    * Returns an observable that receives the complete real-time query result
@@ -205,13 +206,13 @@ export abstract class Query<T extends Entity> {
    * var otherSub = stream.subscribe(otherOnNext, otherOnError, otherOnComplete);
    * </code></pre>
    *
-   * @param {Object} [options] additional options
-   * @param {number} [options.reconnects=-1] the number of times that a real-time query subscription should be renewed
+   * @param [options] additional options
+   * @param [options.reconnects=-1] the number of times that a real-time query subscription should be renewed
    * after connection loss, before it is downgraded to a regular query that does not maintain itself; negative numbers
    * represent infinite reconnection attempts
-   * @return {Observable<Array<T>>} an observable on which multiple subscriptions can be created on
+   * @return an observable on which multiple subscriptions can be created on
    */
-  abstract resultStream(options?: ResultStreamOptions);
+  abstract resultStream(options?: ResultStreamOptions): Observable<T[]>;
 
   /**
    * Returns a subscription that handles the complete real-time query result
@@ -221,8 +222,8 @@ export abstract class Query<T extends Entity> {
    * The underlying stream object is hidden. To create multiple subscriptions on the same stream, create the stream
    * object first and then subscribe to the stream (see the other signature {@link #resultStream(options)}).
    *
-   * @param {Object} [options] additional options
-   * @param {number} [options.reconnects=-1] the number of times that a real-time query subscription should be renewed
+   * @param [options] additional options
+   * @param [options.reconnects=-1] the number of times that a real-time query subscription should be renewed
    * after connection loss, before it is downgraded to a regular query that does not maintain itself; negative numbers
    * represent infinite reconnection attempts
    * @param onNext Called when the query result changes in any way
@@ -230,9 +231,9 @@ export abstract class Query<T extends Entity> {
    * @param onComplete Called when the network connection is closed (e.g. because of
    * network timeout or lost Wi-Fi connection) and the specified number of reconnects have been exhausted; will never be
    * called when infinite reconnects are configured (default)
-   * @return {Subscription} a real-time query subscription handling complete query results.
+   * @return a real-time query subscription handling complete query results.
    */
-  abstract resultStream(options?: ResultStreamOptions, onNext?: NextResultCallback<T>, onError?: FailCallback, onComplete?: CompleteCallback);
+  abstract resultStream(options?: ResultStreamOptions, onNext?: NextResultCallback<T>, onError?: FailCallback, onComplete?: CompleteCallback): Subscription;
 
   /**
    * Returns a subscription that handles the complete real-time query result
@@ -247,9 +248,12 @@ export abstract class Query<T extends Entity> {
    *
    * @param onNext Called when the query result changes in any way
    * @param onError Called when there is a server-side error
-   * @return {Subscription} a real-time query subscription handling complete query results.
+   * @param onComplete Called when the network connection is closed (e.g. because of
+   * network timeout or lost Wi-Fi connection) and the specified number of reconnects have been exhausted; will never be
+   * called when infinite reconnects are configured (default)
+   * @return a real-time query subscription handling complete query results.
    */
-  abstract resultStream(onNext?: NextResultCallback<T>, onError?: FailCallback);
+  abstract resultStream(onNext?: NextResultCallback<T>, onError?: FailCallback, onComplete?: CompleteCallback): Subscription;
 
   /**
    * Execute the query that returns the matching objects count.
@@ -269,9 +273,20 @@ export function varargs(offset, args) {
   return Array.prototype.concat.apply([], Array.prototype.slice.call(args, offset));
 }
 
-export type ResultOptions = {depth: number | boolean};
-export type EventStreamOptions = { initial: boolean, matchTypes: ('all' | MatchType)[], operations: ('any' | Operation)[] };
-export type ResultStreamOptions = { reconnects: number };
+export type ResultOptions = {depth?: number | boolean};
+/**
+ * @param initial Indicates whether or not the initial result set should be delivered on creating the subscription.
+ * @param matchTypes A list of match types.
+ * @param operations A list of operations.
+ * @param reconnects The number of reconnects.
+ */
+export type EventStreamOptions = {
+  initial?: boolean,
+  matchTypes?: 'all' | MatchType[],
+  operations?: 'any' | Operation[],
+  reconnects?: number
+};
+export type ResultStreamOptions = { reconnects?: number };
 
 /**
  * The resultList callback is called, when the asynchronous query operation completes successfully

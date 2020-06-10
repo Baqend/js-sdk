@@ -5,13 +5,14 @@ import { EntityType } from "./EntityType";
 import { Enhancer, Entity, Managed } from "../binding";
 import { ModelBuilder } from "./ModelBuilder";
 import { DbIndex } from "./DbIndex";
-import { Class, JsonArray, JsonMap, Lockable } from "../util";
+import { Class, Json, JsonArray, JsonMap, Lockable } from "../util";
 import { deprecated } from "../util/deprecated";
 import { StatusCode } from "../connector/Message";
 import * as message from "../message";
 import { EntityManagerFactory } from "../EntityManagerFactory";
 import { EmbeddableType } from "./EmbeddableType";
 import { BasicType } from "./BasicType";
+import { Type } from "./Type";
 
 export class Metamodel extends Lockable {
   /**
@@ -48,10 +49,10 @@ export class Metamodel extends Lockable {
   }
 
   /**
-   * @param {(Class<Managed>|string)} arg
-   * @return {string}
+   * @param arg
+   * @return
    */
-  getRef(arg) {
+  getRef(arg: Class<Managed> | string): string {
     let ref;
     if (Object(arg) instanceof String) {
       ref = arg;
@@ -69,8 +70,8 @@ export class Metamodel extends Lockable {
   /**
    * Return the metamodel entity type representing the entity.
    *
-   * @param {(Class<Entity>|string)} typeConstructor - the type of the represented entity
-   * @return {EntityType} the metamodel entity type or null if the class is not a managed entity
+   * @param typeConstructor - the type of the represented entity
+   * @return the metamodel entity type or null if the class is not a managed entity
    */
   entity(typeConstructor: Class<any> | string): EntityType<any> | null {
     const ref = this.getRef(typeConstructor);
@@ -79,10 +80,10 @@ export class Metamodel extends Lockable {
 
   /**
    * Return the metamodel basic type representing the native class.
-   * @param {(Class<*>|string)} typeConstructor - the type of the represented native class
-   * @return {BasicType} the metamodel basic type
+   * @param typeConstructor - the type of the represented native class
+   * @return the metamodel basic type
    */
-  baseType(typeConstructor) {
+  baseType(typeConstructor: Class<any> | string): BasicType<any> {
     let ref: string | null = null;
     if (typeof typeConstructor === 'string') {
       ref = this.getRef(typeConstructor);
@@ -103,8 +104,8 @@ export class Metamodel extends Lockable {
 
   /**
    * Return the metamodel embeddable type representing the embeddable class.
-   * @param {Class<Managed>|string} typeConstructor - the type of the represented embeddable class
-   * @return {EmbeddableType} the metamodel embeddable type or null if the class is not a managed embeddable
+   * @param typeConstructor - the type of the represented embeddable class
+   * @return the metamodel embeddable type or null if the class is not a managed embeddable
    */
   embeddable(typeConstructor: Class<any> | string): EmbeddableType<any> | null {
     const ref = this.getRef(typeConstructor);
@@ -114,18 +115,18 @@ export class Metamodel extends Lockable {
   /**
    * Return the metamodel managed type representing the entity, mapped superclass, or embeddable class.
    *
-   * @param {(Class<Managed>|string)} typeConstructor - the type of the represented managed class
-   * @return {Type} the metamodel managed type
+   * @param typeConstructor - the type of the represented managed class
+   * @return the metamodel managed type
    */
   managedType(typeConstructor: Class<any> | string): ManagedType<any> | null {
     return this.entity(typeConstructor) || this.embeddable(typeConstructor);
   }
 
   /**
-   * @param {Type} type
-   * @return {Type} the added type
+   * @param type
+   * @return the added type
    */
-  addType(type) {
+  addType(type: Type<any>): Type<any> {
     let types;
 
     if (type.isBasic) {
@@ -152,9 +153,9 @@ export class Metamodel extends Lockable {
 
   /**
    * Load all schema data from the server
-   * @return {Promise<metamodel.Metamodel>}
+   * @return
    */
-  load() {
+  load(): Promise<Metamodel> {
     if (!this.isInitialized) {
       return this.withLock(() => {
         const msg = new message.GetAllSchemas();
@@ -174,11 +175,11 @@ export class Metamodel extends Lockable {
    *
    * Note: The schema must be initialized, by init or load
    *
-   * @param {ManagedType=} managedType The specific type to persist, if omitted the complete schema
+   * @param managedType The specific type to persist, if omitted the complete schema
    * will be updated
-   * @return {Promise<metamodel.Metamodel>}
+   * @return
    */
-  save(managedType) {
+  save(managedType?: ManagedType<any>): Promise<Metamodel> {
     return this.sendUpdate(managedType || this.toJSON()).then(() => this);
   }
 
@@ -188,10 +189,10 @@ export class Metamodel extends Lockable {
    * The provided data object will be forwarded to the UpdateAllSchemas resource.
    * The underlying schema of this Metamodel object will be replaced by the result.
    *
-   * @param {json} data The JSON which will be send to the UpdateAllSchemas resource.
-   * @return {Promise<metamodel.Metamodel>}
+   * @param data The JSON which will be send to the UpdateAllSchemas resource.
+   * @return
    */
-  update(data) {
+  update(data: Json): Promise<Metamodel> {
     return this.sendUpdate(data).then((response) => {
       this.fromJSON(response.entity);
       return this;
@@ -213,9 +214,9 @@ export class Metamodel extends Lockable {
 
   /**
    * Get the current schema types as json
-   * @return {json} the json data
+   * @return the json data
    */
-  toJSON() {
+  toJSON(): Json {
     if (!this.isInitialized) {
       throw new Error('Metamodel is not initialized.');
     }
@@ -228,10 +229,10 @@ export class Metamodel extends Lockable {
 
   /**
    * Replace the current schema by the provided one in json
-   * @param {json} json The json schema data
-   * @return {void}
+   * @param json The json schema data
+   * @return
    */
-  fromJSON(json) {
+  fromJSON(json: Json): void {
     const builder = new ModelBuilder();
     const models = builder.buildModels(json);
 
@@ -245,11 +246,11 @@ export class Metamodel extends Lockable {
   /**
    * Creates an index
    *
-   * @param {string} bucket Name of the Bucket
-   * @param {DbIndex} index Will be applied for the given bucket
-   * @return {Promise<*>}
+   * @param bucket Name of the Bucket
+   * @param index Will be applied for the given bucket
+   * @return
    */
-  createIndex(bucket, index) {
+  createIndex(bucket: string, index: DbIndex): Promise<any> {
     index.drop = false;
     const msg = new message.CreateDropIndex(bucket, index.toJSON());
     return this.entityManagerFactory.send(msg);
@@ -258,11 +259,11 @@ export class Metamodel extends Lockable {
   /**
    * Drops an index
    *
-   * @param {string} bucket Name of the Bucket
-   * @param {DbIndex} index Will be dropped for the given bucket
-   * @return {Promise<*>}
+   * @param bucket Name of the Bucket
+   * @param index Will be dropped for the given bucket
+   * @return
    */
-  dropIndex(bucket, index) {
+  dropIndex(bucket: string, index: DbIndex): Promise<any> {
     index.drop = true;
     const msg = new message.CreateDropIndex(bucket, index.toJSON());
     return this.entityManagerFactory.send(msg);
@@ -271,10 +272,10 @@ export class Metamodel extends Lockable {
   /**
    * Drops all indexes
    *
-   * @param {string} bucket Indexes will be dropped for the given bucket
-   * @return {Promise<*>}
+   * @param bucket Indexes will be dropped for the given bucket
+   * @return
    */
-  dropAllIndexes(bucket) {
+  dropAllIndexes(bucket: string): Promise<any> {
     const msg = new message.DropAllIndexes(bucket);
     return this.entityManagerFactory.send(msg);
   }
@@ -282,10 +283,10 @@ export class Metamodel extends Lockable {
   /**
    * Loads all indexes for the given bucket
    *
-   * @param {string} bucket Current indexes will be loaded for the given bucket
-   * @return {Promise<Array<metamodel.DbIndex>>}
+   * @param bucket Current indexes will be loaded for the given bucket
+   * @return
    */
-  getIndexes(bucket) {
+  getIndexes(bucket: string): Promise<DbIndex[]> {
     const msg = new message.ListIndexes(bucket);
     return this.entityManagerFactory.send(msg)
       .then(response => response.entity.map(el => new DbIndex(el.keys, el.unique)))

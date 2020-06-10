@@ -10,6 +10,8 @@ import { SingularAttribute } from "./SingularAttribute";
 import { PersistentError } from "../error";
 import { JsonMap } from "../util";
 import { Type } from "./Type";
+import { ManagedType } from "./ManagedType";
+import { Attribute } from "./Attribute";
 
 export class ModelBuilder {
   private models: {[name: string]: Type<any>} = {};
@@ -25,10 +27,9 @@ export class ModelBuilder {
   }
 
   /**
-   * @param {string} ref
-   * @return {ManagedType}
-   */
-  getModel(ref) {
+   * @param ref
+   * @return    */
+  getModel(ref: string): ManagedType<any> {
     if (ref in this.models) {
       return this.models[ref];
     }
@@ -39,10 +40,9 @@ export class ModelBuilder {
   }
 
   /**
-   * @param {Object[]} modelDescriptors
-   * @return {Object<string,metamodel.ManagedType>}
-   */
-  buildModels(modelDescriptors) {
+   * @param modelDescriptors
+   * @return    */
+  buildModels(modelDescriptors: JsonMap[]): {[name: string]: ManagedType<any>} {
     this.modelDescriptors = {};
 
     modelDescriptors.forEach((modelDescriptor) => {
@@ -65,10 +65,9 @@ export class ModelBuilder {
   }
 
   /**
-   * @param {string} ref
-   * @return {ManagedType}
-   */
-  buildModel(ref) {
+   * @param ref
+   * @return    */
+  buildModel(ref: string): ManagedType<any> {
     const modelDescriptor = this.modelDescriptors![ref];
     let type;
     if (ref === EntityType.Object.ref) {
@@ -98,10 +97,9 @@ export class ModelBuilder {
   }
 
   /**
-   * @param {EntityType} model
-   * @return {void}
-   */
-  buildAttributes(model) {
+   * @param model
+   * @return    */
+  buildAttributes(model: EntityType<any>): void {
     const modelDescriptor = this.modelDescriptors![model.ref];
     const fields = modelDescriptor.fields!;
 
@@ -118,14 +116,13 @@ export class ModelBuilder {
   }
 
   /**
-   * @param {Object} field The field metadata
-   * @param {string} field.name The name of zhe field
-   * @param {string} field.type The type reference of the field
-   * @param {number} field.order The order number of the field
-   * @param {Object<string,*>} field.metadata Additional metadata of the field
-   * @return {Attribute}
-   */
-  buildAttribute(field) {
+   * @param field The field metadata
+   * @param field.name The name of zhe field
+   * @param field.type The type reference of the field
+   * @param field.order The order number of the field
+   * @param field.metadata Additional metadata of the field
+   * @return    */
+  buildAttribute(field: {name: string, type: string, order: number, metadata: {[key: string]: string}}): Attribute<any> {
     // TODO: remove readonly if createdAt and updatedAt becomes real metadata fields in the schema
     const isMetadata = field.flags && (field.flags.indexOf('METADATA') !== -1 || field.flags.indexOf('READONLY') !== -1);
     const name = field.name;

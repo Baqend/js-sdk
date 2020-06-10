@@ -14,6 +14,7 @@ import { UserFactory } from "./UserFactory";
 import { model } from "../model";
 import { DeviceFactory } from "./DeviceFactory";
 import { User } from "./User";
+import { Json } from "../util";
 
 export class ManagedFactory<T extends Managed> extends Factory<T> {
 
@@ -67,7 +68,7 @@ export class ManagedFactory<T extends Managed> extends Factory<T> {
   /**
    * Creates a new instance of the factory type
    *
-   * @param {Array<*>=} args Constructor arguments used for instantiation, the constructor will not be called
+   * @param args Constructor arguments used for instantiation, the constructor will not be called
    * when no arguments are passed
    * @return A new created instance of T
    */
@@ -79,10 +80,10 @@ export class ManagedFactory<T extends Managed> extends Factory<T> {
 
   /**
    * Creates a new instance and sets the Managed Object to the given json
-   * @param {json} json
+   * @param json
    * @return A new created instance of T
    */
-  fromJSON(json) {
+  fromJSON(json: Json) {
     const instance = this.newInstance();
     const metadata = instance._metadata;
     return this.managedType.fromJsonValue(metadata, json, instance, {});
@@ -90,20 +91,20 @@ export class ManagedFactory<T extends Managed> extends Factory<T> {
 
   /**
    * Adds methods to instances of this factories type
-   * @param {Object<string, Function>} methods The methods to add
-   * @return {void}
+   * @param methods The methods to add
+   * @return
    */
-  addMethods(methods) {
+  addMethods(methods: {[name: string]: Function}): void {
     Object.assign(this.methods, methods);
   }
 
   /**
    * Add a method to instances of this factories type
-   * @param {string} name The method name to add
-   * @param {Function} fn The Method to add
-   * @return {void}
+   * @param name The method name to add
+   * @param fn The Method to add
+   * @return
    */
-  addMethod(name, fn) {
+  addMethod(name: string, fn: Function): void {
     this.methods[name] = fn;
   }
 }

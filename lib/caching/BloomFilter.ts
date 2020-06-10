@@ -37,12 +37,12 @@ export class BloomFilter {
   public readonly creation: number;
 
   /**
-   * @param {Object} bloomFilter The raw Bloom filter.
-   * @param {number} bloomFilter.m The raw Bloom filter bits.
-   * @param {number} bloomFilter.h The raw Bloom filter hashes.
-   * @param {string} bloomFilter.b The Base64-encoded raw Bloom filter bytes.
+   * @param bloomFilter The raw Bloom filter.
+   * @param bloomFilter.m The raw Bloom filter bits.
+   * @param bloomFilter.h The raw Bloom filter hashes.
+   * @param bloomFilter.b The Base64-encoded raw Bloom filter bytes.
    */
-  constructor(bloomFilter) {
+  constructor(bloomFilter: { m: number, h: number, b: string }) {
     this.bytes = atob(bloomFilter.b);
     this.bits = bloomFilter.m;
     this.hashes = bloomFilter.h;
@@ -52,10 +52,10 @@ export class BloomFilter {
   /**
    * Returns whether this Bloom filter contains the given element.
    *
-   * @param {string} element The element to check if it is contained.
-   * @return {boolean} True, if the element is contained in this Bloom filter.
+   * @param element The element to check if it is contained.
+   * @return True, if the element is contained in this Bloom filter.
    */
-  contains(element) {
+  contains(element: string): boolean {
     const hashes = BloomFilter.getHashes(element, this.bits, this.hashes);
     for (let i = 0, len = hashes.length; i < len; i += 1) {
       if (!this.isSet(hashes[i])) {
@@ -68,10 +68,10 @@ export class BloomFilter {
   /**
    * Checks whether a bit is set at a given position.
    *
-   * @param {number} index The position index to check.
-   * @return {boolean} True, if the bit is set at the given position.
+   * @param index The position index to check.
+   * @return True, if the bit is set at the given position.
    */
-  private isSet(index) {
+  private isSet(index: number): boolean {
     const pos = Math.floor(index / 8);
     const bit = 1 << (index % 8);
     // Extract byte as int or NaN if out of range
@@ -83,12 +83,12 @@ export class BloomFilter {
   /**
    * Returns the hases of a given element in the Bloom filter.
    *
-   * @param {string} element The element to check.
-   * @param {number} bits The amount of bits.
-   * @param {number} hashes The amount of hashes.
-   * @return {number[]} The hashes of an element in the Bloom filter.
+   * @param element The element to check.
+   * @param bits The amount of bits.
+   * @param hashes The amount of hashes.
+   * @return The hashes of an element in the Bloom filter.
    */
-  private static getHashes(element, bits, hashes) {
+  private static getHashes(element: string, bits: number, hashes: number): number[] {
     const hashValues = new Array(hashes);
     const hash1 = BloomFilter.murmur3(0, element);
     const hash2 = BloomFilter.murmur3(hash1, element);
@@ -101,11 +101,11 @@ export class BloomFilter {
   /**
    * Calculate a Murmur3 hash.
    *
-   * @param {number} seed A seed to use for the hashing.
-   * @param {string} key A key to check.
-   * @return {number} A hashed value of key.
+   * @param seed A seed to use for the hashing.
+   * @param key A key to check.
+   * @return A hashed value of key.
    */
-  private static murmur3(seed, key) {
+  private static murmur3(seed: number, key: string): number {
     const remainder = key.length & 3;
     const bytes = key.length - remainder;
     const c1 = 0xcc9e2d51;

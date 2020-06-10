@@ -1,8 +1,5 @@
 'use strict';
 
-/**
- * @namespace util
- */
 export { isNode } from "./is-node";
 export { atob } from "./atob";
 export { hmac } from "./hmac";

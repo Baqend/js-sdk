@@ -2,15 +2,15 @@
 
 import { Attribute, PersistentAttributeType } from "./Attribute";
 import { PersistenceType, Type } from "./Type";
+import { Class } from "../util";
 
 export class SingularAttribute<T> extends Attribute<T> {
   public type: Type<T>;
   
   /**
    * The constructor of the element type of this attribute
-   * @type {Class.<*>}
    */
-  get typeConstructor() {
+  get typeConstructor(): Class<T> {
     return this.type.typeConstructor;
   }
 
@@ -31,11 +31,11 @@ export class SingularAttribute<T> extends Attribute<T> {
   }
 
   /**
-   * @param {string} name
-   * @param {Type} type
-   * @param {boolean=} isMetadata <code>true</code> if the attribute is an metadata attribute
+   * @param name
+   * @param type
+   * @param isMetadata <code>true</code> if the attribute is an metadata attribute
    */
-  constructor(name, type, isMetadata) {
+  constructor(name: string, type: Type<T>, isMetadata?: boolean) {
     super(name, isMetadata);
     this.type = type;
   }

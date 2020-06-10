@@ -3,10 +3,21 @@
 import { Entity } from "../binding";
 
 import { deprecated } from "../util/deprecated";
-import { Metadata } from "../util";
-import { CountCallback, FailCallback, Query, ResultListCallback, ResultOptions, SingleResultCallback } from "./Query";
+import { Json, JsonMap, Metadata } from "../util";
+import {
+  CompleteCallback,
+  CountCallback,
+  EventStreamOptions,
+  FailCallback, NextEventCallback, NextResultCallback,
+  Query,
+  ResultListCallback,
+  ResultOptions, ResultStreamOptions,
+  SingleResultCallback
+} from "./Query";
 import * as message from "../message";
 import { FilterObject } from "./Filter";
+import { Observable, Subscription } from "rxjs";
+import { RealtimeEvent } from "./RealtimeEvent";
 
 /**
  * A Query Node saves the state of the query being built
@@ -29,17 +40,15 @@ export class Node<T extends Entity> extends Query<T> {
    */
   public order: { [field: string]: 1 | -1 } = {};
 
-  /**
-   * @inheritDoc
-   */
-  eventStream(...args: any[]) {
+  eventStream(options?: EventStreamOptions): Observable<RealtimeEvent<T>>;
+  eventStream(options?: EventStreamOptions | NextEventCallback<T>, onNext?: NextEventCallback<T> | FailCallback, onError?: FailCallback | CompleteCallback, onComplete?: CompleteCallback): Subscription;
+  eventStream(options?: EventStreamOptions | NextEventCallback<T>, onNext?: NextEventCallback<T> | FailCallback, onError?: FailCallback | CompleteCallback, onComplete?: CompleteCallback): Observable<RealtimeEvent<T>> | Subscription {
     throw new Error('Streaming features not available! Please use Streaming SDK!');
   }
 
-  /**
-   * @inheritDoc
-   */
-  resultStream(...args: any[]) {
+  resultStream(options?: ResultStreamOptions): Observable<T[]>;
+  resultStream(options?: ResultStreamOptions | NextResultCallback<T>, onNext?: NextResultCallback<T> | FailCallback, onError?: FailCallback | CompleteCallback, onComplete?: CompleteCallback): Subscription;
+  resultStream(options?: ResultStreamOptions | NextResultCallback<T>, onNext?: NextResultCallback<T> | FailCallback, onError?: FailCallback | CompleteCallback, onComplete?: CompleteCallback): Observable<T[]> | Subscription {
     throw new Error('Streaming features not available! Please use Streaming SDK!');
   }
 
@@ -149,6 +158,8 @@ export class Node<T extends Entity> extends Query<T> {
   serializeSort() {
     return JSON.stringify(this.order);
   }
+
+  createRealTimeQuery(): JsonMap { return {} }
 
   createResultList(result, options): Promise<T[]> {
     if (result.length) {

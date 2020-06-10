@@ -7,32 +7,34 @@ import { ManagedType } from "../metamodel/ManagedType";
 import { EntityManager } from "../EntityManager";
 import { EntityType } from "../metamodel/EntityType";
 
+export enum LoginOption {
+  /**
+   * Do not login the user after a successful registration
+   */
+  NO_LOGIN = -1,
+  /**
+   * Login in after a successful registration and keep the token in a nonpermanent storage, i.e SessionStorage
+   */
+  SESSION_LOGIN = 0,
+  /**
+   * Login in after a successful registration and keep the token in a persistent storage, i.e LocalStorage
+   */
+  PERSIST_LOGIN = 1,
+}
+
 /**
  * Creates a new instance of the managed type of this factory
  */
 export class UserFactory extends EntityFactory<model.User> {
-  public static readonly LoginOption = {
-    /**
-     * Do not login the user after a successful registration
-     */
-    NO_LOGIN: -1,
-    /**
-     * Login in after a successful registration and keep the token in a nonpermanent storage, i.e SessionStorage
-     */
-    SESSION_LOGIN: 0,
-    /**
-     * Login in after a successful registration and keep the token in a persistent storage, i.e LocalStorage
-     */
-    PERSIST_LOGIN: 1,
-  };
+  public static readonly LoginOption = LoginOption;
 
   /**
-   * @property {Object} oauth default properties
-   * @property {Object} oauth.google default oauth properties for Google
-   * @property {Object} oauth.facebook default oauth properties for Facebook
-   * @property {Object} oauth.github default oauth properties for GitHub
-   * @property {Object} oauth.twitter default oauth properties for Twitter
-   * @property {Object} oauth.linkedin default oauth properties for LinkedIn
+   * @property oauth default properties
+   * @property oauth.google default oauth properties for Google
+   * @property oauth.facebook default oauth properties for Facebook
+   * @property oauth.github default oauth properties for GitHub
+   * @property oauth.twitter default oauth properties for Twitter
+   * @property oauth.linkedin default oauth properties for LinkedIn
    */
   public static readonly DefaultOptions = {
     google: {
@@ -70,15 +72,15 @@ export class UserFactory extends EntityFactory<model.User> {
 
   /**
    * Register a new user with the given username and password, if the username is not used by an another user.
-   * @param {string|model.User} user The username as a string or a <User> Object, which must contain the username.
-   * @param {string} password The password for the given user
-   * @param {boolean|UserFactory.LoginOption} [loginOption=true] The default logs the user in after a successful
+   * @param user The username as a string or a <User> Object, which must contain the username.
+   * @param password The password for the given user
+   * @param [loginOption=true] The default logs the user in after a successful
    * registration and keeps the user logged in over multiple sessions
    * @param {Entity~doneCallback=} doneCallback Called when the operation succeed.
    * @param {Entity~failCallback=} failCallback Called when the operation failed.
-   * @return {Promise<model.User>} The created user object, for the new registered user.
+   * @return The created user object, for the new registered user.
    */
-  register(user, password, loginOption, doneCallback, failCallback) {
+  register(user: string | model.User, password: string, loginOption?: boolean | LoginOption, doneCallback?, failCallback?): Promise<model.User> {
     if (loginOption instanceof Function) {
       return this.register(user, password, true, loginOption, doneCallback);
     }
@@ -90,15 +92,15 @@ export class UserFactory extends EntityFactory<model.User> {
 
   /**
    * Log in the user with the given username and password and starts a user session
-   * @param {string} username The username of the user
-   * @param {string} password The password of the user
-   * @param {boolean|UserFactory.LoginOption} [loginOption=true] The default keeps the user logged in over
+   * @param username The username of the user
+   * @param password The password of the user
+   * @param [loginOption=true] The default keeps the user logged in over
    * multiple sessions
    * @param {Entity~doneCallback=} doneCallback Called when the operation succeed.
    * @param {Entity~failCallback=} failCallback Called when the operation failed.
-   * @return {Promise<model.User>}
+   * @return
    */
-  login(username, password, loginOption, doneCallback, failCallback) {
+  login(username: string, password: string, loginOption?: boolean | LoginOption, doneCallback?, failCallback?): Promise<model.User> {
     if (loginOption instanceof Function) {
       return this.login(username, password, true, loginOption, doneCallback);
     }
@@ -109,14 +111,14 @@ export class UserFactory extends EntityFactory<model.User> {
 
   /**
    * Log in the user assiciated with the given token and starts a user session.
-   * @param {string} token The user token.
-   * @param {boolean|UserFactory.LoginOption} [loginOption=true] The default keeps the user logged in over
+   * @param token The user token.
+   * @param [loginOption=true] The default keeps the user logged in over
    * multiple sessions
    * @param {Entity~doneCallback=} doneCallback Called when the operation succeed.
    * @param {Entity~failCallback=} failCallback Called when the operation failed.
-   * @return {Promise<model.User>}
+   * @return
    */
-  loginWithToken(token, loginOption, doneCallback, failCallback) {
+  loginWithToken(token: string, loginOption?: boolean | LoginOption, doneCallback?, failCallback?): Promise<model.User> {
     if (loginOption instanceof Function) {
       return this.loginWithToken(token, true, loginOption, doneCallback);
     }
@@ -129,23 +131,23 @@ export class UserFactory extends EntityFactory<model.User> {
    * Log out the current logged in user and ends the active user session
    * @param {Entity~doneCallback=} doneCallback Called when the operation succeed.
    * @param {Entity~failCallback=} failCallback Called when the operation failed.
-   * @return {Promise<*>}
+   * @return
    */
-  logout(doneCallback, failCallback) {
+  logout(doneCallback?, failCallback?): Promise<any> {
     return this.db.logout().then(doneCallback, failCallback);
   }
 
   /**
    * Change the password of the given user
    *
-   * @param {string} username Username to identify the user
-   * @param {string} password Current password of the user
-   * @param {string} newPassword New password of the user
+   * @param username Username to identify the user
+   * @param password Current password of the user
+   * @param newPassword New password of the user
    * @param {Entity~doneCallback=} doneCallback Called when the operation succeed.
    * @param {Entity~failCallback=} failCallback Called when the operation failed.
-   * @return {Promise<model.User>}
+   * @return
    */
-  newPassword(username, password, newPassword, doneCallback, failCallback) {
+  newPassword(username: string, password: string, newPassword: string, doneCallback?, failCallback?): Promise<model.User> {
     // detect signature newPassword(token, newPassword, [loginOption=true][, doneCallback[, failCallback]])
     if (typeof newPassword === 'string') {
       return this.db.newPassword(username, password, newPassword).then(doneCallback, failCallback);
@@ -171,12 +173,12 @@ export class UserFactory extends EntityFactory<model.User> {
    *
    * The username must be a valid email address.
    *
-   * @param {string} username Username (email) to identify the user
+   * @param username Username (email) to identify the user
    * @param {Entity~doneCallback=} doneCallback Called when the operation succeed.
    * @param {Entity~failCallback=} failCallback Called when the operation failed.
-   * @return {Promise<*>}
+   * @return
    */
-  resetPassword(username, doneCallback, failCallback) {
+  resetPassword(username: string, doneCallback, failCallback): Promise<any> {
     return this.db.resetPassword(username).then(doneCallback, failCallback);
   }
 
@@ -186,14 +188,14 @@ export class UserFactory extends EntityFactory<model.User> {
    * The user is identified by their current username and password.
    * The username must be a valid email address.
    *
-   * @param {string} username Current username (email) to identify the user
-   * @param {string} newUsername New username (email) to change the current username to
-   * @param {string} password The current password of the user. Has to be passed to the function for security reason
+   * @param username Current username (email) to identify the user
+   * @param newUsername New username (email) to change the current username to
+   * @param password The current password of the user. Has to be passed to the function for security reason
    * @param {Entity~doneCallback=} doneCallback Called when the operation succeed.
    * @param {Entity~failCallback=} failCallback Called when the operation failed.
-   * @return {Promise<*>}
+   * @return
    */
-  changeUsername(username, newUsername, password, doneCallback, failCallback) {
+  changeUsername(username: string, newUsername: string, password: string, doneCallback, failCallback): Promise<any> {
     return this.db.changeUsername(username, newUsername, password).then(doneCallback, failCallback);
   }
 
@@ -202,12 +204,12 @@ export class UserFactory extends EntityFactory<model.User> {
    *
    * Only users with the admin role are allowed to request an API token.
    *
-   * @param {User|String} user The user object or id of the user object
+   * @param user The user object or id of the user object
    * @param {Entity~doneCallback=} doneCallback Called when the operation succeed.
    * @param {Entity~failCallback=} failCallback Called when the operation failed.
-   * @return {Promise<*>}
+   * @return
    */
-  requestAPIToken(user, doneCallback, failCallback) {
+  requestAPIToken(user: model.User, doneCallback, failCallback): Promise<any> {
     return this.db.requestAPIToken(this.managedType.typeConstructor, user).then(doneCallback, failCallback);
   }
 
@@ -216,12 +218,12 @@ export class UserFactory extends EntityFactory<model.User> {
    *
    * This method will revoke all previously issued tokens and the user must login again.
    *
-   * @param {User|String} user The user object or id of the user object
+   * @param user The user object or id of the user object
    * @param {Entity~doneCallback=} doneCallback Called when the operation succeed.
    * @param {Entity~failCallback=} failCallback Called when the operation failed.
-   * @return {Promise<*>}
+   * @return
    */
-  revokeAllTokens(user, doneCallback, failCallback) {
+  revokeAllTokens(user: model.User, doneCallback, failCallback): Promise<any> {
     return this.db.revokeAllTokens(this.managedType.typeConstructor, user).then(doneCallback, failCallback);
   }
 }

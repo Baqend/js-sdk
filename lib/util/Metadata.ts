@@ -8,6 +8,7 @@ import { Entity } from "../binding/Entity";
 import { EntityType, ManagedType } from "../metamodel";
 import { PersistentError } from "../error";
 import { Json } from "./Json";
+import { Managed } from "../binding";
 
 /**
  * The Metadata instance tracks the state of an object and checks if the object state was changed since last
@@ -33,11 +34,11 @@ export class Metadata extends Lockable {
   /**
    * Creates a metadata instance for the given type and object instance
    *
-   * @param {ManagedType} type The type of the object
-   * @param {*} object The object instance of the type
-   * @return {*} The created metadata for the object
+   * @param type The type of the object
+   * @param object The object instance of the type
+   * @return The created metadata for the object
    */
-  static create(type, object) {
+  static create<T extends Managed>(type: ManagedType<T>, object: T): Metadata {
     let meta;
     if (type.isEntity) {
       meta = new Metadata(object, type);
@@ -66,10 +67,10 @@ export class Metadata extends Lockable {
 
   /**
    * Returns the metadata of the managed object
-   * @param {Managed} managed
-   * @return {Metadata}
+   * @param managed
+   * @return
    */
-  static get(managed) {
+  static get(managed: Managed): Metadata {
     return managed._metadata;
   }
 
@@ -86,9 +87,9 @@ export class Metadata extends Lockable {
   }
 
   /**
-   * @param db {EntityManager}
+   * @param db
    */
-  set db(db) {
+  set db(db: EntityManager) {
     if (!this.entityManager) {
       this.entityManager = db;
     } else {
@@ -117,9 +118,9 @@ export class Metadata extends Lockable {
   }
 
   /**
-   * @param {string} value
+   * @param value
    */
-  set key(value) {
+  set key(value: string | null) {
     const val = value + '';
 
     if (this.id) {
@@ -168,10 +169,10 @@ export class Metadata extends Lockable {
   }
 
   /**
-   * @param {Entity} entity
-   * @param {ManagedType} type
+   * @param entity
+   * @param type
    */
-  constructor(entity, type) {
+  constructor(entity: Entity, type: EntityType<any>) {
     super();
 
     this.root = entity;
@@ -185,10 +186,10 @@ export class Metadata extends Lockable {
 
   /**
    * Enable/Disable state change tracking of this object
-   * @param {boolean} newStateTrackingState The new change tracking state
-   * @return {void}
+   * @param newStateTrackingState The new change tracking state
+   * @return
    */
-  enable(newStateTrackingState) {
+  enable(newStateTrackingState: boolean): void {
     this.enabled = newStateTrackingState;
   }
 
@@ -197,9 +198,9 @@ export class Metadata extends Lockable {
    *
    * Ensures that the object was loaded already.
    *
-   * @return {void}
+   * @return
    */
-  readAccess() {
+  readAccess(): void {
     if (this.enabled) {
       if (!this.isAvailable) {
         throw new PersistentError('This object ' + this.id + ' is not available.');
@@ -212,9 +213,9 @@ export class Metadata extends Lockable {
    *
    * Ensures that the object was loaded already and marks the object as dirty.
    *
-   * @return {void}
+   * @return
    */
-  writeAccess() {
+  writeAccess(): void {
     if (this.enabled) {
       if (!this.isAvailable) {
         throw new PersistentError('This object ' + this.id + ' is not available.');
@@ -226,9 +227,9 @@ export class Metadata extends Lockable {
 
   /**
    * Indicates that the associated object isn't available
-   * @return {void}
+   * @return
    */
-  setUnavailable() {
+  setUnavailable(): void {
     this.state = Type.UNAVAILABLE;
   }
 
@@ -237,25 +238,25 @@ export class Metadata extends Lockable {
    *
    * An object is stale if it correlates the database state and is not modified by the user.
    *
-   * @return {void}
+   * @return
    */
-  setPersistent() {
+  setPersistent(): void {
     this.state = Type.PERSISTENT;
   }
 
   /**
    * Indicates the the object is modified by the user
-   * @return {void}
+   * @return
    */
-  setDirty() {
+  setDirty(): void {
     this.state = Type.DIRTY;
   }
 
   /**
    * Indicates the the object is removed
-   * @return {void}
+   * @return
    */
-  setRemoved() {
+  setRemoved(): void {
     // mark the object only as dirty if it was already available
     if (this.isAvailable) {
       this.setDirty();
@@ -265,37 +266,33 @@ export class Metadata extends Lockable {
 
   /**
    * Converts the object to an JSON-Object
-   * @param {Object|boolean} [options=false] to json options by default excludes the metadata
-   * @param {boolean} [options.excludeMetadata=false] Excludes the metadata form the serialized json
-   * @param {number} [options.depth=0] Includes up to depth referenced objects into the serialized json
-   * @param {boolean} [options.persisting=false] indicates if the current state will be persisted.
+   * @param [options=false] to json options by default excludes the metadata
+   * @param [options.excludeMetadata=false] Excludes the metadata form the serialized json
+   * @param [options.depth=0] Includes up to depth referenced objects into the serialized json
+   * @param [options.persisting=false] indicates if the current state will be persisted.
    *  Used to update the internal change tracking state of collections and mark the object persistent if its true
    * @return JSON-Object
    * @deprecated
    */
-  getJson(options): Json {
-    return this.type.toJsonValue(this, this.root, options);
+  getJson(options?: boolean | { excludeMetadata?: boolean, depth?: boolean | number, persisting?: boolean }): Json {
+    return this.type.toJsonValue(this, this.root, typeof options !== 'object' ? { excludeMetadata: options } : options);
   }
 
   /**
    * Sets the object content from json
-   * @param {json} json The updated json content
-   * @param {Object=} options The options used to apply the json
-   * @param {boolean} [options.persisting=false] indicates if the current state will be persisted.
+   * @param json The updated json content
+   * @param options The options used to apply the json
+   * @param [options.persisting=false] indicates if the current state will be persisted.
    * Used to update the internal change tracking state of collections and mark the object persistent or dirty afterwards
-   * @param {boolean} [options.onlyMetadata=false} Indicates if only the metadata should be updated
-   * @param {boolean} {options.updateMetadataOnly=false} Indicates if only the metadata should be updated
+   * @param [options.onlyMetadata=false} Indicates if only the metadata should be updated
    * @return {void}
    * @deprecated
    */
-  setJson(json, options) {
-    this.type.fromJsonValue(this, json, this.root, options);
+  setJson(json: Json, options?: { persisting?: boolean, onlyMetadata?: boolean }): void {
+    this.type.fromJsonValue(this, json, this.root, options || {});
   }
 }
 
-/**
- * @enum {number}
- */
 export enum Type {
   UNAVAILABLE= -1,
   PERSISTENT= 0,

@@ -9,16 +9,6 @@ import { EntityFactory } from "./EntityFactory";
 export class DeviceFactory extends EntityFactory<model.Device> {
   /**
    * Push message will be used to send a push notification to a set of devices
-   *
-   * @param {Set<Entity>|Array<Entity>} [devices] The Set of device references which
-   * will receive this push notification.
-   * @param {string=} message The message of the push notification.
-   * @param {string=} subject The subject of the push notification.
-   * @param {string=} sound The file reference of the sound file as a string. The device uses this file as the
-   * notification sound.
-   * @param {number=} badge The badge count.
-   * @param {Object=} data The data object which can contain additional information.
-   * @return {PushMessage}
    */
   public readonly PushMessage = PushMessage;
 
@@ -40,9 +30,9 @@ export class DeviceFactory extends EntityFactory<model.Device> {
 
   /**
    * Loads the Public VAPID Key which can be used to subscribe a Browser for Web Push notifications
-   * @return {Promise<ArrayBuffer>} The public VAPID Web Push subscription key
+   * @return The public VAPID Web Push subscription key
    */
-  loadWebPushKey() {
+  loadWebPushKey(): Promise<ArrayBuffer> {
     const msg = new message.VAPIDPublicKey();
     msg.responseType('arraybuffer');
     return this.db.send(msg).then(response => response.entity);
@@ -50,28 +40,27 @@ export class DeviceFactory extends EntityFactory<model.Device> {
 
   /**
    * Register a new device with the given device token and OS.
-   * @param {string} os The OS of the device (IOS/Android)
-   * @param {string|Subscription} tokenOrSubscription The FCM device token, APNS device token or WebPush subscription
-   * @param {Entity~doneCallback} doneCallback Called when the operation succeed.
-   * @param {Entity~failCallback=} failCallback Called when the operation failed.
-   * @return {Promise<model.Device>} The registered device
-   *
-   * @function
-   * @name register
-   * @memberOf DeviceFactory.prototype
+   * @param os The OS of the device (IOS/Android)
+   * @param tokenOrSubscription The FCM device token, APNS device token or WebPush subscription
+   * @param doneCallback Called when the operation succeed.
+   * @param failCallback Called when the operation failed.
+   * @return The registered device
    */
+  register(os: string, tokenOrSubscription: string | PushSubscription, doneCallback?, failCallback?): Promise<model.Device>;
 
   /**
    * Register a new device with the given device token and OS.
-   * @param {string} os The OS of the device (IOS/Android)
-   * @param {string|PushSubscription} tokenOrSubscription The FCM device token, APNS device token or WebPush
+   * @param os The OS of the device (IOS/Android)
+   * @param tokenOrSubscription The FCM device token, APNS device token or WebPush
    * subscription
-   * @param {model.Device=} device An optional device entity to set custom field values
-   * @param {Entity~doneCallback=} doneCallback Called when the operation succeed.
-   * @param {Entity~failCallback=} failCallback Called when the operation failed.
-   * @return {Promise<model.Device>} The registered device
+   * @param device An optional device entity to set custom field values
+   * @param doneCallback Called when the operation succeed.
+   * @param failCallback Called when the operation failed.
+   * @return The registered device
    */
-  register(os, tokenOrSubscription, device, doneCallback, failCallback) {
+  register(os: string, tokenOrSubscription: string | PushSubscription, device: model.Device | null, doneCallback?, failCallback?): Promise<model.Device>;
+
+  register(os: string, tokenOrSubscription: string | PushSubscription, device: model.Device | Function | null, doneCallback?, failCallback?): Promise<model.Device> {
     if (device instanceof Function) {
       return this.register(os, tokenOrSubscription, null, device, doneCallback);
     }
@@ -82,13 +71,13 @@ export class DeviceFactory extends EntityFactory<model.Device> {
   }
 
   /**
-   * Uses the info from the given {PushMessage} message to send an push notification.
-   * @param {PushMessage} pushMessage to send an push notification.
-   * @param {Entity~doneCallback=} doneCallback Called when the operation succeed.
-   * @param {Entity~failCallback=} failCallback Called when the operation failed.
-   * @return {Promise<*>}
+   * Uses the info from the given {@link PushMessage} message to send an push notification.
+   * @param pushMessage to send an push notification.
+   * @param doneCallback Called when the operation succeed.
+   * @param failCallback Called when the operation failed.
+   * @return
    */
-  push(pushMessage, doneCallback, failCallback) {
+  push(pushMessage: PushMessage, doneCallback?, failCallback?): Promise<void> {
     return this.db.pushDevice(pushMessage).then(doneCallback, failCallback);
   }
 }

@@ -5,14 +5,10 @@ import { EntityPartialUpdateBuilder } from "../partialupdate";
 import { enumerable } from "../util/enumerable";
 import { PersistentError } from "../error";
 import { Filter } from "../query";
-import { Json, JsonMap } from "../util";
+import { Json, JsonMap, ValidationResult } from "../util";
+import { EntityManager } from "../EntityManager";
 
 export class Entity extends Managed {
-  /**
-   * The default constructor, copy all given properties to this object
-   * @param {Object=} properties - The optional properties to copy
-   * @constructor
-   */
 
   /**
    * The unique id of this object
@@ -27,7 +23,7 @@ export class Entity extends Managed {
     return this._metadata.id;
   }
 
-  set id(value) {
+  set id(value: string | null) {
     if (this._metadata.id) {
       throw new Error('The id can\'t be set twice: ' + value);
     }
@@ -94,42 +90,39 @@ export class Entity extends Managed {
 
   /**
    * Attach this object to the given db
-   * @param {EntityManager} db The db which will be used for future crud operations
-   * @return {void}
-   * @method
+   * @param db The db which will be used for future crud operations
+   * @return
    */
   @enumerable(false)
-  attach(db) {
+  attach(db: EntityManager): void {
     db.attach(this);
   }
 
   /**
    * Waits on the previously requested operation on this object completes
-   * @param {Entity~doneCallback=} doneCallback The callback which will be invoked when the previously
+   * @param doneCallback The callback which will be invoked when the previously
    * operations on this object is completed.
-   * @return {Promise<this>} A promise which completes successfully, when the previously requested
+   * @return A promise which completes successfully, when the previously requested
    * operation completes
-   * @method
    */
   @enumerable(false)
-  ready(doneCallback) {
+  ready(doneCallback?): Promise<this> {
     return this._metadata.ready(doneCallback);
   }
 
   /**
    * Saves the object. Inserts the object if it doesn't exists and updates the object if the object exist.
-   * @param {Object} [options] The save options
-   * @param {boolean} [options.force=false] Force the save operation, the version will not be validated.
-   * @param {number|boolean} [options.depth=0] The object depth which will be saved. Depth 0 save this object only,
+   * @param [options] The save options
+   * @param [options.force=false] Force the save operation, the version will not be validated.
+   * @param [options.depth=0] The object depth which will be saved. Depth 0 save this object only,
    * <code>true</code> saves the objects by reachability.
-   * @param {boolean} [options.refresh=false] Refresh the local object state from remote.
-   * @param {Entity~doneCallback=} doneCallback Called when the operation succeed.
-   * @param {Entity~failCallback=} failCallback Called when the operation failed.
-   * @return {Promise<this>} A Promise that will be fulfilled when the asynchronous operation completes.
-   * @method
+   * @param [options.refresh=false] Refresh the local object state from remote.
+   * @param doneCallback Called when the operation succeed.
+   * @param failCallback Called when the operation failed.
+   * @return A Promise that will be fulfilled when the asynchronous operation completes.
    */
   @enumerable(false)
-  save(options, doneCallback, failCallback) {
+  save(options?: { force?: boolean, depth?: number | boolean, refresh?: boolean}, doneCallback?, failCallback?): Promise<this> {
     if (options instanceof Function) {
       return this.save({}, options, doneCallback);
     }
@@ -139,17 +132,17 @@ export class Entity extends Managed {
 
   /**
    * Inserts a new object. Inserts the object if it doesn't exists and raise an error if the object already exist.
-   * @param {Object} [options] The insertion options
-   * @param {number|boolean} [options.depth=0] The object depth which will be inserted. Depth 0 insert this object only,
+   * @param [options] The insertion options
+   * @param [options.depth=0] The object depth which will be inserted. Depth 0 insert this object only,
    * <code>true</code> inserts objects by reachability.
-   * @param {boolean} [options.refresh=false] Refresh the local object state from remote.
-   * @param {Entity~doneCallback=} doneCallback Called when the operation succeed.
-   * @param {Entity~failCallback=} failCallback Called when the operation failed.
-   * @return {Promise<this>} A Promise that will be fulfilled when the asynchronous operation completes.
+   * @param [options.refresh=false] Refresh the local object state from remote.
+   * @param doneCallback Called when the operation succeed.
+   * @param failCallback Called when the operation failed.
+   * @return A Promise that will be fulfilled when the asynchronous operation completes.
    * @method
    */
   @enumerable(false)
-  insert(options, doneCallback, failCallback) {
+  insert(options?: { depth?: number | boolean, refresh?: boolean }, doneCallback?, failCallback?): Promise<this> {
     if (options instanceof Function) {
       return this.insert({}, options, doneCallback);
     }
@@ -162,19 +155,19 @@ export class Entity extends Managed {
    *
    * Updates the object if it exists and raise an error if the object doesn't exist.
    *
-   * @param {Object} [options] The update options
-   * @param {boolean} [options.force=false] Force the update operation,
+   * @param [options] The update options
+   * @param [options.force=false] Force the update operation,
    * the version will not be validated, only existence will be checked.
-   * @param {number|boolean} [options.depth=0] The object depth which will be updated. Depth 0 updates this object only,
+   * @param [options.depth=0] The object depth which will be updated. Depth 0 updates this object only,
    * <code>true</code> updates objects by reachability.
-   * @param {boolean} [options.refresh=false] Refresh the local object state from remote.
-   * @param {Entity~doneCallback=} doneCallback Called when the operation succeed.
-   * @param {Entity~failCallback=} failCallback Called when the operation failed.
-   * @return {Promise<this>} A Promise that will be fulfilled when the asynchronous operation completes.
+   * @param [options.refresh=false] Refresh the local object state from remote.
+   * @param doneCallback Called when the operation succeed.
+   * @param failCallback Called when the operation failed.
+   * @return A Promise that will be fulfilled when the asynchronous operation completes.
    * @method
    */
   @enumerable(false)
-  update(options, doneCallback, failCallback) {
+  update(options?: { force?: boolean, depth?: number | boolean, refresh?: boolean }, doneCallback?, failCallback?): Promise<this> {
     if (options instanceof Function) {
       return this.update({}, options, doneCallback);
     }
@@ -188,17 +181,17 @@ export class Entity extends Managed {
    * Only unresolved objects will be loaded unless the refresh option is specified.
    *
    * Removed objects will be marked as removed.
-   * @param {Object} [options] The load options
-   * @param {number|boolean} [options.depth=0] The object depth which will be loaded. Depth set to <code>true</code>
+   * @param [options] The load options
+   * @param [options.depth=0] The object depth which will be loaded. Depth set to <code>true</code>
    * loads objects by reachability.
-   * @param {boolean} [options.refresh=false] Refresh the local object state from remote.
-   * @param {Entity~doneCallback=} doneCallback Called when the operation succeed.
-   * @param {Entity~failCallback=} failCallback Called when the operation failed.
-   * @return {Promise<this>} A Promise that will be fulfilled when the asynchronous operation completes.
+   * @param [options.refresh=false] Refresh the local object state from remote.
+   * @param doneCallback Called when the operation succeed.
+   * @param failCallback Called when the operation failed.
+   * @return A Promise that will be fulfilled when the asynchronous operation completes.
    * @method
    */
   @enumerable(false)
-  load(options, doneCallback, failCallback) {
+  load(options?: { depth?: number | boolean, refresh?: boolean }, doneCallback?, failCallback?): Promise<this> {
     if (options instanceof Function) {
       return this.load({}, options, doneCallback);
     }
@@ -216,17 +209,17 @@ export class Entity extends Managed {
   /**
    * Deletes an existing object
    *
-   * @param {Object} [options] The remove options
-   * @param {boolean} [options.force=false] Force the remove operation, the version will not be validated.
-   * @param {number|boolean} [options.depth=0] The object depth which will be removed. Depth 0 removes this object only,
+   * @param [options] The remove options
+   * @param [options.force=false] Force the remove operation, the version will not be validated.
+   * @param [options.depth=0] The object depth which will be removed. Depth 0 removes this object only,
    * <code>true</code> removes objects by reachability.
-   * @param {Entity~doneCallback=} doneCallback Called when the operation succeed.
-   * @param {Entity~failCallback=} failCallback Called when the operation failed.
-   * @return {Promise<this>} A Promise that will be fulfilled when the asynchronous operation completes.
+   * @param doneCallback Called when the operation succeed.
+   * @param failCallback Called when the operation failed.
+   * @return A Promise that will be fulfilled when the asynchronous operation completes.
    * @method
    */
   @enumerable(false)
-  delete(options, doneCallback, failCallback) {
+  delete(options?: { force?: boolean, depth?: number | boolean }, doneCallback?, failCallback?): Promise<this> {
     if (options instanceof Function) {
       return this.delete({}, options, doneCallback);
     }
@@ -240,14 +233,14 @@ export class Entity extends Managed {
    * In each pass the callback will be called. Ths first parameter of the callback is the entity and the second one
    * is a function to abort the process.
    *
-   * @param {Function} cb Will be called in each pass
-   * @param {Entity~doneCallback=} doneCallback Called when the operation succeed.
-   * @param {Entity~failCallback=} failCallback Called when the operation failed.
-   * @return {Promise<this>} A Promise that will be fulfilled when the asynchronous operation completes.
+   * @param cb Will be called in each pass
+   * @param doneCallback Called when the operation succeed.
+   * @param failCallback Called when the operation failed.
+   * @return A Promise that will be fulfilled when the asynchronous operation completes.
    * @method
    */
   @enumerable(false)
-  optimisticSave(cb, doneCallback, failCallback) {
+  optimisticSave(cb: (entity: this, abort: () => void) => void, doneCallback?, failCallback?): Promise<this> {
     return this._metadata.db.optimisticSave(this, cb).then(doneCallback, failCallback);
   }
 
@@ -259,11 +252,11 @@ export class Entity extends Managed {
   /**
    * Validates the entity by using the validation code of the entity type
    *
-   * @return {ValidationResult} Contains the result of the Validation
+   * @return Contains the result of the Validation
    * @method
    */
   @enumerable(false)
-  validate() {
+  validate(): ValidationResult {
     return this._metadata.db.validate(this);
   }
 
@@ -281,13 +274,13 @@ export class Entity extends Managed {
   /**
    * Get all objects which refer to this object
    *
-   * @param {Object} [options] Some options to pass
-   * @param {Array.<string>} [options.classes] An array of class names to filter for, null for no filter
-   * @return {Promise.<Entity>} A promise resolving with an array of all referencing objects
+   * @param [options] Some options to pass
+   * @param [options.classes] An array of class names to filter for, null for no filter
+   * @return A promise resolving with an array of all referencing objects
    * @method
    */
   @enumerable(false)
-  getReferencing(options) {
+  getReferencing(options?: { classes: string[] }): Promise<Entity[]> {
     const db = this._metadata.db;
     const references = this._metadata.type.getReferencing(db, options);
 
@@ -319,14 +312,14 @@ export class Entity extends Managed {
 
   /**
    * Converts the object to an JSON-Object
-   * @param {Object|boolean} [options=false] to json options by default excludes the metadata
-   * @param {boolean} [options.excludeMetadata=false] Excludes the metadata form the serialized json
-   * @param {number|boolean} [options.depth=0] Includes up to depth referenced objects into the serialized json
+   * @param [options=false] to json options by default excludes the metadata
+   * @param [options.excludeMetadata=false] Excludes the metadata form the serialized json
+   * @param [options.depth=0] Includes up to depth referenced objects into the serialized json
    * @return JSON-Object
    * @method
    */
   @enumerable(false)
-  toJSON(options?): Json {
+  toJSON(options?: boolean | { excludeMetadata?: boolean, depth?: boolean | number }): Json {
     // JSON.stringify calls toJSON with the parent key as the first argument.
     // Therefore ignore all unknown option types.
     let opt = options;
@@ -343,17 +336,3 @@ export class Entity extends Managed {
     return this._metadata.getJson(opt);
   }
 }
-
-/**
- * The done callback is called, when the asynchronous operation completes successfully
- * @callback Entity~doneCallback
- * @param {this} entity This entity
- * @return {Promise<*>|*} A Promise, result or undefined
- */
-
-/**
- * The fail callback is called, when the asynchronous operation is rejected by an error
- * @callback Entity~failCallback
- * @param {PersistentError} error The error which reject the operation
- * @return {Promise<*>|*} A Promise, result or undefined
- */

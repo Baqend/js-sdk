@@ -10,8 +10,8 @@ import { Class } from "../util/Class";
 export interface InstanceFactory<T> {
   /**
    * Creates a new instance of the factory type
-   * @param {...*} args Constructor arguments used for instantiation
-   * @return {E} A new created instance of *
+   * @param args Constructor arguments used for instantiation
+   * @return A new created instance of *
    * @instance
    */
   new(...args: any[]): T
@@ -57,8 +57,8 @@ export class Factory<T> implements InstanceFactory<T> {
 
   /**
    * Creates a new instance of the factory type
-   * @param {...*} args Constructor arguments used for instantiation
-   * @return {E} A new created instance of *
+   * @param args Constructor arguments used for instantiation
+   * @return A new created instance of *
    * @instance
    */
   new(...args: any[]): T {
@@ -67,11 +67,11 @@ export class Factory<T> implements InstanceFactory<T> {
 
   /**
    * Creates a new instance of the factory type
-   * @param {Array<*>=} args Constructor arguments used for instantiation
-   * @return {E} A new created instance of *
+   * @param args Constructor arguments used for instantiation
+   * @return A new created instance of *
    * @instance
    */
-  newInstance(args?: any[] | IArguments) {
+  newInstance(args?: any[] | IArguments): T {
     if (!args || args.length === 0) {
       // eslint-disable-next-line new-cap
       return new this.type!();

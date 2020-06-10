@@ -10,9 +10,9 @@ export class MapAttribute<K, V> extends PluralAttribute<Map<K | null, V | null>,
 
   /**
    * Get the type id for this map type
-   * @return {string}
+   * @return
    */
-  static get ref() {
+  static get ref(): string {
     return '/db/collection.Map';
   }
 
@@ -24,9 +24,9 @@ export class MapAttribute<K, V> extends PluralAttribute<Map<K | null, V | null>,
   }
 
   /**
-   * @param {string} name
-   * @param {Type} keyType
-   * @param {Type} elementType
+   * @param name
+   * @param keyType
+   * @param elementType
    */
   constructor(name: string, keyType: Type<K>, elementType: Type<V>) {
     super(name, Map, elementType);

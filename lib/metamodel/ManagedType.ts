@@ -134,11 +134,6 @@ export abstract class ManagedType<T extends Managed> extends Type<T> {
         return this;
       },
 
-      /**
-       * @return {Object} item
-       * @return {boolean} item.done
-       * @return {Attribute} item.value
-       */
       next() {
         if (iter) {
           const item = iter.next();
@@ -162,11 +157,11 @@ export abstract class ManagedType<T extends Managed> extends Type<T> {
 
   /**
    * Adds an attribute to this type
-   * @param {Attribute} attr The attribute to add
-   * @param {number=} order Position of the attribute
-   * @return {void}
+   * @param attr The attribute to add
+   * @param order Position of the attribute
+   * @return
    */
-  addAttribute(attr, order) {
+  addAttribute(attr: Attribute<any>, order?: number): void {
     if (this.getAttribute(attr.name)) {
       throw new Error('An attribute with the name ' + attr.name + ' is already declared.');
     }
@@ -188,10 +183,10 @@ export abstract class ManagedType<T extends Managed> extends Type<T> {
 
   /**
    * Removes an attribute from this type
-   * @param {string} name The Name of the attribute which will be removed
-   * @return {void}
+   * @param name The Name of the attribute which will be removed
+   * @return
    */
-  removeAttribute(name) {
+  removeAttribute(name: string): void {
     const length = this.declaredAttributes.length;
     this.declaredAttributes = this.declaredAttributes.filter(val => val.name !== name);
 
@@ -201,10 +196,10 @@ export abstract class ManagedType<T extends Managed> extends Type<T> {
   }
 
   /**
-   * @param {!string} name
-   * @return {Attribute}
+   * @param name
+   * @return
    */
-  getAttribute(name) {
+  getAttribute(name: string): Attribute<any> | null {
     let attr = this.getDeclaredAttribute(name);
 
     if (!attr && this.superType) {
@@ -215,17 +210,17 @@ export abstract class ManagedType<T extends Managed> extends Type<T> {
   }
 
   /**
-   * @param {string|number} val Name or order of the attribute
-   * @return {Attribute}
+   * @param val Name or order of the attribute
+   * @return
    */
-  getDeclaredAttribute(val) {
+  getDeclaredAttribute(val: string | number): Attribute<any> | null {
     return this.declaredAttributes.filter(attr => attr.name === val || attr.order === val)[0] || null;
   }
 
   /**
    * @inheritDoc
    */
-  fromJsonValue(state, jsonObject, currentObject, options?) {
+  fromJsonValue(state: Metadata, jsonObject: Json, currentObject: T | null, options?: { onlyMetadata?: boolean }) {
     if (!jsonObject) {
       return null;
     }
@@ -263,7 +258,7 @@ export abstract class ManagedType<T extends Managed> extends Type<T> {
 
   /**
    * Converts ths type schema to json
-   * @return {json}
+   * @return
    */
   toJSON(): JsonMap {
     const fields = {};
@@ -288,9 +283,9 @@ export abstract class ManagedType<T extends Managed> extends Type<T> {
 
   /**
    * Returns iterator to get all referenced entities
-   * @return {Iterator<EntityType>}
+   * @return
    */
-  references() {
+  references(): IterableIterator<{ path: string }> {
     const attributes = this.attributes();
     let attribute;
     let embeddedAttributes;
@@ -300,11 +295,6 @@ export abstract class ManagedType<T extends Managed> extends Type<T> {
         return this;
       },
 
-      /**
-       * @return {Object} item
-       * @return {boolean} item.done
-       * @return {Object} item.value
-       */
       next() {
         for (;;) {
           if (embeddedAttributes) {
@@ -336,7 +326,7 @@ export abstract class ManagedType<T extends Managed> extends Type<T> {
    * Retrieves whether this type has specific metadata
    *
    * @param {string} key
-   * @return {boolean}
+   * @return
    */
   hasMetadata(key): boolean {
     return !!this.metadata && !!this.metadata[key];
@@ -345,10 +335,10 @@ export abstract class ManagedType<T extends Managed> extends Type<T> {
   /**
    * Gets some metadata of this type
    *
-   * @param {string} key
-   * @return {null|string}
+   * @param key
+   * @return
    */
-  getMetadata(key) {
+  getMetadata(key: string): string | null {
     if (!this.hasMetadata(key)) {
       return null;
     }

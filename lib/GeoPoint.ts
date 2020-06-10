@@ -11,21 +11,18 @@ import { JsonMap } from "./util";
 export class GeoPoint {
   /**
    * How many radians fit in one degree.
-   * @type {number}
    */
-  static DEG_TO_RAD = Math.PI / 180;
+  static readonly DEG_TO_RAD = Math.PI / 180;
 
   /**
    * The Earth radius in kilometers used by {@link GeoPoint#kilometersTo}
-   * @type {number}
    */
-  static EARTH_RADIUS_IN_KILOMETERS = 6371;
+  static readonly EARTH_RADIUS_IN_KILOMETERS = 6371;
 
   /**
    * The Earth radius in miles used by {@link GeoPoint#milesTo}
-   * @type {number}
    */
-  static EARTH_RADIUS_IN_MILES = 3956;
+  static readonly EARTH_RADIUS_IN_MILES = 3956;
 
   /**
    * Longitude of the given point
@@ -39,9 +36,9 @@ export class GeoPoint {
 
   /**
    * Creates a GeoPoint with the user's current location, if available.
-   * @return {Promise<GeoPoint>} A promise that will be resolved with a GeoPoint
+   * @return A promise that will be resolved with a GeoPoint
    */
-  static current() {
+  static current(): Promise<GeoPoint> {
     return new Promise(((resolve, reject) => {
       if (!navigator) {
         reject(new Error('This seems not to be a browser context.'));
@@ -95,23 +92,23 @@ export class GeoPoint {
 
   /**
    * Returns the distance from this GeoPoint to another in kilometers.
-   * @param {GeoPoint} point another GeoPoint
-   * @return {number} The distance in kilometers
+   * @param point another GeoPoint
+   * @return The distance in kilometers
    *
    * @see GeoPoint#radiansTo
    */
-  kilometersTo(point) {
+  kilometersTo(point: GeoPoint): number {
     return Number((GeoPoint.EARTH_RADIUS_IN_KILOMETERS * this.radiansTo(point)).toFixed(3));
   }
 
   /**
    * Returns the distance from this GeoPoint to another in miles.
-   * @param {GeoPoint} point another GeoPoint
-   * @return {number} The distance in miles
+   * @param point another GeoPoint
+   * @return The distance in miles
    *
    * @see GeoPoint#radiansTo
    */
-  milesTo(point) {
+  milesTo(point: GeoPoint): number {
     return Number((GeoPoint.EARTH_RADIUS_IN_MILES * this.radiansTo(point)).toFixed(3));
   }
 
@@ -122,12 +119,12 @@ export class GeoPoint {
    * {@link http://www.movable-type.co.uk/scripts/latlong.html}
    *
    * Returns the distance from this GeoPoint to another in radians.
-   * @param {GeoPoint} point another GeoPoint
-   * @return {number} the arc, in radian, between two WGS-84 positions
+   * @param point another GeoPoint
+   * @return the arc, in radian, between two WGS-84 positions
    *
    * @see http://en.wikipedia.org/wiki/Haversine_formula
    */
-  radiansTo(point) {
+  radiansTo(point: GeoPoint): number {
     const from = this;
     const to = point;
     const rad1 = from.latitude * GeoPoint.DEG_TO_RAD;
@@ -139,9 +136,9 @@ export class GeoPoint {
 
   /**
    * A String representation in latitude, longitude format
-   * @return {string} The string representation of this class
+   * @return The string representation of this class
    */
-  toString() {
+  toString(): string {
     return this.latitude + ';' + this.longitude;
   }
 

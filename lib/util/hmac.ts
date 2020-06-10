@@ -5,11 +5,11 @@ import crypto from "crypto";
 /**
  * Calculates a Keyed-Hash Message Authentication Code (HMAC) from a message and a key.
  *
- * @param {string} message
- * @param {string} key
- * @return {string}
+ * @param message
+ * @param key
+ * @return
  */
-export function hmac(message, key) {
+export function hmac(message: string, key: string): string {
   return crypto.createHmac('sha1', key)
     .update(message)
     .digest('hex');

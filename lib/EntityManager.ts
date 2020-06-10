@@ -1,12 +1,12 @@
 'use strict';
 
 import * as messages from "./message";
-import { FileFactory, UserFactory, Entity } from "./binding";
+import { FileFactory, UserFactory, Entity, ManagedFactory, Managed, EntityFactory, DeviceFactory } from "./binding";
 import {
   atob,
   Class,
   Code,
-  isNode,
+  isNode, Json, JsonMap,
   Lockable,
   Logger,
   Modules,
@@ -83,7 +83,7 @@ export class EntityManager extends Lockable {
 
   /**
    * The authentication token if the user is logged in currently
-   * @param {string} value
+   * @param value
    */
   set token(value: string | null) {
     this.tokenStorage!.update(value);
@@ -183,8 +183,7 @@ export class EntityManager extends Lockable {
 
   /**
    * Bloom filter refresh interval in seconds.
-   * @type {number}
-   */
+   * @type    */
   public bloomFilterRefresh: number = 60;
 
   /**
@@ -234,11 +233,10 @@ export class EntityManager extends Lockable {
   }
 
   /**
-   * @param {string[]} types
-   * @return {ManagedFactory}
-   * @private
+   * @param types
+   * @return    * @private
    */
-  _createObjectFactory(types) {
+  _createObjectFactory(types: string[]): void {
     Object.keys(types).forEach((ref) => {
       const type = this.metamodel.managedType(ref)!;
       const name = type.name;
@@ -293,8 +291,8 @@ export class EntityManager extends Lockable {
    * The application should not expect that the instance state will be available upon detachment,
    * unless it was accessed by the application while the entity manager was open.
    *
-   * @param {(Class<Entity>|string)} entityClass
-   * @param {string=} key
+   * @param entityClass
+   * @param key
    * @return
    */
   getReference<T extends Entity>(entityClass: Class<T> | string, key?: string): T {
@@ -337,10 +335,10 @@ export class EntityManager extends Lockable {
    *
    * The query results are instances of the resultClass argument.
    *
-   * @param {Class<T>=} resultClass - the type of the query result
-   * @return {Builder<T>} A query builder to create one ore more queries for the specified class
+   * @param resultClass - the type of the query result
+   * @return A query builder to create one ore more queries for the specified class
    */
-  createQueryBuilder(resultClass) {
+  createQueryBuilder<T extends Entity>(resultClass: Class<T>): Builder<T> {
     return new Builder(this, resultClass);
   }
 
@@ -349,9 +347,8 @@ export class EntityManager extends Lockable {
    *
    * Changes made to entities that have not been flushed to the database will not be persisted.
    *
-   * @return {void}
-   */
-  clear() {
+   * @return    */
+  clear(): void {
     this.entities = {};
   }
 
@@ -364,9 +361,8 @@ export class EntityManager extends Lockable {
    * is called when the entity manager is associated with an active transaction,
    * the persistence context remains managed until the transaction completes.
    *
-   * @return {void}
-   */
-  close() {
+   * @return    */
+  close(): void {
     this.connection = null;
 
     return this.clear();
@@ -375,20 +371,20 @@ export class EntityManager extends Lockable {
   /**
    * Check if the instance is a managed entity instance belonging to the current persistence context
    *
-   * @param {Entity} entity - entity instance
-   * @return {boolean} boolean indicating if entity is in persistence context
+   * @param entity - entity instance
+   * @return boolean indicating if entity is in persistence context
    */
-  contains(entity) {
+  contains(entity: Entity): boolean {
     return !!entity && this.entities[entity.id] === entity;
   }
 
   /**
    * Check if an object with the id from the given entity is already attached
    *
-   * @param {Entity} entity - entity instance
-   * @return {boolean} boolean indicating if entity with same id is attached
+   * @param entity - entity instance
+   * @return boolean indicating if entity with same id is attached
    */
-  containsById(entity) {
+  containsById(entity: Entity): boolean {
     return !!(entity && this.entities[entity.id]);
   }
 
@@ -399,10 +395,9 @@ export class EntityManager extends Lockable {
    * will not be synchronized to the database. Entities which previously referenced the detached entity will continue
    * to reference it.
    *
-   * @param {Entity} entity The entity instance to detach.
-   * @return {Promise<Entity>}
-   */
-  detach(entity) {
+   * @param entity The entity instance to detach.
+   * @return    */
+  detach(entity: Entity): Promise<Entity> {
     const state = Metadata.get(entity);
     return state.withLock(() => {
       this.removeReference(entity);
@@ -413,11 +408,10 @@ export class EntityManager extends Lockable {
   /**
    * Resolve the depth by loading the referenced objects of the given entity
    *
-   * @param {Entity} entity - entity instance
-   * @param {Object} [options] The load options
-   * @return {Promise<Entity>}
-   */
-  resolveDepth<T extends Entity>(entity: T, options): Promise<T> {
+   * @param entity - entity instance
+   * @param [options] The load options
+   * @return    */
+  resolveDepth<T extends Entity>(entity: T, options?: { depth?: number | boolean, resolved?: Entity[]}): Promise<T> {
     if (!options || !options.depth) {
       return Promise.resolve(entity);
     }
@@ -445,10 +439,10 @@ export class EntityManager extends Lockable {
    *
    * If the entity instance is contained in the persistence context, it is returned from there.
    *
-   * @param {(Class<Entity>|string)} entityClass - entity class
-   * @param {String} oid - Object ID
-   * @param {Object} [options] The load options.
-   * @return {Promise<Entity>} the loaded entity or null
+   * @param entityClass - entity class
+   * @param oid - Object ID
+   * @param [options] The load options.
+   * @return the loaded entity or null
    */
   load<T extends Entity> (
       entityClass: Class<T> | string,
@@ -496,11 +490,10 @@ export class EntityManager extends Lockable {
   }
 
   /**
-   * @param {Entity} entity
-   * @param {Object} options
-   * @return {Promise<Entity>}
-   */
-  insert(entity, options) {
+   * @param entity
+   * @param options
+   * @return    */
+  insert(entity: Entity, options: {}): Promise<Entity> {
     const opt = options || {};
     let isNew;
 
@@ -522,11 +515,10 @@ export class EntityManager extends Lockable {
   }
 
   /**
-   * @param {Entity} entity
-   * @param {Object} options
-   * @return {Promise<Entity>}
-   */
-  update(entity, options) {
+   * @param entity
+   * @param options
+   * @return    */
+  update(entity: Entity, options: {}): Promise<Entity> {
     const opt = options || {};
 
     return this._save(entity, opt, (state, json) => {
@@ -546,12 +538,11 @@ export class EntityManager extends Lockable {
   }
 
   /**
-   * @param {Entity} entity
-   * @param {Object} options The save options
-   * @param {boolean=} withoutLock Set true to save the entity without locking
-   * @return {Promise<Entity>}
-   */
-  save(entity, options, withoutLock = false) {
+   * @param entity
+   * @param options The save options
+   * @param withoutLock Set true to save the entity without locking
+   * @return    */
+  save(entity: Entity, options: {}, withoutLock = false): Promise<Entity> {
     const opt = options || {};
 
     const msgFactory = (state, json) => {
@@ -576,21 +567,21 @@ export class EntityManager extends Lockable {
   }
 
   /**
-   * @param {Entity} entity
-   * @param {Function} cb pre-safe callback
-   * @return {Promise<Entity>}
+   * @param entity
+   * @param cb pre-safe callback
+   * @return
    */
-  optimisticSave(entity, cb) {
+  optimisticSave(entity: Entity, cb: (entity: Entity, abort: () => void) => void): Promise<Entity> {
     return Metadata.get(entity).withLock(() => this._optimisticSave(entity, cb));
   }
 
   /**
-   * @param {Entity} entity
-   * @param {Function} cb pre-safe callback
-   * @return {Promise<Entity>}
+   * @param entity
+   * @param cb pre-safe callback
+   * @return
    * @private
    */
-  _optimisticSave(entity, cb) {
+  _optimisticSave(entity: Entity, cb: (entity: Entity, abort: () => void) => void): Promise<Entity> {
     let abort = false;
     const abortFn = () => {
       abort = true;
@@ -616,13 +607,13 @@ export class EntityManager extends Lockable {
 
   /**
    * Save the object state without locking
-   * @param {Entity} entity
-   * @param {Object} options
-   * @param {Function} msgFactory
-   * @return {Promise.<Entity>}
+   * @param entity
+   * @param options
+   * @param msgFactory
+   * @return
    * @private
    */
-  _locklessSave(entity, options, msgFactory) {
+  _locklessSave<T extends Entity>(entity: T, options: { depth?: number | boolean, refresh: boolean }, msgFactory: typeof Message): Promise<T> {
     this.attach(entity);
     const state = Metadata.get(entity);
     let refPromises;
@@ -679,13 +670,13 @@ export class EntityManager extends Lockable {
 
   /**
    * Save and lock the object state
-   * @param {Entity} entity
-   * @param {Object} options
-   * @param {Function} msgFactory
-   * @return {Promise.<Entity>}
+   * @param entity
+   * @param options
+   * @param msgFactory
+   * @return
    * @private
    */
-  _save(entity, options, msgFactory) {
+  _save<T extends Entity>(entity: T, options: { depth?: number | boolean, refresh: boolean }, msgFactory: typeof Message): Promise<T> {
     this.ensureBloomFilterFreshness();
 
     const state = Metadata.get(entity);
@@ -698,13 +689,13 @@ export class EntityManager extends Lockable {
 
   /**
    * Returns all referenced sub entities for the given depth and root entity
-   * @param {Entity} entity
-   * @param {boolean|number} depth
-   * @param {Entity[]} [resolved]
-   * @param {Entity} initialEntity
-   * @return {Entity[]}
+   * @param entity
+   * @param depth
+   * @param [resolved]
+   * @param initialEntity
+   * @return
    */
-  getSubEntities(entity, depth, resolved: Entity[] = [], initialEntity? : Entity): Entity[] {
+  getSubEntities(entity: Entity, depth: boolean | number, resolved: Entity[] = [], initialEntity? : Entity): Entity[] {
     if (!depth) {
       return resolved;
     }
@@ -729,11 +720,11 @@ export class EntityManager extends Lockable {
 
   /**
    * Returns all referenced one level sub entities for the given path
-   * @param {Entity} entity
-   * @param {Array<string>} path
-   * @return {Entity[]}
+   * @param entity
+   * @param path
+   * @return
    */
-  getSubEntitiesByPath(entity, path) {
+  getSubEntitiesByPath(entity: Entity, path: string[]): Entity[] {
     let subEntities = [entity];
 
     path.forEach((attributeName) => {
@@ -766,11 +757,11 @@ export class EntityManager extends Lockable {
 
   /**
    * Delete the entity instance.
-   * @param {Entity} entity
-   * @param {Object} options The delete options
-   * @return {Promise<Entity>}
+   * @param entity
+   * @param options The delete options
+   * @return
    */
-  'delete'(entity, options) {
+  delete<T extends Entity>(entity: T, options: { depth: number | boolean }): T {
     const opt = options || {};
 
     this.attach(entity);
@@ -808,28 +799,28 @@ export class EntityManager extends Lockable {
   /**
    * Synchronize the persistence context to the underlying database.
    *
-   * @return {Promise<*>}
+   * @return
    */
-  flush() {
-    // TODO: implement this
+  flush(): Promise<any> {
+    throw new Error('Not implemented.')
   }
 
   /**
    * Make an instance managed and persistent.
-   * @param {Entity} entity - entity instance
-   * @return {void}
+   * @param entity - entity instance
+   * @return
    */
-  persist(entity) {
+  persist(entity: Entity): void {
     this.attach(entity);
   }
 
   /**
    * Refresh the state of the instance from the database, overwriting changes made to the entity, if any.
-   * @param {Entity} entity - entity instance
-   * @param {Object} options The refresh options
-   * @return {Promise<Entity>}
+   * @param entity - entity instance
+   * @param options The refresh options
+   * @return
    */
-  refresh(entity, options) {
+  refresh<T extends Entity>(entity: T, options: { depth: number | boolean }): T {
     const opt = options || {};
     opt.refresh = true;
 
@@ -838,10 +829,10 @@ export class EntityManager extends Lockable {
 
   /**
    * Attach the instance to this database context, if it is not already attached
-   * @param {Entity} entity The entity to attach
-   * @return {void}
+   * @param entity The entity to attach
+   * @return
    */
-  attach(entity) {
+  attach(entity: Entity): void {
     if (!this.contains(entity)) {
       const type = this.metamodel.entity(entity.constructor);
       if (!type) {
@@ -966,12 +957,12 @@ export class EntityManager extends Lockable {
 
   /**
    * Opens a new window use for OAuth logins
-   * @param {string} url The url to open
-   * @param {string} targetOrTitle The target of the window, or the title of the popup
-   * @param {object} options Additional window options
-   * @return {void}
+   * @param url The url to open
+   * @param targetOrTitle The target of the window, or the title of the popup
+   * @param options Additional window options
+   * @return
    */
-  openOAuthWindow(url, targetOrTitle, options) {
+  openOAuthWindow(url: string, targetOrTitle: string, options: {[option: string]: string}): void {
     const str = Object.keys(options)
       .filter(key => options[key] !== undefined)
       .map(key => key + '=' + options[key])
@@ -1050,12 +1041,12 @@ export class EntityManager extends Lockable {
   }
 
   /**
-   * @param {string} devicetype The OS of the device (IOS/Android)
-   * @param {object} subscription WebPush subscription
-   * @param {model.Device} device
-   * @return {Promise<model.Device>}
+   * @param devicetype The OS of the device (IOS/Android)
+   * @param subscription WebPush subscription
+   * @param device
+   * @return
    */
-  registerDevice(devicetype, subscription, device) {
+  registerDevice(devicetype: string, subscription: PushSubscription, device: model.Device): Promise<model.Device> {
     const msg = new messages.DeviceRegister({ devicetype, subscription, device });
 
     msg.withCredentials = true;
@@ -1092,10 +1083,10 @@ export class EntityManager extends Lockable {
   /**
    * The given entity will be checked by the validation code of the entity type.
    *
-   * @param {Entity} entity
-   * @return {ValidationResult} result
+   * @param entity
+   * @return result
    */
-  validate(entity) {
+  validate(entity: Entity): ValidationResult {
     const type = Metadata.get(entity).type;
 
     const result = new ValidationResult();
@@ -1115,10 +1106,10 @@ export class EntityManager extends Lockable {
 
   /**
    * Adds the given object id to the cacheWhiteList if needed.
-   * @param {string} objectId The id to add.
-   * @return {void}
+   * @param objectId The id to add.
+   * @return
    */
-  addToWhiteList(objectId) {
+  addToWhiteList(objectId: string): void {
     if (this.isCachingEnabled()) {
       if (this.bloomFilter.contains(objectId)) {
         this.cacheWhiteList.add(objectId);
@@ -1129,10 +1120,10 @@ export class EntityManager extends Lockable {
 
   /**
    * Adds the given object id to the cacheBlackList if needed.
-   * @param {string} objectId The id to add.
-   * @return {void}
+   * @param objectId The id to add.
+   * @return
    */
-  addToBlackList(objectId) {
+  addToBlackList(objectId: string): void {
     if (this.isCachingEnabled()) {
       if (!this.bloomFilter.contains(objectId)) {
         this.cacheBlackList.add(objectId);
@@ -1178,10 +1169,10 @@ export class EntityManager extends Lockable {
 
   /**
    * Checks for a given id, if revalidation is required, the resource is stale or caching was disabled
-   * @param {string} id The object id to check
-   * @return {boolean} Indicates if the resource must be revalidated
+   * @param id The object id to check
+   * @return Indicates if the resource must be revalidated
    */
-  mustRevalidate(id) {
+  mustRevalidate(id: string): boolean {
     if (isNode) {
       return false;
     }
@@ -1196,12 +1187,12 @@ export class EntityManager extends Lockable {
   }
 
   /**
-   * @param {string} id To check the bloom filter
-   * @param {Message} message To attach the headers
-   * @param {boolean} refresh To force the reload headers
-   * @return {void}
+   * @param id To check the bloom filter
+   * @param message To attach the headers
+   * @param refresh To force the reload headers
+   * @return
    */
-  ensureCacheHeader(id, message, refresh) {
+  ensureCacheHeader(id: string, message: Message, refresh: boolean): void {
     const noCache = refresh || this.mustRevalidate(id);
 
     if (noCache) {
@@ -1211,12 +1202,12 @@ export class EntityManager extends Lockable {
 
   /**
    * Creates a absolute url for the given relative one
-   * @param {string} relativePath the relative url
-   * @param {boolean=} authorize indicates if authorization credentials should be generated and be attached to the url
-   * @return {string} a absolute url wich is optionaly signed with a resource token which authenticates the currently
+   * @param relativePath the relative url
+   * @param authorize indicates if authorization credentials should be generated and be attached to the url
+   * @return a absolute url wich is optionaly signed with a resource token which authenticates the currently
    * logged in user
    */
-  createURL(relativePath, authorize) {
+  createURL(relativePath: string, authorize?: boolean): string {
     if (!this.connection) {
       throw new Error("This EntityManager is not connected.");
     }
@@ -1243,11 +1234,11 @@ export class EntityManager extends Lockable {
    *
    * Only users with the admin role are allowed to request an API token.
    *
-   * @param {(Class<Entity>|Class<Managed>)} entityClass
-   * @param {User|String} user The user object or id of the user object
-   * @return {Promise<*>}
+   * @param entityClass
+   * @param user The user object or id of the user object
+   * @return
    */
-  requestAPIToken(entityClass, user) {
+  requestAPIToken(entityClass: Class<model.User>, user: model.User | string): Promise<JsonMap> {
     const userObj = this._getUserReference(entityClass, user);
 
     const msg = new messages.UserToken(userObj.key);
@@ -1259,11 +1250,11 @@ export class EntityManager extends Lockable {
    *
    * This method will revoke all previously issued tokens and the user must login again.
    *
-   * @param {(Class<Entity>|Class<Managed>)} entityClass
-   * @param {User|String} user The user object or id of the user object
-   * @return {Promise<*>}
+   * @param entityClass
+   * @param user The user object or id of the user object
+   * @return
    */
-  revokeAllTokens(entityClass, user) {
+  revokeAllTokens(entityClass: Class<model.User>, user: model.User | string): Promise<Json> {
     const userObj = this._getUserReference(entityClass, user);
 
     const msg = new messages.RevokeUserToken(userObj.key);
@@ -1279,44 +1270,44 @@ export class EntityManager extends Lockable {
   }
 }
 
-/**
- * An User factory for user objects.
- * The User factory can be called to create new instances of users or can be used to register/login/logout users.
- * The created instances implements the {@link model.User} interface
- * @name User
- * @type UserFactory
- * @memberOf EntityManager.prototype
- */
+export interface EntityManager extends Lockable {
+  /**
+   * An User factory for user objects.
+   * The User factory can be called to create new instances of users or can be used to register/login/logout users.
+   * The created instances implements the {@link model.User} interface
+   */
+  readonly User: UserFactory;
 
-/**
- * An Role factory for role objects.
- * The Role factory can be called to create new instances of roles, later on users can be attached to roles to manage
- * the access permissions through this role
- * The created instances implements the {@link model.Role} interface
- * @name Role
- * @memberOf EntityManager.prototype
- * @type EntityFactory<model.Role>
- */
+  /**
+   * An Role factory for role objects.
+   * The Role factory can be called to create new instances of roles, later on users can be attached to roles to manage
+   * the access permissions through this role
+   * The created instances implements the {@link model.Role} interface
+   */
+  readonly Role: EntityFactory<model.Role>;
 
-/**
- * An Device factory for user objects.
- * The Device factory can be called to create new instances of devices or can be used to register, push to and
- * check registration status of devices.
- * @name Device
- * @memberOf EntityManager.prototype
- * @type DeviceFactory
- */
+  /**
+   * An Device factory for user objects.
+   * The Device factory can be called to create new instances of devices or can be used to register, push to and
+   * check registration status of devices.
+   */
+  readonly Device: DeviceFactory;
 
-/**
- * An Object factory for entity or embedded objects,
- * that can be accessed by the type name of the entity type.
- * An object factory can be called to create new instances of the type.
- * The created instances implements the {@link Entity} or the {@link Managed} interface
- * whenever the class is an entity or embedded object
- * @name [YourEntityClass: string]
- * @memberOf EntityManager.prototype
- * @type {*}
- */
+  /**
+   * An Object factory for entity or embedded objects,
+   * that can be accessed by the type name of the entity type.
+   * An object factory can be called to create new instances of the type.
+   * The created instances implements the {@link Entity} or the {@link Managed} interface
+   * whenever the class is an entity or embedded object
+   * @name [YourEntityClass: string]
+   * @memberOf EntityManager.prototype
+   * @type {*}
+   */
+
+}
+
+
+
 
 /**
  * A File factory for file objects.

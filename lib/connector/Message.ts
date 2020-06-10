@@ -110,9 +110,9 @@ export abstract class Message {
 
   /**
    * Creates a new message class with the given message specification and a full path
-   * @param {Object} specification
-   * @param {Object} members additional members applied to the created message
-   * @return {Class<Message>}
+   * @param specification
+   * @param members additional members applied to the created message
+   * @return
    */
   static createExternal<M>(specification: Specification & { query: string[] }, members: M): ExternalMessage<M> {
     const { path, ...props } = specification;
@@ -259,14 +259,14 @@ export abstract class Message {
 
   /**
    * Gets the contentLength
-   * @return {number}
+   * @return
    */
   contentLength(): number;
 
   /**
    * Sets the contentLength
-   * @param {number} contentLength the content length of the data
-   * @return {this} This message object
+   * @param contentLength the content length of the data
+   * @return This message object
    */
   contentLength(contentLength: number): this;
 
@@ -319,8 +319,8 @@ export abstract class Message {
 
   /**
    * Sets the request date based conditional header
-   * @param {Date} date The date value
-   * @return {this} This message object
+   * @param date The date value
+   * @return This message object
    */
   ifUnmodifiedSince(date: Date): this;
 
@@ -331,9 +331,9 @@ export abstract class Message {
 
   /**
    * Indicates that the request should not be served by a local cache
-   * @return {this}
+   * @return
    */
-  noCache() {
+  noCache(): this {
     if (!REVALIDATION_SUPPORTED) {
       this.ifMatch('') // is needed for firefox or safari (but forbidden for chrome)
         .ifNoneMatch('-'); // is needed for edge and ie (but forbidden for chrome)
@@ -350,8 +350,8 @@ export abstract class Message {
 
   /**
    * Sets the cache control header
-   * @param {string} value The cache control flags
-   * @return {this} This message object
+   * @param value The cache control flags
+   * @return This message object
    */
   cacheControl(value: string): this;
 
@@ -367,8 +367,8 @@ export abstract class Message {
 
   /**
    * Sets and encodes the ACL of a file into the Baqend-Acl header
-   * @param {Acl} acl the file ACLs
-   * @return {this} This message object
+   * @param acl the file ACLs
+   * @return This message object
    */
   acl(acl: Acl): this;
 
@@ -402,7 +402,7 @@ export abstract class Message {
   /**
    * Sets the request accept header
    * @param accept the accept header value
-   * @return {this} This message object
+   * @return This message object
    */
   accept(accept: string): this;
 
@@ -460,7 +460,7 @@ export abstract class Message {
    * If the parameter is an object, it will be serialized as a query string.
    *
    * @param query which will added to the request path
-   * @return {this}
+   * @return
    */
   addQueryString(query: string | {[key: string]: string}): this {
     if (Object(query) instanceof String) {

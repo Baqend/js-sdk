@@ -24,27 +24,27 @@ export class Builder<T extends Entity> extends Query<T> {
   /**
    * Joins the conditions by an logical AND
    * @param args The query nodes to join
-   * @return {Operator<T>} Returns a new query which joins the given queries by a logical AND
+   * @return Returns a new query which joins the given queries by a logical AND
    */
-  and(...args: Array<Query<T> | Query<T>[]>) {
+  and(...args: Array<Query<T> | Query<T>[]>): Operator<T> {
     return this.addOperator('$and', varargs(0, arguments));
   }
 
   /**
    * Joins the conditions by an logical OR
    * @param args The query nodes to join
-   * @return {Operator<T>} Returns a new query which joins the given queries by a logical OR
+   * @return Returns a new query which joins the given queries by a logical OR
    */
-  or(...args: Array<Query<T> | Query<T>[]>) {
+  or(...args: Array<Query<T> | Query<T>[]>): Operator<T> {
     return this.addOperator('$or', varargs(0, arguments));
   }
 
   /**
    * Joins the conditions by an logical NOR
    * @param args The query nodes to join
-   * @return {Operator<T>} Returns a new query which joins the given queries by a logical NOR
+   * @return Returns a new query which joins the given queries by a logical NOR
    */
-  nor(...args: Array<Query<T> | Query<T>[]>) {
+  nor(...args: Array<Query<T> | Query<T>[]>): Operator<T> {
     return this.addOperator('$nor', varargs(0, arguments));
   }
 

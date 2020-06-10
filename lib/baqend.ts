@@ -11,31 +11,46 @@ import * as query from "./query";
 import * as partialupdate from "./partialupdate";
 
 import { EntityManagerFactory } from "./EntityManagerFactory";
-import { EntityManager } from "./EntityManager";
+import { EntityManager} from "./EntityManager";
 import { Acl } from "./Acl";
+import { TokenStorage } from "./util";
+import { TokenStorageFactory } from "./util/TokenStorage";
+
+export * as binding from "./binding";
+export * as connector from "./connector";
+export * as error from "./error";
+export * as message from "./message";
+export * as metamodel from "./metamodel";
+export * as util from "./util";
+export * as caching from "./caching";
+export * as query from "./query";
+export * as partialupdate from "./partialupdate";
+
+export { EntityManagerFactory } from "./EntityManagerFactory";
+export { EntityManager } from "./EntityManager";
+export { Acl } from "./Acl";
 
 export interface baqend extends EntityManager {
   /**
    * Configures the DB with additional config options
-   * @param {Object} options The additional configuration options
-   * @param {TokenStorage} [options.tokenStorage] The tokenStorage which should be used by this emf
-   * @param {TokenStorageFactory} [options.tokenStorageFactory] The tokenStorage factory implementation which should
+   * @param options The additional configuration options
+   * @param [options.tokenStorage] The tokenStorage which should be used by this emf
+   * @param [options.tokenStorageFactory] The tokenStorage factory implementation which should
    * be used for token storage
-   * @param {number} [options.staleness=60] The maximum staleness of objects that are acceptable while reading cached
+   * @param [options.staleness=60] The maximum staleness of objects that are acceptable while reading cached
    * data, <code>0</code> to always bypass the browser cache
    */
-  configure(options): this;
+  configure(options: {tokenStorage?: TokenStorage, tokenStorageFactory?: TokenStorageFactory, staleness?: number}): this;
 
   /**
    * Connects the DB with the server and calls the callback on success
-   * @param {string} hostOrApp The host or the app name to connect with
-   * @param {boolean} [secure=false] <code>true</code> To use a secure connection
-   * @param {Lockable~doneCallback=} doneCallback The callback, called when a connection is established and the
+   * @param hostOrApp The host or the app name to connect with
+   * @param [secure=false] <code>true</code> To use a secure connection
+   * @param doneCallback The callback, called when a connection is established and the
    * SDK is ready to use
-   * @param {Lockable~failCallback=} failCallback When an error occurred while initializing the SDK
-   * @return {Promise<EntityManager>}
-   */
-  connect(hostOrApp, secure, doneCallback, failCallback);
+   * @param failCallback When an error occurred while initializing the SDK
+   * @return    */
+  connect(hostOrApp: string, secure: boolean, doneCallback?, failCallback?): Promise<EntityManager>;
 }
 
 // export all subpackages as instance properties on the DB instance

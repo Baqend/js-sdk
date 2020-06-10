@@ -87,12 +87,12 @@ export class EntityType<T extends Entity> extends ManagedType<T> {
   /**
    * Gets all on this class referencing attributes
    *
-   * @param {EntityManager} db The instances will be found by this EntityManager
-   * @param {Object} [options] Some options to pass
-   * @param {Array.<string>} [options.classes] An array of class names to filter for, null for no filter
+   * @param db The instances will be found by this EntityManager
+   * @param [options] Some options to pass
+   * @param [options.classes] An array of class names to filter for, null for no filter
    * @return A map from every referencing class to a set of its referencing attribute names
    */
-  getReferencing(db, options): Map<ManagedType<any>, Set<string>> {
+  getReferencing(db: EntityManager, options?: {classes?: string[]}): Map<ManagedType<any>, Set<string>> {
     const opts = Object.assign({}, options);
     const entities = db.metamodel.entities;
     const referencing = new Map();
@@ -127,20 +127,20 @@ export class EntityType<T extends Entity> extends ManagedType<T> {
   }
 
   /**
-   * @param {Metadata} state The root object state, can be <code>null</code> if a currentObject is provided
-   * @param {json} jsonObject The json data to merge
-   * @param {*} currentObject The object where the jsonObject will be merged into, if the current object is null,
+   * @param state The root object state, can be <code>null</code> if a currentObject is provided
+   * @param jsonObject The json data to merge
+   * @param currentObject The object where the jsonObject will be merged into, if the current object is null,
    * a new instance will be created
-   * @param {Object=} options The options used to apply the json
-   * @param {boolean} [options.persisting=false] indicates if the current state will be persisted.
+   * @param options The options used to apply the json
+   * @param [options.persisting=false] indicates if the current state will be persisted.
    * Used to update the internal change tracking state of collections and mark the object persistent or dirty afterwards
-   * @param {boolean} [options.onlyMetadata=false] Indicates if only the metadata should be updated
-   * @return {*} The merged entity instance
+   * @param [options.onlyMetadata=false] Indicates if only the metadata should be updated
+   * @return The merged entity instance
    */
-  fromJsonValue(state, jsonObject, currentObject, options) {
+  fromJsonValue(state: Metadata, jsonObject: Json, currentObject: T | null, options: { persisting?: boolean, onlyMetadata?: boolean }): T | null {
     // handle references
     if (typeof jsonObject === 'string') {
-      return state.db.getReference(jsonObject);
+      return state.db.getReference(jsonObject) as T;
     }
 
     if (!jsonObject || typeof jsonObject !== 'object') {
@@ -187,17 +187,17 @@ export class EntityType<T extends Entity> extends ManagedType<T> {
 
   /**
    * Converts the given object to json
-   * @param {Metadata} state The root object state
-   * @param {*} object The object to convert
-   * @param {Object} [options=false] to json options by default excludes the metadata
-   * @param {boolean} [options.excludeMetadata=false] Excludes the metadata form the serialized json
-   * @param {number|boolean} [options.depth=0] Includes up to depth referenced objects into the serialized json
-   * @param {boolean} [options.persisting=false] indicates if the current state will be persisted.
+   * @param state The root object state
+   * @param object The object to convert
+   * @param [options=false] to json options by default excludes the metadata
+   * @param [options.excludeMetadata=false] Excludes the metadata form the serialized json
+   * @param [options.depth=0] Includes up to depth referenced objects into the serialized json
+   * @param [options.persisting=false] indicates if the current state will be persisted.
    *  Used to update the internal change tracking state of collections and mark the object persistent if its true
    * @return JSON-Object
    */
-  toJsonValue(state: Metadata, object: T | null, options: { excludeMetadata?: boolean, depth?: number | boolean }): Json {
-    const { depth = 0 } = options;
+  toJsonValue(state: Metadata, object: T | null, options?: { excludeMetadata?: boolean, depth?: number | boolean }): Json {
+    const { depth = 0 } = options || {};
 
     const isInDepth = depth === true || depth > -1;
 

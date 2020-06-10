@@ -2,13 +2,13 @@
 
 import { CollectionType, PluralAttribute } from "./PluralAttribute";
 import { Json, JsonArray, Metadata } from "../util";
+import { Type } from "./Type";
 
 export class ListAttribute<E> extends PluralAttribute<Array<E | null>, E> {
   /**
    * Get the type id for this list type
-   * @return {string}
    */
-  static get ref() {
+  static get ref(): string {
     return '/db/collection.List';
   }
 
@@ -20,10 +20,10 @@ export class ListAttribute<E> extends PluralAttribute<Array<E | null>, E> {
   }
 
   /**
-   * @param {string} name
-   * @param {Type} elementType
+   * @param name
+   * @param elementType
    */
-  constructor(name, elementType) {
+  constructor(name: string, elementType: Type<E>) {
     super(name, Array, elementType);
   }
 

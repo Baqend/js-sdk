@@ -31,65 +31,65 @@ export interface PartialUpdateBuilder<T extends Entity> {
   /**
    * Increments a field by a given value
    *
-   * @param {string} field The field to increment
-   * @param {number=} by The number to increment by, defaults to 1
-   * @return {this}
+   * @param field The field to increment
+   * @param by The number to increment by, defaults to 1
+   * @return
    */
-  increment(field, by);
+  increment(field: string, by?: number): this;
 
   /**
    * Decrements a field by a given value
    *
-   * @param {string} field The field to decrement
-   * @param {number=} by The number to decrement by, defaults to 1
-   * @return {this}
+   * @param field The field to decrement
+   * @param by The number to decrement by, defaults to 1
+   * @return
    */
-  decrement(field, by);
+  decrement(field: string, by?: number): this;
 
   /**
    * Multiplies a field by a given number
    *
-   * @param {string} field The field to multiply
-   * @param {number} multiplicator The number to multiply by
-   * @return {this}
+   * @param field The field to multiply
+   * @param multiplicator The number to multiply by
+   * @return
    */
-  multiply(field, multiplicator);
+  multiply(field: string, multiplicator: number): this;
 
   /**
    * Divides a field by a given number
    *
-   * @param {string} field The field to divide
-   * @param {number} divisor The number to divide by
-   * @return {this}
+   * @param field The field to divide
+   * @param divisor The number to divide by
+   * @return
    */
-  divide(field, divisor);
+  divide(field: string, divisor: number): this;
 
   /**
    * Sets the highest possible value of a field
    *
-   * @param {string} field The field to compare with
-   * @param {number} value The highest possible value
-   * @return {this}
+   * @param field The field to compare with
+   * @param value The highest possible value
+   * @return
    */
-  atMost(field, value);
+  atMost(field: string, value: number): this;
 
   /**
    * Sets the smallest possible value of a field
    *
-   * @param {string} field The field to compare with
-   * @param {number} value The smalles possible value
-   * @return {this}
+   * @param field The field to compare with
+   * @param value The smalles possible value
+   * @return
    */
-  atLeast(field, value);
+  atLeast(field: string, value: number): this;
 
   /**
    * Sets a datetime field to the current moment
    *
    * @method
-   * @param {string} field The field to perform the operation on
-   * @return {this}
+   * @param field The field to perform the operation on
+   * @return
    */
-  toNow(field);
+  toNow(field: string): this;
 }
 
 export class PartialUpdateBuilder<T extends Entity> {
@@ -107,11 +107,11 @@ export class PartialUpdateBuilder<T extends Entity> {
   /**
    * Sets a field to a given value
    *
-   * @param {string} field The field to set
-   * @param {*} value The value to set to
-   * @return {this}
+   * @param field The field to set
+   * @param value The value to set to
+   * @return
    */
-  set(field, value) {
+  set(field: string, value: any) : this {
     let val = value;
     if (val instanceof Set) {
       val = Array.from(val);
@@ -129,33 +129,33 @@ export class PartialUpdateBuilder<T extends Entity> {
   /**
    * Increments a field by a given value
    *
-   * @param {string} field The field to increment
-   * @param {number=} by The number to increment by, defaults to 1
-   * @return {this}
+   * @param field The field to increment
+   * @param by The number to increment by, defaults to 1
+   * @return
    */
-  inc(field, by) {
+  inc(field: string, by?: number) : this {
     return this.addOperation(field, '$inc', typeof by === 'number' ? by : 1);
   }
 
   /**
    * Decrements a field by a given value
    *
-   * @param {string} field The field to decrement
-   * @param {number=} by The number to decrement by, defaults to 1
-   * @return {this}
+   * @param field The field to decrement
+   * @param by The number to decrement by, defaults to 1
+   * @return
    */
-  dec(field, by) {
+  dec(field: string, by?: number) : this {
     return this.inc(field, typeof by === 'number' ? -by : -1);
   }
 
   /**
    * Multiplies a field by a given number
    *
-   * @param {string} field The field to multiply
-   * @param {number} multiplicator The number to multiply by
-   * @return {this}
+   * @param field The field to multiply
+   * @param multiplicator The number to multiply by
+   * @return
    */
-  mul(field, multiplicator) {
+  mul(field: string, multiplicator: number) : this {
     if (typeof multiplicator !== 'number') {
       throw new Error('Multiplicator must be a number.');
     }
@@ -166,11 +166,11 @@ export class PartialUpdateBuilder<T extends Entity> {
   /**
    * Divides a field by a given number
    *
-   * @param {string} field The field to divide
-   * @param {number} divisor The number to divide by
-   * @return {this}
+   * @param field The field to divide
+   * @param divisor The number to divide by
+   * @return
    */
-  div(field, divisor) {
+  div(field: string, divisor: number) : this {
     if (typeof divisor !== 'number') {
       throw new Error('Divisor must be a number.');
     }
@@ -181,11 +181,11 @@ export class PartialUpdateBuilder<T extends Entity> {
   /**
    * Sets the highest possible value of a field
    *
-   * @param {string} field The field to compare with
-   * @param {number} value The highest possible value
-   * @return {this}
+   * @param field The field to compare with
+   * @param value The highest possible value
+   * @return
    */
-  min(field, value) {
+  min(field: string, value: number) : this {
     if (typeof value !== 'number') {
       throw new Error('Value must be a number');
     }
@@ -196,11 +196,11 @@ export class PartialUpdateBuilder<T extends Entity> {
   /**
    * Sets the smallest possible value of a field
    *
-   * @param {string} field The field to compare with
-   * @param {number} value The smalles possible value
-   * @return {this}
+   * @param field The field to compare with
+   * @param value The smalles possible value
+   * @return
    */
-  max(field, value) {
+  max(field: string, value: number) : this {
     if (typeof value !== 'number') {
       throw new Error('Value must be a number');
     }
@@ -211,23 +211,23 @@ export class PartialUpdateBuilder<T extends Entity> {
   /**
    * Removes an item from an array or map
    *
-   * @param {string} field The field to perform the operation on
-   * @param {*} item The item to add
-   * @return {this}
+   * @param field The field to perform the operation on
+   * @param item The item to add
+   * @return
    */
-  remove(field, item) {
+  remove(field: string, item: any) : this {
     return this.addOperation(field, '$remove', item);
   }
 
   /**
    * Puts an item from an array or map
    *
-   * @param {string} field The field to perform the operation on
-   * @param {string|object} key The map key to put the value to or an object of arguments
-   * @param {*} [value] The value to put if a key was used
-   * @return {this}
+   * @param field The field to perform the operation on
+   * @param key The map key to put the value to or an object of arguments
+   * @param [value] The value to put if a key was used
+   * @return
    */
-  put(field, key, value) {
+  put(field: string, key: string | number | {[key: string]: any}, value?: any) : this {
     const obj = {};
     if (typeof key === 'string' || typeof key === 'number') {
       obj[key] = value;
@@ -241,65 +241,65 @@ export class PartialUpdateBuilder<T extends Entity> {
   /**
    * Pushes an item into a list
    *
-   * @param {string} field The field to perform the operation on
-   * @param {*} item The item to add
-   * @return {this}
+   * @param field The field to perform the operation on
+   * @param item The item to add
+   * @return
    */
-  push(field, item) {
+  push(field: string, item: any) : this {
     return this.addOperation(field, '$push', item);
   }
 
   /**
    * Unshifts an item into a list
    *
-   * @param {string} field The field to perform the operation on
-   * @param {*} item The item to add
-   * @return {this}
+   * @param field The field to perform the operation on
+   * @param item The item to add
+   * @return
    */
-  unshift(field, item) {
+  unshift(field: string, item: any) : this {
     return this.addOperation(field, '$unshift', item);
   }
 
   /**
    * Pops the last item out of a list
    *
-   * @param {string} field The field to perform the operation on
-   * @return {this}
+   * @param field The field to perform the operation on
+   * @return
    */
-  pop(field) {
+  pop(field: string) : this {
     return this.addOperation(field, '$pop');
   }
 
   /**
    * Shifts the first item out of a list
    *
-   * @param {string} field The field to perform the operation on
-   * @return {this}
+   * @param field The field to perform the operation on
+   * @return
    */
-  shift(field) {
+  shift(field: string) : this {
     return this.addOperation(field, '$shift');
   }
 
   /**
    * Adds an item to a set
    *
-   * @param {string} field The field to perform the operation on
-   * @param {*} item The item to add
-   * @return {this}
+   * @param field The field to perform the operation on
+   * @param item The item to add
+   * @return
    */
-  add(field, item) {
+  add(field: string, item: any) : this {
     return this.addOperation(field, '$add', item);
   }
 
   /**
    * Replaces an item at a given index
    *
-   * @param {string} path The path to perform the operation on
-   * @param {number} index The index where the item will be replaced
-   * @param {*} item The item to replace with
-   * @return {this}
+   * @param path The path to perform the operation on
+   * @param index The index where the item will be replaced
+   * @param item The item to replace with
+   * @return
    */
-  replace(path, index, item) {
+  replace(path: string, index: number, item: any): this {
     if (this.hasOperationOnPath(path)) {
       throw new Error(`You cannot update ${path} multiple times`);
     }
@@ -310,52 +310,52 @@ export class PartialUpdateBuilder<T extends Entity> {
   /**
    * Sets a datetime field to the current moment
    *
-   * @param {string} field The field to perform the operation on
-   * @return {this}
+   * @param field The field to perform the operation on
+   * @return
    */
-  currentDate(field) {
+  currentDate(field: string) : this {
     return this.addOperation(field, '$currentDate');
   }
 
   /**
    * Performs a bitwise AND on a path
    *
-   * @param {string} path The path to perform the operation on
-   * @param {number} bitmask The bitmask taking part in the operation
-   * @return {this}
+   * @param path The path to perform the operation on
+   * @param bitmask The bitmask taking part in the operation
+   * @return
    */
-  and(path, bitmask) {
+  and(path: string, bitmask: number): this {
     return this.addOperation(path, '$and', bitmask);
   }
 
   /**
    * Performs a bitwise OR on a path
    *
-   * @param {string} path The path to perform the operation on
-   * @param {number} bitmask The bitmask taking part in the operation
-   * @return {this}
+   * @param path The path to perform the operation on
+   * @param bitmask The bitmask taking part in the operation
+   * @return
    */
-  or(path, bitmask) {
+  or(path: string, bitmask: number): this {
     return this.addOperation(path, '$or', bitmask);
   }
 
   /**
    * Performs a bitwise XOR on a path
    *
-   * @param {string} path The path to perform the operation on
-   * @param {number} bitmask The bitmask taking part in the operation
-   * @return {this}
+   * @param path The path to perform the operation on
+   * @param bitmask The bitmask taking part in the operation
+   * @return
    */
-  xor(path, bitmask) {
+  xor(path: string, bitmask: number): this {
     return this.addOperation(path, '$xor', bitmask);
   }
 
   /**
    * Renames a field
    *
-   * @param {string} oldPath The old field name
-   * @param {string} newPath The new field name
-   * @return {this}
+   * @param oldPath The old field name
+   * @param newPath The new field name
+   * @return
    */
   rename(oldPath, newPath) {
     return this.addOperation(oldPath, '$rename', newPath);
@@ -364,9 +364,9 @@ export class PartialUpdateBuilder<T extends Entity> {
   /**
    * Returns a JSON representation of this partial update
    *
-   * @return {json}
+   * @return
    */
-  toJSON() {
+  toJSON(): Json {
     return this.operations.reduce((json, operation: UpdateOperation) => {
       const obj = {};
       obj[operation.path] = operation.value;
@@ -380,7 +380,7 @@ export class PartialUpdateBuilder<T extends Entity> {
   /**
    * Executes the partial update
    *
-   * @return {Promise<T>} The promise resolves when the partial update has been executed successfully
+   * @return The promise resolves when the partial update has been executed successfully
    * @abstract
    */
   execute(): Promise<T> {
@@ -390,13 +390,13 @@ export class PartialUpdateBuilder<T extends Entity> {
   /**
    * Adds an update operation on the partial update
    *
-   * @param {string} path The path which gets modified by the operation
-   * @param {string} operator The operator of the operation to add
-   * @param {*} [value] The value used to execute the operation
-   * @return {this}
+   * @param path The path which gets modified by the operation
+   * @param operator The operator of the operation to add
+   * @param [value] The value used to execute the operation
+   * @return
    * @private
    */
-  addOperation(path, operator, value?) {
+  addOperation(path: string, operator: string, value?: any): this {
     if (typeof path !== 'string') {
       throw new Error('Path must be a string');
     }
@@ -446,84 +446,23 @@ export class PartialUpdateBuilder<T extends Entity> {
   /**
    * Checks whether an operation on the field exists already
    *
-   * @param {string} path The path where the operation is executed on
-   * @return {boolean} True, if the operation does exist
+   * @param path The path where the operation is executed on
+   * @return True, if the operation does exist
    * @private
    */
-  hasOperationOnPath(path) {
+  hasOperationOnPath(path: string): boolean {
     return this.operations.some(op => op.path === path);
   }
 }
 
 // aliases
-Object.assign(PartialUpdateBuilder.prototype, /** @lends partialupdate.PartialUpdateBuilder<T>.prototype */ {
-  /**
-   * Increments a field by a given value
-   *
-   * @method
-   * @param {string} field The field to increment
-   * @param {number=} by The number to increment by, defaults to 1
-   * @return {this}
-   */
+Object.assign(PartialUpdateBuilder.prototype,{
   increment: PartialUpdateBuilder.prototype.inc,
-
-  /**
-   * Decrements a field by a given value
-   *
-   * @method
-   * @param {string} field The field to decrement
-   * @param {number=} by The number to decrement by, defaults to 1
-   * @return {this}
-   */
   decrement: PartialUpdateBuilder.prototype.dec,
-
-  /**
-   * Multiplies a field by a given number
-   *
-   * @method
-   * @param {string} field The field to multiply
-   * @param {number} multiplicator The number to multiply by
-   * @return {this}
-   */
   multiply: PartialUpdateBuilder.prototype.mul,
-
-  /**
-   * Divides a field by a given number
-   *
-   * @method
-   * @param {string} field The field to divide
-   * @param {number} divisor The number to divide by
-   * @return {this}
-   */
   divide: PartialUpdateBuilder.prototype.div,
-
-  /**
-   * Sets the highest possible value of a field
-   *
-   * @method
-   * @param {string} field The field to compare with
-   * @param {number} value The highest possible value
-   * @return {this}
-   */
   atMost: PartialUpdateBuilder.prototype.min,
-
-  /**
-   * Sets the smallest possible value of a field
-   *
-   * @method
-   * @param {string} field The field to compare with
-   * @param {number} value The smalles possible value
-   * @return {this}
-   */
   atLeast: PartialUpdateBuilder.prototype.max,
-
-  /**
-   * Sets a datetime field to the current moment
-   *
-   * @method
-   * @param {string} field The field to perform the operation on
-   * @return {this}
-   */
   toNow: PartialUpdateBuilder.prototype.currentDate,
 });
 

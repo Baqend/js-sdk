@@ -5,9 +5,9 @@ import { Connector, Response } from "./Connector";
 export class FetchConnector extends Connector {
   /**
    * Indicates if this connector implementation is usable for the given host and port
-   * @return {boolean}
+   * @return
    */
-  static isUsable() {
+  static isUsable(): boolean {
     return typeof fetch !== 'undefined';
   }
 

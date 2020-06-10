@@ -56,13 +56,13 @@ export abstract class Connector {
   }
 
   /**
-   * @param {string} host or location
-   * @param {number=} port
-   * @param {boolean=} secure <code>true</code> for an secure connection
-   * @param {string=} basePath The basepath of the api
-   * @return {Connector}
+   * @param host or location
+   * @param port
+   * @param secure <code>true</code> for an secure connection
+   * @param basePath The basepath of the api
+   * @return
    */
-  static create(host, port, secure, basePath) {
+  static create(host: string, port?: number, secure?: boolean, basePath?: string): Connector {
     let h = host;
     let p = port;
     let s = secure;
@@ -159,10 +159,10 @@ export abstract class Connector {
   ) {}
 
   /**
-   * @param {Message} message
-   * @return {Promise<connector.Message>}
+   * @param message
+   * @return
    */
-  send(message) {
+  send(message: Message): Promise<Response> {
     let response: Response = { status: 0 };
     return new Promise<Response>((resolve) => {
       this.prepareRequest(message);
@@ -188,10 +188,10 @@ export abstract class Connector {
   abstract doSend(message: Message, request: Request, receive: Receiver): void;
 
   /**
-   * @param {Message} message
-   * @return {void}
+   * @param message
+   * @return
    */
-  prepareRequest(message) {
+  prepareRequest(message: Message): void {
     const mimeType = message.mimeType();
     if (!mimeType) {
       const type = message.request.type;
@@ -244,19 +244,17 @@ export abstract class Connector {
 
   /**
    * Convert the message entity to the sendable representation
-   * @param {Message} message The message to send
-   * @return {void}
-   * @protected
-   * @abstract
+   * @param message The message to send
+   * @return
    */
-  toFormat(message) {} // eslint-disable-line no-unused-vars
+  protected abstract toFormat(message: Message): void;
 
   /**
-   * @param {Message} message
-   * @param {Object} response The received response headers and data
-   * @return {Promise<*>}
+   * @param message
+   * @param response The received response headers and data
+   * @return
    */
-  prepareResponse(message, response: Response) {
+  prepareResponse(message: Message, response: Response): Promise<any> {
     // IE9 returns status code 1223 instead of 204
     response.status = response.status === 1223 ? 204 : response.status;
 
@@ -301,10 +299,10 @@ export abstract class Connector {
 
   /**
    * Convert received data to the requested response entity type
-   * @param {Object} response The response object
-   * @param {*} entity The received data
-   * @param {string} type The requested response format
-   * @return {*}
+   * @param response The response object
+   * @param entity The received data
+   * @param type The requested response format
+   * @return
    */
   protected abstract fromFormat(response: Response, entity: any, type: ResponseBodyType): any;
 }

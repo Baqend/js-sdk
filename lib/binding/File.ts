@@ -73,19 +73,15 @@ export class File {
 
   /**
    * The complete id of the file, including folder and name
-   * @type {string}
-   * @readonly
    */
-  get id() {
+  get id(): string {
     return this[ID];
   }
 
   /**
    * The fully url to the file, can be directly used to link the file, i.e. in link tags ot image sources
-   * @type {string}
-   * @readonly
    */
-  get url() {
+  get url(): string {
     if (this.isFolder) {
       throw new Error('Url can not be created for folders.');
     }
@@ -95,19 +91,15 @@ export class File {
 
   /**
    * The name of the file
-   * @type {string}
-   * @readonly
    */
-  get name() {
+  get name(): string {
     return this.id.substring(this.id.lastIndexOf('/', this.id.length - 2) + 1);
   }
 
   /**
    * The mimeType of the file, only accessible after fetching the metadata or downloading/uploading/providing the file
-   * @type {string}
-   * @readonly
    */
-  get mimeType() {
+  get mimeType(): string {
     if (this.isFolder) {
       throw new Error('A folder has no mimeType');
     }
@@ -117,10 +109,8 @@ export class File {
 
   /**
    * The current file acl, only accessible after fetching the metadata or downloading/uploading/providing the file
-   * @type {Acl}
-   * @readonly
    */
-  get acl() {
+  get acl(): Acl {
     this.checkAvailable();
     return this[METADATA].acl;
   }
@@ -142,10 +132,8 @@ export class File {
   /**
    * The creation date of the file, only accessible after fetching the metadata
    * or downloading/uploading/providing the eTag
-   * @type {?Date}
-   * @readonly
    */
-  get createdAt() {
+  get createdAt(): Date {
     if (this.isFolder) {
       throw new Error('A folder has no creation date');
     }
@@ -155,10 +143,8 @@ export class File {
 
   /**
    * The eTag of the file, only accessible after fetching the metadata or downloading/uploading/providing the file
-   * @type {string}
-   * @readonly
    */
-  get eTag() {
+  get eTag(): string {
     if (this.isFolder) {
       throw new Error('A folder has no eTag');
     }
@@ -169,10 +155,8 @@ export class File {
   /**
    * The custom headers of the file, only accessible after fetching the metadata or downloading/uploading/providing
    * the file
-   * @type {Object<string,string>}
-   * @readonly
    */
-  get headers() {
+  get headers(): {[name: string]: string} {
     if (this.isFolder) {
       throw new Error('A folder has no custom headers');
     }
@@ -183,10 +167,8 @@ export class File {
 
   /**
    * The size of the file, only accessible after fetching the metadata or downloading/uploading/providing the file
-   * @type {number}
-   * @readonly
    */
-  get size() {
+  get size(): number {
     if (this.isFolder) {
       throw new Error('A folder has no size');
     }
@@ -195,45 +177,37 @@ export class File {
   }
 
   /**
-   * @type {string}
-   * @readonly
+   * The root bucket of this file
    */
-  get bucket() {
+  get bucket(): string {
     return this.id.substring(FILE_BUCKET_LENGTH + 1, this.id.indexOf('/', FILE_BUCKET_LENGTH + 1));
   }
 
   /**
-   * @type {string}
-   * @readonly
+   * The full path under the bucket of this file
    */
-  get key() {
+  get key(): string {
     return this.id.substring(this.id.indexOf('/', FILE_BUCKET_LENGTH + 1) + 1);
   }
 
   /**
    * The full path of the file.
-   * @type {string}
-   * @readonly
    */
-  get path() {
+  get path(): string {
     return this.id.substring(FILE_BUCKET_LENGTH);
   }
 
   /**
    * The parent folder of the file.
-   * @type {string}
-   * @readonly
    */
-  get parent() {
+  get parent(): string {
     return this.id.substring(FILE_BUCKET_LENGTH, this.id.lastIndexOf('/', this.id.length - 2));
   }
 
   /**
    * Indicates if the metadata are loaded.
-   * @type {boolean}
-   * @readonly
    */
-  get isMetadataLoaded() {
+  get isMetadataLoaded(): boolean {
     return !!this[METADATA];
   }
 

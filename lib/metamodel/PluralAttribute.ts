@@ -20,40 +20,40 @@ export abstract class PluralAttribute<T, E> extends Attribute<T> {
 
   /**
    * Returns the previously attached state of the given collection
-   * @param {Array<*>|Set<*>|Map<*,*>} collection The collection on which the state was attached
-   * @return {Array<*>|Object|null} The actual attached state or null if no state was previously attached
+   * @param collection The collection on which the state was attached
+   * @return The actual attached state or null if no state was previously attached
    */
-  static getAttachedState(collection) {
+  static getAttachedState(collection: Array<any> | Set<any> | Map<any, any>): any {
     return collection[ATTACHED_STATE] || null;
   }
 
   /**
    * Attach the the given state on the collection, in a meaner that it isn't enumerable
-   * @param {Array<*>|Set<*>|Map<*,*>} collection The collection where the state should be attached on
-   * @param {Array<*>|Object} state The state which should be attached
-   * @return {void}
+   * @param collection The collection where the state should be attached on
+   * @param state The state which should be attached
+   * @return
    */
-  static attachState(collection, state) {
+  static attachState(collection: Array<any> | Set<any> | Map<any, any>, state: any): void {
     // ensure that this property is not visible on browsers which do not support Symbols
     Object.defineProperty(collection, ATTACHED_STATE, { value: state, configurable: true });
   }
 
   /**
    * Returns the previously attached size of the given collection
-   * @param {Set<*>|Map<*,*>} collection The collection on which the size was attached
-   * @return {number} The actual attached state or -1 if no size was previously attached
+   * @param collection The collection on which the size was attached
+   * @return The actual attached state or -1 if no size was previously attached
    */
-  static getAttachedSize(collection) {
+  static getAttachedSize(collection: Set<any> | Map<any, any>): number {
     return collection[ATTACHED_SIZE];
   }
 
   /**
    * Attach the the given size on the collection, in a meaner that it isn't enumerable
-   * @param {Set<*>|Map<*,*>} collection The collection where the size should be attached on
-   * @param {Array<*>|Object} size The size which should be attached
-   * @return {void}
+   * @param collection The collection where the size should be attached on
+   * @param size The size which should be attached
+   * @return
    */
-  static attachSize(collection, size) {
+  static attachSize(collection: Set<any> | Map<any, any>, size: number): void {
     // ensure that this property is not visible on browsers which do not support Symbols
     Object.defineProperty(collection, ATTACHED_SIZE, { value: size, configurable: true });
   }

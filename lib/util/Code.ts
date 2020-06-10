@@ -15,20 +15,20 @@ export class Code {
   entityManagerFactory: EntityManagerFactory;
 
   /**
-   * @param {Metamodel} metamodel
-   * @param {EntityManagerFactory} entityManagerFactory
+   * @param metamodel
+   * @param entityManagerFactory
    */
-  constructor(metamodel, entityManagerFactory) {
+  constructor(metamodel: Metamodel, entityManagerFactory: EntityManagerFactory) {
     this.metamodel = metamodel;
     this.entityManagerFactory = entityManagerFactory;
   }
 
   /**
    * Converts the given function to a string
-   * @param {Function} fn The JavaScript function to serialize
-   * @return {string} The serialized function
+   * @param fn The JavaScript function to serialize
+   * @return The serialized function
    */
-  functionToString(fn) {
+  functionToString(fn: Function): string {
     if (!fn) {
       return '';
     }
@@ -48,20 +48,20 @@ export class Code {
 
   /**
    * Converts the given string to a module wrapper function
-   * @param {Array<string>} signature The expected parameters of the function
-   * @param {string} code The JavaScript function to deserialize
-   * @return {Function} The deserialized function
+   * @param signature The expected parameters of the function
+   * @param code The JavaScript function to deserialize
+   * @return The deserialized function
    */
-  stringToFunction(signature, code) {
+  stringToFunction(signature: string[], code: string): Function {
     return new Function(signature, code); // eslint-disable-line no-new-func
   }
 
   /**
    * Loads a list of all available modules without handlers
    *
-   * @return {Promise<Array<string>>}
+   * @return
    */
-  loadModules() {
+  loadModules(): Promise<string[]> {
     const msg = new message.GetAllModules();
     return this.entityManagerFactory.send(msg)
       .then(response => response.entity);
@@ -109,22 +109,22 @@ export class Code {
   /**
    * Saves Baqend code which will be identified by the given bucket and code type
    *
-   * @param {ManagedType|string} type The entity type for the handler or the Name of the
+   * @param type The entity type for the handler or the Name of the
    * Baqend code
-   * @param {string} codeType The type of the code
-   * @param {string} fn Baqend code as a string
-   * @return {Promise<string>} The stored code as a string
+   * @param codeType The type of the code
+   * @param fn Baqend code as a string
+   * @return The stored code as a string
    */
   saveCode(type: ManagedType<any> | string, codeType: string, fn: string): Promise<string>;
 
   /**
    * Saves Baqend code which will be identified by the given bucket and code type
    *
-   * @param {ManagedType|string} type The entity type for the handler or the Name of the
+   * @param type The entity type for the handler or the Name of the
    * Baqend code
-   * @param {string} codeType The type of the code
-   * @param {Function} fn Baqend code as a function
-   * @return {Promise<Function>} The stored code as a parsed function
+   * @param codeType The type of the code
+   * @param fn Baqend code as a function
+   * @return The stored code as a parsed function
    */
   saveCode(type: ManagedType<any> | string, codeType: string, fn: Function): Promise<Function>;
 
@@ -146,9 +146,9 @@ export class Code {
    * @param type The entity type for the handler or the Name of the
    * Baqend code
    * @param codeType The type of the code
-   * @return {Promise<*>} succeed if the code was deleted
+   * @return succeed if the code was deleted
    */
-  deleteCode(type: ManagedType<any> | string, codeType: string) {
+  deleteCode(type: ManagedType<any> | string, codeType: string): Promise<any> {
     const bucket = typeof type === 'string' ? type : type.name;
     const msg = new message.DeleteBaqendCode(bucket, codeType);
     return this.entityManagerFactory.send(msg)
@@ -156,14 +156,14 @@ export class Code {
   }
 
   /**
-   * @param {string} bucket
-   * @param {string} codeType
-   * @param {boolean} [asFunction=false]
-   * @param {string} code
-   * @return {string|Function}
+   * @param bucket
+   * @param codeType
+   * @param [asFunction=false]
+   * @param code
+   * @return
    * @private
    */
-  parseCode(bucket, codeType, asFunction, code) {
+  parseCode(bucket: string, codeType: string, asFunction: boolean, code: string): string | Function {
     if (codeType === 'validate') {
       const type = this.metamodel.entity(bucket)!;
       type.validationCode = code;

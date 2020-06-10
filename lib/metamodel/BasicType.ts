@@ -116,6 +116,9 @@ export class BasicType<T> extends Type<T> {
     }
   }('JsonObject', Object as any);
 
+  /**
+   * Indicates if this type is not the main type of the constructor
+   */
   public noResolving: boolean;
 
   /**
@@ -136,10 +139,6 @@ export class BasicType<T> extends Type<T> {
 
     super(id, typeConstructor);
 
-    /**
-     * Indicates if this type is not the main type of the constructor
-     * @type {boolean}
-     */
     this.noResolving = !!noResolving;
   }
 

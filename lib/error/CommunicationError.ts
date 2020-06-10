@@ -25,10 +25,12 @@ export class CommunicationError extends PersistentError {
    * @param httpMessage The http message which was send
    * @param response The received entity headers and content
    */
-  constructor(httpMessage: Message, response: Response) {
+  constructor(httpMessage: Message | null, response: Response) {
     const entity = response.entity || response.error || {};
     const state = (response.status === 0 ? 'Request' : 'Response');
-    const message = entity.message || 'Handling the ' + state + ' for ' + httpMessage.request.method + ' ' + httpMessage.request.path;
+    const message = entity.message
+        || (httpMessage && 'Handling the ' + state + ' for ' + httpMessage.request.method + ' ' + httpMessage.request.path)
+        || 'A communication error occurred.'
 
     super(message, entity);
 

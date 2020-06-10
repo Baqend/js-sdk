@@ -3,6 +3,8 @@
 import { Entity } from "../binding";
 import { deprecated } from "../util/deprecated";
 import { Node } from "./Node";
+import { EntityManager } from "../EntityManager";
+import { Class } from "../util";
 
 /**
  * An Operator saves the state of a combined query
@@ -19,12 +21,12 @@ export class Operator<T extends Entity> extends Node<T> {
   public readonly childes: Node<T>[];
 
   /**
-   * @param {EntityManager} entityManager The owning entity manager of this query
-   * @param {Class<T>} resultClass The query result class
-   * @param {string} operator The operator used to join the childes
-   * @param {Array<query.Node<T>>} childes The childes to join
+   * @param entityManager The owning entity manager of this query
+   * @param resultClass The query result class
+   * @param operator The operator used to join the childes
+   * @param childes The childes to join
    */
-  constructor(entityManager, resultClass, operator, childes) {
+  constructor(entityManager: EntityManager, resultClass: Class<T>, operator: string, childes: Node<T>[]) {
     super(entityManager, resultClass);
     this.operator = operator;
     this.childes = childes;

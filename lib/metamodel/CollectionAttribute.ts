@@ -13,7 +13,7 @@ export abstract class CollectionAttribute<T, E> extends PluralAttribute<T, E> {
   }
 
   /**
-   * @param {string} name - the name of the attribute
+   * @param name - the name of the attribute
    * @param typeConstructor - The collection constructor of the attribute
    * @param elementType - The element type of the collection
    */

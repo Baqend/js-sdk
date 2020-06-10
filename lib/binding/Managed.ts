@@ -30,33 +30,16 @@ export class Managed {
   }
 
   /**
-   * Creates a subclass of this class
-   * @param {Class<*>} childClass
-   * @return {Class<*>} The extended child class
-   */
-  static extend(childClass) {
-    childClass.prototype = Object.create(this.prototype, {
-      constructor: {
-        value: childClass,
-        configurable: true,
-        writable: true,
-      },
-    });
-    childClass.extend = Managed.extend;
-    return childClass;
-  }
-
-  /**
    * The default constructor, copy all given properties to this object
-   * @param {Object<string,*>=} properties - The optional properties to copy
+   * @param properties - The optional properties to copy
    */
-  constructor(properties) {
+  constructor(properties?: {[property: string]: any}) {
     Managed.init(this, properties);
   }
 
   /**
    * Converts the managed object to an JSON-Object.
-   * @return {json} JSON-Object
+   * @return JSON-Object
    * @method
    */
   @enumerable(false)
