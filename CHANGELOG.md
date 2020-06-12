@@ -1,3 +1,11 @@
+<a name="v2.14.1"></a>
+# v2.14.1 (2020-6-12)
+
+
+### Bug Fixes
+
+* fix(Node): Fix dependencies, bump dependency versions
+
 <a name="v2.14.0"></a>
 # v2.14.0 (2020-6-10)
 
