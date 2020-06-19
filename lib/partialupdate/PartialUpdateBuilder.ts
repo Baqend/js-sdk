@@ -465,7 +465,3 @@ Object.assign(PartialUpdateBuilder.prototype,{
   atLeast: PartialUpdateBuilder.prototype.max,
   toNow: PartialUpdateBuilder.prototype.currentDate,
 });
-
-deprecated(PartialUpdateBuilder.prototype, '_operations', 'operations');
-deprecated(PartialUpdateBuilder.prototype, '_addOperation', 'addOperation');
-deprecated(PartialUpdateBuilder.prototype, '_hasOperationOnPath', 'hasOperationOnPath');

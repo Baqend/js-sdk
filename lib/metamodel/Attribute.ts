@@ -2,8 +2,9 @@
 
 import { Accessor, Entity, Managed } from "../binding";
 import { Json, JsonMap } from "../util";
-import { Metadata } from "../util";
+import { Metadata } from "../intersection";
 import { ManagedType } from "./ManagedType";
+import { PluralAttribute } from "./PluralAttribute";
 
 export enum PersistentAttributeType {
   BASIC = 0,
@@ -16,6 +17,8 @@ export enum PersistentAttributeType {
 }
 
 export abstract class Attribute<T> {
+  public static readonly PersistentAttributeType = PersistentAttributeType;
+
   public isMetadata: boolean;
   public isId = false;
   public isVersion = false;
@@ -42,7 +45,7 @@ export abstract class Attribute<T> {
     return this.persistentAttributeType > PersistentAttributeType.EMBEDDED;
   }
 
-  get isCollection(): boolean {
+  get isCollection() {
     return this.persistentAttributeType === PersistentAttributeType.ELEMENT_COLLECTION;
   }
 
@@ -58,7 +61,8 @@ export abstract class Attribute<T> {
   /**
    * @param declaringType The type that owns this attribute
    * @param order Position of the attribute
-   * @return    */
+   * @return
+   */
   init(declaringType: ManagedType<any>, order: number): void {
     if (this.declaringType) {
       throw new Error('The attribute is already initialized.');
@@ -91,8 +95,8 @@ export abstract class Attribute<T> {
    * @param key
    * @return
    */
-  hasMetadata(key): boolean {
-    return this.metadata && !!this.metadata[key];
+  hasMetadata(key: string): boolean {
+    return !!this.metadata && key in this.metadata;
   }
 
   /**
@@ -126,7 +130,7 @@ export abstract class Attribute<T> {
    * @param options additional options which are applied through the conversion
    * @return
    */
-  abstract setJsonValue(state: Metadata, object: Managed, jsonValue: Json, options: { onlyMetadata: boolean }): void;
+  abstract setJsonValue(state: Metadata, object: Managed, jsonValue: Json, options: { onlyMetadata?: boolean }): void;
 
   /**
    * Converts this attribute field to json

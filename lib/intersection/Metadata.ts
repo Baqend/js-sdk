@@ -1,13 +1,13 @@
 'use strict';
 
 import { Acl } from "../Acl";
-import { Lockable } from "./Lockable";
-import { deprecated } from "./deprecated";
+import { Lockable } from "../util/Lockable";
+import { deprecated } from "../util/deprecated";
 import { EntityManager } from "../EntityManager";
 import { Entity } from "../binding/Entity";
 import { EntityType, ManagedType } from "../metamodel";
 import { PersistentError } from "../error";
-import { Json } from "./Json";
+import { Json } from "../util/Json";
 import { Managed } from "../binding";
 
 /**
@@ -25,7 +25,7 @@ export class Metadata extends Lockable {
   type: EntityType<any>;
   decodedKey: string | null = null;
   id: string | null = null;
-  state: Type;
+  state: MetadataState;
   version: number | null;
   enabled: boolean;
   acl: Acl;
@@ -41,7 +41,11 @@ export class Metadata extends Lockable {
   static create<T extends Managed>(type: ManagedType<T>, object: T): Metadata {
     let meta;
     if (type.isEntity) {
-      meta = new Metadata(object, type);
+      if (!(object instanceof Entity)) {
+        throw new Error('Object is not an entity, metadata can\'t be created. ' + object);
+      }
+
+      meta = new Metadata(object as Entity, type as EntityType<any>);
     } else if (type.isEmbeddable) {
       meta = {
         type,
@@ -147,7 +151,7 @@ export class Metadata extends Lockable {
    * @readonly
    */
   get isAvailable() {
-    return this.state > Type.UNAVAILABLE;
+    return this.state > MetadataState.UNAVAILABLE;
   }
 
   /**
@@ -156,7 +160,7 @@ export class Metadata extends Lockable {
    * @readonly
    */
   get isPersistent() {
-    return this.state === Type.PERSISTENT;
+    return this.state === MetadataState.PERSISTENT;
   }
 
   /**
@@ -165,7 +169,7 @@ export class Metadata extends Lockable {
    * @readonly
    */
   get isDirty() {
-    return this.state === Type.DIRTY;
+    return this.state === MetadataState.DIRTY;
   }
 
   /**
@@ -176,7 +180,7 @@ export class Metadata extends Lockable {
     super();
 
     this.root = entity;
-    this.state = Type.DIRTY;
+    this.state = MetadataState.DIRTY;
     this.enabled = true;
     this.id = null;
     this.version = null;
@@ -230,7 +234,7 @@ export class Metadata extends Lockable {
    * @return
    */
   setUnavailable(): void {
-    this.state = Type.UNAVAILABLE;
+    this.state = MetadataState.UNAVAILABLE;
   }
 
   /**
@@ -241,7 +245,7 @@ export class Metadata extends Lockable {
    * @return
    */
   setPersistent(): void {
-    this.state = Type.PERSISTENT;
+    this.state = MetadataState.PERSISTENT;
   }
 
   /**
@@ -249,7 +253,7 @@ export class Metadata extends Lockable {
    * @return
    */
   setDirty(): void {
-    this.state = Type.DIRTY;
+    this.state = MetadataState.DIRTY;
   }
 
   /**
@@ -285,7 +289,7 @@ export class Metadata extends Lockable {
    * @param [options.persisting=false] indicates if the current state will be persisted.
    * Used to update the internal change tracking state of collections and mark the object persistent or dirty afterwards
    * @param [options.onlyMetadata=false} Indicates if only the metadata should be updated
-   * @return {void}
+   * @return
    * @deprecated
    */
   setJson(json: Json, options?: { persisting?: boolean, onlyMetadata?: boolean }): void {
@@ -293,12 +297,8 @@ export class Metadata extends Lockable {
   }
 }
 
-export enum Type {
-  UNAVAILABLE= -1,
-  PERSISTENT= 0,
-  DIRTY= 1,
+export enum MetadataState {
+  UNAVAILABLE = -1,
+  PERSISTENT = 0,
+  DIRTY = 1,
 }
-
-deprecated(Metadata.prototype, '_root', 'root');
-deprecated(Metadata.prototype, '_state', 'state');
-deprecated(Metadata.prototype, '_enabled', 'enabled');

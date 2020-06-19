@@ -1,20 +1,23 @@
 'use strict';
 
-import { Entity, EntityFactory, Role, User } from "../binding";
+import { DeviceFactory, Entity, EntityFactory, Role, User, UserFactory } from "../binding";
 
-import { Class, Json, JsonMap, Metadata, Permission } from "../util";
+import { Class, Json, JsonMap } from "../util";
 import { ManagedType } from "./ManagedType";
 import { PersistenceType } from "./Type";
 import { BasicType } from "./BasicType";
 import { SingularAttribute } from "./SingularAttribute";
 import { Acl } from "../Acl";
 import { EntityManager } from "../EntityManager";
+import { PluralAttribute } from "./index";
+import { Metadata, Permission } from "../intersection";
+import { model } from "../model";
 
 export class EntityType<T extends Entity> extends ManagedType<T> {
   public static Object;
 
-  public declaredId: SingularAttribute<string> | null = null;
-  public declaredVersion: SingularAttribute<number> | null = null;
+  public declaredId: SingularAttribute<String> | null = null;
+  public declaredVersion: SingularAttribute<Number> | null = null;
   public declaredAcl: SingularAttribute<Acl> | null = null;
 
   public loadPermission: Permission = new Permission();
@@ -97,7 +100,7 @@ export class EntityType<T extends Entity> extends ManagedType<T> {
     const entities = db.metamodel.entities;
     const referencing = new Map();
 
-    const names = Object.keys(entities);
+    const names = Object.keys(entities!);
     for (let i = 0, len = names.length; i < len; i += 1) {
       const name = names[i];
       // Skip class if not in class filter
@@ -107,7 +110,7 @@ export class EntityType<T extends Entity> extends ManagedType<T> {
         for (let el = iter.next(); !el.done; el = iter.next()) {
           const attr = el.value;
           // Filter only referencing singular and collection attributes
-          if (attr.type === this || attr.elementType === this) {
+          if (attr instanceof SingularAttribute && attr.type === this || attr instanceof PluralAttribute && attr.elementType === this) {
             const typeReferences = referencing.get(attr.declaringType) || new Set();
             typeReferences.add(attr.name);
             referencing.set(attr.declaringType, typeReferences);
@@ -123,7 +126,14 @@ export class EntityType<T extends Entity> extends ManagedType<T> {
    * @inheritDoc
    */
   createObjectFactory(db: EntityManager): EntityFactory<T> {
-    return EntityFactory.create(this, db);
+    switch (this.name) {
+      case 'User':
+        return UserFactory.create(this, db) as EntityFactory<T>;
+      case 'Device':
+        return DeviceFactory.create(this, db) as EntityFactory<T>;
+      default:
+        return EntityFactory.create(this, db) as EntityFactory<T>;
+    }
   }
 
   /**
@@ -147,6 +157,8 @@ export class EntityType<T extends Entity> extends ManagedType<T> {
       return null;
     }
 
+    const json = jsonObject as JsonMap;
+
     const opt = Object.assign({
       persisting: false,
       onlyMetadata: false,
@@ -160,20 +172,20 @@ export class EntityType<T extends Entity> extends ManagedType<T> {
       // 1. The provided json does not contains an id and we have an already created object for it
       // 2. The object was created without an id and was later fetched from the server (e.g. User/Role)
       // 3. The provided json has the same id as the current object, they can differ on embedded json for a reference
-      if (!jsonObject.id || !currentObjectState.id || jsonObject.id === currentObjectState.id) {
+      if (!json.id || !currentObjectState.id || json.id === currentObjectState.id) {
         obj = currentObject;
         objectState = currentObjectState;
       }
     }
 
     if (!obj) {
-      obj = state.db.getReference(this.typeConstructor, jsonObject.id);
+      obj = state.db.getReference(this.typeConstructor, json.id as string);
       objectState = Metadata.get(obj);
     }
 
     // deserialize our properties
     objectState.enable(false);
-    super.fromJsonValue(objectState, jsonObject, obj, opt);
+    super.fromJsonValue(objectState, json, obj, opt);
     objectState.enable(true);
 
     if (opt.persisting) {
@@ -252,7 +264,7 @@ export class ObjectType extends EntityType<any> {
   constructor() {
     super(EntityType.Object.ref, null as any, Object);
 
-    this.declaredId = new class extends SingularAttribute<string> {
+    this.declaredId = new class extends SingularAttribute<String> {
       constructor() {
         super('id', BasicType.String, true);
       }
@@ -270,7 +282,7 @@ export class ObjectType extends EntityType<any> {
     this.declaredId.init(this, 0);
     this.declaredId.isId = true;
 
-    this.declaredVersion = new class extends SingularAttribute<number> {
+    this.declaredVersion = new class extends SingularAttribute<Number> {
       constructor() {
         super('version', BasicType.Integer, true);
       }
@@ -290,7 +302,7 @@ export class ObjectType extends EntityType<any> {
 
     this.declaredAcl = new class extends SingularAttribute<Acl> {
       constructor() {
-        super('acl', BasicType.JsonObject, true);
+        super('acl', BasicType.JsonObject as BasicType<any>, true);
       }
 
       getJsonValue(state) {

@@ -72,6 +72,4 @@ Object.assign(Node.prototype, {
   },
 } as Partial<Node<any>>);
 
-deprecated(Node.prototype, '_createRealTimeQuery', 'createRealTimeQuery');
-
 export { Node };

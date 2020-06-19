@@ -1,17 +1,18 @@
 'use strict';
 
 import valLib from 'validator';
-import { deprecated } from './deprecated';
+import { deprecated } from '../util/deprecated';
 import { Entity } from "../binding";
+import { ManagedType } from "../metamodel";
 
 export class Validator {
   /**
    * Compiles the given validation code for the managedType
-   * @param {ManagedType} managedType The managedType of the code
-   * @param {string} validationCode The validation code
-   * @return {void}
+   * @param managedType The managedType of the code
+   * @param validationCode The validation code
+   * @return the parsed validation function
    */
-  static compile(managedType, validationCode) {
+  static compile(managedType: ManagedType<any>, validationCode: string): Function {
     const keys: string[] = [];
     const iter = managedType.attributes();
     for (let el = iter.next(); !el.done; el = iter.next()) {
@@ -21,7 +22,7 @@ export class Validator {
 
     // eslint-disable-next-line no-new-func
     const fn = new Function(...keys, validationCode);
-    return function onValidate(argObj) {
+    return function onValidate(argObj: {[arg: string]: any}) {
       const args = keys.map(name => argObj[name]);
 
       return fn.apply({}, args);
@@ -29,9 +30,9 @@ export class Validator {
   }
 
   /**
-   * Entity to get the value of the attribute
+   * The cached errors of the validation
    */
-  private errors: Entity[] = [];
+  private errors: string[] = [];
 
   /**
    * Entity to get the value of the attribute
@@ -45,17 +46,17 @@ export class Validator {
 
   /**
    * Gets the value of the attribute
-   * @return {*} Value
+   * @return Value
    */
-  get value() {
+  get value(): any {
     return this.entity[this.key];
   }
 
   /**
    * Checks if the attribute is valid
-   * @return {boolean}
+   * @return
    */
-  get isValid() {
+  get isValid(): boolean {
     return this.errors.length === 0;
   }
 
@@ -66,12 +67,10 @@ export class Validator {
    * the library {@link https://github.com/chriso/validator.js} as the second one.
    * If the function returns true the value is valid, otherwise it's invalid.
    *
-   * @name is
-   * @memberOf Validator.prototype
-   * @function
-   * @param {Function} fn will be used to validate the value
-   * @return {Validator}
+   * @param fn will be used to validate the value
+   * @return
    */
+  is(fn: Function): Validator;
 
   /**
    * Executes the given validation function to validate the value.
@@ -80,16 +79,18 @@ export class Validator {
    * the library {@link https://github.com/chriso/validator.js} as the second one.
    * If the function returns true the value is valid, otherwise it's invalid.
    *
-   * @param {string} error The error message which will be used if the value is invalid
-   * @param {Function} fn will be used to validate the value
-   * @return {Validator}
+   * @param error The error message which will be used if the value is invalid
+   * @param fn will be used to validate the value
+   * @return
    */
-  is(error, fn) {
+  is(error: string, fn: Function): Validator;
+
+  is(error: string | Function, fn?: Function): Validator {
     if (error instanceof Function) {
       return this.is('is', error);
     }
 
-    if (fn(this.value, valLib) === false) {
+    if (fn!(this.value, valLib) === false) {
       this.errors.push(error);
     }
 
@@ -133,6 +134,3 @@ Object.keys(valLib).forEach((name) => {
     };
   }
 });
-
-deprecated(Validator.prototype, '_callMethod', 'callMethod');
-deprecated(Validator.prototype, '_entity', 'entity');

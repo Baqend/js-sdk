@@ -3,9 +3,9 @@
 var fs, http, https, urlParser;
 if (typeof DB === 'undefined') {
   if (typeof window !== 'undefined') {
-    window.DB = require('../lib');
+    window.DB = require('../');
   } else if (typeof global !== 'undefined') {
-    global.DB = require('../lib');
+    global.DB = require('../');
   }
   fs = require('fs');
   http = require('http');

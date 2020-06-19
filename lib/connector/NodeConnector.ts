@@ -7,7 +7,7 @@ let http;
 let https;
 
 export class NodeConnector extends Connector {
-  private cookie: null;
+  private cookie: string | null;
   private http: any;
 
   static isUsable() {
@@ -16,8 +16,8 @@ export class NodeConnector extends Connector {
         // the require call will fail, if we can't require the http module,
         // therefore this connector implementation can't be used
         /* eslint-disable global-require */
-        https = import('https');
-        http = import('http');
+        https = require('https');
+        http = require('http');
         /* eslint-enable global-require */
       } catch (e) {
         // ignore
@@ -111,7 +111,8 @@ export class NodeConnector extends Connector {
   /**
    * Parse the cookie header
    * @param header
-   * @return    */
+   * @return
+   */
   parseCookie(header: string): string | null {
     const parts = header.split(';');
 

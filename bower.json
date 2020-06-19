@@ -1,7 +1,7 @@
 {
   "name": "baqend",
   "description": "Baqend JavaScript SDK",
-  "main": "dist/baqend.js",
+  "main": "dist/bundles/baqend.js",
   "authors": [
     "Baqend.com <info@baqend.com>"
   ],

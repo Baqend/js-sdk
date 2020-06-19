@@ -1,13 +1,21 @@
 'use strict';
 
-import { hmac } from "./hmac";
-import { deprecated } from "./deprecated";
+import { hmac } from "../util/hmac";
+import { deprecated } from "../util/deprecated";
+
+export interface TokenData {
+   val: any;
+   sig: string;
+   createdAt: number;
+   data: string;
+   expireAt: number;
+}
 
 export interface TokenStorageFactory {
   /**
    * Creates a new tokenStorage which persist tokens for the given origin
-   * @param {string} origin The origin where the token contains to
-   * @return {Promise<TokenStorage>} The initialized token storage
+   * @param origin The origin where the token contains to
+   * @return The initialized token storage
    */
   create(origin: string): Promise<TokenStorage>
 }
@@ -19,11 +27,13 @@ export class TokenStorage {
   /**
    * The actual stored token
    */
-  tokenData: { val: any; sig: string; createdAt: number; data: string; expireAt: number } | null;
+  tokenData: TokenData | null;
+
   /**
    * The origin of the token
    */
   origin: string;
+
   /**
    * Indicates if the token should keep temporary only or should be persisted for later sessions
    */
@@ -31,10 +41,10 @@ export class TokenStorage {
 
   /**
    * Parse a token string in its components
-   * @param {string} token The token string to parse, time values are returned as timestamps
-   * @return {{data: string, createdAt: int, expireAt: int, sig: string}}
+   * @param token The token string to parse, time values are returned as timestamps
+   * @return The parsed token data
    */
-  static parse(token) {
+  static parse(token: string): TokenData {
     return {
       val: token,
       createdAt: parseInt(token.substring(0, 8), 16) * 1000,
@@ -46,9 +56,9 @@ export class TokenStorage {
 
   /**
    * Get the stored token
-   * @return {string} The token or undefined, if no token is available
+   * @return The token or undefined, if no token is available
    */
-  get token() {
+  get token(): string {
     return this.tokenData ? this.tokenData.val : null;
   }
 
@@ -57,26 +67,24 @@ export class TokenStorage {
   }
 
   /**
-   * @param {string} origin The origin where the token belongs to
-   * @param {string} token The initial token
-   * @param {boolean=} temporary If the token should be saved temporary or permanently
+   * @param origin The origin where the token belongs to
+   * @param token The initial token
+   * @param temporary If the token should be saved temporary or permanently
    */
-  constructor(origin: string, token?, temporary?) {
+  constructor(origin: string, token?: string | null, temporary?: boolean) {
     this.tokenData = token ? TokenStorage.parse(token) : null;
     this.origin = origin;
-    this.temporary = temporary;
+    this.temporary = !!temporary;
   }
 
   /**
    * Use the underlying storage implementation to save the token
-   * @param {string} origin The origin where the token belongs to
-   * @param {string} token The initial token
-   * @param {boolean} temporary If the token should be saved temporary or permanently
-   * @return {void}
-   * @protected
-   * @abstract
+   * @param origin The origin where the token belongs to
+   * @param token The initial token
+   * @param temporary If the token should be saved temporary or permanently
+   * @return
    */
-  saveToken(origin, token, temporary) {
+  protected saveToken(origin: string, token: string | null, temporary: boolean): void {
     // eslint-disable-next-line no-underscore-dangle
     if (this._saveToken !== TokenStorage.prototype._saveToken) {
       // eslint-disable-next-line no-console
@@ -88,15 +96,14 @@ export class TokenStorage {
 
   /**
    * Use the underlying storage implementation to save the token
-   * @param {string} origin The origin where the token belongs to
-   * @param {string} token The initial token
-   * @param {boolean} temporary If the token should be saved temporary or permanently
-   * @return {void}
+   * @param origin The origin where the token belongs to
+   * @param token The initial token
+   * @param temporary If the token should be saved temporary or permanently
+   * @return
    * @deprecated Use TokenStorage#saveToken instead
    * @protected
-   * @abstract
    */
-  _saveToken(origin, token, temporary) {} // eslint-disable-line no-unused-vars
+  protected _saveToken(origin: string, token: string | null, temporary: boolean): void {} // eslint-disable-line no-unused-vars
 
   /**
    * Update the token for the givin origin, the operation may be asynchronous
@@ -116,10 +123,10 @@ export class TokenStorage {
   /**
    * Derives a resource token from the stored origin token and signs the resource with the generated resource token
    *
-   * @param {string} resource The resource which will be accessible with the returned token
-   * @return {string} A resource token which can only be used to access the specified resource
+   * @param resource The resource which will be accessible with the returned token
+   * @return A resource token which can only be used to access the specified resource
    */
-  signPath(resource) {
+  signPath(resource: string): string {
     if (this.tokenData) {
       const path = resource.split('/').map(encodeURIComponent).join('/');
       return path + '?BAT=' + (this.tokenData.data + hmac(path + this.tokenData.data, this.tokenData.sig));
@@ -128,10 +135,6 @@ export class TokenStorage {
   }
 }
 
-deprecated(TokenStorage.prototype, '_token', 'tokenData');
-deprecated(TokenStorage.prototype, '_origin', 'origin');
-
-
 class GlobalStorage extends TokenStorage {
   private static tokens = {};
 
@@ -139,16 +142,16 @@ class GlobalStorage extends TokenStorage {
    * Creates a global token storage instance for the given origin
    * A global token storage use a global variable to store the actual origin tokens
    * @param origin
-   * @return {Promise.<GlobalStorage>}
+   * @return
    */
-  static create(origin) {
+  static create(origin: string): Promise<GlobalStorage> {
     return Promise.resolve(new GlobalStorage(origin, GlobalStorage.tokens[origin]));
   }
 
   /**
    * @inheritDoc
    */
-  saveToken(origin, token, temporary) {
+  saveToken(origin: string, token: string, temporary: boolean) {
     if (!temporary) {
       if (token) {
         GlobalStorage.tokens[origin] = token;
@@ -184,9 +187,9 @@ class WebStorage extends TokenStorage {
    * Creates a global web storage instance for the given origin
    * A web token storage use the localStorage or sessionStorage to store the origin tokens
    * @param origin
-   * @return {Promise.<WebStorage>}
+   * @return
    */
-  static create(origin) {
+  static create(origin: string): Promise<WebStorage> {
     let temporary = false;
     let token = localStorage.getItem('BAT:' + origin);
 

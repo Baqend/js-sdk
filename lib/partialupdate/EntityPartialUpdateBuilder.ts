@@ -1,18 +1,17 @@
 'use strict';
 
 import { PartialUpdateBuilder } from "./PartialUpdateBuilder";
-import { Metadata } from "../util/Metadata";
-import { deprecated } from "../util/deprecated";
+import { deprecated, JsonMap } from "../util";
 import * as message from "../message";
 import { Entity } from "../binding";
-import { JsonMap } from "../util";
+import { Metadata } from "../intersection";
 
 export class EntityPartialUpdateBuilder<T extends Entity> extends PartialUpdateBuilder<T> {
   /**
    * @param entity
    * @param operations
    */
-  constructor(public readonly entity: Entity, operations: JsonMap) {
+  constructor(public readonly entity: T, operations: JsonMap) {
     super(operations);
   }
 
@@ -27,11 +26,9 @@ export class EntityPartialUpdateBuilder<T extends Entity> extends PartialUpdateB
     return state.withLock(() => (
       state.db.send(msg).then((response) => {
         // Update the entity’s values
-        state.setJson(response.entity, true);
+        state.setJson(response.entity, { persisting: true });
         return this.entity;
       })
     ));
   }
 }
-
-deprecated(PartialUpdateBuilder.prototype, '_entity', 'entity');

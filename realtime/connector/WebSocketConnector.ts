@@ -1,9 +1,10 @@
 'use strict';
 
-import { CommunicationError } from "../../lib/error";
+import { CommunicationError } from "../../lib";
 import { WebSocket } from "./websocket";
 import { Observable } from "rxjs";
-import { Json } from "../../lib/util";
+import { Json } from "../../lib";
+import { TokenStorage } from "../../lib";
 
 export interface ObservableStream extends Observable<ChannelMessage> {
   /**
@@ -33,19 +34,18 @@ export type ChannelMessage = {
 export class WebSocketConnector {
   /**
    * Map of all available connectors to their respective websocket connections
-   * @type Connector[]
    */
   private static websockets: { [origin: string]: WebSocketConnector } = {};
 
   private observers: {};
-  private socket: WebSocket;
+  private socket: Promise<WebSocket> | null;
   private url: string;
 
   /**
-   * @param {String=} url The websocket connect script url
-   * @return {WebSocketConnector} a websocket connection
+   *url The websocket connect script url
+   *a websocket connection
    */
-  static create(url) {
+  static create(url: string): WebSocketConnector {
     let websocket = this.websockets[url];
     if (!websocket) {
       websocket = new WebSocketConnector(url);
@@ -55,15 +55,15 @@ export class WebSocketConnector {
   }
 
   /**
-   * @param {String} url
+   *url
    */
-  constructor(url) {
+  constructor(url: string) {
     this.observers = {};
     this.socket = null;
     this.url = url;
   }
 
-  open() {
+  open(): Promise<WebSocket> {
     if (!this.socket) {
       const socket = new WebSocket(this.url);
       let socketPromise;
@@ -102,7 +102,7 @@ export class WebSocketConnector {
       socket.onerror = handleSocketCompletion;
       socket.onclose = handleSocketCompletion;
       socket.onmessage = (event) => {
-        const message = JSON.parse(event.data);
+        const message = JSON.parse(event.data as string);
         message.date = new Date(message.date);
 
         const id = message.id;
@@ -128,7 +128,7 @@ export class WebSocketConnector {
       this.socket = socketPromise;
     }
 
-    return this.socket;
+    return this.socket!;
   }
 
   close() {
@@ -141,11 +141,11 @@ export class WebSocketConnector {
   }
 
   /**
-   * @param {TokenStorage} tokenStorage
-   * @param {string} id subscription ID
-   * @return {connector.ObservableStream} The channel for sending and receiving messages
+   *tokenStorage
+   *id subscription ID
+   *The channel for sending and receiving messages
    */
-  openStream(tokenStorage, id) {
+  openStream(tokenStorage: TokenStorage, id: string): ObservableStream {
     const stream = new Observable((observer) => {
       if (this.observers[id]) { throw new Error('Only one subscription per stream is allowed.'); }
 

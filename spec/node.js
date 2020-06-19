@@ -1,4 +1,5 @@
 'use strict';
+require('source-map-support').install()
 
 var chai = require('chai');
 var chaiAsPromised = require('chai-as-promised');

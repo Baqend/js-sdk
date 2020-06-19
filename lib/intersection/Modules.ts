@@ -1,7 +1,7 @@
 'use strict';
 
 import * as message from "../message";
-import { deprecated } from "./deprecated";
+import { deprecated } from "../util/deprecated";
 import { EntityManager } from "../EntityManager";
 import { RequestBody, RequestBodyType, ResponseBodyType } from "../connector/Connector";
 
@@ -32,7 +32,7 @@ export class Modules {
    * @param failCallback
    * @return
    */
-  get(bucket: string, query: {[param: string]: string}, options?: { responseType?: ResponseBodyType }, doneCallback?, failCallback?): Promise<any> {
+  get(bucket: string, query: {[param: string]: string} | Function, options?: { responseType?: ResponseBodyType } | Function, doneCallback?, failCallback?): Promise<any> {
     if (query instanceof Function) {
       return this.get(bucket, {}, query, options, doneCallback);
     }
@@ -87,7 +87,4 @@ export class Modules {
       .then(doneCallback, failCallback);
   }
 }
-
-deprecated(Modules.prototype, '_entityManager', 'entityManager');
-deprecated(Modules.prototype, '_send', 'send');
 

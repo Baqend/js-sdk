@@ -3,7 +3,7 @@
 var DB;
 if (typeof module !== 'undefined') {
   require('./node');
-  DB = require('../lib');
+  DB = require('../');
 }
 
 describe('Test file', function () {
@@ -277,7 +277,7 @@ describe('Test file', function () {
         f.name = 'file.png';
         f.lastModifiedDate = new Date();
 
-        var acl = new rootDb.Acl();
+        var acl = new DB.Acl();
         acl.allowReadAccess(rootDb.User.me);
         acl.allowWriteAccess(rootDb.User.me);
 
@@ -362,7 +362,7 @@ describe('Test file', function () {
     });
 
     it('should serialize all properties to json', function () {
-      var acl = new rootDb.Acl();
+      var acl = new DB.Acl();
       acl.allowReadAccess(rootDb.User.me);
       acl.allowWriteAccess(rootDb.User.me);
 
@@ -409,7 +409,7 @@ describe('Test file', function () {
     });
 
     it('should deserialize all properties from json', function () {
-      var acl = new rootDb.Acl();
+      var acl = new DB.Acl();
       acl.allowReadAccess(rootDb.User.me);
       acl.allowWriteAccess(rootDb.User.me);
 
@@ -528,8 +528,8 @@ describe('Test file', function () {
   describe('upload', function () {
     before(function () {
       return rootDb.File.loadMetadata('www').then(function (acls) {
-        acls.update = new rootDb.util.Permission().allowAccess(rootDb.User.me);
-        acls.insert = new rootDb.util.Permission().allowAccess(rootDb.User.me);
+        acls.update = new DB.util.Permission().allowAccess(rootDb.User.me);
+        acls.insert = new DB.util.Permission().allowAccess(rootDb.User.me);
         return rootDb.File.saveMetadata('www', acls);
       });
     });
@@ -791,7 +791,7 @@ describe('Test file', function () {
       return rootDb.File.saveMetadata('testfolder', {})
         .then(function () {
           var file = new rootDb.File({
-            name: ';,/?:@&=+$#' + rootDb.util.uuid() + '.png', data: flames, acl: acl, parent: '/testfolder',
+            name: ';,/?:@&=+$#' + DB.util.uuid() + '.png', data: flames, acl: acl, parent: '/testfolder',
           });
           return file.upload();
         })
@@ -808,7 +808,7 @@ describe('Test file', function () {
       return rootDb.File.saveMetadata('testfolder', {})
         .then(function () {
           var file = new rootDb.File({
-            name: '-_.!~*\'()' + rootDb.util.uuid() + '.png', data: flames, acl: acl, parent: '/testfolder',
+            name: '-_.!~*\'()' + DB.util.uuid() + '.png', data: flames, acl: acl, parent: '/testfolder',
           });
           return file.upload();
         })
@@ -825,7 +825,7 @@ describe('Test file', function () {
       return rootDb.File.saveMetadata('testfolder', {})
         .then(function () {
           var file = new rootDb.File({
-            name: 'ABC abc 123' + rootDb.util.uuid() + '.png', data: flames, acl: acl, parent: '/testfolder',
+            name: 'ABC abc 123' + DB.util.uuid() + '.png', data: flames, acl: acl, parent: '/testfolder',
           });
           return file.upload();
         })
@@ -965,7 +965,7 @@ describe('Test file', function () {
     });
 
     it('should be updated', function () {
-      var testAcls = new rootDb.Acl()
+      var testAcls = new DB.Acl()
         .allowReadAccess(rootDb.User.me)
         .allowWriteAccess(rootDb.User.me);
       var file = new rootDb.File(pngFile.id);
@@ -990,7 +990,7 @@ describe('Test file', function () {
     });
 
     it('should allow file acls in www bucket', function () {
-      var testAcls = new rootDb.Acl()
+      var testAcls = new DB.Acl()
         .allowReadAccess(rootDb.User.me)
         .allowWriteAccess(rootDb.User.me);
 
@@ -1012,7 +1012,7 @@ describe('Test file', function () {
     var fileName;
 
     before(function () {
-      fileName = 'test/' + rootDb.util.uuid();
+      fileName = 'test/' + DB.util.uuid();
     });
 
     beforeEach(function () {
@@ -1121,11 +1121,11 @@ describe('Test file', function () {
         return rootDb.File.saveMetadata('www', {}).then(function () {
           return rootDb.File.loadMetadata('www');
         }).then(function (acls) {
-          acls.load = new rootDb.util.Permission();
-          acls.insert = new rootDb.util.Permission();
-          acls.delete = new rootDb.util.Permission();
-          acls.query = new rootDb.util.Permission();
-          acls.update = new rootDb.util.Permission();
+          acls.load = new DB.util.Permission();
+          acls.insert = new DB.util.Permission();
+          acls.delete = new DB.util.Permission();
+          acls.query = new DB.util.Permission();
+          acls.update = new DB.util.Permission();
           return rootDb.File.saveMetadata('www', acls);
         }).then(function () {
           return rootDb.File.loadMetadata('www');
@@ -1141,11 +1141,11 @@ describe('Test file', function () {
             return rootDb.File.loadMetadata('www');
           })
           .then(function (acls) {
-            acls.load = new rootDb.util.Permission().allowAccess(rootDb.User.me);
-            acls.insert = new rootDb.util.Permission().allowAccess(rootDb.User.me);
-            acls.delete = new rootDb.util.Permission().allowAccess(rootDb.User.me);
-            acls.query = new rootDb.util.Permission().allowAccess(rootDb.User.me);
-            acls.update = new rootDb.util.Permission().allowAccess(rootDb.User.me);
+            acls.load = new DB.util.Permission().allowAccess(rootDb.User.me);
+            acls.insert = new DB.util.Permission().allowAccess(rootDb.User.me);
+            acls.delete = new DB.util.Permission().allowAccess(rootDb.User.me);
+            acls.query = new DB.util.Permission().allowAccess(rootDb.User.me);
+            acls.update = new DB.util.Permission().allowAccess(rootDb.User.me);
             return rootDb.File.saveMetadata('www', acls);
           })
           .then(function () {
@@ -1349,11 +1349,11 @@ describe('Test file', function () {
     it('should list buckets', function () {
       return rootDb.File.listBuckets().then(function () {
         return rootDb.File.saveMetadata('listBucketTest', {
-          load: new rootDb.util.Permission().allowAccess(rootDb.User.me),
-          insert: new rootDb.util.Permission().allowAccess(rootDb.User.me),
-          update: new rootDb.util.Permission().allowAccess(rootDb.User.me),
-          delete: new rootDb.util.Permission().allowAccess(rootDb.User.me),
-          query: new rootDb.util.Permission().allowAccess(rootDb.User.me),
+          load: new DB.util.Permission().allowAccess(rootDb.User.me),
+          insert: new DB.util.Permission().allowAccess(rootDb.User.me),
+          update: new DB.util.Permission().allowAccess(rootDb.User.me),
+          delete: new DB.util.Permission().allowAccess(rootDb.User.me),
+          query: new DB.util.Permission().allowAccess(rootDb.User.me),
         });
       }).then(function () {
         return rootDb.File.listBuckets();

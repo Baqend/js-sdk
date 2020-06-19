@@ -1,12 +1,11 @@
 'use strict';
 
-import { TokenStorage } from "../util";
-import { RequestBodyType, Request, ResponseBodyType, RequestBody, Response } from "./Connector";
-import { Class } from "../util/Class";
+import { Request, RequestBody, RequestBodyType, Response, ResponseBodyType } from "./Connector";
 import { CommunicationError } from "../error";
 import { Acl } from "../Acl";
+import { TokenStorage } from "../intersection";
 
-export type Specification = {
+export type RestSpecification = {
   method: string;
   status: number[];
   path: string;
@@ -81,7 +80,7 @@ export abstract class Message {
    * Creates a new message class with the given message specification
    * @return A created message object for the specification
    */
-  static create(specification: Specification): Class<Message> {
+  static create<T>(specification: RestSpecification): T {
     const parts = specification.path.split('?');
     const path = parts[0].split(/[:*]\w*/);
 
@@ -105,7 +104,7 @@ export abstract class Message {
       get spec() {
         return spec;
       }
-    };
+    } as any as T;
   }
 
   /**
@@ -114,7 +113,7 @@ export abstract class Message {
    * @param members additional members applied to the created message
    * @return
    */
-  static createExternal<M>(specification: Specification & { query: string[] }, members: M): ExternalMessage<M> {
+  static createExternal<M>(specification: RestSpecification & { query: string[] }, members: M): ExternalMessage<M> {
     const { path, ...props } = specification;
 
     const spec: MessageSpec = {
@@ -194,11 +193,16 @@ export abstract class Message {
    * @param value The header value if omitted the value will be returned
    * @return This message object
    */
-  header(name: string, value: string): this;
+  header(name: string, value: string | null): this;
 
-  header(name: string, value?: string): this | string;
+  header(name: string, value?: string | null): this | string;
 
-  header(name: string, value?: string): this | string {
+  header(name: string, value?: string | null): this | string {
+    if (value === null) {
+      delete this.request.headers[name];
+      return this;
+    }
+
     if (value !== undefined) {
       this.request.headers[name] = value;
       return this;
@@ -210,10 +214,11 @@ export abstract class Message {
   /**
    * Sets the entity type
    * @param data - The data to send
-   * @param type - the type of the data one of 'json'|'text'|'blob'|'arraybuffer' defaults to 'json'
+   * @param type - the type of the data one of 'json'|'text'|'blob'|'arraybuffer'
+   * defaults detect the type based on the body data
    * @return This message object
    */
-  entity(data: RequestBody, type: RequestBodyType = 'json'): this {
+  entity(data: RequestBody, type?: RequestBodyType): this {
     let requestType = type;
     if (!requestType) {
       if (typeof data === 'string') {
@@ -251,9 +256,9 @@ export abstract class Message {
    * @param mimeType the mimeType of the data
    * @return This message object
    */
-  mimeType(mimeType: string): this;
+  mimeType(mimeType: string | null): this;
 
-  mimeType(mimeType?: string): this | string {
+  mimeType(mimeType?: string | null): this | string {
     return this.header('content-type', mimeType);
   }
 
@@ -288,9 +293,9 @@ export abstract class Message {
    * @param eTag the If-Match ETag value
    * @return This message object
    */
-  ifMatch(eTag: string): this;
+  ifMatch(eTag: string | null): this;
 
-  ifMatch(eTag?: string): this | string {
+  ifMatch(eTag?: string | null): this | string {
     return this.header('If-Match', this.formatETag(eTag));
   }
 
@@ -421,9 +426,9 @@ export abstract class Message {
    * @param type The response type one of 'json'|'text'|'blob'|'arraybuffer' defaults to 'json'
    * @return This message object
    */
-  responseType(type: ResponseBodyType): this;
+  responseType(type: ResponseBodyType | null): this;
 
-  responseType(type?: ResponseBodyType): this | ResponseBodyType {
+  responseType(type?: ResponseBodyType | null): this | ResponseBodyType {
     if (type !== undefined) {
       this[RESPONSE_TYPE] = type;
       return this;
@@ -479,7 +484,7 @@ export abstract class Message {
     return this;
   }
 
-  formatETag(eTag?: string) {
+  formatETag(eTag?: string | null) {
     let tag = eTag;
     if (tag && tag !== '*') {
       tag = '' + tag;

@@ -1,8 +1,9 @@
 'use strict';
 
 import { CollectionType, PluralAttribute } from "./PluralAttribute";
-import { Json, JsonArray, Metadata } from "../util";
+import { Json, JsonArray } from "../util";
 import { Type } from "./Type";
+import { Metadata } from "../intersection";
 
 export class ListAttribute<E> extends PluralAttribute<Array<E | null>, E> {
   /**

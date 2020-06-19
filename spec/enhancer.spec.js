@@ -3,7 +3,7 @@
 var DB;
 if (typeof module !== 'undefined') {
   require('./node');
-  DB = require('../lib');
+  DB = require('../');
 }
 
 describe('Test enhancer', function () {
@@ -161,9 +161,9 @@ describe('Test enhancer', function () {
   });
 
   it('enhanced objects should be enumarable', function () {
-    var obj = new db.TestClass();
+    var obj = new db.TestClass({ createdAt: new Date(), updatedAt: new Date() });
 
-    var expected = ['id', 'version', 'acl', 'testValue', 'embedded'];
+    var expected = ['id', 'version', 'acl', 'testValue', 'embedded', 'createdAt', 'updatedAt'];
     var count = 0;
     for (var prop in obj) {
       if (!(obj[prop] instanceof Function)) {

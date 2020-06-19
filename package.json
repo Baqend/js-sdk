@@ -8,16 +8,20 @@
     "email": "info@baqend.com"
   },
   "homepage": "http://baqend.com",
-  "main": "./dist/index.js",
-  "type": "commonjs",
+  "main": "./dist/commonjs/realtime/index.commonjs.js",
+  "exports": {
+    "import": "./dist/esm/realtime/index.js",
+    "require": "./dist/commonjs/realtime/index.js"
+  },
+  "type": "module",
   "typings": "./dist/index.d.ts",
   "browser": {
-    "./index.js": "./dist/baqend.js",
-    "./realtime.js": "./dist/baqend-realtime.js",
-    "./lib/util/atob.js": "./lib/util/atob-browser.js",
-    "./lib/util/is-node.js": "./lib/util/is-node-browser.js",
-    "./lib/util/hmac.js": "./lib/util/hmac-browser.js",
-    "./realtime/connector/websocket.js": "./realtime/connector/websocket-browser.js",
+    ".": "./dist/bundles/baqend.es5.js",
+    "./realtime": "./dist/bundles/baqend-realtime.es5.js",
+    "./lib/util/atob.ts": "./lib/util/atob-browser.ts",
+    "./lib/util/is-node.ts": "./lib/util/is-node-browser.ts",
+    "./lib/util/hmac.ts": "./lib/util/hmac-browser.ts",
+    "./realtime/connector/websocket.ts": "./realtime/connector/websocket-browser.ts",
     "./lib/connector/NodeConnector": false,
     "./lib/connector/FetchConnector": false
   },
@@ -39,12 +43,12 @@
     "opn": "^4.0.2",
     "puppeteer": "^1.20.0",
     "rimraf": "^2.5.4",
-    "rxjs": "^6.0.0",
+    "rxjs": "^6.5.5",
     "simple-git": "^1.107.0",
     "tsd-jsdoc": "^2.5.0",
     "uuid": "^3.0.1",
     "validator": "^4.9.0",
-    "websocket": "^1.0.28"
+    "websocket": "^1.0.31"
   },
   "peerDependencies": {
     "websocket": "^1.0.22"
@@ -64,7 +68,9 @@
     "backend-as-a-service"
   ],
   "devDependencies": {
-    "@types/node": "^10.17.24",
+    "@types/node": "^10.17.26",
+    "@types/webpack": "^4.41.17",
+    "@types/websocket": "^1.0.0",
     "babel-core": "^6.14.0",
     "babel-plugin-external-helpers": "^6.8.0",
     "babel-plugin-transform-proto-to-assign": "^6.9.0",
@@ -109,17 +115,23 @@
     "mocha-jenkins-reporter": "^0.4.1",
     "phantomjs-prebuilt": "^2.1.12",
     "shelljs": "^0.8.3",
+    "shx": "^0.3.2",
+    "source-map-support": "^0.5.19",
+    "terser-webpack-plugin": "^3.0.4",
     "through2": "^3.0.0",
-    "typescript": "^3.9.3",
-    "uglify-js": "^3.4.9"
+    "ts-loader": "^7.0.5",
+    "ts-node": "^8.10.2",
+    "typescript": "^3.9.5",
+    "uglify-js": "^3.4.9",
+    "webpack": "^4.43.0",
+    "webpack-cli": "^3.3.11"
   },
   "scripts": {
-    "build": "tsc",
-    "watch": "tsc --watch",
-    "test": "npm run test:build && npm run test:node && npm run test:karma",
-    "test:build": "grunt browserify:test",
-    "test:node": "grunt mochaTest:test",
-    "test:karma": "karma start",
+    "clean": "shx rm -rf dist",
+    "dev": "tsc --watch -m commonjs --target es5 --outDir dist/commonjs",
+    "build-commonjs": "tsc -m commonjs --target es5 --outDir dist/commonjs",
+    "build-esm": "tsc -m es2015 --target es6 --outDir dist/esm",
+    "build-bundles": "webpack --env.target=es5 && webpack --env.target=es2015",
     "dist": "grunt dist && npm run typings && npm run jsdoc",
     "release": "node scripts/release",
     "typings": "npm run typings:generate && npm run typings:test",

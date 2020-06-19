@@ -68,6 +68,7 @@ export const PersistentError = (function() {
   PersistentError.prototype = Object.create(Error.prototype, {
     constructor: {
       value: PersistentError,
+      writable: true,
       enumerable: false,
       configurable: true,
     },

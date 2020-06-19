@@ -2,14 +2,13 @@
 
 import { ManagedFactory } from "./ManagedFactory";
 import { Entity } from "./Entity";
-import { Class, Json, JsonMap } from "../util";
-import { Managed } from "./Managed";
-import { ManagedType } from "../metamodel/ManagedType";
-import { EntityManager } from "../EntityManager";
-import { EntityType } from "../metamodel/EntityType";
-import { Factory } from "./Factory";
+import { Json, JsonMap } from "../util";
 import { Builder } from "../query";
 import { EntityPartialUpdateBuilder } from "../partialupdate";
+import { Metadata } from "../intersection";
+import { Managed } from "./Managed";
+import { ManagedType } from "../metamodel";
+import { EntityManager } from "../EntityManager";
 
 export class EntityFactory<T extends Entity> extends ManagedFactory<T> {
 
@@ -49,8 +48,8 @@ export class EntityFactory<T extends Entity> extends ManagedFactory<T> {
    * @return instance
    */
   fromJSON(json: Json): T {
-    const obj = this.ref((json as JsonMap).id);
-    return this.managedType.fromJsonValue(null, json, obj);
+    const obj: T = this.db.getReference(this.managedType.ref, (json as JsonMap).id as string);
+    return this.managedType.fromJsonValue(Metadata.get(obj), json, obj, {})!;
   }
 
   /**

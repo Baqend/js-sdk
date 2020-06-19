@@ -3,7 +3,7 @@
 var DB;
 if (typeof module !== 'undefined') {
   require('./node');
-  DB = require('../lib');
+  DB = require('../');
 }
 
 describe('Test logging', function () {

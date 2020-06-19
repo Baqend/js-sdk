@@ -1,7 +1,7 @@
 'use strict';
 
 import { EntityManagerFactory } from "../lib";
-import { WebSocketConnector } from "./connector/WebSocketConnector";
+import { WebSocketConnector } from "./connector";
 
 const WS = Symbol('WebSocket');
 

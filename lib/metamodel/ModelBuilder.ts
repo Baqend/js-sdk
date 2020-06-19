@@ -12,6 +12,7 @@ import { JsonMap } from "../util";
 import { Type } from "./Type";
 import { ManagedType } from "./ManagedType";
 import { Attribute } from "./Attribute";
+import { Validator } from "../intersection";
 
 export class ModelBuilder {
   private models: {[name: string]: Type<any>} = {};
@@ -28,10 +29,11 @@ export class ModelBuilder {
 
   /**
    * @param ref
-   * @return    */
+   * @return
+   */
   getModel(ref: string): ManagedType<any> {
     if (ref in this.models) {
-      return this.models[ref];
+      return this.models[ref] as ManagedType<any>;
     }
 
     const model = this.buildModel(ref);
@@ -41,12 +43,13 @@ export class ModelBuilder {
 
   /**
    * @param modelDescriptors
-   * @return    */
-  buildModels(modelDescriptors: JsonMap[]): {[name: string]: ManagedType<any>} {
+   * @return
+   */
+  buildModels(modelDescriptors: JsonMap[]): {[name: string]: Type<any>} {
     this.modelDescriptors = {};
 
-    modelDescriptors.forEach((modelDescriptor) => {
-      this.modelDescriptors![modelDescriptor.class] = modelDescriptor;
+    modelDescriptors.forEach((modelDescriptor: JsonMap) => {
+      this.modelDescriptors![modelDescriptor.class as string] = modelDescriptor;
     });
 
     Object.keys(this.modelDescriptors).forEach((ref) => {
@@ -66,7 +69,8 @@ export class ModelBuilder {
 
   /**
    * @param ref
-   * @return    */
+   * @return
+   */
   buildModel(ref: string): ManagedType<any> {
     const modelDescriptor = this.modelDescriptors![ref];
     let type;
@@ -77,7 +81,7 @@ export class ModelBuilder {
         type = new EmbeddableType(ref);
       } else {
         const superTypeIdentifier = modelDescriptor.superClass || EntityType.Object.ref;
-        type = new EntityType(ref, this.getModel(superTypeIdentifier));
+        type = new EntityType(ref, this.getModel(superTypeIdentifier) as EntityType<any>);
       }
     } else {
       throw new TypeError('No model available for ' + ref);
@@ -98,8 +102,9 @@ export class ModelBuilder {
 
   /**
    * @param model
-   * @return    */
-  buildAttributes(model: EntityType<any>): void {
+   * @return
+   */
+  buildAttributes(model: ManagedType<any>): void {
     const modelDescriptor = this.modelDescriptors![model.ref];
     const fields = modelDescriptor.fields!;
 
@@ -110,8 +115,8 @@ export class ModelBuilder {
       }
     });
 
-    if (modelDescriptor.validationCode) {
-      model.validationCode = modelDescriptor.validationCode;
+    if (typeof modelDescriptor.validationCode === 'string') {
+      (model as EntityType<any>).validationCode = Validator.compile(model, modelDescriptor.validationCode);
     }
   }
 
@@ -121,8 +126,9 @@ export class ModelBuilder {
    * @param field.type The type reference of the field
    * @param field.order The order number of the field
    * @param field.metadata Additional metadata of the field
-   * @return    */
-  buildAttribute(field: {name: string, type: string, order: number, metadata: {[key: string]: string}}): Attribute<any> {
+   * @return
+   */
+  buildAttribute(field: {name: string, type: string, order: number, metadata: {[key: string]: string}, flags: string[]}): Attribute<any> {
     // TODO: remove readonly if createdAt and updatedAt becomes real metadata fields in the schema
     const isMetadata = field.flags && (field.flags.indexOf('METADATA') !== -1 || field.flags.indexOf('READONLY') !== -1);
     const name = field.name;

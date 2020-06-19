@@ -14,6 +14,9 @@ import {
 } from "./Query";
 import { deprecated } from "../util/deprecated";
 import { Entity } from "../binding";
+import { Node } from "./Node";
+import { RealtimeEvent } from "./RealtimeEvent";
+import { Observable, Subscription } from "rxjs";
 
 /**
  * The Query Builder allows creating filtered and combined queries
@@ -51,14 +54,18 @@ export class Builder<T extends Entity> extends Query<T> {
   /**
    * @inheritDoc
    */
-  eventStream(options?: EventStreamOptions | NextEventCallback<T>, onNext?: NextEventCallback<T> | FailCallback, onError?: FailCallback | CompleteCallback, onComplete?: CompleteCallback) {
+  eventStream(options?: EventStreamOptions): Observable<RealtimeEvent<T>>;
+  eventStream(options?: EventStreamOptions | NextEventCallback<T>, onNext?: NextEventCallback<T> | FailCallback, onError?: FailCallback | CompleteCallback, onComplete?: CompleteCallback): Subscription;
+  eventStream(options?: EventStreamOptions | NextEventCallback<T>, onNext?: NextEventCallback<T> | FailCallback, onError?: FailCallback | CompleteCallback, onComplete?: CompleteCallback): Subscription | Observable<RealtimeEvent<T>> {
     return this.where({}).eventStream(options, onNext, onError, onComplete);
   }
 
   /**
    * @inheritDoc
    */
-  resultStream(options?: ResultStreamOptions | NextResultCallback<T>, onNext?: NextResultCallback<T> | FailCallback, onError?: FailCallback | CompleteCallback, onComplete?: CompleteCallback) {
+  resultStream(options?: ResultStreamOptions): Observable<T[]>;
+  resultStream(options?: ResultStreamOptions | NextResultCallback<T>, onNext?: NextResultCallback<T> | FailCallback, onError?: FailCallback | CompleteCallback, onComplete?: CompleteCallback): Subscription;
+  resultStream(options?: ResultStreamOptions | NextResultCallback<T>, onNext?: NextResultCallback<T> | FailCallback, onError?: FailCallback | CompleteCallback, onComplete?: CompleteCallback): Subscription | Observable<T[]> {
     return this.where({}).resultStream(options, onNext, onError, onComplete);
   }
 
@@ -83,13 +90,13 @@ export class Builder<T extends Entity> extends Query<T> {
     return this.where({}).count(doneCallback, failCallback);
   }
 
-  addOperator(operator: string, args: Query<T>[]) {
+  addOperator(operator: string, args: Node<T>[]) {
     if (args.length < 2) {
       throw new Error('Only two or more queries can be joined with an ' + operator + ' operator.');
     }
 
     args.forEach((arg, index) => {
-      if (!(arg instanceof Query)) {
+      if (!(arg instanceof Node)) {
         throw new Error('Argument at index ' + index + ' is not a query.');
       }
     });
@@ -115,9 +122,3 @@ export class Builder<T extends Entity> extends Query<T> {
 }
 
 Object.assign(Builder.prototype, Condition);
-
-deprecated(Builder.prototype, '_addOperator', 'addOperator');
-deprecated(Builder.prototype, '_addOrder', 'addOrder');
-deprecated(Builder.prototype, '_addFilter', 'addFilter');
-deprecated(Builder.prototype, '_addOffset', 'addOffset');
-deprecated(Builder.prototype, '_addLimit', 'addLimit');

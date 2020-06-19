@@ -1,6 +1,7 @@
 'use strict';
 
-import { Class, Metadata, Json } from "../util";
+import { Class, Json } from "../util";
+import { Metadata } from "../intersection";
 
 const TYPE_CONSTRUCTOR = Symbol('TypeConstructor');
 

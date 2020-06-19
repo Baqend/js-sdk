@@ -4,11 +4,12 @@ import { EntityManager } from "./EntityManager";
 import * as message from "./message";
 import { Connector, Message } from "./connector";
 import { deprecated } from "./util/deprecated";
-import { Code, JsonMap, Lockable, TokenStorage } from "./util";
-import { TokenStorageFactory } from "./util/TokenStorage";
+import { JsonMap, Lockable } from "./util";
+import { TokenStorage, TokenStorageFactory } from "./intersection/TokenStorage";
 import { Metamodel } from "./metamodel/Metamodel";
 import { Response } from "./connector/Connector";
 import { WebSocketConnector } from "../realtime/connector/WebSocketConnector";
+import { Code } from "./intersection";
 
 const CONNECTED = Symbol('Connected') as any;
 
@@ -132,7 +133,8 @@ export class EntityManagerFactory extends Lockable {
    * should be used for token storage
    * @param [options.staleness=60] The maximum staleness of objects that are acceptable while reading cached
    * data, <code>0</code> to always bypass the browser cache
-   * @return    */
+   * @return
+   */
   configure(options: { tokenStorage?: TokenStorage, tokenStorageFactory?: TokenStorageFactory, staleness?: number }): void {
     if (this.connection) {
       throw new Error('The EntityManagerFactory can only be configured before is is connected.');
@@ -154,10 +156,11 @@ export class EntityManagerFactory extends Lockable {
   /**
    * Connects this EntityManager to the given destination
    * @param hostOrApp The host or the app name to connect with
-   * @param [secure=false] <code>true</code> To use a secure connection
+   * @param [secure=true] <code>true</code> To use a secure connection
    * @param [basePath="/v1"] The base path of the api
-   * @return    */
-  connect(hostOrApp: string, secure: boolean, basePath?: string): Promise<this>;
+   * @return
+   */
+  connect(hostOrApp: string, secure?: boolean, basePath?: string): Promise<this>;
 
   /**
    * Connects this EntityManager to the given destination
@@ -165,7 +168,8 @@ export class EntityManagerFactory extends Lockable {
    * @param [port=80|443] The port to connect to
    * @param [secure=false] <code>true</code> To use a secure connection
    * @param [basePath="/v1"] The base path of the api
-   * @return    */
+   * @return
+   */
   connect(hostOrApp: string, port?: number, secure?: boolean, basePath?: string): Promise<this>;
 
   connect(hostOrApp, port?, secure?, basePath?): Promise<this> {
@@ -230,7 +234,4 @@ export class EntityManagerFactory extends Lockable {
     return this.connection!.send(msg);
   }
 }
-
-deprecated(EntityManagerFactory.prototype, '_connector', 'connection');
-deprecated(EntityManagerFactory.prototype, '_connected', CONNECTED);
 

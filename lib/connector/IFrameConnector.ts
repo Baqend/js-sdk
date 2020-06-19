@@ -112,6 +112,7 @@ export class IFrameConnector extends XMLHttpConnector {
           receive({
             status: 0,
             error: new Error('Connection refused.'),
+            headers: {}
           });
         }
       }, 10000);

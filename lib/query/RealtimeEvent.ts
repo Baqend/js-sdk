@@ -1,4 +1,3 @@
-import { Node } from "./Node";
 import { Entity } from "../binding";
 
 export type MatchType = 'match' | 'add' | 'change' | 'changeIndex' | 'remove';

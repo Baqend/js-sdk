@@ -38,8 +38,3 @@ export class Operator<T extends Entity> extends Node<T> {
     return json;
   }
 }
-
-deprecated(Operator.prototype, '_operator', 'operator');
-deprecated(Operator.prototype, '_childs', 'childes');
-
-module.exports = Operator;

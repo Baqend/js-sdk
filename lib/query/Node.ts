@@ -2,22 +2,25 @@
 
 import { Entity } from "../binding";
 
-import { deprecated } from "../util/deprecated";
-import { Json, JsonMap, Metadata } from "../util";
+import { deprecated, JsonMap } from '../util';
 import {
   CompleteCallback,
   CountCallback,
   EventStreamOptions,
-  FailCallback, NextEventCallback, NextResultCallback,
+  FailCallback,
+  NextEventCallback,
+  NextResultCallback,
   Query,
   ResultListCallback,
-  ResultOptions, ResultStreamOptions,
+  ResultOptions,
+  ResultStreamOptions,
   SingleResultCallback
 } from "./Query";
 import * as message from "../message";
 import { FilterObject } from "./Filter";
 import { Observable, Subscription } from "rxjs";
 import { RealtimeEvent } from "./RealtimeEvent";
+import { Metadata } from "../intersection";
 
 /**
  * A Query Node saves the state of the query being built
@@ -104,7 +107,7 @@ export class Node<T extends Entity> extends Query<T> {
     const uriSize = this.entityManager.connection?.host.length + query.length;
     let msg;
     if (uriSize > Query.MAX_URI_SIZE) {
-      msg = new message.AdhocQueryPOST(type.name, query, this.firstResult, 1, sort)
+      msg = new message.AdhocQueryPOST(type.name, this.firstResult, 1, sort)
         .entity(query, 'text');
     } else {
       msg = new message.AdhocQuery(type.name, query, this.firstResult, 1, sort);
@@ -198,11 +201,3 @@ export class Node<T extends Entity> extends Query<T> {
     return this;
   }
 }
-
-deprecated(Node.prototype, '_sort', 'order');
-deprecated(Node.prototype, '_serializeQuery', 'serializeQuery');
-deprecated(Node.prototype, '_serializeSort', 'serializeSort');
-deprecated(Node.prototype, '_createResultList', 'createResultList');
-deprecated(Node.prototype, '_addOrder', 'addOrder');
-deprecated(Node.prototype, '_addOffset', 'addOffset');
-deprecated(Node.prototype, '_addLimit', 'addLimit');

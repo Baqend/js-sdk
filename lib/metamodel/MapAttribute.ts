@@ -1,9 +1,9 @@
 'use strict';
 
 import { CollectionType, PluralAttribute } from "./PluralAttribute";
-import { PersistentError } from "../error/PersistentError";
+import { PersistentError } from "../error";
 import { Type } from "./Type";
-import { Class, Json, JsonMap } from "../util";
+import { JsonMap } from "../util";
 
 export class MapAttribute<K, V> extends PluralAttribute<Map<K | null, V | null>, V> {
   public keyType: Type<K>;

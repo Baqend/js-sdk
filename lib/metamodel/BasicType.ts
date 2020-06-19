@@ -1,9 +1,10 @@
 'use strict';
 
-import { Class, Metadata, Json, JsonMap, JsonArray } from "../util";
+import { Class, Json, JsonMap, JsonArray } from "../util";
 import { File } from "../binding";
 import { GeoPoint } from "../GeoPoint";
 import { PersistenceType, Type } from "./Type";
+import { Metadata } from "../intersection";
 
 function dateToJson(value: Date | null): string | null {
   // remove trailing zeros

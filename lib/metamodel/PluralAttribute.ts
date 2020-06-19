@@ -15,6 +15,8 @@ export enum CollectionType {
 }
 
 export abstract class PluralAttribute<T, E> extends Attribute<T> {
+  public static readonly CollectionType = CollectionType;
+
   public elementType: Type<E>;
   public typeConstructor: Class<T>;
 
@@ -87,8 +89,8 @@ export abstract class PluralAttribute<T, E> extends Attribute<T> {
    * @return A serialized version of the json
    */
   protected keyValue(json: Json): string {
-    if (json && 'id' in (json as JsonMap)) {
-      return json['id'];
+    if (json && typeof json === 'object' && 'id' in json) {
+      return String(json['id']);
     }
 
     return String(json);

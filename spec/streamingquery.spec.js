@@ -3,10 +3,8 @@
 var DB;
 if (typeof module !== 'undefined') {
   require('./node');
-  DB = require('../realtime');
-  require('rxjs/add/operator/first');
-  require('rxjs/add/operator/scan');
-  require('rxjs/add/operator/map');
+  DB = require('../');
+  require('rxjs/operators');
 }
 
 function getCountByEventMatchType(event) {

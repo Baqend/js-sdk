@@ -1,11 +1,10 @@
 'use strict';
 
-import { Json, JsonMap, Metadata } from "../../lib/util";
-import { uuid } from "../../lib/util/uuid";
 import { Observable, Subscription, Subscriber } from "rxjs";
-import { Entity } from "../../lib/binding";
-import { EntityManager } from "../../lib";
-import { EventStreamOptions, MatchType, Node, Operation, RealtimeEvent, ResultStreamOptions } from "../../lib/query";
+import {
+  EntityManager, Metadata, uuid, JsonMap, Entity,
+  EventStreamOptions, MatchType, Node, Operation, RealtimeEvent, ResultStreamOptions
+} from "../../lib";
 import { ChannelMessage } from "../connector/WebSocketConnector";
 
 type InitialResultEvent = ChannelMessage & {

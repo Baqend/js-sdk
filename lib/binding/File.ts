@@ -4,11 +4,12 @@ import { PersistentError } from '../error';
 import { Acl } from "../Acl";
 import { uuid } from "../util/uuid";
 import * as message from "../message";
-import { StatusCode } from "../connector/Message";
+import { Message, ProgressListener, StatusCode } from "../connector/Message";
 import { deprecated } from "../util/deprecated";
-import { trailingSlashIt } from "./trailingSlashIt";
+import { trailingSlashIt } from "../util/trailingSlashIt";
 import { EntityManager } from "../EntityManager";
-import { JsonMap } from "../util";
+import { Json, JsonMap } from "../util";
+import { ResponseBodyType } from "../connector/Connector";
 
 const FILE_BUCKET = '/file';
 const FILE_BUCKET_LENGTH = FILE_BUCKET.length;
@@ -16,6 +17,76 @@ const FILE_BUCKET_LENGTH = FILE_BUCKET.length;
 const ID = Symbol('Id');
 const METADATA = Symbol('Metadata');
 const DATA = Symbol('Data');
+
+export interface FileIdentifiers {
+  /**
+   * The id of the file.
+   */
+  id?: string,
+  /**
+   * The filename without the id. If omitted and data is provided as a file object,
+   * the {@link File#name} will be used otherwise a UUID will be generated.
+   */
+  name?: string,
+  /**
+   * The parent folder which contains the file
+   */
+  parent?: string,
+  /**
+   * The full path of the file.
+   * You might either specify the path of the file or a combination of parent and file name.
+   */
+  path?: string
+}
+
+export interface FileData {
+  /**
+   * The initial file content, which will be uploaded by
+   * invoking {@link #upload} later on.
+   */
+  data?: string | Blob | File | ArrayBuffer | Json,
+  /**
+   * A optional type hint used to correctly interpret the provided data
+   */
+  type?: string,
+}
+
+export interface FileMetadata {
+  /**
+   * The mimType of the file. Defaults to the mimeType of the provided data if
+   * it is a file object, blob or data-url
+   */
+  mimeType?: string,
+  /**
+   * The size of the file content in bytes
+   */
+  size?: number,
+  /**
+   * The optional current ETag of the file
+   */
+  eTag?: string,
+  /**
+   * The cration date of the file
+   */
+  createdAt?: string | Date
+  /**
+   * The optional last modified date
+   */
+  lastModified?: string | Date,
+  /**
+   * The file acl which will be set, if the file is uploaded afterwards
+   */
+  acl?: Acl,
+  /**
+   * The custom headers which will be send with the file after updating it
+   */
+  headers?: { [header: string]: string },
+}
+
+/**
+ * A file name or all file options
+ */
+export type FileOptions = (FileIdentifiers & FileData & FileMetadata) | string;
 
 /**
  * Creates a file object, which represents one specific file reference.
@@ -69,6 +140,10 @@ export class File {
    * Specifies whether this file is a folder.
    */
   public readonly isFolder: boolean;
+
+  /**
+   * The database connection to use
+   */
   public db: EntityManager = null as any; // is lazy initialized and never null
 
   /**
@@ -118,10 +193,8 @@ export class File {
   /**
    * The last modified date of the file, only accessible after fetching the metadata
    * or downloading/uploading/providing the eTag
-   * @type {?Date}
-   * @readonly
    */
-  get lastModified() {
+  get lastModified(): Date | null {
     if (this.isFolder) {
       throw new Error('A folder has no lastModified');
     }
@@ -214,26 +287,9 @@ export class File {
   /**
    * Creates a new file object which represents a file at the given id. Data which is provided to the constructor will
    * be uploaded by invoking {@link upload()}
-   * @param {object|string} fileOptions The fileOptions used to create a new file object, or just the id of the file
-   * @param {string=} fileOptions.id The id of the file.
-   * @param {string=} fileOptions.name The filename without the id. If omitted and data is provided as a file object,
-   * the {@link File#name} will be used otherwise a UUID will be generated.
-   * @param {string} [fileOptions.parent="/www"] The parent folder which contains the file
-   * @param {string} [fileOptions.path="/www"] The full path of the file.
-   * You might either specify the path of the file or a combination of parent and file name.
-   * @param {string|Blob|File|ArrayBuffer|json=} fileOptions.data The initial file content, which will be uploaded by
-   * invoking {@link #upload} later on.
-   * @param {string=} fileOptions.type A optional type hint used to correctly interpret the provided data
-   * @param {string=} fileOptions.mimeType The mimType of the file. Defaults to the mimeType of the provided data if
-   * it is a file object, blob or data-url
-   * @param {number=} fileOptions.size The size of the file content in bytes
-   * @param {string=} fileOptions.eTag The optional current ETag of the file
-   * @param {string|Date=} fileOptions.lastModified The optional last modified date
-   * @param {Acl=} fileOptions.acl The file acl which will be set, if the file is uploaded afterwards
-   * @param {Object<string,string>} [fileOptions.headers] The custom headers which will be send with the file after
-   * uploading it
+   * @param fileOptions The fileOptions used to create a new file object, or just the id of the file
    */
-  constructor(fileOptions) {
+  constructor(fileOptions: FileOptions) {
     // Is fileOptions just an id?
     const opt = typeof fileOptions === 'string' ? { id: fileOptions } : (fileOptions || {});
 
@@ -256,10 +312,10 @@ export class File {
 
   /**
    * Parses an E-Tag header
-   * @param {string=} eTag The E-Tag to parse or something falsy
-   * @return {?string} Returns the parsed E-Tag or null, if it could not be parsed
+   * @param eTag The E-Tag to parse or something falsy
+   * @return Returns the parsed E-Tag or null, if it could not be parsed
    */
-  static parseETag(eTag) {
+  static parseETag(eTag?: string): string | null {
     if (!eTag) {
       return null;
     }
@@ -274,26 +330,15 @@ export class File {
 
   /**
    * Uploads the file content which was provided in the constructor or by uploadOptions.data
-   * @param {object=} uploadOptions The upload options
-   * @param {string|Blob|File|ArrayBuffer|json} [uploadOptions.data] The initial file content, which will be uploaded by
-   * invoking {@link #upload} later on.
-   * @param {string=} uploadOptions.type A optional type hint used to correctly interpret the provided data
-   * @param {string=} uploadOptions.mimeType The mimType of the file. Defaults to the mimeType of the provided data if
-   * it is a file object, blob or data-url
-   * @param {string=} uploadOptions.eTag The optional current ETag of the file
-   * @param {string=} uploadOptions.lastModified The optional last modified date
-   * @param {Acl=} uploadOptions.acl The file acl which will be set, if the file is uploaded afterwards
-   * @param {Object<string,string>} [uploadOptions.headers] The custom headers which will be send with the file after
-   * uploading it
-   * @param {boolean} [uploadOptions.force=false] force the upload and overwrite any existing files without validating
+   * @param uploadOptions The upload options
+   * @param [uploadOptions.force=false] force the upload and overwrite any existing files without validating
    * it
-   * @param {Message~progressCallback} [uploadOptions.progress] listen to progress changes during upload
-   * @param {File~fileCallback=} doneCallback The callback is invoked after the upload succeed successfully
-   * @param {File~failCallback=} failCallback The callback is invoked if any error is occurred
-   * @return {Promise<File>} A promise which will be fulfilled with this file object
-   * where the metadata is updated
+   * @param [uploadOptions.progress] listen to progress changes during upload
+   * @param doneCallback The callback is invoked after the upload succeed successfully
+   * @param failCallback The callback is invoked if any error is occurred
+   * @return A promise which will be fulfilled with this file object where the metadata is updated
    */
-  upload(uploadOptions, doneCallback, failCallback) {
+  upload(uploadOptions?: FileData & FileMetadata & { force?: boolean, progress?: ProgressListener }, doneCallback?, failCallback?): Promise<this> {
     const opt = uploadOptions || {};
 
     if (this.isFolder) {
@@ -313,7 +358,7 @@ export class File {
       uploadMessage.customHeaders(meta.headers);
     }
 
-    uploadMessage.progress(opt.progress);
+    uploadMessage.progress(opt.progress || null);
 
     this.conditional(uploadMessage, opt);
 
@@ -327,16 +372,15 @@ export class File {
 
   /**
    * Download a file and providing it in the requested type
-   * @param {object=} downloadOptions The download options
-   * @param {string} [downloadOptions.type="blob"] The type used to provide the file
-   * @param {string} [downloadOptions.refresh=false] Indicates to make a revalidation request and not use the cache
-   * @param {File~downloadCallback=} doneCallback The callback is invoked after the download succeed
+   * @param downloadOptions The download options
+   * @param downloadOptions.type="blob" The type used to provide the file
+   * @param downloadOptions.refresh=false Indicates to make a revalidation request and not use the cache
+   * @param doneCallback The callback is invoked after the download succeed
    * successfully
-   * @param {File~failCallback=} failCallback The callback is invoked if any error is occurred
-   * @return {Promise<string|Blob|File|ArrayBuffer|json>} A promise which will be fulfilled with the downloaded
-   * file content
+   * @param failCallback The callback is invoked if any error is occurred
+   * @return A promise which will be fulfilled with the downloaded file content
    */
-  download(downloadOptions, doneCallback, failCallback) {
+  download(downloadOptions?: { type?: ResponseBodyType, refresh?: false }, doneCallback?, failCallback?): Promise<string|Blob|File|ArrayBuffer|Json> {
     const opt = downloadOptions || {};
 
     if (this.isFolder) {
@@ -364,14 +408,14 @@ export class File {
 
   /**
    * Deletes a file
-   * @param {object=} deleteOptions The delete options
-   * @param {boolean} [deleteOptions.force=false] force the deletion without verifying any version
-   * @param {File~deleteCallback=} doneCallback The callback is invoked after the deletion succeed successfully
-   * @param {File~failCallback=} failCallback The callback is invoked if any error is occurred
-   * @return {Promise<File|File[]>} A promise which will be fulfilled with this file object,
+   * @param deleteOptions The delete options
+   * @param deleteOptions.force=false force the deletion without verifying any version
+   * @param doneCallback The callback is invoked after the deletion succeed successfully
+   * @param failCallback The callback is invoked if any error is occurred
+   * @return A promise which will be fulfilled with this file object,
    * or with a list of all deleted files, if this file is an folder
    */
-  delete(deleteOptions, doneCallback, failCallback) {
+  delete(deleteOptions?: { force?: boolean }, doneCallback?, failCallback?): Promise<this | File[]> {
     const opt = deleteOptions || {};
 
     const deleteMessage = new message.DeleteFile(this.bucket, this.key);
@@ -392,13 +436,11 @@ export class File {
 
   /**
    * Creates the file id from given options.
-   * @param {*} fileOptions
-   * @return {string}
-   * @private
+   * @param fileOptions
+   * @return
    */
-  createIdFromOptions(fileOptions) {
-    /** @var {string} */
-    let path;
+  private createIdFromOptions(fileOptions: FileIdentifiers & FileData): string {
+    let path: string;
     if (fileOptions.path) {
       path = fileOptions.path;
     } else {
@@ -407,7 +449,7 @@ export class File {
         throw new Error('Invalid parent name: ' + parent);
       }
 
-      const name = fileOptions.name || (fileOptions.data && fileOptions.data.name) || uuid();
+      const name = fileOptions.name || (fileOptions?.data as File)?.name || uuid();
       path = parent + name;
     }
 
@@ -426,12 +468,11 @@ export class File {
 
   /**
    * Makes the given message a conditional request based on the file metadata
-   * @param {Message} msg The message to make conditional
-   * @param {object} options additional request options
-   * @param {boolean} [options.force=false] Force the request operation by didn't make it conditional
-   * @return {void}
+   * @param msg The message to make conditional
+   * @param options additional request options
+   * @param options.force=false Force the request operation by didn't make it conditional
    */
-  conditional(msg, options) {
+  conditional(msg: Message, options: { force?: boolean }): void {
     if (options.force) {
       return;
     }
@@ -448,13 +489,13 @@ export class File {
 
   /**
    * Gets the file metadata of a file
-   * @param {Object=} options The load metadata options
-   * @param {boolean} [options.refresh=false] Force a revalidation while fetching the metadata
-   * @param {File~fileCallback=} doneCallback The callback is invoked after the metadata is fetched
-   * @param {File~failCallback=} failCallback The callback is invoked if any error has occurred
-   * @return {Promise<File>} A promise which will be fulfilled with this file
+   * @param options The load metadata options
+   * @param [options.refresh=false] Force a revalidation while fetching the metadata
+   * @param doneCallback The callback is invoked after the metadata is fetched
+   * @param failCallback The callback is invoked if any error has occurred
+   * @return A promise which will be fulfilled with this file
    */
-  loadMetadata(options, doneCallback, failCallback) {
+  loadMetadata(options?: { refresh?: boolean }, doneCallback?, failCallback?): Promise<this> {
     const opt = options || {};
 
     if (this.isFolder) {
@@ -477,13 +518,13 @@ export class File {
 
   /**
    * Updates the matadata of this file.
-   * @param {Object=} options The save metadata options
-   * @param {boolean} [options.force=false] force the update and overwrite the existing metadata without validating it
-   * @param {File~fileCallback=} doneCallback The callback is invoked after the metadata is saved
-   * @param {File~failCallback=} failCallback The callback is invoked if any error has occurred
-   * @return {Promise<File>} A promise which will be fulfilled with this file
+   * @param options The save metadata options
+   * @param [options.force=false] force the update and overwrite the existing metadata without validating it
+   * @param doneCallback The callback is invoked after the metadata is saved
+   * @param failCallback The callback is invoked if any error has occurred
+   * @return A promise which will be fulfilled with this file
    */
-  saveMetadata(options, doneCallback, failCallback) {
+  saveMetadata(options?: { force?: boolean }, doneCallback?, failCallback?): Promise<this> {
     const opt = options || {};
 
     const json = this.toJSON();
@@ -500,12 +541,11 @@ export class File {
 
   /**
    * Validates and sets the file metadata based on the given options
-   * @param {object} options
+   * @param options
    * @private
    */
-  setDataOptions(options) {
-    const data = options.data;
-    const type = options.type;
+  setDataOptions(options: FileData & FileMetadata) {
+    const { data, type, ...metadata } = options;
 
     if (!data) {
       return;
@@ -514,17 +554,17 @@ export class File {
     // Set data
     this[DATA] = { type, data };
 
-    const mimeType = this.guessMimeType(options);
-    this.fromJSON(Object.assign({}, options, { mimeType }));
+    const mimeType = this.guessMimeType(options) || undefined;
+    this.fromJSON({ ...metadata, mimeType });
   }
 
   /**
    * Gets the MIME type of given file options.
-   * @param {object} options
-   * @return {?string} Returns the guessed MIME type or null, if it could not be guessed.
+   * @param options
+   * @return Returns the guessed MIME type or null, if it could not be guessed.
    * @private
    */
-  guessMimeType(options) {
+  guessMimeType(options: FileData & FileMetadata): string | null {
     const mimeType = options.mimeType;
     if (mimeType) {
       return mimeType;
@@ -534,20 +574,18 @@ export class File {
       return options.data.type;
     }
 
-    if (options.type === 'data-url') {
+    if (options.type === 'data-url' && typeof options.data === 'string') {
       const match = options.data.match(/^data:(.+?)(;base64)?,.*$/);
-      return match[1];
+      return match && match[1];
     }
 
     return null;
   }
 
   /**
-   * @param {Object<string,string>} headers
-   * @return {void}
-   * @private
+   * @param headers
    */
-  fromHeaders(headers) {
+  private fromHeaders(headers: {[header: string]: string}): void {
     this.fromJSON({
       eTag: File.parseETag(headers.etag),
       lastModified: headers['last-modified'],
@@ -565,11 +603,11 @@ export class File {
    * If the JSON object contains an ID, it must match with this file ID, otherwise an exception is thrown.
    *
    * @param json The json to deserialize
-   * @return {void}
    */
-  fromJSON(json: JsonMap) {
-    if (json.id && this.id !== json.id) {
-      throw new Error('This file id ' + this.id + ' does not match the given json id ' + json.id);
+  fromJSON(json: JsonMap | FileMetadata): void {
+    const { id } = json as JsonMap;
+    if (id && this.id !== id) {
+      throw new Error('This file id ' + this.id + ' does not match the given json id ' + id);
     }
 
     const meta = this[METADATA] || {};
@@ -591,7 +629,7 @@ export class File {
       createdAt: (json.createdAt && new Date(json.createdAt as string)) || meta.createdAt,
       eTag: json.eTag || meta.eTag,
       acl,
-      size: typeof json.size === 'number' ? json.size : json.contentLength,
+      size: typeof json.size === 'number' ? json.size : (json as JsonMap).contentLength,
       headers: json.headers || meta.headers || {},
     });
   }
@@ -618,57 +656,11 @@ export class File {
 
   /**
    * Checks whenever metadata are already loaded of the file, throws an error otherwise
-   * @return {void}
+   * @return
    */
-  checkAvailable() {
+  checkAvailable(): void {
     if (!this.isMetadataLoaded) {
       throw new PersistentError('The file metadata of ' + this.id + ' is not available.');
     }
   }
-
-  /**
-   * The database connection to use
-   * @name db
-   * @type {EntityManager}
-   * @memberOf File.prototype
-   * @field
-   * @readonly
-   */
 }
-
-/**
- * The database connection to use
- * @member File.prototype
- */
-deprecated(File.prototype, '_db', 'db');
-deprecated(File.prototype, '_conditional', 'conditional');
-deprecated(File.prototype, '_setMetadata', 'setDataOptions');
-deprecated(File.prototype, '_checkAvailable', 'checkAvailable');
-
-/**
- * The file callback is called, when the asynchronous operation completes successfully
- * @callback File~fileCallback
- * @param {File} file The updated file metadata
- * @return {*} A Promise, result or undefined
- */
-
-/**
- * The download callback is called, when the asynchronous download completes successfully
- * @callback File~downloadCallback
- * @param {string|Blob|File|ArrayBuffer|json} data The download file content in the requested format
- * @return {*} A Promise, result or undefined
- */
-
-/**
- * The delete callback is called, when the asynchronous deletion completes successfully
- * @callback File~deleteCallback
- * @param {File} data The file metadata
- * @return {*} A Promise, result or undefined
- */
-
-/**
- * The fail callback is called, when the asynchronous operation is rejected by an error
- * @callback File~failCallback
- * @param {PersistentError} error The error which reject the operation
- * @return {*} A Promise, result or undefined
- */

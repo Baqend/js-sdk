@@ -1,12 +1,16 @@
 'use strict';
 
 import { Type } from "./Type";
-import { Class, Json, JsonMap, Metadata, Permission, Validator } from "../util";
+import { Class, Json, JsonMap } from "../util";
 import { deprecated } from "../util/deprecated";
 import { Enhancer, Entity, Managed, ManagedFactory } from "../binding";
 import { Attribute } from "./Attribute";
 import { EntityManager } from "../EntityManager";
 import { EntityType } from "./EntityType";
+import { PluralAttribute } from "./PluralAttribute";
+import { SingularAttribute } from "./SingularAttribute";
+import { EmbeddableType } from "./index";
+import { Metadata, Permission } from "../intersection";
 
 const VALIDATION_CODE = Symbol('ValidationCode');
 const TYPE_CONSTRUCTOR = Type.TYPE_CONSTRUCTOR;
@@ -22,19 +26,15 @@ export abstract class ManagedType<T extends Managed> extends Type<T> {
   /**
    * @type Function
    */
-  get validationCode() {
+  get validationCode(): Function | null {
     return this[VALIDATION_CODE];
   }
 
   /**
    * @param code
    */
-  set validationCode(code: string) {
-    if (!code) {
-      this[VALIDATION_CODE] = null;
-    } else {
-      this[VALIDATION_CODE] = Validator.compile(this, code);
-    }
+  set validationCode(code: Function | null) {
+    this[VALIDATION_CODE] = code;
   }
 
   /**
@@ -220,8 +220,8 @@ export abstract class ManagedType<T extends Managed> extends Type<T> {
   /**
    * @inheritDoc
    */
-  fromJsonValue(state: Metadata, jsonObject: Json, currentObject: T | null, options?: { onlyMetadata?: boolean }) {
-    if (!jsonObject) {
+  fromJsonValue(state: Metadata, jsonObject: Json, currentObject: T | null, options: { onlyMetadata?: boolean }) {
+    if (!jsonObject || !currentObject) {
       return null;
     }
 
@@ -285,10 +285,10 @@ export abstract class ManagedType<T extends Managed> extends Type<T> {
    * Returns iterator to get all referenced entities
    * @return
    */
-  references(): IterableIterator<{ path: string }> {
+  references(): IterableIterator<{ path: string[] }> {
     const attributes = this.attributes();
-    let attribute;
-    let embeddedAttributes;
+    let attribute: Attribute<any>;
+    let embeddedAttributes: IterableIterator<{ path: string[] }> | null;
 
     return {
       [Symbol.iterator]() {
@@ -307,15 +307,19 @@ export abstract class ManagedType<T extends Managed> extends Type<T> {
 
           const item = attributes.next();
           if (item.done) {
-            return item;
+            // currently TS requires a undefined value here https://github.com/microsoft/TypeScript/issues/38479
+            return { done: true, value: undefined };
           }
 
           attribute = item.value;
-          const type = attribute.isCollection ? attribute.elementType : attribute.type;
+          const type = attribute.isCollection
+              ? (attribute as PluralAttribute<any, any>).elementType
+              : (attribute as SingularAttribute<any>).type;
+
           if (type.isEntity) {
             return { value: { path: [attribute.name] } };
           } else if (type.isEmbeddable) {
-            embeddedAttributes = type.references();
+            embeddedAttributes = (type as EmbeddableType<any>).references();
           }
         }
       },
@@ -325,10 +329,10 @@ export abstract class ManagedType<T extends Managed> extends Type<T> {
   /**
    * Retrieves whether this type has specific metadata
    *
-   * @param {string} key
+   * @param key
    * @return
    */
-  hasMetadata(key): boolean {
+  hasMetadata(key: string): boolean {
     return !!this.metadata && !!this.metadata[key];
   }
 
@@ -346,5 +350,3 @@ export abstract class ManagedType<T extends Managed> extends Type<T> {
     return this.metadata!![key];
   }
 }
-
-deprecated(ManagedType.prototype, '_enhancer', 'enhancer');

@@ -1,6 +1,6 @@
 'use strict';
 
-const deprecated = require('./deprecated');
+import { deprecated } from "./deprecated";
 
 const isLocked = Symbol('IsLocked');
 const readyPromise = Symbol('ReadyPromise');
@@ -28,7 +28,6 @@ export class Lockable {
   /**
    * Indicates if there is currently no exclusive operation executed
    * <code>true</code> If no exclusive lock is hold
-   * @type
    */
   get isReady(): boolean {
     return !this[isLocked];
@@ -36,20 +35,20 @@ export class Lockable {
 
   /**
    * Waits on the previously requested operation and calls the doneCallback if the operation is fulfilled
-   * @param {Lockable~doneCallback=} doneCallback The callback which will be invoked when the previously
+   * @param doneCallback The callback which will be invoked when the previously
    * operations on this object is completed.
-   * @param {Lockable~failCallback=} failCallback When the lock can't be released caused by a none
+   * @param failCallback When the lock can't be released caused by a none
    * recoverable error
    * @return A promise which completes successfully, when the previously requested
    * operation completes
    */
-  ready(doneCallback?, failCallback?): Promise<this> {
+  ready(doneCallback?: (this) => any, failCallback?: (Error) => any): Promise<this> {
     return this[readyPromise].then(doneCallback, failCallback);
   }
 
   /**
    * Try to aquire an exclusive lock and executes the given callback.
-   * @param {Lockable~callback} callback The exclusive operation to execute
+   * @param callback The exclusive operation to execute
    * @param [critical=false] Indicates if the operation is critical. If the operation is critical and the
    * operation fails, then the lock will not be released
    * @return A promise
@@ -91,6 +90,3 @@ export class Lockable {
     }
   }
 }
-
-deprecated(Lockable.prototype, '_isLocked', isLocked);
-deprecated(Lockable.prototype, '_readyPromise', readyPromise);

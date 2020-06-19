@@ -4,15 +4,14 @@
 
 import { PersistentError } from "../error";
 import { Message } from "./Message";
-import { Json, JsonMap } from "../util/Json";
-import { Class } from "../util";
+import { Json, JsonMap, Class } from "../util";
 
 export type Receiver = (response: Response) => void;
 export type RequestBody = string | Blob | Buffer | ArrayBuffer | FormData | Json;
 export type RequestBodyType = 'json'|'text'|'blob'|'buffer'|'arraybuffer'|'data-url'|'form';
 export type ResponseBodyType = 'json'|'text'|'blob'|'arraybuffer'|'data-url'|'base64';
 export type Request = { method: string, path: string, type?: RequestBodyType, entity?: any, headers: {[headerName: string]: string} };
-export type Response = { status: number, headers?: {[headerName: string]: string}, entity?: any, error?: Error};
+export type Response = { status: number, headers: {[headerName: string]: string}, entity?: any, error?: Error};
 
 export abstract class Connector {
   static readonly DEFAULT_BASE_PATH = '/v1';
@@ -58,7 +57,7 @@ export abstract class Connector {
   /**
    * @param host or location
    * @param port
-   * @param secure <code>true</code> for an secure connection
+   * @param secure=true <code>true</code> for an secure connection
    * @param basePath The basepath of the api
    * @return
    */
@@ -79,8 +78,8 @@ export abstract class Connector {
       }
     }
 
-    // ensure right type
-    s = !!s;
+    // ensure right type, make secure: true the default
+    s = s === undefined || !!s;
     if (b === undefined) {
       b = Connector.DEFAULT_BASE_PATH;
     }
@@ -90,7 +89,7 @@ export abstract class Connector {
       if (matches) {
         s = matches[1] === 'https';
         h = matches[2].replace(/(\[|])/g, '');
-        p = matches[4];
+        p = Number(matches[4]);
         b = matches[5] || '';
       } else {
         throw new Error('The connection uri host ' + h + ' seems not to be valid');
@@ -163,7 +162,7 @@ export abstract class Connector {
    * @return
    */
   send(message: Message): Promise<Response> {
-    let response: Response = { status: 0 };
+    let response: Response = { status: 0, headers: {} };
     return new Promise<Response>((resolve) => {
       this.prepareRequest(message);
       this.doSend(message, message.request, resolve);
@@ -228,11 +227,11 @@ export abstract class Connector {
     }
 
     if (message.request.path === '/connect') {
-      message.request.path = message.tokenStorage.signPath(this.basePath + message.request.path)
+      message.request.path = message.tokenStorage!.signPath(this.basePath + message.request.path)
         .substring(this.basePath.length);
 
       if (message.cacheControl()) {
-        message.request.path += (message.tokenStorage.token ? '&' : '?') + 'BCB';
+        message.request.path += (message.tokenStorage!.token ? '&' : '?') + 'BCB';
       }
     } else if (message.tokenStorage) {
       const token = message.tokenStorage.token;
@@ -306,6 +305,3 @@ export abstract class Connector {
    */
   protected abstract fromFormat(response: Response, entity: any, type: ResponseBodyType): any;
 }
-
-
-module.exports = Connector;

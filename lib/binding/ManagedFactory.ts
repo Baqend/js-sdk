@@ -1,45 +1,21 @@
 'use strict';
 
-import { InstanceFactory } from "./Factory";
 import { Factory } from "./Factory";
-import { deprecated } from "../util/deprecated";
-import { Class } from "../util/Class";
+import { Class, deprecated } from "../util";
 import { EntityManager } from "../EntityManager";
-import { ManagedType } from "../metamodel/ManagedType";
+import { ManagedType } from "../metamodel";
 import { Managed } from "./Managed";
-import { Entity } from "./Entity";
-import { EntityType } from "../metamodel/EntityType";
-import { EntityFactory } from "./EntityFactory";
-import { UserFactory } from "./UserFactory";
-import { model } from "../model";
-import { DeviceFactory } from "./DeviceFactory";
-import { User } from "./User";
 import { Json } from "../util";
 
 export class ManagedFactory<T extends Managed> extends Factory<T> {
-
-  static create<T extends model.Device>(this: typeof DeviceFactory, managedType: EntityType<model.Device>, db: EntityManager): DeviceFactory;
-  static create<T extends model.User>(this: typeof UserFactory, managedType: EntityType<model.User>, db: EntityManager): UserFactory;
-  static create<T extends Entity>(this: typeof EntityFactory, managedType: EntityType<T>, db: EntityManager): EntityFactory<T>;
-  static create<T extends Managed>(this: typeof ManagedFactory, managedType: ManagedType<T>, db: EntityManager): ManagedFactory<T>;
 
   /**
    * Creates a new ManagedFactory for the given type
    * @param managedType The metadata of type T
    * @param db The entity manager instance
    */
-  public static create<T extends (Managed | Entity | model.User | model.Device)>(managedType: ManagedType<T>, db: EntityManager): any {
-    let factory: ManagedFactory<any>;
-
-    if (managedType.name == 'User') {
-      factory = UserFactory.createFactory(managedType.typeConstructor as Class<model.User>);
-    } else if (managedType.name == 'Device') {
-      factory = DeviceFactory.createFactory(managedType.typeConstructor as Class<model.Device>);
-    } else if (managedType.isEntity) {
-      factory = EntityFactory.createFactory(managedType.typeConstructor as Class<Entity>);
-    } else {
-      factory = ManagedFactory.createFactory(managedType.typeConstructor as Class<Managed>);
-    }
+  public static create<T extends Managed>(managedType: ManagedType<T>, db: EntityManager): ManagedFactory<T> {
+    const factory: ManagedFactory<T> = this.createFactory<ManagedFactory<T>, T>(managedType.typeConstructor);
 
     factory.methods = factory.prototype;
     factory.managedType = managedType;
@@ -108,6 +84,3 @@ export class ManagedFactory<T extends Managed> extends Factory<T> {
     this.methods[name] = fn;
   }
 }
-
-deprecated(ManagedFactory, '_db', 'db');
-deprecated(ManagedFactory, '_managedType', 'managedType');

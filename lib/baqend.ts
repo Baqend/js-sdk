@@ -1,34 +1,7 @@
 'use strict';
-
-import * as binding from "./binding";
-import * as connector from "./connector";
-import * as error from "./error";
-import * as message from "./message";
-import * as metamodel from "./metamodel";
-import * as util from "./util";
-import * as caching from "./caching";
-import * as query from "./query";
-import * as partialupdate from "./partialupdate";
-
 import { EntityManagerFactory } from "./EntityManagerFactory";
 import { EntityManager} from "./EntityManager";
-import { Acl } from "./Acl";
-import { TokenStorage } from "./util";
-import { TokenStorageFactory } from "./util/TokenStorage";
-
-export * as binding from "./binding";
-export * as connector from "./connector";
-export * as error from "./error";
-export * as message from "./message";
-export * as metamodel from "./metamodel";
-export * as util from "./util";
-export * as caching from "./caching";
-export * as query from "./query";
-export * as partialupdate from "./partialupdate";
-
-export { EntityManagerFactory } from "./EntityManagerFactory";
-export { EntityManager } from "./EntityManager";
-export { Acl } from "./Acl";
+import { TokenStorage, TokenStorageFactory } from "./intersection";
 
 export interface baqend extends EntityManager {
   /**
@@ -49,28 +22,12 @@ export interface baqend extends EntityManager {
    * @param doneCallback The callback, called when a connection is established and the
    * SDK is ready to use
    * @param failCallback When an error occurred while initializing the SDK
-   * @return    */
-  connect(hostOrApp: string, secure: boolean, doneCallback?, failCallback?): Promise<EntityManager>;
+   * @return A initialized EntityManager
+   */
+  connect(hostOrApp: string, secure?: boolean, doneCallback?, failCallback?): Promise<EntityManager>;
 }
 
-// export all subpackages as instance properties on the DB instance
-Object.assign(EntityManager.prototype, {
-  binding,
-  connector,
-  error,
-  message,
-  metamodel,
-  util,
-  caching,
-  query,
-  partialupdate,
-
-  EntityManager,
-  EntityManagerFactory,
-  Acl,
-});
-
-const db = function() {
+export const db = function() {
   const emf = new EntityManagerFactory();
   const db = emf.createEntityManager(true);
 
@@ -80,7 +37,7 @@ const db = function() {
       return this;
     },
 
-    connect(this: baqend, hostOrApp, secure, doneCallback, failCallback) {
+    connect(this: baqend, hostOrApp: string, secure?: boolean | Function, doneCallback?, failCallback?) {
       if (secure instanceof Function) {
         return this.connect(hostOrApp, undefined, secure, doneCallback);
       }
@@ -92,6 +49,3 @@ const db = function() {
 
   return db as baqend;
 }();
-
-export { db }
-export default db;

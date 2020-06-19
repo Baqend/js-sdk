@@ -1,12 +1,15 @@
 'use strict';
 
-import uuid from "uuid/v4";
+import v4 from "uuid/v4";
 
-/**
- * Generates a new Universally Unique Identifier (UUID) version 4.
- *
- * @function
- * @name uuid
- * @return {string} A generated version 4 UUID.
- */
-export { uuid }
+const uuid = v4 as uuid;
+interface uuid {
+    /**
+     * Generates a new Universally Unique Identifier (UUID) version 4.
+     *
+     * @return  A generated version 4 UUID.
+     */
+    (): string
+}
+export { uuid };
+

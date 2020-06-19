@@ -1,8 +1,7 @@
 'use strict';
 
 import * as message from "../message";
-import { PushMessage } from "../util";
-import { ManagedFactory } from "./ManagedFactory";
+import { PushMessage } from "../intersection";
 import { model } from "../model";
 import { EntityFactory } from "./EntityFactory";
 
@@ -10,7 +9,9 @@ export class DeviceFactory extends EntityFactory<model.Device> {
   /**
    * Push message will be used to send a push notification to a set of devices
    */
-  public readonly PushMessage = PushMessage;
+  public get PushMessage() {
+    return PushMessage;
+  }
 
   /**
    * The current registered device, or <code>null</code> if the device is not registered

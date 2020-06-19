@@ -1,10 +1,11 @@
 'use strict';
 
 import { ManagedType } from "./ManagedType";
-import { PersistenceType, Type } from "./Type";
+import { PersistenceType } from "./Type";
 import { Managed, ManagedFactory } from "../binding";
-import { Class, Metadata } from "../util";
+import { Class } from "../util";
 import { EntityManager } from "../EntityManager";
+import { Metadata } from "../intersection";
 
 export class EmbeddableType<T extends Managed> extends ManagedType<T> {
   /**

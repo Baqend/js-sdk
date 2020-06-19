@@ -51,6 +51,3 @@ export class Filter<T extends Entity> extends Node<T> {
 }
 
 Object.assign(Filter.prototype, Condition);
-
-deprecated(Filter.prototype, '_filter', 'filter');
-deprecated(Filter.prototype, '_addFilter', 'addFilter');

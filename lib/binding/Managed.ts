@@ -1,15 +1,17 @@
 'use strict';
 
 import { enumerable } from "../util/enumerable";
-import { Json, JsonMap, Metadata } from "../util";
+import { Class, Json, JsonMap } from "../util";
 import { Enhancer } from "./Enhancer";
+import { Metadata } from "../intersection";
 
-export class Managed {
+export interface Managed {
   /**
    * Contains the metadata of this managed object
    */
-  public _metadata: Metadata = null as any; // will always be lazy initialized
-
+  _metadata: Metadata;
+}
+export class Managed {
   /**
    * Initialize the given instance
    * @param instance The managed instance to initialize
@@ -27,6 +29,23 @@ export class Managed {
     if (properties) {
       Object.assign(instance, properties);
     }
+  }
+
+  /**
+   * Creates a subclass of this class
+   * @param {Class<*>} childClass
+   * @return {Class<*>} The extended child class
+   */
+  static extend(childClass: Class<any> | Function): Class<any> | Function {
+    childClass.prototype = Object.create(this.prototype, {
+      constructor: {
+        value: childClass,
+        configurable: true,
+        writable: true,
+      },
+    });
+    (childClass as any).extend = Managed.extend;
+    return childClass;
   }
 
   /**

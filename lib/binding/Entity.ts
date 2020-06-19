@@ -5,10 +5,29 @@ import { EntityPartialUpdateBuilder } from "../partialupdate";
 import { enumerable } from "../util/enumerable";
 import { PersistentError } from "../error";
 import { Filter } from "../query";
-import { Json, JsonMap, ValidationResult } from "../util";
+import { Json, JsonMap } from "../util";
+import { ValidationResult } from "../intersection";
 import { EntityManager } from "../EntityManager";
 
 export class Entity extends Managed {
+
+  /**
+   * Date of the creation of the object
+   * @name createdAt
+   * @readonly
+   * @memberOf Entity.prototype
+   * @type Date
+   */
+  createdAt?: Date | null;
+
+  /**
+   * Last update date of the object
+   * @name updatedAt
+   * @readonly
+   * @memberOf Entity.prototype
+   * @type Date
+   */
+  updatedAt?: Date | null;
 
   /**
    * The unique id of this object
@@ -71,24 +90,6 @@ export class Entity extends Managed {
   }
 
   /**
-   * Date of the creation of the object
-   * @name createdAt
-   * @readonly
-   * @memberOf Entity.prototype
-   * @type Date
-   */
-  createdAt: Date | null = null;
-
-  /**
-   * Last update date of the object
-   * @name updatedAt
-   * @readonly
-   * @memberOf Entity.prototype
-   * @type Date
-   */
-  updatedAt: Date | null = null
-
-  /**
    * Attach this object to the given db
    * @param db The db which will be used for future crud operations
    * @return
@@ -105,9 +106,20 @@ export class Entity extends Managed {
    * @return A promise which completes successfully, when the previously requested
    * operation completes
    */
+  ready(): Promise<this>;
+
+  /**
+   * Waits on the previously requested operation on this object completes
+   * @param doneCallback The callback which will be invoked when the previously
+   * operations on this object is completed.
+   * @return A promise which completes successfully, when the previously requested
+   * operation completes
+   */
+  ready<R>(doneCallback: (entity: this) => R): Promise<R>;
+
   @enumerable(false)
-  ready(doneCallback?): Promise<this> {
-    return this._metadata.ready(doneCallback);
+  ready<R>(doneCallback?: (entity: this) => R): Promise<this | R> {
+    return this._metadata.ready().then(() => this).then(doneCallback);
   }
 
   /**
@@ -196,8 +208,7 @@ export class Entity extends Managed {
       return this.load({}, options, doneCallback);
     }
 
-    const opt = options || {};
-    opt.local = true;
+    const opt = { local: true, ...options };
 
     if (this.id === null) {
       throw new PersistentError("This object can't be loaded, it does have an id.");
@@ -240,7 +251,7 @@ export class Entity extends Managed {
    * @method
    */
   @enumerable(false)
-  optimisticSave(cb: (entity: this, abort: () => void) => void, doneCallback?, failCallback?): Promise<this> {
+  optimisticSave(cb: (entity: this, abort: () => void) => any, doneCallback?, failCallback?): Promise<this> {
     return this._metadata.db.optimisticSave(this, cb).then(doneCallback, failCallback);
   }
 

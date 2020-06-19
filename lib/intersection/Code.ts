@@ -2,10 +2,11 @@
 
 import * as message from "../message";
 import { StatusCode } from "../connector/Message";
-import { deprecated } from "./deprecated";
+import { deprecated } from "../util/deprecated";
 import { EntityManagerFactory } from "../EntityManagerFactory";
 import { Metamodel } from "../metamodel/Metamodel";
 import { ManagedType } from "../metamodel";
+import { Validator } from "./Validator";
 
 /**
  * Representation of a Code which runs on Baqend.
@@ -53,7 +54,7 @@ export class Code {
    * @return The deserialized function
    */
   stringToFunction(signature: string[], code: string): Function {
-    return new Function(signature, code); // eslint-disable-line no-new-func
+    return new Function(signature as any /* typings are incorrect here */, code); // eslint-disable-line no-new-func
   }
 
   /**
@@ -91,7 +92,7 @@ export class Code {
    */
   loadCode(type: ManagedType<any> | string, codeType: string, asFunction?: false): Promise<string>;
 
-  loadCode(type: ManagedType<any> | string, codeType: string, asFunction: boolean = false): Promise<Function | string>  {
+  loadCode(type: ManagedType<any> | string, codeType: string, asFunction: boolean = false): Promise<Function | string | null>  {
     const bucket = typeof type === 'string' ? type : type.name;
     const msg = new message.GetBaqendCode(bucket, codeType)
       .responseType('text');
@@ -130,14 +131,13 @@ export class Code {
 
   saveCode(type: ManagedType<any> | string, codeType: string, fn: Function | string): Promise<Function | string> {
     const bucket = typeof type === 'string' ? type : type.name;
-    const asFunction = fn instanceof Function;
 
     const msg = new message.SetBaqendCode(bucket, codeType)
-      .entity(asFunction ? this.functionToString(fn) : fn, 'text')
+      .entity(fn instanceof Function ? this.functionToString(fn) : fn, 'text')
       .responseType('text');
 
     return this.entityManagerFactory.send(msg)
-      .then(response => this.parseCode(bucket, codeType, asFunction, response.entity));
+      .then(response => this.parseCode(bucket, codeType, fn instanceof Function, response.entity)!);
   }
 
   /**
@@ -163,16 +163,13 @@ export class Code {
    * @return
    * @private
    */
-  parseCode(bucket: string, codeType: string, asFunction: boolean, code: string): string | Function {
+  parseCode(bucket: string, codeType: string, asFunction: boolean, code: string | null): string | null | Function {
     if (codeType === 'validate') {
       const type = this.metamodel.entity(bucket)!;
-      type.validationCode = code;
+      type.validationCode = code === null ? null : Validator.compile(type, code);
       return asFunction ? type.validationCode : code;
     }
 
-    return asFunction ? this.stringToFunction(['module', 'exports'], code) : code;
+    return code && asFunction ? this.stringToFunction(['module', 'exports'], code) : code;
   }
 }
-
-deprecated(Code.prototype, '_metamodel', 'metamodel');
-deprecated(Code.prototype, '_parseCode', 'parseCode');

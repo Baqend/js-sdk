@@ -330,7 +330,7 @@ export interface Condition<T extends Entity> {
    * @param value
    * @return The resulting Query
    */
-  addFilter(field: string, filter: string, value: any): Filter<T>
+  addFilter(field: string | null, filter: string | null, value: any): Filter<T>
 }
 
 export const Condition: Partial<Condition<any>> = {

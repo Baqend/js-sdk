@@ -48,7 +48,7 @@ export abstract class Query<T extends Entity> {
    *
    * @see http://docs.mongodb.org/manual/reference/method/cursor.sort/
    */
-  sort(sort: {[field: string]: number}): this {
+  sort(sort: {[field: string]: 1 | -1}): this {
     if (!(sort instanceof Object) || Object.getPrototypeOf(sort) !== Object.prototype) {
       throw new Error('sort must be an object.');
     }

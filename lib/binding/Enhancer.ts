@@ -20,7 +20,7 @@ export class Enhancer {
    * @param typeConstructor
    * @returns type the managed type metadata for this class
    */
-  static getBaqendType(typeConstructor: Class<any>): ManagedType<any> | null {
+  static getBaqendType(typeConstructor: Class<any> | Function): ManagedType<any> | null {
     return typeConstructor[BAQEND_TYPE];
   }
 
@@ -28,7 +28,7 @@ export class Enhancer {
    * @param typeConstructor
    * @return
    */
-  static getIdentifier(typeConstructor: Class<any>): string | null {
+  static getIdentifier(typeConstructor: Class<any> | Function): string | null {
     return typeConstructor[BAQEND_ID];
   }
 
@@ -112,5 +112,3 @@ export class Enhancer {
     });
   }
 }
-
-module.exports = Enhancer;

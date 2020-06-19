@@ -2,12 +2,12 @@
 
 import { ManagedType } from "./ManagedType";
 import { EntityType } from "./EntityType";
-import { Enhancer, Entity, Managed } from "../binding";
+import { Enhancer, Managed } from "../binding";
 import { ModelBuilder } from "./ModelBuilder";
 import { DbIndex } from "./DbIndex";
 import { Class, Json, JsonArray, JsonMap, Lockable } from "../util";
 import { deprecated } from "../util/deprecated";
-import { StatusCode } from "../connector/Message";
+import { StatusCode } from "../connector";
 import * as message from "../message";
 import { EntityManagerFactory } from "../EntityManagerFactory";
 import { EmbeddableType } from "./EmbeddableType";
@@ -20,9 +20,9 @@ export class Metamodel extends Lockable {
    */
   public isInitialized: boolean = false;
   public entityManagerFactory: EntityManagerFactory;
-  public entities: {[name: string]: EntityType<any>} | null = null;
-  public embeddables: {[name: string]: EmbeddableType<any>} | null = null;
-  public baseTypes: {[name: string]: BasicType<any>} | null = null;
+  public entities: {[name: string]: EntityType<any>} = {};
+  public embeddables: {[name: string]: EmbeddableType<any>} = {};
+  public baseTypes: {[name: string]: BasicType<any>} = {};
   public enhancer: Enhancer = new Enhancer();
 
   /**
@@ -52,9 +52,9 @@ export class Metamodel extends Lockable {
    * @param arg
    * @return
    */
-  getRef(arg: Class<Managed> | string): string {
+  getRef(arg: Class<Managed> | Function | string): string {
     let ref;
-    if (Object(arg) instanceof String) {
+    if (typeof arg === 'string') {
       ref = arg;
 
       if (ref.indexOf('/db/') !== 0) {
@@ -73,9 +73,9 @@ export class Metamodel extends Lockable {
    * @param typeConstructor - the type of the represented entity
    * @return the metamodel entity type or null if the class is not a managed entity
    */
-  entity(typeConstructor: Class<any> | string): EntityType<any> | null {
+  entity(typeConstructor: Class<any> | Function | string): EntityType<any> | null {
     const ref = this.getRef(typeConstructor);
-    return ref ? this.entities![ref] : null;
+    return ref ? this.entities[ref] : null;
   }
 
   /**
@@ -83,15 +83,15 @@ export class Metamodel extends Lockable {
    * @param typeConstructor - the type of the represented native class
    * @return the metamodel basic type
    */
-  baseType(typeConstructor: Class<any> | string): BasicType<any> {
+  baseType(typeConstructor: Class<any> | string): BasicType<any> | null {
     let ref: string | null = null;
     if (typeof typeConstructor === 'string') {
       ref = this.getRef(typeConstructor);
     } else {
-      const baseTypesNames = Object.keys(this.baseTypes!);
+      const baseTypesNames = Object.keys(this.baseTypes);
       for (let i = 0, len = baseTypesNames.length; i < len; i += 1) {
         const name = baseTypesNames[i];
-        const type = this.baseTypes![name];
+        const type = this.baseTypes[name];
         if (!type.noResolving && type.typeConstructor === typeConstructor) {
           ref = name;
           break;
@@ -99,7 +99,7 @@ export class Metamodel extends Lockable {
       }
     }
 
-    return ref ? this.baseTypes![ref] : null;
+    return ref ? this.baseTypes[ref] : null;
   }
 
   /**
@@ -107,9 +107,9 @@ export class Metamodel extends Lockable {
    * @param typeConstructor - the type of the represented embeddable class
    * @return the metamodel embeddable type or null if the class is not a managed embeddable
    */
-  embeddable(typeConstructor: Class<any> | string): EmbeddableType<any> | null {
+  embeddable(typeConstructor: Class<any> | Function | string): EmbeddableType<any> | null {
     const ref = this.getRef(typeConstructor);
-    return ref ? this.embeddables![ref] : null;
+    return ref ? this.embeddables[ref] : null;
   }
 
   /**
@@ -118,7 +118,7 @@ export class Metamodel extends Lockable {
    * @param typeConstructor - the type of the represented managed class
    * @return the metamodel managed type
    */
-  managedType(typeConstructor: Class<any> | string): ManagedType<any> | null {
+  managedType(typeConstructor: Class<any> | Function | string): ManagedType<any> | null {
     return this.entity(typeConstructor) || this.embeddable(typeConstructor);
   }
 
@@ -132,14 +132,15 @@ export class Metamodel extends Lockable {
     if (type.isBasic) {
       types = this.baseTypes;
     } else if (type.isEmbeddable) {
-      type.init(this.enhancer);
+      (type as EmbeddableType<any>).init(this.enhancer);
       types = this.embeddables;
     } else if (type.isEntity) {
-      type.init(this.enhancer);
+      const entityType = type as EntityType<any>;
+      entityType.init(this.enhancer);
       types = this.entities;
 
-      if (type.superType === null && type.ref !== EntityType.Object.ref) {
-        type.superType = this.entity(EntityType.Object.ref);
+      if (entityType.superType === null && entityType.ref !== EntityType.Object.ref) {
+        entityType.superType = this.entity(EntityType.Object.ref);
       }
     }
 
@@ -222,8 +223,8 @@ export class Metamodel extends Lockable {
     }
 
     return ([] as JsonArray).concat(
-      Object.keys(this.entities!).map(ref => this.entities![ref].toJSON()),
-      Object.keys(this.embeddables!).map(ref => this.embeddables![ref].toJSON())
+      Object.keys(this.entities).map(ref => this.entities[ref].toJSON()),
+      Object.keys(this.embeddables).map(ref => this.embeddables[ref].toJSON())
     );
   }
 
@@ -234,7 +235,7 @@ export class Metamodel extends Lockable {
    */
   fromJSON(json: Json): void {
     const builder = new ModelBuilder();
-    const models = builder.buildModels(json);
+    const models = builder.buildModels(json as JsonMap[]);
 
     this.baseTypes = {};
     this.embeddables = {};
@@ -299,9 +300,3 @@ export class Metamodel extends Lockable {
       });
   }
 }
-
-deprecated(Metamodel.prototype, '_enhancer', 'enhancer');
-deprecated(Metamodel.prototype, '_send', 'sendUpdate');
-deprecated(Metamodel.prototype, '_getRef', 'getRef');
-
-module.exports = Metamodel;

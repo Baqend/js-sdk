@@ -1,8 +1,8 @@
 'use strict';
 
-export { Message } from "./Message";
-export { Connector } from "./Connector";
-export { FetchConnector } from "./FetchConnector";
-export { XMLHttpConnector } from "./XMLHttpConnector";
-export { IFrameConnector } from "./IFrameConnector";
-export { NodeConnector } from "./NodeConnector";
+export * from "./Message";
+export * from "./Connector";
+export * from "./FetchConnector";
+export * from "./XMLHttpConnector";
+export * from "./IFrameConnector";
+export * from "./NodeConnector";

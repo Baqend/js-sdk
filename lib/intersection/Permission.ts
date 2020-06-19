@@ -1,9 +1,9 @@
 'use strict';
 
-import { deprecated } from "./deprecated";
+import { deprecated } from "../util/deprecated";
 import { Metadata } from "./Metadata";
 import { model } from "../model";
-import { JsonMap } from "./Json";
+import { JsonMap } from "../util/Json";
 
 export type TrustedEntity = model.User | model.Role | string;
 
@@ -26,17 +26,17 @@ export class Permission {
 
   /**
    * Returns a list of user and role references of all rules
-   * @return {Array<string>} a list of references
+   * @return a list of references
    */
-  allRules() {
+  allRules(): string[] {
     return Object.keys(this.rules);
   }
 
   /**
    * Removes all rules from this permission object
-   * @return {void}
+   * @return
    */
-  clear() {
+  clear(): void {
     if (this._metadata) {
       this._metadata.writeAccess();
     }
@@ -46,10 +46,10 @@ export class Permission {
 
   /**
    * Copies permissions from another permission object
-   * @param {Permission} permission The permission to copy from
-   * @return {Permission}
+   * @param permission The permission to copy from
+   * @return
    */
-  copy(permission) {
+  copy(permission: Permission): Permission {
     if (this._metadata) {
       this._metadata.writeAccess();
     }
@@ -60,7 +60,7 @@ export class Permission {
 
   /**
    * Gets whenever all users and roles have the permission to perform the operation
-   * @return {boolean} <code>true</code> If public access is allowed
+   * @return <code>true</code> If public access is allowed
    */
   isPublicAllowed(): boolean {
     if ('*' in this.rules) {
@@ -75,9 +75,9 @@ export class Permission {
    *
    * Note: All other allow rules will be removed.
    *
-   * @return {void}
+   * @return
    */
-  setPublicAllowed() {
+  setPublicAllowed(): void {
     if (this._metadata) {
       this._metadata.writeAccess();
     }
@@ -92,9 +92,9 @@ export class Permission {
   /**
    * Returns the actual rule of the given user or role.
    * @param userOrRole The user or role to check for
-   * @return {string} The actual access rule or undefined if no rule was found
+   * @return The actual access rule or undefined if no rule was found
    */
-  getRule(userOrRole: TrustedEntity) {
+  getRule(userOrRole: TrustedEntity): string {
     return this.rules[this.ref(userOrRole)];
   }
 
@@ -102,9 +102,9 @@ export class Permission {
    * Checks whenever the user or role is explicit allowed to perform the operation.
    *
    * @param userOrRole The user or role to check for
-   * @return {boolean} <code>true</code> If the given user or role is allowed
+   * @return <code>true</code> If the given user or role is allowed
    */
-  isAllowed(userOrRole: TrustedEntity) {
+  isAllowed(userOrRole: TrustedEntity): boolean {
     return this.rules[this.ref(userOrRole)] === 'allow';
   }
 
@@ -112,18 +112,18 @@ export class Permission {
    * Checks whenever the user or role is explicit denied to perform the operation.
    *
    * @param userOrRole The user or role to check for
-   * @return {boolean} <code>true</code> If the given user or role is denied
+   * @return <code>true</code> If the given user or role is denied
    */
-  isDenied(userOrRole: TrustedEntity) {
+  isDenied(userOrRole: TrustedEntity): boolean {
     return this.rules[this.ref(userOrRole)] === 'deny';
   }
 
   /**
    * Allows the given users or rules to perform the operation
    * @param userOrRole The users or roles to allow
-   * @return {Permission} this permission object
+   * @return this permission object
    */
-  allowAccess(...userOrRole: TrustedEntity[]) {
+  allowAccess(...userOrRole: TrustedEntity[]): Permission {
     if (this._metadata) {
       this._metadata.writeAccess();
     }
@@ -138,9 +138,9 @@ export class Permission {
   /**
    * Denies the given users or rules to perform the operation
    * @param userOrRole The users or roles to deny
-   * @return {Permission} this permission object
+   * @return this permission object
    */
-  denyAccess(...userOrRole: TrustedEntity[]) {
+  denyAccess(...userOrRole: TrustedEntity[]): Permission {
     if (this._metadata) {
       this._metadata.writeAccess();
     }
@@ -155,9 +155,9 @@ export class Permission {
   /**
    * Deletes any allow/deny rules for the given users or roles
    * @param userOrRole The users or roles to delete rules for
-   * @return {Permission} this permission object
+   * @return this permission object
    */
-  deleteAccess(...userOrRole: TrustedEntity[]) {
+  deleteAccess(...userOrRole: TrustedEntity[]): Permission {
     if (this._metadata) {
       this._metadata.writeAccess();
     }
@@ -171,7 +171,7 @@ export class Permission {
 
   /**
    * A Json representation of the set of rules
-   * @return {json}
+   * @return
    */
   toJSON(): JsonMap {
     return { ...this.rules };
@@ -200,7 +200,7 @@ export class Permission {
   /**
    * Resolves user and role references and validate given references
    * @param userOrRole The user, role or reference
-   * @return {string} The resolved and validated reference
+   * @return The resolved and validated reference
    */
   private ref(userOrRole: TrustedEntity): string {
     const ref = typeof userOrRole === 'string' ? userOrRole : userOrRole.id!;
@@ -212,6 +212,4 @@ export class Permission {
     throw new TypeError('The given object isn\'t a user, role or a valid reference.');
   }
 }
-
-deprecated(Permission.prototype, '_rules', 'rules');
 

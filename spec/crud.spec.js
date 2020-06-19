@@ -3,7 +3,7 @@
 var DB;
 if (typeof module !== 'undefined') {
   require('./node');
-  DB = require('../lib');
+  DB = require('../');
 }
 
 describe('Test crud', function () {
@@ -166,7 +166,7 @@ describe('Test crud', function () {
       };
 
       var person = db.Person.fromJSON(json);
-      expect(db.util.Metadata.get(person).db).eql(db);
+      expect(DB.util.Metadata.get(person).db).eql(db);
 
       return person.save(function (saved) {
         expect(saved.name).eql(json.name);
@@ -272,7 +272,7 @@ describe('Test crud', function () {
 
     it('should save existing object from JSON', function () {
       var json = {
-        id: '/db/Person/' + db.util.uuid(),
+        id: '/db/Person/' + DB.util.uuid(),
         name: 'TestName',
         address: {
           zip: 22527,
@@ -280,7 +280,7 @@ describe('Test crud', function () {
       };
 
       var person = db.Person.fromJSON(json);
-      expect(db.util.Metadata.get(person).db).eql(db);
+      expect(DB.util.Metadata.get(person).db).eql(db);
 
       return person.save(function (saved) {
         expect(saved.id).eqls(json.id);
