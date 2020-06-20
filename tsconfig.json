@@ -1,8 +1,6 @@
 {
   "compilerOptions": {
     "strict": true,
-    "allowJs": true,
-    "checkJs": true,
     "target": "ES6",
     "moduleResolution": "node",
     "esModuleInterop": true,
@@ -13,13 +11,13 @@
     "declarationMap": true,
     "noImplicitAny": false,
     "experimentalDecorators": true,
+    "importHelpers": true,
     "typeRoots": [
       "./node_modules/@types"
     ]
   },
   "include": [
     "lib/",
-    "realtime/",
     "node_module/rxjs/"
   ]
 }

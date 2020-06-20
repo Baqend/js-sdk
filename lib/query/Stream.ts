@@ -1,11 +1,13 @@
 'use strict';
 
 import { Observable, Subscription, Subscriber } from "rxjs";
-import {
-  EntityManager, Metadata, uuid, JsonMap, Entity,
-  EventStreamOptions, MatchType, Node, Operation, RealtimeEvent, ResultStreamOptions
-} from "../../lib";
-import { ChannelMessage } from "../connector/WebSocketConnector";
+import { uuid, JsonMap } from '../util';
+import { ChannelMessage } from "../connector";
+import { MatchType, Operation, RealtimeEvent } from "./RealtimeEvent";
+import { Entity } from "../binding";
+import { EntityManager } from "../EntityManager";
+import { EventStreamOptions, ResultStreamOptions } from "./Query";
+import { Metadata } from "../intersection";
 
 type InitialResultEvent = ChannelMessage & {
   /**

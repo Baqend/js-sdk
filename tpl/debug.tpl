@@ -16,7 +16,7 @@
     var expect = chai.expect;
   </script>
 
-  <script src="../build/baqend.js"></script>
+  <script src="../dist/bundles/baqend.es5.js"></script>
   <script src="../spec/env.js"></script>
 
   <script>

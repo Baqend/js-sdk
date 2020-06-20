@@ -8,20 +8,19 @@
     "email": "info@baqend.com"
   },
   "homepage": "http://baqend.com",
-  "main": "./dist/commonjs/realtime/index.commonjs.js",
+  "main": "./dist/commonjs/lib/index.commonjs.js",
   "exports": {
-    "import": "./dist/esm/realtime/index.js",
-    "require": "./dist/commonjs/realtime/index.js"
+    "import": "./dist/esm/lib/index.js",
+    "require": "./dist/commonjs/lib/index.js"
   },
   "type": "module",
   "typings": "./dist/index.d.ts",
   "browser": {
     ".": "./dist/bundles/baqend.es5.js",
-    "./realtime": "./dist/bundles/baqend-realtime.es5.js",
     "./lib/util/atob.ts": "./lib/util/atob-browser.ts",
     "./lib/util/is-node.ts": "./lib/util/is-node-browser.ts",
     "./lib/util/hmac.ts": "./lib/util/hmac-browser.ts",
-    "./realtime/connector/websocket.ts": "./realtime/connector/websocket-browser.ts",
+    "./lib/util/websocket.ts": "./lib/util/websocket-browser.ts",
     "./lib/connector/NodeConnector": false,
     "./lib/connector/FetchConnector": false
   },
@@ -37,21 +36,17 @@
   },
   "dependencies": {
     "commander": "^2.19.0",
-    "core-js": "^2.6.0",
     "crypto-js": "^3.1.6",
     "glob": "^7.0.6",
     "opn": "^4.0.2",
-    "puppeteer": "^1.20.0",
     "rimraf": "^2.5.4",
     "rxjs": "^6.5.5",
     "simple-git": "^1.107.0",
     "tsd-jsdoc": "^2.5.0",
+    "tslib": "^2.0.0",
     "uuid": "^3.0.1",
     "validator": "^4.9.0",
     "websocket": "^1.0.31"
-  },
-  "peerDependencies": {
-    "websocket": "^1.0.22"
   },
   "repository": {
     "type": "git",
@@ -95,7 +90,7 @@
     "grunt-template": "^1.0.0",
     "jquery": "^3.1.0",
     "jsdoc": "^3.6.4",
-    "karma": "^3.1.3",
+    "karma": "^3.1.4",
     "karma-browserstack-launcher": "^1.4.0",
     "karma-chai": "^0.1.0",
     "karma-chai-plugins": "^0.9.0",
@@ -114,6 +109,7 @@
     "mocha": "^5.2.0",
     "mocha-jenkins-reporter": "^0.4.1",
     "phantomjs-prebuilt": "^2.1.12",
+    "puppeteer": "^1.20.0",
     "shelljs": "^0.8.3",
     "shx": "^0.3.2",
     "source-map-support": "^0.5.19",
@@ -131,7 +127,7 @@
     "dev": "tsc --watch -m commonjs --target es5 --outDir dist/commonjs",
     "build-commonjs": "tsc -m commonjs --target es5 --outDir dist/commonjs",
     "build-esm": "tsc -m es2015 --target es6 --outDir dist/esm",
-    "build-bundles": "webpack --env.target=es5 && webpack --env.target=es2015",
+    "build-bundles": "webpack",
     "dist": "grunt dist && npm run typings && npm run jsdoc",
     "release": "node scripts/release",
     "typings": "npm run typings:generate && npm run typings:test",

@@ -1,10 +1,10 @@
 'use strict';
 
-import { CommunicationError } from "../../lib";
-import { WebSocket } from "./websocket";
+import { CommunicationError } from "../error";
+import { WebSocket } from "../util/websocket";
 import { Observable } from "rxjs";
-import { Json } from "../../lib";
-import { TokenStorage } from "../../lib";
+import { Json } from "../util";
+import { TokenStorage } from "../intersection";
 
 export interface ObservableStream extends Observable<ChannelMessage> {
   /**

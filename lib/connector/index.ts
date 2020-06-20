@@ -6,3 +6,4 @@ export * from "./FetchConnector";
 export * from "./XMLHttpConnector";
 export * from "./IFrameConnector";
 export * from "./NodeConnector";
+export * from "./WebSocketConnector";

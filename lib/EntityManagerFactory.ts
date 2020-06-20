@@ -8,10 +8,11 @@ import { JsonMap, Lockable } from "./util";
 import { TokenStorage, TokenStorageFactory } from "./intersection/TokenStorage";
 import { Metamodel } from "./metamodel/Metamodel";
 import { Response } from "./connector/Connector";
-import { WebSocketConnector } from "../realtime/connector/WebSocketConnector";
+import { WebSocketConnector } from "./connector/WebSocketConnector";
 import { Code } from "./intersection";
 
-const CONNECTED = Symbol('Connected') as any;
+const CONNECTED = Symbol('Connected');
+const WS = Symbol('WebSocket');
 
 export type ConnectData = {
   bloomFilterRefresh?: number,
@@ -23,13 +24,6 @@ export type ConnectData = {
   websocket?: string,
 }
 
-export interface EntityManagerFactory extends Lockable {
-  /**
-   * Retrieves the websocket connection if the websocket SDK is available
-   */
-  readonly websocket: WebSocketConnector;
-}
-
 export class EntityManagerFactory extends Lockable {
   public connection: Connector | null = null;
   public metamodel: Metamodel = this.createMetamodel();
@@ -39,6 +33,23 @@ export class EntityManagerFactory extends Lockable {
   public staleness: number | null = null;
 
   public connectData?: ConnectData;
+
+  /**
+   * Retrieves the websocket connection if the websocket SDK is available
+   */
+  get websocket(): WebSocketConnector {
+    if (!this[WS]) {
+      const secure = this.connection!.secure;
+      let url;
+      if (this.connectData!.websocket) {
+        url = (secure ? 'wss:' : 'ws:') + this.connectData!.websocket;
+      } else {
+        url = this.connection!.origin.replace(/^http/, 'ws') + this.connection!.basePath + '/events';
+      }
+      this[WS] = WebSocketConnector.create(url);
+    }
+    return this[WS];
+  }
 
   /**
    * Creates a new EntityManagerFactory connected to the given destination

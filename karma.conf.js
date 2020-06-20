@@ -19,11 +19,11 @@ module.exports = function (config) {
 
     // list of files / patterns to load in the browser
     files: [
-      'build/baqend.js',
+      { pattern: 'dist/bundles/baqend.es5.js', watched: true, included: true },
+      { pattern: 'dist/bundles/baqend.es5.js.map', included: false, served: true, watched: true },
       'spec/env.js',
       'spec/helper.js',
       'spec/**/*.spec.js',
-      { pattern: 'build/*.html', included: false, watched: false },
       { pattern: 'spec/assets/*', watched: false, included: false, served: true, nocache: false },
     ],
 

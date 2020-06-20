@@ -13,39 +13,39 @@ const tsOptions = {
   }
 }
 
-module.exports = env => {
+function bundleLib(target) {
   return {
     mode: 'production',
     entry: {
-      [`baqend.${env.target}`]: './lib/index.ts',
-      [`baqend.${env.target}.min`]: './lib/index.ts',
-      [`baqend-realtime.${env.target}`]: './realtime/index.ts',
-      [`baqend-realtime.${env.target}.min`]: './realtime/index.ts'
+      [`baqend.${target}`]: `./lib/index.${target}.ts`,
+      [`baqend.${target}.min`]: `./lib/index.${target}.ts`,
     },
     output: {
       path: path.resolve(__dirname, 'dist/bundles/'),
-        filename: '[name].js',
-        libraryTarget: 'umd',
-        library: 'DB',
-        umdNamedDefine: true
+      filename: '[name].js',
+      libraryTarget: 'umd',
+      library: 'DB',
+      umdNamedDefine: true
     },
     externals: {
-      rxjs: 'rxjs'
+      rxjs: 'rxjs',
+      validator: 'validator'
     },
     resolve: {
       extensions: ['.ts', '.js'],
-        aliasFields: ['browser']
+      aliasFields: ['browser']
     },
     devtool: 'source-map',
-      node: false,
+    node: false,
     optimization: {
-    minimize: true,
+      minimize: true,
       minimizer: [
-      new TerserPlugin({
-        include: /\.min\.js$/,
-      }),
-    ],
-  },
+        new TerserPlugin({
+          include: /\.min\.js$/,
+        }),
+      ],
+      concatenateModules: target === 'es2015'
+    },
     module: {
       rules: [
         {
@@ -53,10 +53,33 @@ module.exports = env => {
           exclude: [/node_modules/],
           loader: 'ts-loader',
           options: {
-            compilerOptions: tsOptions[env.target]
+            compilerOptions: tsOptions[target]
           },
         },
       ],
     },
+    stats: {
+      optimizationBailout: true
+    }
   }
-};
+}
+
+const devSever = {
+  mode: 'production',
+  entry: {
+
+  },
+  output: {
+    path: path.resolve(__dirname, 'build/'),
+  },
+  devServer: {
+    contentBase: path.join(__dirname, 'dist'),
+    port: 8000
+  }
+}
+
+module.exports = [
+  bundleLib('es5'),
+  bundleLib('es2015'),
+  // devSever
+]

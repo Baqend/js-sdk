@@ -1,3 +1,3 @@
 'use strict';
 
-export const atob = window.atob;
+export const atob = window.atob.bind(window);

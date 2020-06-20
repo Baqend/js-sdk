@@ -1,9 +1,15 @@
 'use strict';
 
-import valLib from 'validator';
-import { deprecated } from '../util/deprecated';
 import { Entity } from "../binding";
 import { ManagedType } from "../metamodel";
+
+let valLib;
+try {
+  // we load this module as an optional external dependency
+  valLib = require("validator");
+} catch(e) {
+  valLib = {};
+}
 
 export class Validator {
   /**

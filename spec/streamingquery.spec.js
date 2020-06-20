@@ -4,7 +4,7 @@ var DB;
 if (typeof module !== 'undefined') {
   require('./node');
   DB = require('../');
-  require('rxjs/operators');
+  var operators = require('rxjs/operators');
 }
 
 function getCountByEventMatchType(event) {
@@ -1120,7 +1120,7 @@ describe('Streaming Queries', function () {
         var listener = function (e) {
           calls += 1;
         };
-        subscription = stream.first().subscribe(listener);
+        subscription = stream.pipe(operators.first()).subscribe(listener);
 
         // waiting for events does not work, because of interference between subscribing and unsubscribing
         var john = newPerson(49);
@@ -1160,9 +1160,12 @@ describe('Streaming Queries', function () {
         };
 
         var average;
-        subscription = stream.scan(maintain, initialAccumulator).map(function (accumulator) {
-          return accumulator.average;
-        }).subscribe(function (e) {
+        subscription = stream.pipe(
+          operators.scan(maintain, initialAccumulator),
+          operators.map(function (accumulator) {
+            return accumulator.average;
+          })
+        ).subscribe(function (e) {
           average = e;
           return e;
         });

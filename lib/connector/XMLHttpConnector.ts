@@ -4,6 +4,7 @@
 'use strict';
 
 import { Connector, Response, ResponseBodyType } from "./Connector";
+import { atob } from "../util";
 
 export class XMLHttpConnector extends Connector {
   private oAuthHandle?: (msg: { status: number, entity: string }) => void;

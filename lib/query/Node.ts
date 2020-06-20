@@ -21,6 +21,7 @@ import { FilterObject } from "./Filter";
 import { Observable, Subscription } from "rxjs";
 import { RealtimeEvent } from "./RealtimeEvent";
 import { Metadata } from "../intersection";
+import { Stream } from "./Stream";
 
 /**
  * A Query Node saves the state of the query being built
@@ -46,13 +47,33 @@ export class Node<T extends Entity> extends Query<T> {
   eventStream(options?: EventStreamOptions): Observable<RealtimeEvent<T>>;
   eventStream(options?: EventStreamOptions | NextEventCallback<T>, onNext?: NextEventCallback<T> | FailCallback, onError?: FailCallback | CompleteCallback, onComplete?: CompleteCallback): Subscription;
   eventStream(options?: EventStreamOptions | NextEventCallback<T>, onNext?: NextEventCallback<T> | FailCallback, onError?: FailCallback | CompleteCallback, onComplete?: CompleteCallback): Observable<RealtimeEvent<T>> | Subscription {
-    throw new Error('Streaming features not available! Please use Streaming SDK!');
+    if (options instanceof Function) {
+      return this.eventStream({}, options as NextEventCallback<T>, onNext as FailCallback, onError as CompleteCallback);
+    }
+
+    const observable = Stream.createEventStream<T>(this.entityManager, this.createRealTimeQuery(), options);
+
+    if (onNext instanceof Function) {
+      return observable.subscribe(onNext as NextEventCallback<T>, onError, onComplete);
+    }
+
+    return observable;
   }
 
   resultStream(options?: ResultStreamOptions): Observable<T[]>;
   resultStream(options?: ResultStreamOptions | NextResultCallback<T>, onNext?: NextResultCallback<T> | FailCallback, onError?: FailCallback | CompleteCallback, onComplete?: CompleteCallback): Subscription;
   resultStream(options?: ResultStreamOptions | NextResultCallback<T>, onNext?: NextResultCallback<T> | FailCallback, onError?: FailCallback | CompleteCallback, onComplete?: CompleteCallback): Observable<T[]> | Subscription {
-    throw new Error('Streaming features not available! Please use Streaming SDK!');
+    if (options instanceof Function) {
+      return this.resultStream({}, options as NextResultCallback<T>, onNext as FailCallback, onError as CompleteCallback);
+    }
+
+    const observable = Stream.createResultStream<T>(this.entityManager, this.createRealTimeQuery(), options);
+
+    if (onNext instanceof Function) {
+      return observable.subscribe(onNext as NextResultCallback<T>, onError, onComplete);
+    }
+
+    return observable;
   }
 
   /**
@@ -145,7 +166,7 @@ export class Node<T extends Entity> extends Query<T> {
       .then(doneCallback, failCallback);
   }
 
-  serializeQuery() {
+  private serializeQuery() {
     return JSON.stringify(this, function argSerializer(this: FilterObject, k, v) {
       // this referees here to the object which owns the key k
       const typedValue = this[k];
@@ -158,13 +179,11 @@ export class Node<T extends Entity> extends Query<T> {
     });
   }
 
-  serializeSort() {
+  private serializeSort() {
     return JSON.stringify(this.order);
   }
 
-  createRealTimeQuery(): JsonMap { return {} }
-
-  createResultList(result, options): Promise<T[]> {
+  private createResultList(result, options): Promise<T[]> {
     if (result.length) {
       return Promise.all<T>(result.map((el) => {
         if (el.id) {
@@ -180,6 +199,33 @@ export class Node<T extends Entity> extends Query<T> {
     }
 
     return Promise.resolve([]);
+  }
+
+  private createRealTimeQuery(this: Node<any>): JsonMap {
+    const type = this.resultClass ? this.entityManager.metamodel.entity(this.resultClass) : null;
+    if (!type) {
+      throw new Error('Only typed queries can be executed.');
+    }
+
+    const query: JsonMap = {
+      bucket: type.name,
+      query: this.serializeQuery(),
+    };
+
+    const sort = this.serializeSort();
+    if (sort && sort !== '{}') {
+      query.sort = sort;
+    }
+
+    if (this.maxResults > 0) {
+      query.limit = this.maxResults;
+    }
+
+    if (this.firstResult > 0) {
+      query.offset = this.firstResult;
+    }
+
+    return query;
   }
 
   addOrder(fieldOrSort, order?) {
