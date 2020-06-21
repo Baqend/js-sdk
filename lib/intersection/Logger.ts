@@ -1,7 +1,6 @@
 'use strict';
 
 import * as msg from "../message";
-import { deprecated } from "../util/deprecated";
 import { EntityManager } from "../EntityManager";
 
 /**

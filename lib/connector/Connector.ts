@@ -163,10 +163,13 @@ export abstract class Connector {
    */
   send(message: Message): Promise<Response> {
     let response: Response = { status: 0, headers: {} };
-    return new Promise<Response>((resolve) => {
-      this.prepareRequest(message);
-      this.doSend(message, message.request, resolve);
-    }).then((res) => { response = res; })
+    return Promise.resolve(this.prepareRequest(message))
+      .then(() => {
+        return new Promise<Response>((resolve) => {
+          this.doSend(message, message.request, resolve);
+        });
+      })
+      .then((res) => { response = res; })
       .then(() => this.prepareResponse(message, response))
       .then(() => {
         message.doReceive(response);
@@ -190,7 +193,7 @@ export abstract class Connector {
    * @param message
    * @return
    */
-  prepareRequest(message: Message): void {
+  prepareRequest(message: Message): Promise<Message> | Message {
     const mimeType = message.mimeType();
     if (!mimeType) {
       const type = message.request.type;
@@ -227,18 +230,26 @@ export abstract class Connector {
     }
 
     if (message.request.path === '/connect') {
-      message.request.path = message.tokenStorage!.signPath(this.basePath + message.request.path)
-        .substring(this.basePath.length);
+      return message.tokenStorage!.signPath(this.basePath + message.request.path)
+        .then(signedPath => {
+          message.request.path = signedPath.substring(this.basePath.length);
 
-      if (message.cacheControl()) {
-        message.request.path += (message.tokenStorage!.token ? '&' : '?') + 'BCB';
-      }
-    } else if (message.tokenStorage) {
+          if (message.cacheControl()) {
+            message.request.path += (message.tokenStorage!.token ? '&' : '?') + 'BCB';
+          }
+
+          return message;
+        });
+    }
+
+    if (message.tokenStorage) {
       const token = message.tokenStorage.token;
       if (token) {
         message.header('authorization', 'BAT ' + token);
       }
     }
+
+    return message;
   }
 
   /**

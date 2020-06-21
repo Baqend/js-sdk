@@ -2,7 +2,7 @@
 
 import { Entity } from "../binding";
 
-import { deprecated, JsonMap } from '../util';
+import { JsonMap } from '../util';
 import {
   CompleteCallback,
   CountCallback,

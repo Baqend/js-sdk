@@ -5,7 +5,6 @@ import { Acl } from "../Acl";
 import { uuid } from "../util/uuid";
 import * as message from "../message";
 import { Message, ProgressListener, StatusCode } from "../connector/Message";
-import { deprecated } from "../util/deprecated";
 import { trailingSlashIt } from "../util/trailingSlashIt";
 import { EntityManager } from "../EntityManager";
 import { Json, JsonMap } from "../util";
@@ -153,15 +152,9 @@ export class File {
     return this[ID];
   }
 
-  /**
-   * The fully url to the file, can be directly used to link the file, i.e. in link tags ot image sources
-   */
+  // @ts-ignore
   get url(): string {
-    if (this.isFolder) {
-      throw new Error('Url can not be created for folders.');
-    }
-
-    return this.db.createURL(this.id, this.bucket !== 'www');
+    throw new Error("This method is removed. Use the asynchronous File.createUrl() method instead.");
   }
 
   /**
@@ -326,6 +319,22 @@ export class File {
     }
 
     return match[1];
+  }
+
+  /**
+   * The fully url to the file, can be directly used to link the file, i.e. in link tags ot image sources
+   * @param authorize - Authorize the the link with an temporary token, to give authorized access to this protected resource
+   * default false if the root bucket is www, true otherwise
+   * @return A url with an optional token, to give direct access o the linked resource
+   */
+  createURL(authorize?: boolean): Promise<string> {
+    authorize = typeof authorize === "boolean" ? authorize : this.bucket !== 'www';
+
+    if (this.isFolder) {
+      throw new Error('Url can not be created for folders.');
+    }
+
+    return this.db.createURL(this.id, authorize);
   }
 
   /**

@@ -1,6 +1,6 @@
 'use strict';
 
-import { Observable, Subscription, Subscriber } from "rxjs";
+import { Observable, Subscription, Subscriber } from "../util/observable";
 import { uuid, JsonMap } from '../util';
 import { ChannelMessage } from "../connector";
 import { MatchType, Operation, RealtimeEvent } from "./RealtimeEvent";

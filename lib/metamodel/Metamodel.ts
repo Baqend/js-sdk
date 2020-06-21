@@ -6,7 +6,6 @@ import { Enhancer, Managed } from "../binding";
 import { ModelBuilder } from "./ModelBuilder";
 import { DbIndex } from "./DbIndex";
 import { Class, Json, JsonArray, JsonMap, Lockable } from "../util";
-import { deprecated } from "../util/deprecated";
 import { StatusCode } from "../connector";
 import * as message from "../message";
 import { EntityManagerFactory } from "../EntityManagerFactory";

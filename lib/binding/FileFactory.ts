@@ -3,7 +3,7 @@
 import { Factory } from "./Factory";
 import { File, FileOptions } from "./File";
 import * as message from "../message";
-import { JsonMap, trailingSlashIt, deprecated } from "../util";
+import { JsonMap, trailingSlashIt } from "../util";
 import { StatusCode } from "../connector";
 import { EntityManager } from "../EntityManager";
 import { Permission } from "../intersection";

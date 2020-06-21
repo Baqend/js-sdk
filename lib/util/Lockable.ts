@@ -1,7 +1,5 @@
 'use strict';
 
-import { deprecated } from "./deprecated";
-
 const isLocked = Symbol('IsLocked');
 const readyPromise = Symbol('ReadyPromise');
 

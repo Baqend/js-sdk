@@ -2,7 +2,6 @@
 
 import { Node } from "./Node";
 import { Condition } from "./Condition";
-import { deprecated } from "../util/deprecated";
 import { Json } from "../util";
 import { Entity } from "../binding";
 

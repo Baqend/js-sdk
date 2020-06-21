@@ -1,15 +1,12 @@
-'use strict';
-
 import { Entity } from "../binding";
 import { ManagedType } from "../metamodel";
 
-let valLib;
+const FallBachValLib = {};
+let valLib = FallBachValLib;
 try {
   // we load this module as an optional external dependency
   valLib = require("validator");
-} catch(e) {
-  valLib = {};
-}
+} catch(e) {}
 
 export class Validator {
   /**
@@ -28,9 +25,12 @@ export class Validator {
 
     // eslint-disable-next-line no-new-func
     const fn = new Function(...keys, validationCode);
-    return function onValidate(argObj: {[arg: string]: any}) {
-      const args = keys.map(name => argObj[name]);
+    return function onValidate(argObj: {[arg: string]: Validator}) {
+      if (valLib === FallBachValLib) {
+        throw new Error('Validation code will not be executed. Make sure that the validator package is correctly provided as an external dependency.');
+      }
 
+      const args = keys.map(name => argObj[name]);
       return fn.apply({}, args);
     };
   }
@@ -110,15 +110,23 @@ export class Validator {
 
   callMethod(method, error, argumentList) {
     const args = argumentList || [];
-    args.unshift(this.value);
-    if (valLib[method].apply(this, args) === false) {
-      this.errors.push(error);
+    try {
+      args.unshift(this.toString());
+      if (valLib[method].apply(this, args) === false) {
+        this.errors.push(error || method);
+      }
+    } catch (e) {
+      this.errors.push(error || e.message);
     }
     return this;
   }
 
   toString() {
-    return this.value;
+    if (typeof this.value === "string") {
+      return this.value;
+    }
+
+    return JSON.stringify(this.value);
   }
 
   toJSON() {
@@ -129,14 +137,12 @@ export class Validator {
   }
 }
 
+const Validators = ['contains', 'equals', 'matches']
 Object.keys(valLib).forEach((name) => {
-  if (typeof valLib[name] === 'function' && name !== 'toString' &&
-    name !== 'toDate' && name !== 'extend' && name !== 'init') {
-    /**
-     * @ignore
-     */
+  if (name.startsWith('is') || Validators.includes(name)) {
     Validator.prototype[name] = function validate(error) { // use function here to keep the correct this context
-      return this.callMethod(name, error || name, Array.prototype.slice.call(arguments, error ? 1 : 0));
+      const hasErrorMessage = typeof error === 'string';
+      return this.callMethod(name, hasErrorMessage ? error : null, Array.prototype.slice.call(arguments, hasErrorMessage ? 1 : 0));
     };
   }
 });

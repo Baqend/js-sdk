@@ -3,8 +3,8 @@
 import { Connector } from "./Connector";
 import { PersistentError } from "../error";
 
-let http;
-let https;
+import https from "https";
+import http from "http";
 
 export class NodeConnector extends Connector {
   private cookie: string | null;
@@ -12,19 +12,10 @@ export class NodeConnector extends Connector {
 
   static isUsable() {
     if (!http) {
-      try {
-        // the require call will fail, if we can't require the http module,
-        // therefore this connector implementation can't be used
-        /* eslint-disable global-require */
-        https = require('https');
-        http = require('http');
-        /* eslint-enable global-require */
-      } catch (e) {
-        // ignore
-      }
+
     }
     // prevent using when it is shimmed
-    return http && http.Server;
+    return !!(http && http.Server);
   }
 
   constructor(host, port, secure, basePath) {

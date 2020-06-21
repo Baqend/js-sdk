@@ -1,7 +1,6 @@
 'use strict';
 
 import { Entity } from "../binding";
-import { deprecated } from "../util/deprecated";
 import { Node } from "./Node";
 import { EntityManager } from "../EntityManager";
 import { Class } from "../util";

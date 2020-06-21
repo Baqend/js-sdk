@@ -1,6 +1,5 @@
 'use strict';
 
-import { deprecated } from "../util/deprecated";
 import { Class } from "../util/Class";
 
 /**
@@ -87,6 +86,4 @@ export class Factory<T> implements InstanceFactory<T> {
     return new boundConstructor();
   }
 }
-
-deprecated(Factory, '_type', 'type');
 

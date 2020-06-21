@@ -1,6 +1,6 @@
 'use strict';
 
-import v4 from "uuid/v4";
+import { v4 } from "uuid/dist/esm-node";
 
 const uuid = v4 as uuid;
 interface uuid {

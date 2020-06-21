@@ -1,7 +1,7 @@
 'use strict';
 
 import { hmac } from "../util/hmac";
-import { deprecated } from "../util/deprecated";
+import supports = CSS.supports;
 
 export interface TokenData {
    val: any;
@@ -124,14 +124,22 @@ export class TokenStorage {
    * Derives a resource token from the stored origin token and signs the resource with the generated resource token
    *
    * @param resource The resource which will be accessible with the returned token
+   * @param sign Sign the given resource with a token, if sign is false the resource will only be encoded to a path
    * @return A resource token which can only be used to access the specified resource
    */
-  signPath(resource: string): string {
-    if (this.tokenData) {
-      const path = resource.split('/').map(encodeURIComponent).join('/');
-      return path + '?BAT=' + (this.tokenData.data + hmac(path + this.tokenData.data, this.tokenData.sig));
+  signPath(resource: string, sign: boolean = true): Promise<string> {
+    const tokenData = this.tokenData;
+    const result = Promise.resolve(resource.split('/').map(encodeURIComponent).join('/'));
+
+    if (!tokenData || !sign) {
+      return result;
     }
-    return resource;
+
+    return result.then(path => {
+      return hmac(path + tokenData.data, tokenData.sig).then(hmac => {
+        return path + '?BAT=' + (tokenData.data + hmac);
+      });
+    });
   }
 }
 

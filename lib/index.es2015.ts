@@ -1,18 +1,21 @@
 'use strict';
-export * from "./binding";
-export * from "./connector";
-export * from "./error";
-export * from "./message";
-export * from "./metamodel";
-export * from "./util";
-export * from "./intersection";
-export * from "./caching";
-export * from "./query";
-export * from "./partialupdate";
-export * from "./model";
+export * as binding from "./binding";
+export * as connector from "./connector";
+export * as error from "./error";
+export * as message from "./message";
+export * as metamodel from "./metamodel";
+export * as util from "./util";
+export * as intersection from "./intersection";
+export * as caching from "./caching";
+export * as query from "./query";
+export * as partialupdate from "./partialupdate";
+export * as model from "./model";
 
-export * from "./EntityManagerFactory";
-export * from "./EntityManager";
-export * from "./Acl";
-export * from "./baqend";
+export { EntityManagerFactory, ConnectData } from "./EntityManagerFactory";
+export { EntityManager } from "./EntityManager";
+export { Acl } from "./Acl";
+export { db, baqend } from "./baqend";
+
+import { db } from './baqend';
+export default db;
 

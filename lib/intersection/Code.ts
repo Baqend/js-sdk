@@ -2,7 +2,6 @@
 
 import * as message from "../message";
 import { StatusCode } from "../connector/Message";
-import { deprecated } from "../util/deprecated";
 import { EntityManagerFactory } from "../EntityManagerFactory";
 import { Metamodel } from "../metamodel/Metamodel";
 import { ManagedType } from "../metamodel";

@@ -9,8 +9,11 @@ import crypto from "crypto";
  * @param key
  * @return
  */
-export function hmac(message: string, key: string): string {
-  return crypto.createHmac('sha1', key)
-    .update(message)
-    .digest('hex');
+export function hmac(message: string, key: string): Promise<string> {
+  return new Promise(() => {
+    return crypto.createHmac('sha1', key)
+        .update(message)
+        .digest('hex');
+  });
 }
+

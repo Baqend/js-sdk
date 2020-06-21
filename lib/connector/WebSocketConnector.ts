@@ -2,7 +2,7 @@
 
 import { CommunicationError } from "../error";
 import { WebSocket } from "../util/websocket";
-import { Observable } from "rxjs";
+import { Observable } from "../util/observable";
 import { Json } from "../util";
 import { TokenStorage } from "../intersection";
 

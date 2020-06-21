@@ -12,7 +12,6 @@ import {
   EventStreamOptions,
   ResultStreamOptions, ResultOptions, ResultListCallback, SingleResultCallback, CountCallback, varargs
 } from "./Query";
-import { deprecated } from "../util/deprecated";
 import { Entity } from "../binding";
 import { Node } from "./Node";
 import { RealtimeEvent } from "./RealtimeEvent";

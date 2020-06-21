@@ -1,7 +1,7 @@
 {
   "compilerOptions": {
     "strict": true,
-    "target": "ES6",
+    "target": "es6",
     "moduleResolution": "node",
     "esModuleInterop": true,
     "outDir": "./dist",
@@ -11,7 +11,6 @@
     "declarationMap": true,
     "noImplicitAny": false,
     "experimentalDecorators": true,
-    "importHelpers": true,
     "typeRoots": [
       "./node_modules/@types"
     ]

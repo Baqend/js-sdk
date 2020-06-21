@@ -1,6 +1,5 @@
 'use strict';
 
-import { deprecated } from "../util/deprecated";
 import { Metadata } from "./Metadata";
 import { model } from "../model";
 import { JsonMap } from "../util/Json";

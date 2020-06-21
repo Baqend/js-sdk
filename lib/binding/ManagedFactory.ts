@@ -1,7 +1,6 @@
 'use strict';
 
 import { Factory } from "./Factory";
-import { Class, deprecated } from "../util";
 import { EntityManager } from "../EntityManager";
 import { ManagedType } from "../metamodel";
 import { Managed } from "./Managed";

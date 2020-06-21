@@ -1236,26 +1236,20 @@ export class EntityManager extends Lockable {
    * @return a absolute url wich is optionaly signed with a resource token which authenticates the currently
    * logged in user
    */
-  createURL(relativePath: string, authorize?: boolean): string {
-    if (!this.connection) {
+  createURL(relativePath: string, authorize?: boolean): Promise<string> {
+    const connection = this.connection;
+    if (!connection) {
       throw new Error("This EntityManager is not connected.");
     }
 
-    let path = this.connection.basePath + relativePath;
+    return this.tokenStorage.signPath(connection.basePath + relativePath, authorize)
+      .then(path => {
+        if (this.mustRevalidate(relativePath)) {
+          path += '&BCB';
+        }
 
-    let append = false;
-    if (authorize && this.me) {
-      path = this.tokenStorage.signPath(path);
-      append = true;
-    } else {
-      path = path.split('/').map(encodeURIComponent).join('/');
-    }
-
-    if (this.mustRevalidate(relativePath)) {
-      path = path + (append ? '&' : '?') + 'BCB';
-    }
-
-    return this.connection.origin + path;
+        return connection.origin + path;
+      });
   }
 
   /**

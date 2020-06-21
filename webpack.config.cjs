@@ -1,11 +1,13 @@
 const path = require('path');
 const webpack = require('webpack');
 const TerserPlugin = require('terser-webpack-plugin');
+const EsmWebpackPlugin = require("@purtuga/esm-webpack-plugin");
 
 const tsOptions = {
   es5: {
     target: "es5",
     module: "commonjs",
+    importHelpers: true,
   },
   es2015: {
     target: "es6",
@@ -23,9 +25,10 @@ function bundleLib(target) {
     output: {
       path: path.resolve(__dirname, 'dist/bundles/'),
       filename: '[name].js',
-      libraryTarget: 'umd',
+      libraryTarget: 'var',
+      // libraryTarget: 'umd',
       library: 'DB',
-      umdNamedDefine: true
+      // umdNamedDefine: true
     },
     externals: {
       rxjs: 'rxjs',
@@ -33,7 +36,10 @@ function bundleLib(target) {
     },
     resolve: {
       extensions: ['.ts', '.js'],
-      aliasFields: ['browser']
+      aliasFields: ['browser'],
+      alias: {
+        rxjs: path.resolve(__dirname, 'node_modules/rxjs/_esm2015/index.js')
+      }
     },
     devtool: 'source-map',
     node: false,
@@ -60,7 +66,10 @@ function bundleLib(target) {
     },
     stats: {
       optimizationBailout: true
-    }
+    },
+    plugins: [
+      ...(target === 'es2015' ? [new EsmWebpackPlugin()]: [])
+    ]
   }
 }
 

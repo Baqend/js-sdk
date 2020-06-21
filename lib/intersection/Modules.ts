@@ -1,7 +1,6 @@
 'use strict';
 
 import * as message from "../message";
-import { deprecated } from "../util/deprecated";
 import { EntityManager } from "../EntityManager";
 import { RequestBody, RequestBodyType, ResponseBodyType } from "../connector/Connector";
 

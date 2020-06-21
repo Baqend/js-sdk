@@ -1,7 +1,6 @@
 'use strict';
 
 import { UpdateOperation } from "./UpdateOperation";
-import { deprecated } from "../util/deprecated";
 import { Json, JsonMap } from "../util";
 import { Entity } from "../binding";
 

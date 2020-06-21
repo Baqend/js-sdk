@@ -1,10 +1,23 @@
 'use strict';
 
-export * from "./Builder";
-export * from "./Condition";
-export * from "./Filter";
-export * from "./Node";
-export * from "./Operator";
-export * from "./Query";
-export * from "./RealtimeEvent";
-export * from "./Stream";
+export { Builder } from "./Builder";
+export { Condition } from "./Condition";
+export { FilterObject, Filter } from "./Filter";
+export { Node } from "./Node";
+export { Operator } from "./Operator";
+export {
+    ResultStreamOptions,
+    EventStreamOptions,
+    CompleteCallback,
+    FailCallback,
+    NextEventCallback,
+    NextResultCallback,
+    varargs,
+    ResultListCallback,
+    ResultOptions,
+    CountCallback,
+    SingleResultCallback,
+    Query
+} from "./Query";
+export { RealtimeEvent, MatchType, Operation } from "./RealtimeEvent";
+export { Stream } from "./Stream";

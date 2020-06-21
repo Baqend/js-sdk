@@ -2,7 +2,6 @@
 
 import { Type } from "./Type";
 import { Class, Json, JsonMap } from "../util";
-import { deprecated } from "../util/deprecated";
 import { Enhancer, Entity, Managed, ManagedFactory } from "../binding";
 import { Attribute } from "./Attribute";
 import { EntityManager } from "../EntityManager";

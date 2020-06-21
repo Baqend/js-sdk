@@ -1,4 +1,4 @@
 'use strict';
 
-export * from "./EntityPartialUpdateBuilder";
-export * from "./PartialUpdateBuilder";
+export { EntityPartialUpdateBuilder } from "./EntityPartialUpdateBuilder";
+export { PartialUpdateBuilder } from "./PartialUpdateBuilder";

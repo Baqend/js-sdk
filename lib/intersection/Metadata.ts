@@ -2,7 +2,6 @@
 
 import { Acl } from "../Acl";
 import { Lockable } from "../util/Lockable";
-import { deprecated } from "../util/deprecated";
 import { EntityManager } from "../EntityManager";
 import { Entity } from "../binding/Entity";
 import { EntityType, ManagedType } from "../metamodel";

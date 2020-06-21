@@ -1,7 +1,7 @@
 'use strict';
 
 import { PartialUpdateBuilder } from "./PartialUpdateBuilder";
-import { deprecated, JsonMap } from "../util";
+import { JsonMap } from "../util";
 import * as message from "../message";
 import { Entity } from "../binding";
 import { Metadata } from "../intersection";

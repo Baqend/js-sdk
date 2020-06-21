@@ -3,7 +3,6 @@
 import { EntityManager } from "./EntityManager";
 import * as message from "./message";
 import { Connector, Message } from "./connector";
-import { deprecated } from "./util/deprecated";
 import { JsonMap, Lockable } from "./util";
 import { TokenStorage, TokenStorageFactory } from "./intersection/TokenStorage";
 import { Metamodel } from "./metamodel/Metamodel";
