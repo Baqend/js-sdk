@@ -118,7 +118,7 @@ export class EntityManagerFactory extends Lockable {
       }).then((response: Response) => {
         this.connectData = response.entity as JsonMap;
 
-        if (this.staleness === undefined) {
+        if (this.staleness === null) {
           this.staleness = this.connectData.bloomFilterRefresh || 60;
         }
 

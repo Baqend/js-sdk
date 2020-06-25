@@ -154,7 +154,7 @@ export class File {
 
   // @ts-ignore
   get url(): string {
-    throw new Error("This method is removed. Use the asynchronous File.createUrl() method instead.");
+    throw new Error("This method is removed. Use the asynchronous File.createURL() method instead.");
   }
 
   /**

@@ -2,6 +2,11 @@ const path = require('path');
 const webpack = require('webpack');
 const TerserPlugin = require('terser-webpack-plugin');
 const EsmWebpackPlugin = require("@purtuga/esm-webpack-plugin");
+const HtmlWebpackPlugin = require('html-webpack-plugin')
+const fs = require('fs');
+
+let dirCont = fs.readdirSync( "./spec" );
+let testScripts = dirCont.filter(elm => elm.endsWith('.spec.js'));
 
 const tsOptions = {
   es5: {
@@ -25,10 +30,9 @@ function bundleLib(target) {
     output: {
       path: path.resolve(__dirname, 'dist/bundles/'),
       filename: '[name].js',
-      libraryTarget: 'var',
-      // libraryTarget: 'umd',
+      libraryTarget: target === 'es2015' ? 'var' : 'umd',
       library: 'DB',
-      // umdNamedDefine: true
+      umdNamedDefine: target !== 'es2015'
     },
     externals: {
       rxjs: 'rxjs',
@@ -36,10 +40,7 @@ function bundleLib(target) {
     },
     resolve: {
       extensions: ['.ts', '.js'],
-      aliasFields: ['browser'],
-      alias: {
-        rxjs: path.resolve(__dirname, 'node_modules/rxjs/_esm2015/index.js')
-      }
+      aliasFields: ['browser']
     },
     devtool: 'source-map',
     node: false,
@@ -68,27 +69,45 @@ function bundleLib(target) {
       optimizationBailout: true
     },
     plugins: [
-      ...(target === 'es2015' ? [new EsmWebpackPlugin()]: [])
+      ...(target === 'es2015' ? [new EsmWebpackPlugin()]: []),
     ]
   }
 }
 
 const devSever = {
-  mode: 'production',
+  mode: 'development',
   entry: {
-
+    'chai-as-promised': require.resolve('chai-as-promised')
   },
   output: {
-    path: path.resolve(__dirname, 'build/'),
+    path: path.resolve(__dirname, '.'),
+    filename: '[name].js',
+    libraryTarget: 'umd',
+    library: 'chaiAsPromised',
+    umdNamedDefine: true
   },
   devServer: {
-    contentBase: path.join(__dirname, 'dist'),
+    contentBase: path.join(__dirname, '.'),
     port: 8000
-  }
+  },
+  devtool: 'source-map',
+  node: false,
+  plugins: [
+    new HtmlWebpackPlugin({
+      template: path.resolve(__dirname, 'tpl/debug.tpl'),
+      filename: 'index.html',
+      templateParameters: {
+        testScripts
+      },
+      inject: false
+    }),
+  ]
 }
 
+console.log(devSever)
+
 module.exports = [
+  devSever,
   bundleLib('es5'),
   bundleLib('es2015'),
-  // devSever
 ]

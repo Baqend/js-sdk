@@ -9,8 +9,6 @@ import { PersistentError } from "../error";
 import { Json } from "../util/Json";
 import { Managed } from "../binding";
 
-import { db } from "../baqend";
-
 /**
  * The Metadata instance tracks the state of an object and checks if the object state was changed since last
  * load/update. The metadata keeps therefore the state of:
@@ -87,7 +85,8 @@ export class Metadata extends Lockable {
       return this.entityManager;
     }
 
-    this.entityManager = db; // eslint-disable-line global-require
+    this.entityManager = require('../baqend').db; // eslint-disable-line global-require
+
     return this.entityManager!;
   }
 

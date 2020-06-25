@@ -1245,7 +1245,7 @@ export class EntityManager extends Lockable {
     return this.tokenStorage.signPath(connection.basePath + relativePath, authorize)
       .then(path => {
         if (this.mustRevalidate(relativePath)) {
-          path += '&BCB';
+          path += (authorize ? '&' : '?') + 'BCB';
         }
 
         return connection.origin + path;

@@ -137,7 +137,7 @@ export abstract class Message {
   }
 
   get isBinary() {
-    return this.request.type && (this.request.type in Message.BINARY || this[RESPONSE_TYPE] in Message.BINARY);
+    return (this.request.type && this.request.type in Message.BINARY) || this[RESPONSE_TYPE] in Message.BINARY;
   }
 
   /**
