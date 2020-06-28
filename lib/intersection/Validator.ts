@@ -122,11 +122,12 @@ export class Validator {
   }
 
   toString() {
-    if (typeof this.value === "string") {
-      return this.value;
+    const value = this.value;
+    if (typeof value === 'string' || value instanceof Date) {
+      return value;
     }
 
-    return JSON.stringify(this.value);
+    return JSON.stringify(value);
   }
 
   toJSON() {

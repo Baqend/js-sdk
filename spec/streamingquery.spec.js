@@ -1,10 +1,12 @@
 'use strict';
 
-var DB;
+var DB, operators;
 if (typeof module !== 'undefined') {
   require('./node');
   DB = require('../');
-  var operators = require('rxjs/operators');
+  operators = require('rxjs/operators');
+} else {
+  operators = rxjs.operators;
 }
 
 function getCountByEventMatchType(event) {
@@ -1095,22 +1097,6 @@ describe('Streaming Queries', function () {
     });
 
     describe('RxJS', function () {
-      var _Observable = DB.Observable;
-
-      before(function () {
-        if (!helper.isNode) {
-          return helper.load('Rx').then(function (Rx) {
-            DB.Observable = Rx.Observable;
-          });
-        }
-      });
-
-      after(function () {
-        if (!helper.isNode) {
-          DB.Observable = _Observable;
-        }
-      });
-
       it('should only be called once', function () {
         this.timeout(10000);
         sameForAll = helper.randomize(this.test.title);

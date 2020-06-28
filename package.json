@@ -8,16 +8,11 @@
     "email": "info@baqend.com"
   },
   "homepage": "http://baqend.com",
-  "main": "./dist/baqend.cjs",
-  "module": "./dist/baqend.mjs",
-  "exports": {
-    "import": "./dist/esm/lib/index.js",
-    "require": "./dist/commonjs/lib/index.js"
-  },
   "type": "module",
-  "typings": "./dist/index.d.ts",
+  "main": "./commonjs/lib/index.es5.js",
+  "module": "./bundles/baqend.es2015.js",
   "browser": {
-    ".": "./dist/bundles/baqend.umd.js",
+    ".": "./bundles/baqend.es5.js",
     "./lib/util/atob.ts": "./lib/util/atob-browser.ts",
     "./lib/util/is-node.ts": "./lib/util/is-node-browser.ts",
     "./lib/util/hmac.ts": "./lib/util/hmac-browser.ts",
@@ -26,15 +21,25 @@
     "./lib/connector/FetchConnector": false
   },
   "react-native": {
-    "./index.js": "./index.js",
-    "./realtime.js": "./realtime.js",
-    "./lib/util/atob.js": "./lib/util/atob-rn.js",
-    "./lib/util/is-node.js": "./lib/util/is-node-browser.js",
-    "./lib/util/hmac.js": "./lib/util/hmac-browser.js",
-    "./lib/connector/XMLHttpConnector": false,
-    "./lib/connector/IFrameConnector": false,
-    "./lib/connector/FetchConnector": "./lib/connector/FetchConnector.js"
+    ".": "./commonjs/lib/index.es5.js",
+    "./commonjs/lib/util/atob.js": "./commonjs/lib/util/atob-rn.js",
+    "./commonjs/lib/util/is-node.js": "./commonjs/lib/util/is-node-browser.js",
+    "./commonjs/lib/util/hmac.js": "./commonjs/lib/util/hmac-browser.js",
+    "./commonjs/lib/util/websocket.ts": "./commonjs/lib/util/websocket-browser.ts",
+    "./commonjs/lib/connector/XMLHttpConnector": false,
+    "./commonjs/lib/connector/IFrameConnector": false
   },
+  "exports": {
+    "browser": {
+      "import": "./bundles/baqend.es2015.js",
+      "require": "./bundles/baqend.es5.js"
+    },
+    "default": {
+      "import": "./esm/lib/index.es2015.js",
+      "require": "./commonjs/lib/index.es5.js"
+    }
+  },
+  "typings": "./esm/lib/index2015.d.ts",
   "dependencies": {
     "commander": "^2.19.0",
     "glob": "^7.0.6",
@@ -111,10 +116,10 @@
   },
   "scripts": {
     "clean": "shx rm -rf dist",
-    "dev-node": "tsc --watch -m commonjs --target es5 --outDir dist/commonjs",
+    "dev-node": "tsc --watch -m commonjs --target es5 --outDir commonjs",
     "dev-browser": "webpack-dev-server --config webpack.config.cjs --open",
-    "build-commonjs": "tsc -m commonjs --target es5 --outDir dist/commonjs",
-    "build-esm": "tsc -m es2015 --target es6 --outDir dist/esm --declaration",
+    "build-commonjs": "tsc -m commonjs --target es5 --outDir commonjs",
+    "build-esm": "tsc -m es2015 --target es6 --outDir esm --declaration",
     "build-bundles": "webpack --config webpack.config.cjs",
     "dist": "grunt dist && npm run typings && npm run jsdoc",
     "release": "node scripts/release",

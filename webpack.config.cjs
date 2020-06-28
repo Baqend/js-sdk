@@ -28,7 +28,7 @@ function bundleLib(target) {
       [`baqend.${target}.min`]: `./lib/index.${target}.ts`,
     },
     output: {
-      path: path.resolve(__dirname, 'dist/bundles/'),
+      path: path.resolve(__dirname, 'bundles/'),
       filename: '[name].js',
       libraryTarget: target === 'es2015' ? 'var' : 'umd',
       library: 'DB',
@@ -103,8 +103,6 @@ const devSever = {
     }),
   ]
 }
-
-console.log(devSever)
 
 module.exports = [
   devSever,

@@ -133,7 +133,7 @@ describe('Test validate', function () {
     person.name = 'Peter';
     person.age = '20';
     var message = 'TestError';
-    type.validationCode = DB.intersection.Validator.compile(type, 'name.equals(\'' + message + '\', age);');
+    type.validationCode = DB.intersection.Validator.compile(type, 'name.equals(\'' + message + '\', age.value);');
     var result = person.validate().fields;
     expect(result.name).be.instanceOf(DB.util.Validator);
     expect(result.name.isValid).be.false;
