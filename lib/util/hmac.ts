@@ -10,10 +10,10 @@ import crypto from "crypto";
  * @return
  */
 export function hmac(message: string, key: string): Promise<string> {
-  return new Promise(() => {
-    return crypto.createHmac('sha1', key)
-        .update(message)
-        .digest('hex');
-  });
+  return Promise.resolve(
+    crypto.createHmac('sha1', key)
+      .update(message)
+      .digest('hex')
+  );
 }
 

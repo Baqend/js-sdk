@@ -26,7 +26,7 @@
   </script> -->
   <script src="./node_modules/rxjs/bundles/rxjs.umd.js"></script>
   <script src="./node_modules/validator/validator.js"></script>
-  <script src="./dist/bundles/baqend.es5.js"></script>
+  <script src="./bundles/baqend.es5.js"></script>
   <script src="./spec/env.js"></script>
 
   <script>

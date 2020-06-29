@@ -7,8 +7,7 @@
     "name": "Baqend.com",
     "email": "info@baqend.com"
   },
-  "homepage": "http://baqend.com",
-  "type": "module",
+  "homepage": "https://www.baqend.com",
   "main": "./commonjs/lib/index.es5.js",
   "module": "./bundles/baqend.es2015.js",
   "browser": {
@@ -115,12 +114,16 @@
     "webpack-merge": "^4.2.2"
   },
   "scripts": {
+    "test": "npm run test:build && npm run test:node && npm run test:karma",
+    "test:build": "grunt browserify:test",
+    "test:node": "grunt mochaTest:test",
+    "test:karma": "karma start",
     "clean": "shx rm -rf dist",
     "dev-node": "tsc --watch -m commonjs --target es5 --outDir commonjs",
-    "dev-browser": "webpack-dev-server --config webpack.config.cjs --open",
+    "dev-browser": "webpack-dev-server --config webpack.config.js --open",
     "build-commonjs": "tsc -m commonjs --target es5 --outDir commonjs",
     "build-esm": "tsc -m es2015 --target es6 --outDir esm --declaration",
-    "build-bundles": "webpack --config webpack.config.cjs",
+    "build-bundles": "webpack --config-name=es5 && webpack --config-name=es2015",
     "dist": "grunt dist && npm run typings && npm run jsdoc",
     "release": "node scripts/release",
     "typings": "npm run typings:generate && npm run typings:test",

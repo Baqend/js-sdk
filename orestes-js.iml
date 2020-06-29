@@ -8,7 +8,10 @@
       <excludeFolder url="file://$MODULE_DIR$/.externalToolBuilders" />
       <excludeFolder url="file://$MODULE_DIR$/.grunt" />
       <excludeFolder url="file://$MODULE_DIR$/build" />
+      <excludeFolder url="file://$MODULE_DIR$/bundles" />
+      <excludeFolder url="file://$MODULE_DIR$/commonjs" />
       <excludeFolder url="file://$MODULE_DIR$/dist" />
+      <excludeFolder url="file://$MODULE_DIR$/esm" />
       <excludeFolder url="file://$MODULE_DIR$/node_modules" />
     </content>
     <orderEntry type="inheritedJdk" />

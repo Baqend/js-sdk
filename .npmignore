@@ -1,12 +1,12 @@
 /.idea
 /.grunt
 /node_modules
-/build
-/scripts/release.js
+/scripts
 /tpl
 *.iml
 .DS_Store
-.babelrc
-Gruntfile.js
 browserstack.js
 localSeleniumBrowser.js
+webpack.config.js
+karma.conf.js
+tsconfig.json

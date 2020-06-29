@@ -8,7 +8,7 @@ import { Json, JsonMap, Class } from "../util";
 
 export type Receiver = (response: Response) => void;
 export type RequestBody = string | Blob | Buffer | ArrayBuffer | FormData | Json;
-export type RequestBodyType = 'json'|'text'|'blob'|'buffer'|'arraybuffer'|'data-url'|'base64'|'form';
+export type RequestBodyType = 'json'|'text'|'blob'|'buffer'|'arraybuffer'|'data-url'|'base64'|'form'|'stream';
 export type ResponseBodyType = 'json'|'text'|'blob'|'arraybuffer'|'data-url'|'base64';
 export type Request = { method: string, path: string, type?: RequestBodyType, entity?: any, headers: {[headerName: string]: string} };
 export type Response = { status: number, headers: {[headerName: string]: string}, entity?: any, error?: Error};
@@ -163,7 +163,8 @@ export abstract class Connector {
    */
   send(message: Message): Promise<Response> {
     let response: Response = { status: 0, headers: {} };
-    return Promise.resolve(this.prepareRequest(message))
+    return Promise.resolve()
+      .then(() => this.prepareRequest(message))
       .then(() => {
         return new Promise<Response>((resolve) => {
           this.doSend(message, message.request, resolve);

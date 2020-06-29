@@ -1,7 +1,8 @@
 {
   "name": "baqend",
   "description": "Baqend JavaScript SDK",
-  "main": "dist/bundles/baqend.js",
+  "main": "bundles/baqend.es5.js",
+  "module": "bundles/baqend.es2015.js",
   "authors": [
     "Baqend.com <info@baqend.com>"
   ],
@@ -18,13 +19,15 @@
     "globals",
     "node"
   ],
-  "homepage": "http://www.baqend.com",
+  "homepage": "https://www.baqend.com",
   "ignore": [
     "**/.*",
     "*.iml",
     "node_modules",
     "spec",
-    "scripts/release.js",
-    "tpl"
+    "spec-ts",
+    "scripts",
+    "tpl",
+    "webpack.config.js"
   ]
 }

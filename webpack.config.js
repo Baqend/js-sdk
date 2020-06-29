@@ -4,9 +4,28 @@ const TerserPlugin = require('terser-webpack-plugin');
 const EsmWebpackPlugin = require("@purtuga/esm-webpack-plugin");
 const HtmlWebpackPlugin = require('html-webpack-plugin')
 const fs = require('fs');
+const pkg = require('./package.json');
 
-let dirCont = fs.readdirSync( "./spec" );
-let testScripts = dirCont.filter(elm => elm.endsWith('.spec.js'));
+const copyright = fs.readFileSync('LICENSE.md', { encoding: 'utf-8' }).split(/[\r\n]/)[0];
+const dirCont = fs.readdirSync( "./spec" );
+const testScripts = dirCont.filter(elm => elm.endsWith('.spec.js'));
+
+const date = new Date().toUTCString();
+const longBanner = `/*!
+* ${pkg.description} ${pkg.version}
+* ${pkg.homepage}
+*
+* ${copyright}
+*
+* Includes:
+* uuid - https://github.com/uuidjs/uuid
+* Copyright (c) 2010-2020 Robert Kieffer and other contributors
+*
+* Released under the MIT license
+*
+* Date: ${date}
+*/
+`;
 
 const tsOptions = {
   es5: {
@@ -22,6 +41,7 @@ const tsOptions = {
 
 function bundleLib(target) {
   return {
+    name: target,
     mode: 'production',
     entry: {
       [`baqend.${target}`]: `./lib/index.${target}.ts`,
@@ -49,6 +69,11 @@ function bundleLib(target) {
       minimizer: [
         new TerserPlugin({
           include: /\.min\.js$/,
+          extractComments: {
+            banner: (licenseFile) => {
+              return `${pkg.name} ${pkg.version} | ${copyright} | License information ${licenseFile}`;
+            },
+          }
         }),
       ],
       concatenateModules: target === 'es2015'
@@ -70,11 +95,17 @@ function bundleLib(target) {
     },
     plugins: [
       ...(target === 'es2015' ? [new EsmWebpackPlugin()]: []),
+      new webpack.BannerPlugin({
+        banner: longBanner,
+        raw: true,
+        entryOnly: true
+      }),
     ]
   }
 }
 
 const devSever = {
+  name: 'dev-server',
   mode: 'development',
   entry: {
     'chai-as-promised': require.resolve('chai-as-promised')

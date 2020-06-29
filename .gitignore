@@ -1,11 +1,11 @@
 /.idea
 /.grunt
 /node_modules
-/build
-/dist
+/bundles
+/commonjs
+/esm
 /doc
 /spec-ts/*.js
-/index.d.ts
 .DS_Store
 *.iml
 

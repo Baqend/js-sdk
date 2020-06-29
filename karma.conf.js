@@ -19,8 +19,10 @@ module.exports = function (config) {
 
     // list of files / patterns to load in the browser
     files: [
-      { pattern: 'dist/bundles/baqend.es5.js', watched: true, included: true },
-      { pattern: 'dist/bundles/baqend.es5.js.map', included: false, served: true, watched: true },
+      { pattern: 'node_modules/rxjs/bundles/rxjs.umd.js', included: true },
+      { pattern: 'node_modules/validator/validator.js', included: true },
+      { pattern: 'bundles/baqend.es5.js', watched: true, included: true },
+      { pattern: 'bundles/baqend.es5.js.map', included: false, served: true, watched: true },
       'spec/env.js',
       'spec/helper.js',
       'spec/**/*.spec.js',
@@ -44,7 +46,7 @@ module.exports = function (config) {
     },
 
     // web server hostname
-    hostname: process.env.KARMA_HOST || 'local.baqend.com',
+    hostname: process.env.KARMA_HOST || 'localhost',
 
     // web server port
     port: 9876,
