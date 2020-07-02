@@ -1,6 +1,7 @@
 /.idea
 /.grunt
 /node_modules
+/build
 /bundles
 /commonjs
 /esm

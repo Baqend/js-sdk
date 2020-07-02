@@ -17,7 +17,7 @@ import { EntityManagerFactory } from "./EntityManagerFactory";
 import { EntityManager} from "./EntityManager";
 import { Acl } from "./Acl";
 
-import { db } from "./baqend";
+import { db, baqend } from "./baqend";
 
 ['Permission', 'Metadata', 'TokenStorage', 'Validator', 'PushMessage', 'Code', 'Modules', 'Logger'].forEach(type => {
     Object.defineProperty(util, type, {
@@ -28,7 +28,7 @@ import { db } from "./baqend";
     });
 });
 
-Object.assign(db, {
+const exp = Object.assign(db, {
     db,
     binding,
     connector,
@@ -43,10 +43,10 @@ Object.assign(db, {
     EntityManagerFactory,
     EntityManager,
     Acl,
+}, {
+    metamodel: Object.assign(db.metamodel, metamodel)
 });
 
-Object.assign(db.metamodel, metamodel);
-
 // @ts-ignore
-export = db;
+export = exp;
 
