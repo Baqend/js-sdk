@@ -12,7 +12,7 @@ export class EntityExistsError extends PersistentError {
   /**
    * @param entity - The entity which cause the error
    */
-  constructor(entity) {
+  constructor(entity: Entity) {
     super('The entity ' + entity + ' is managed by a different db.');
     this.entity = entity;
   }

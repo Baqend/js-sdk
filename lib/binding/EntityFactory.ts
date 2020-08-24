@@ -25,7 +25,7 @@ export class EntityFactory<T extends Entity> extends ManagedFactory<T> {
    * @param failCallback Called when the operation failed.
    * @return A Promise that will be fulfilled when the asynchronous operation completes.
    */
-  load(id: string, options?: { depth?: number | boolean, refresh?: boolean, local?: boolean,  }, doneCallback?, failCallback?): Promise<T | null> {
+  load(id: string, options?: { depth?: number | boolean, refresh?: boolean, local?: boolean,  }, doneCallback?: any, failCallback?: any): Promise<T | null> {
     if (options instanceof Function) {
       return this.load(id, {}, options, doneCallback);
     }
@@ -49,7 +49,7 @@ export class EntityFactory<T extends Entity> extends ManagedFactory<T> {
    */
   fromJSON(json: Json): T {
     const obj: T = this.db.getReference(this.managedType.ref, (json as JsonMap).id as string);
-    return this.managedType.fromJsonValue(Metadata.get(obj), json, obj, {})!;
+    return this.managedType.fromJsonValue(Metadata.get(obj), json, obj, { persisting: false })!;
   }
 
   /**

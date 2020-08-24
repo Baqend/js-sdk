@@ -2,7 +2,7 @@
 
 import { enumerable } from "../util/enumerable";
 import { Entity } from "./Entity";
-import { model } from "../model";
+import * as model from "../model";
 import { Class, JsonMap } from "../util";
 
 export class User extends Entity {
@@ -26,8 +26,8 @@ export class User extends Entity {
    * @return
    */
   @enumerable(false)
-  newPassword(currentPassword: string, password: string, doneCallback?, failCallback?): Promise<model.User> {
-    return this._metadata.db.newPassword(this.username, currentPassword, password).then(doneCallback, failCallback);
+  newPassword(currentPassword: string, password: string, doneCallback?: any, failCallback?: any): Promise<model.User> {
+    return this._metadata.db.newPassword(this.username!!, currentPassword, password).then(doneCallback, failCallback);
   }
 
   /**
@@ -40,8 +40,8 @@ export class User extends Entity {
    * @return
    */
   @enumerable(false)
-  changeUsername(newUsername: string, password: string, doneCallback?, failCallback?): Promise<any> {
-    return this._metadata.db.changeUsername(this.username, newUsername, password).then(doneCallback, failCallback);
+  changeUsername(newUsername: string, password: string, doneCallback?: any, failCallback?: any): Promise<any> {
+    return this._metadata.db.changeUsername(this.username!!, newUsername, password).then(doneCallback, failCallback);
   }
 
   /**
@@ -54,7 +54,7 @@ export class User extends Entity {
    * @return
    */
   @enumerable(false)
-  requestAPIToken(doneCallback?, failCallback?): Promise<JsonMap> {
+  requestAPIToken(doneCallback?: any, failCallback?: any): Promise<JsonMap> {
     return this._metadata.db.requestAPIToken(this.constructor as Class<model.User>, this).then(doneCallback, failCallback);
   }
 }

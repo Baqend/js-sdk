@@ -3,7 +3,7 @@
 import { Entity } from "../binding";
 import { Node } from "./Node";
 import { EntityManager } from "../EntityManager";
-import { Class } from "../util";
+import { Class, JsonMap } from "../util";
 
 /**
  * An Operator saves the state of a combined query
@@ -31,8 +31,8 @@ export class Operator<T extends Entity> extends Node<T> {
     this.childes = childes;
   }
 
-  toJSON() {
-    const json = {};
+  toJSON(): { [operator: string]: Node<T>[] } {
+    const json: { [operator: string]: Node<T>[] } = {};
     json[this.operator] = this.childes;
     return json;
   }

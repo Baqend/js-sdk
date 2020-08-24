@@ -8,7 +8,7 @@ export function atob(input: string): string {
   const length = str.length;
 
   let bitCounter = 0;
-  let bitStorage;
+  let bitStorage = 0;
   let output = '';
   for (let position = 0; position < length; position += 1) {
     const buffer = TABLE.indexOf(str.charAt(position));

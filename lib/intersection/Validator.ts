@@ -1,14 +1,23 @@
 import { Entity } from "../binding";
 import { ManagedType } from "../metamodel";
+import validator from "validator";
 
 const FallBachValLib = {};
-let valLib = FallBachValLib;
+let valLib: Partial<typeof validator> = FallBachValLib;
 try {
   // we load this module as an optional external dependency
   valLib = require("validator");
 } catch(e) {}
 
+type Validators = Omit<
+    typeof validator, // Extract<typeof validator, Function>,
+    "version" | "blacklist" | "escape" | "unescape" | "ltrim" | "normalizeEmail" | "rtrim" | "stripLow" | "toBoolean" | "toDate" | "toFloat" | "toInt" | "trim" | "whitelist" | "toString"
+>;
+
+// import all validators from the validation library
+export interface Validator extends Pick<Validators, keyof Validators>{}
 export class Validator {
+
   /**
    * Compiles the given validation code for the managedType
    * @param managedType The managedType of the code
@@ -103,25 +112,25 @@ export class Validator {
     return this;
   }
 
-  constructor(key, entity) {
+  constructor(key: string, entity: Entity) {
     this.key = key;
     this.entity = entity;
   }
 
-  callMethod(method, error, argumentList) {
+  callMethod(method: keyof typeof validator, errorMessage: string, argumentList: any[]) {
     const args = argumentList || [];
     try {
-      args.unshift(this.toString());
-      if (valLib[method].apply(this, args) === false) {
-        this.errors.push(error || method);
+      args.unshift(this.toStringValue());
+      if ((valLib[method] as Function).apply(this, args) === false) {
+        this.errors.push(errorMessage || method);
       }
     } catch (e) {
-      this.errors.push(error || e.message);
+      this.errors.push(errorMessage || e.message);
     }
     return this;
   }
 
-  toString() {
+  toStringValue() {
     const value = this.value;
     if (typeof value === 'string' || value instanceof Date) {
       return value;
@@ -138,10 +147,10 @@ export class Validator {
   }
 }
 
-const Validators = ['contains', 'equals', 'matches']
-Object.keys(valLib).forEach((name) => {
-  if (name.startsWith('is') || Validators.includes(name)) {
-    Validator.prototype[name] = function validate(error) { // use function here to keep the correct this context
+const OTHER_VALIDATORS: string[] = ['contains', 'equals', 'matches'];
+(Object.keys(valLib) as (keyof Validators)[]).forEach((name: (keyof Validators)) => {
+  if (name.startsWith('is') || OTHER_VALIDATORS.includes(name)) {
+    (Validator.prototype[name] as any) = function validate(this: Validator, error: any) { // use function here to keep the correct this context
       const hasErrorMessage = typeof error === 'string';
       return this.callMethod(name, hasErrorMessage ? error : null, Array.prototype.slice.call(arguments, hasErrorMessage ? 1 : 0));
     };

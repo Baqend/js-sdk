@@ -1,6 +1,7 @@
 'use strict';
 
-import { Connector, Response } from "./Connector";
+import { Connector, Request, Response, ResponseBodyType } from "./Connector";
+import { Message } from "./Message";
 
 export class FetchConnector extends Connector {
   /**
@@ -14,7 +15,7 @@ export class FetchConnector extends Connector {
   /**
    * @inheritDoc
    */
-  doSend(message, request, receive) {
+  doSend(message: Message, request: Request, receive: (response: Response) => void) {
     const url = this.origin + this.basePath + request.path;
     const method = request.method;
     const headers = request.headers;
@@ -29,7 +30,7 @@ export class FetchConnector extends Connector {
     }).then((res) => {
       const headers: {[headerName: string]: string} = {};
       Connector.RESPONSE_HEADERS.forEach((name) => {
-        headers[name] = res.headers.get ? res.headers.get(name) : res.headers[name];
+        headers[name] = res.headers.get ? res.headers.get(name) : (res.headers as any)[name];
       });
 
       const response: Response = {
@@ -45,13 +46,13 @@ export class FetchConnector extends Connector {
   /**
    * @inheritDoc
    */
-  fromFormat(response, rawEntity, type) {
+  fromFormat(response: Response, rawEntity: any, type: ResponseBodyType | null) {
     if (type === 'json') {
       return rawEntity.json();
     } else if (type === 'blob') {
       return rawEntity.blob();
     } else if (type === 'data-url' || type === 'base64') {
-      return rawEntity.blob().then((entity) => {
+      return rawEntity.blob().then((entity: Blob) => {
         const reader = new FileReader();
         reader.readAsDataURL(entity);
         return new Promise((resolve, reject) => {
@@ -73,7 +74,7 @@ export class FetchConnector extends Connector {
   /**
    * @inheritDoc
    */
-  toFormat(message) {
+  toFormat(message: Message) {
     let type = message.request.type;
 
     if (type) {

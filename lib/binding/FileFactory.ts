@@ -86,7 +86,7 @@ export class FileFactory extends Factory<File> {
    * @param failCallback The callback is invoked if any error has occurred
    * @return A promise which will fulfilled with the updated metadata
    */
-  saveMetadata(bucket: string, metadata: RootFolderMetadata, doneCallback?, failCallback?): Promise<any> {
+  saveMetadata(bucket: string, metadata: RootFolderMetadata, doneCallback?: any, failCallback?: any): Promise<any> {
     const msg = new message.SetFileBucketMetadata(bucket, metadata);
     return this.db.send(msg).then(doneCallback, failCallback);
   }
@@ -101,12 +101,12 @@ export class FileFactory extends Factory<File> {
    * @param failCallback The callback is invoked if any error has occurred
    * @return A promise which will be fulfilled with the bucket acls
    */
-  loadMetadata(bucket: string, options?: { refresh?: boolean }, doneCallback?, failCallback?): Promise<RootFolderMetadata> {
+  loadMetadata(bucket: string, options?: { refresh?: boolean }, doneCallback?: any, failCallback?: any): Promise<RootFolderMetadata> {
     const msg = new message.GetFileBucketMetadata(bucket);
     // this._db.ensureCacheHeader(this.id, msg, options.refresh);
     // do not white list the file, because head-request does not revalidate the cache.
     return this.db.send(msg).then((response) => {
-      const result = {};
+      const result: RootFolderMetadata = {};
       Permission.BASE_PERMISSIONS.forEach((key) => {
         result[key] = Permission.fromJSON(response.entity[key] || {});
       });
@@ -126,9 +126,9 @@ export class FileFactory extends Factory<File> {
    * @param failCallback The callback is invoked if any error has occurred
    * @return The listed buckets.
    */
-  listBuckets(doneCallback?, failCallback?): Promise<File[]> {
+  listBuckets(doneCallback?: any, failCallback?: any): Promise<File[]> {
     return this.db.send(new message.ListBuckets()).then(response => (
-      response.entity.map(bucket => this.new(bucket + '/'))
+        (response.entity as string[]).map(bucket => this.new(bucket + '/'))
     )).then(doneCallback, failCallback);
   }
 
@@ -142,7 +142,7 @@ export class FileFactory extends Factory<File> {
    * @param failCallback The callback is invoked if any error has occurred
    * @return The listed files/folders.
    */
-  listFiles(folderOrPath: File|string, start: File, count: number, doneCallback?, failCallback?): Promise<File[]> {
+  listFiles(folderOrPath: File|string, start: File, count: number, doneCallback?: any, failCallback?: any): Promise<File[]> {
     let folder;
 
     if (typeof folderOrPath === 'string') {
@@ -155,7 +155,7 @@ export class FileFactory extends Factory<File> {
     const path = folder.key;
     const bucket = folder.bucket;
     return this.db.send(new message.ListFiles(bucket, path, start ? start.key : undefined, count)).then(response => (
-      response.entity.map(file => this.new(file))
+        (response.entity as string[]).map(file => this.new(file))
     )).then(doneCallback, failCallback);
   }
 }

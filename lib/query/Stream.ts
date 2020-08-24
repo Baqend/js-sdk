@@ -135,7 +135,7 @@ export class Stream {
     opt.matchTypes = 'all';
     opt.operations = 'any';
 
-    let result;
+    let result: T[];
     const ordered = !!query.sort;
     return Stream.streamObservable<T, T[]>(entityManager, query, opt, (event: BaseEvent, next) => {
       if (event.type === 'result') {
@@ -144,7 +144,7 @@ export class Stream {
       }
 
       if (event.type === 'match') {
-        const obj = Stream.resolveObject(entityManager, event.data);
+        const obj = Stream.resolveObject<T>(entityManager, event.data);
 
         if (event.matchType === 'remove' || event.matchType === 'changeIndex') {
           // if we have removed the instance our self, we do not have the cached instances anymore
@@ -212,20 +212,20 @@ export class Stream {
     return Stream.cachedObservable(observable, opt);
   }
 
-  static cachedObservable<T>(observable: Observable<T>, options): Observable<T> {
+  static cachedObservable<T>(observable: Observable<T>, options: JsonMap): Observable<T> {
     let subscription: Subscription | null = null;
     const observers: Subscriber<T>[] = [];
     return new Observable<T>((observer) => {
       if (!subscription) {
-        let remainingRetries = options.reconnects;
+        let remainingRetries = options.reconnects as number
         let backoff = 1;
         const subscriptionObserver = {
-          next(msg) {
+          next(msg: T) {
             // reset the backoff if we get a message
             backoff = 1;
             observers.forEach(o => o.next(msg));
           },
-          error(e) {
+          error(e: Error) {
             observers.forEach(o => o.error(e));
           },
           complete() {
@@ -278,22 +278,22 @@ export class Stream {
     return verified;
   }
 
-  static normalizeMatchTypes(list) {
+  static normalizeMatchTypes(list: string | string[] | undefined) {
     return Stream.normalizeSortedSet(list, 'all', 'match types', ['add', 'change', 'changeIndex', 'match', 'remove']);
   }
 
-  static normalizeReconnects(reconnects) {
+  static normalizeReconnects(reconnects: number | undefined | string) {
     if (reconnects === undefined) {
       return -1;
     }
     return reconnects < 0 ? -1 : Number(reconnects);
   }
 
-  static normalizeOperations(list) {
+  static normalizeOperations(list: string | string[] | undefined) {
     return Stream.normalizeSortedSet(list, 'any', 'operations', ['delete', 'insert', 'none', 'update']);
   }
 
-  static normalizeSortedSet(list, wildcard, itemType, allowedItems) {
+  static normalizeSortedSet(list: string | string[] | undefined, wildcard: string, itemType: string, allowedItems: string[]) {
     if (!list) {
       return [wildcard];
     }

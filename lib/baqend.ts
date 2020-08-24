@@ -24,7 +24,7 @@ export interface baqend extends EntityManager {
    * @param failCallback When an error occurred while initializing the SDK
    * @return A initialized EntityManager
    */
-  connect(hostOrApp: string, secure?: boolean, doneCallback?, failCallback?): Promise<EntityManager>;
+  connect(hostOrApp: string, secure?: boolean, doneCallback?: any, failCallback?: any): Promise<EntityManager>;
 }
 
 export const db = function() {
@@ -37,7 +37,7 @@ export const db = function() {
       return this;
     },
 
-    connect(this: baqend, hostOrApp: string, secure?: boolean | Function, doneCallback?, failCallback?) {
+    connect(this: baqend, hostOrApp: string, secure?: boolean | Function, doneCallback?: any, failCallback?: any) {
       if (secure instanceof Function) {
         return this.connect(hostOrApp, undefined, secure, doneCallback);
       }

@@ -4,12 +4,18 @@ import { enumerable } from "../util/enumerable";
 import { Class, Json, JsonMap } from "../util";
 import { Enhancer } from "./Enhancer";
 import { Metadata } from "../intersection";
+import { ManagedMetadata } from "../intersection/Metadata";
 
 export interface Managed {
   /**
+   * The managed properties of this object
+   */
+  [property: string]: any;
+
+  /**
    * Contains the metadata of this managed object
    */
-  _metadata: Metadata;
+  _metadata: ManagedMetadata;
 }
 export class Managed {
   /**
@@ -63,6 +69,8 @@ export class Managed {
    */
   @enumerable(false)
   toJSON(): Json {
-    return this._metadata.type.toJsonValue(this._metadata, this, {});
+    // TODO: casting to Metadata is not really correct here since embeddable types have an lightweight meta object
+    // However the lightweight Metadata is compatible with the Metadata object which is expected by the managed types
+    return this._metadata.type.toJsonValue(this._metadata as Metadata, this, { persisting: false });
   }
 }

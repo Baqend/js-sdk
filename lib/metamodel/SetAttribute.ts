@@ -3,6 +3,8 @@
 import { CollectionType, PluralAttribute } from "./PluralAttribute";
 import { Type } from "./Type";
 import { JsonArray } from "../util";
+import { Metadata } from "../intersection";
+import { Managed } from "../binding";
 
 export class SetAttribute<T> extends PluralAttribute<Set<T | null>, T> {
   /**
@@ -31,7 +33,7 @@ export class SetAttribute<T> extends PluralAttribute<Set<T | null>, T> {
   /**
    * @inheritDoc
    */
-  getJsonValue(state, object, options): JsonArray | null {
+  getJsonValue(state: Metadata, object: Managed, options: { excludeMetadata?: boolean; depth?: number | boolean, persisting: boolean }): JsonArray | null {
     const value = this.getValue(object);
 
     if (!(value instanceof this.typeConstructor)) {
@@ -69,7 +71,7 @@ export class SetAttribute<T> extends PluralAttribute<Set<T | null>, T> {
   /**
    * @inheritDoc
    */
-  setJsonValue(state, obj, json: JsonArray, options) {
+  setJsonValue(state: Metadata, obj: Managed, json: JsonArray, options: { onlyMetadata?: boolean; persisting: boolean }) {
     let value: Set<T | null> | null = null;
 
     if (json) {
@@ -79,7 +81,7 @@ export class SetAttribute<T> extends PluralAttribute<Set<T | null>, T> {
         value = new this.typeConstructor(); // eslint-disable-line new-cap
       }
 
-      const persisting = {};
+      const persisting: { [keyValue: string]: T | null } = {};
       const persistedState = PluralAttribute.getAttachedState(value) || {};
 
       value.clear();

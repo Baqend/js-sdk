@@ -3,7 +3,7 @@
 
 'use strict';
 
-import { Connector, Receiver } from "./Connector";
+import { Connector, Receiver, Request } from "./Connector";
 import { XMLHttpConnector } from "./XMLHttpConnector";
 import { Message } from "./Message";
 import { JsonMap } from "../util/Json";
@@ -37,7 +37,7 @@ export class IFrameConnector extends XMLHttpConnector {
     return location.hostname !== host || locationPort !== port || locationSecure !== secure;
   }
 
-  constructor(host, port, secure, basePath) {
+  constructor(host: string, port: number, secure: boolean, basePath: string) {
     super(host, port, secure, basePath);
 
     this.mid = 0;
@@ -47,7 +47,7 @@ export class IFrameConnector extends XMLHttpConnector {
     addEventListener('message', this.doReceive, false);
   }
 
-  load(path) {
+  load(path: string) {
     this.iframe = document.createElement('iframe');
     this.iframe.src = this.origin + this.basePath + path;
     this.iframe.setAttribute('style', IFrameConnector.style);
@@ -74,7 +74,7 @@ export class IFrameConnector extends XMLHttpConnector {
   /**
    * @inheritDoc
    */
-  doSend(message: Message, request, receive: Receiver) {
+  doSend(message: Message, request: Request, receive: Receiver) {
     // binary data will be send and received directly
     if (message.isBinary) {
       super.doSend(message, request, receive);
@@ -119,11 +119,11 @@ export class IFrameConnector extends XMLHttpConnector {
     }
   }
 
-  postMessage(msg) {
+  postMessage(msg: string) {
     this.iframe!.contentWindow!.postMessage(msg, this.origin);
   }
 
-  doReceive(event) {
+  doReceive(event: MessageEvent) {
     if (event.origin !== this.origin || event.data[0] !== '{') {
       return;
     }

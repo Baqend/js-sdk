@@ -1,6 +1,6 @@
 /// <reference path="./types.d.ts" />
 
-import {binding, query, model, baqend, RealtimeEvent, db} from '../';
+import {binding, query, model, baqend, db} from '../esm/lib/index.es2015';
 import {Observable, Subscription} from 'rxjs';
 
 db.connect('test', true).then(() => {
@@ -16,12 +16,12 @@ db.User.find()
     .in('vals', 3)
     .containsAny('vals', [3,4,5])
     .singleResult((user) => {
-        user.username;
+        user!.username;
     });
 
-let stream:Observable<RealtimeEvent<model.Test>> = db.Test.find()
+let stream:Observable<query.RealtimeEvent<model.Test>> = db.Test.find()
     .equal("myProp", "test")
-    .eventStream({matchTypes: ['any']});
+    .eventStream({ matchTypes: 'all' });
 
 let subscription:Subscription = stream.subscribe();
 

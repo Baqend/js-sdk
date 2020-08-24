@@ -1,6 +1,6 @@
-import {model, binding} from '../index';
+import {model, binding} from '../esm/lib/index.es2015';
 
-declare module "../index" {
+declare module "../esm/lib/index.es2015" {
     interface baqend {
         Test:binding.EntityFactory<model.Test>;
     }

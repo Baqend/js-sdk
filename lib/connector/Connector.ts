@@ -9,7 +9,7 @@ import { Json, JsonMap, Class } from "../util";
 export type Receiver = (response: Response) => void;
 export type RequestBody = string | Blob | Buffer | ArrayBuffer | FormData | Json;
 export type RequestBodyType = 'json'|'text'|'blob'|'buffer'|'arraybuffer'|'data-url'|'base64'|'form'|'stream';
-export type ResponseBodyType = 'json'|'text'|'blob'|'arraybuffer'|'data-url'|'base64';
+export type ResponseBodyType = 'json'|'text'|'blob'|'arraybuffer'|'data-url'|'base64'|'stream';
 export type Request = { method: string, path: string, type?: RequestBodyType, entity?: any, headers: {[headerName: string]: string} };
 export type Response = { status: number, headers: {[headerName: string]: string}, entity?: any, error?: Error};
 
@@ -126,7 +126,7 @@ export abstract class Connector {
     return connection;
   }
 
-  static toUri(host, port, secure, basePath) {
+  static toUri(host: string, port: number, secure: boolean, basePath: string) {
     let uri = (secure ? 'https://' : 'http://') + (host.indexOf(':') !== -1 ? '[' + host + ']' : host);
     uri += ((secure && port !== 443) || (!secure && port !== 80)) ? ':' + port : '';
     uri += basePath;
@@ -151,7 +151,7 @@ export abstract class Connector {
    * @param basePath - The base path of the api endpoint
    */
   constructor(
-      public readonly host,
+      public readonly host: string,
       public readonly port: number,
       public readonly secure: boolean,
       public readonly basePath: string
@@ -269,7 +269,7 @@ export abstract class Connector {
     // IE9 returns status code 1223 instead of 204
     response.status = response.status === 1223 ? 204 : response.status;
 
-    let type;
+    let type: ResponseBodyType | null;
     const headers = response.headers || {};
     // some proxies send content back on 204 responses
     const entity = response.status === 204 ? null : response.entity;
@@ -315,5 +315,5 @@ export abstract class Connector {
    * @param type The requested response format
    * @return
    */
-  protected abstract fromFormat(response: Response, entity: any, type: ResponseBodyType): any;
+  protected abstract fromFormat(response: Response, entity: any, type: ResponseBodyType | null): any;
 }

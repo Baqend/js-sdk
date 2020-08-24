@@ -10,7 +10,7 @@ export class Accessor {
    * @return
    */
   getValue<T>(object: Managed, attribute: Attribute<T>): T | null {
-    return object[attribute.name];
+    return object[attribute.name] as T | null;
   }
 
   /**

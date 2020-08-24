@@ -26,7 +26,7 @@ export abstract class PluralAttribute<T, E> extends Attribute<T> {
    * @return The actual attached state or null if no state was previously attached
    */
   static getAttachedState(collection: Array<any> | Set<any> | Map<any, any>): any {
-    return collection[ATTACHED_STATE] || null;
+    return (collection as any)[ATTACHED_STATE] || null;
   }
 
   /**
@@ -46,7 +46,7 @@ export abstract class PluralAttribute<T, E> extends Attribute<T> {
    * @return The actual attached state or -1 if no size was previously attached
    */
   static getAttachedSize(collection: Set<any> | Map<any, any>): number {
-    return collection[ATTACHED_SIZE];
+    return (collection as any)[ATTACHED_SIZE];
   }
 
   /**

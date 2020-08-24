@@ -4,6 +4,7 @@ import { CollectionType, PluralAttribute } from "./PluralAttribute";
 import { Json, JsonArray } from "../util";
 import { Type } from "./Type";
 import { Metadata } from "../intersection";
+import { Managed } from "../binding";
 
 export class ListAttribute<E> extends PluralAttribute<Array<E | null>, E> {
   /**
@@ -31,7 +32,7 @@ export class ListAttribute<E> extends PluralAttribute<Array<E | null>, E> {
   /**
    * @inheritDoc
    */
-  getJsonValue(state: Metadata, object, options): JsonArray | null {
+  getJsonValue(state: Metadata, object: Managed, options: { excludeMetadata?: boolean; depth?: number | boolean; persisting: boolean }): JsonArray | null {
     const value = this.getValue(object);
 
     if (!(value instanceof this.typeConstructor)) {
@@ -68,7 +69,7 @@ export class ListAttribute<E> extends PluralAttribute<Array<E | null>, E> {
   /**
    * @inheritDoc
    */
-  setJsonValue(state: Metadata, obj, json: JsonArray, options) {
+  setJsonValue(state: Metadata, obj: Managed, json: JsonArray, options: { onlyMetadata?: boolean; persisting: boolean }) {
     let value: (E | null)[] | null = null;
 
     if (json) {

@@ -1,16 +1,17 @@
 'use strict';
 
 import { Metadata } from "./Metadata";
-import { model } from "../model";
-import { JsonMap } from "../util/Json";
+import * as model from "../model";
+import { Json, JsonMap } from "../util/Json";
 
 export type TrustedEntity = model.User | model.Role | string;
+export type BasePermission = ['load', 'update', 'delete', 'query', 'insert'];
 
 /**
  * An aggregation of access rules for given object metadata.
  */
 export class Permission {
-  static readonly BASE_PERMISSIONS = ['load', 'update', 'delete', 'query', 'insert'];
+  static readonly BASE_PERMISSIONS: BasePermission = ['load', 'update', 'delete', 'query', 'insert'];
 
   public rules: {[ref: string]: string} = {};
   private _metadata: Metadata | null;
@@ -181,7 +182,7 @@ export class Permission {
    * @param json The permission json representation
    * @return
    */
-  fromJSON(json: JsonMap) {
+  fromJSON(json: Json) {
     this.rules = json as {[ref: string]: string};
   }
 

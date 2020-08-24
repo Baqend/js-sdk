@@ -38,7 +38,7 @@ export class DbIndex {
    */
   constructor(keys: string | {[name: string]: string} | IndexSpec, unique?: boolean) {
     if (typeof keys === 'string') {
-      const key = {};
+      const key: {[p: string]: string} = {};
       key[keys] = DbIndex.ASC;
       this.keys = [key];
     } else if (Array.isArray(keys)) {

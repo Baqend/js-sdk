@@ -1,7 +1,6 @@
 /// <reference path="./types.d.ts" />
 
-import { binding, query, model, baqend, metamodel, message } from '../index';
-import {db} from '../index';
+import { db, binding, query, model, baqend, metamodel, message } from '../esm/lib/index.es2015';
 
 db.connect('test', true).then(() => {
     //db.Test.load('test').then((entity) => {
@@ -10,8 +9,8 @@ db.connect('test', true).then(() => {
 });
 
 db.User.load('id').then((user) => {
-    user.newPassword("alodPassword", "newPassword");
-    user.customUserProp = "test";
+    user!.newPassword("alodPassword", "newPassword");
+    user!.customUserProp = "test";
 });
 
 db.User.find()
@@ -21,7 +20,7 @@ db.User.find()
     .in('vals', 3)
     .containsAny('vals', [3,4,5])
     .singleResult((user) => {
-        user.username;
+        user!.username;
     });
 
 db.code.loadCode('foo', 'module', true)
@@ -44,19 +43,19 @@ let builder:query.Builder<model.Role> = db.Role.find();
 
 let q1 = builder.notIn('age', [3,4,5])
     .in('places', 2, 3, 4)
-    .gt('ref', db.User.me);
+    .gt('ref', db.User.me!);
 
 let q2 = builder.equal('name', 'test')
     .notEqual('street', 'Mainroad');
 
 builder.or(q1, q2)
     .singleResult((role) => {
-       role.addUser(db.User.me);
+       role!.addUser(db.User.me!);
     });
 
 db.Test.load('test').then((entity) => {
-    entity.myProp = 'test';
-    const headers = entity.file.headers;
+    entity!.myProp = 'test';
+    const headers = entity!.file.headers;
     headers.test = 'new header';
 });
 

@@ -2,7 +2,7 @@
 
 import { Entity } from "../binding";
 
-import { JsonMap } from '../util';
+import { Json, JsonArray, JsonMap } from '../util';
 import {
   CompleteCallback,
   CountCallback,
@@ -79,9 +79,9 @@ export class Node<T extends Entity> extends Query<T> {
   /**
    * @inheritDoc
    */
-  resultList(options?: ResultOptions | ResultListCallback<T>, doneCallback?: ResultListCallback<T> | FailCallback, failCallback?: FailCallback) {
+  resultList(options?: ResultOptions | ResultListCallback<T>, doneCallback?: ResultListCallback<T> | FailCallback, failCallback?: FailCallback): Promise<T[]> {
     if (options instanceof Function) {
-      return this.resultList({} as ResultOptions, options as ResultListCallback<T>, doneCallback as FailCallback);
+      return this.resultList({}, options as ResultListCallback<T>, doneCallback as FailCallback);
     }
 
     const type = this.resultClass ? this.entityManager.metamodel.entity(this.resultClass) : null;
@@ -93,7 +93,7 @@ export class Node<T extends Entity> extends Query<T> {
     const query = this.serializeQuery();
     const sort = this.serializeSort();
 
-    const uriSize = this.entityManager.connection?.host.length + query.length + sort.length;
+    const uriSize = (this.entityManager.connection?.host.length || 0) + query.length + sort.length;
     let msg;
 
     if (uriSize > Query.MAX_URI_SIZE) {
@@ -104,14 +104,14 @@ export class Node<T extends Entity> extends Query<T> {
     }
 
     return this.entityManager.send(msg)
-      .then(response => this.createResultList(response.entity, options))
+      .then(response => this.createResultList(response.entity, options as ResultOptions))
       .then(doneCallback as ResultListCallback<T>, failCallback);
   }
 
   /**
    * @inheritDoc
    */
-  singleResult(options?: ResultOptions | SingleResultCallback<T>, doneCallback?: SingleResultCallback<T> | FailCallback, failCallback?: FailCallback) {
+  singleResult(options?: ResultOptions | SingleResultCallback<T>, doneCallback?: SingleResultCallback<T> | FailCallback, failCallback?: FailCallback): Promise<T | null> {
     if (options instanceof Function) {
       return this.singleResult({} as ResultOptions, options as SingleResultCallback<T>, doneCallback as FailCallback);
     }
@@ -125,7 +125,7 @@ export class Node<T extends Entity> extends Query<T> {
     const query = this.serializeQuery();
     const sort = this.serializeSort();
 
-    const uriSize = this.entityManager.connection?.host.length + query.length;
+    const uriSize = (this.entityManager.connection?.host.length || 0) + query.length;
     let msg;
     if (uriSize > Query.MAX_URI_SIZE) {
       msg = new message.AdhocQueryPOST(type.name, this.firstResult, 1, sort)
@@ -135,7 +135,7 @@ export class Node<T extends Entity> extends Query<T> {
     }
 
     return this.entityManager.send(msg)
-      .then(response => this.createResultList(response.entity, options))
+      .then(response => this.createResultList(response.entity, options as ResultOptions))
       .then(list => (list.length ? list[0] : null))
       .then(doneCallback as SingleResultCallback<T>, failCallback);
   }
@@ -152,7 +152,7 @@ export class Node<T extends Entity> extends Query<T> {
 
     const query = this.serializeQuery();
 
-    const uriSize = this.entityManager.connection?.host.length + query.length;
+    const uriSize = (this.entityManager.connection?.host.length || 0) + query.length;
     let msg;
     if (uriSize > Query.MAX_URI_SIZE) {
       msg = new message.AdhocCountQueryPOST(type.name)
@@ -183,19 +183,19 @@ export class Node<T extends Entity> extends Query<T> {
     return JSON.stringify(this.order);
   }
 
-  private createResultList(result, options): Promise<T[]> {
+  private createResultList(result: JsonMap[], options: ResultOptions): Promise<T[]> {
     if (result.length) {
-      return Promise.all<T>(result.map((el) => {
+      return Promise.all<T | null>(result.map((el: JsonMap) => {
         if (el.id) {
-          const entity: T = this.entityManager.getReference(this.resultClass, el.id);
+          const entity: T = this.entityManager.getReference(this.resultClass, el.id as string);
           const metadata = Metadata.get(entity);
           metadata.setJson(el, { persisting: true });
           return this.entityManager.resolveDepth(entity, options);
         }
 
-        return this.entityManager.load(Object.keys(el)[0]);
+        return this.entityManager.load<T>(Object.keys(el)[0]);
       }))
-        .then(objects => objects.filter((val: T) => !!val));
+        .then(objects => objects.filter((val: T | null) => !!val) as T[]);
     }
 
     return Promise.resolve([]);
@@ -228,21 +228,21 @@ export class Node<T extends Entity> extends Query<T> {
     return query;
   }
 
-  addOrder(fieldOrSort, order?) {
-    if (order) {
-      this.order[fieldOrSort] = order;
+  addOrder(fieldOrSort: string | {[field: string]: 1 | -1 }, order?: 1 | -1): this {
+    if (typeof fieldOrSort === 'string') {
+      this.order[fieldOrSort] = order!;
     } else {
       this.order = fieldOrSort;
     }
     return this;
   }
 
-  addOffset(offset) {
+  addOffset(offset: number): this {
     this.firstResult = offset;
     return this;
   }
 
-  addLimit(limit) {
+  addLimit(limit: number): this {
     this.maxResults = limit;
     return this;
   }

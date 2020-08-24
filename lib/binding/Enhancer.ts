@@ -21,7 +21,7 @@ export class Enhancer {
    * @returns type the managed type metadata for this class
    */
   static getBaqendType(typeConstructor: Class<any> | Function): ManagedType<any> | null {
-    return typeConstructor[BAQEND_TYPE];
+    return (typeConstructor as any)[BAQEND_TYPE];
   }
 
   /**
@@ -29,7 +29,7 @@ export class Enhancer {
    * @return
    */
   static getIdentifier(typeConstructor: Class<any> | Function): string | null {
-    return typeConstructor[BAQEND_ID];
+    return (typeConstructor as any)[BAQEND_ID];
   }
 
   /**
@@ -37,7 +37,7 @@ export class Enhancer {
    * @param identifier
    */
   static setIdentifier(typeConstructor: Class<any>, identifier: string): void {
-    typeConstructor[BAQEND_ID] = identifier;
+    (typeConstructor as any)[BAQEND_ID] = identifier;
   }
 
   /**
@@ -45,7 +45,7 @@ export class Enhancer {
    * @param typeConstructor
    */
   enhance<T extends Managed>(type: ManagedType<T>, typeConstructor: Class<T>): void {
-    if (typeConstructor[BAQEND_TYPE] === type) {
+    if ((typeConstructor as any)[BAQEND_TYPE] === type) {
       return;
     }
 
@@ -53,7 +53,7 @@ export class Enhancer {
       throw new Error('Type is already used by a different manager');
     }
 
-    typeConstructor[BAQEND_TYPE] = type;
+    (typeConstructor as any)[BAQEND_TYPE] = type;
 
     Enhancer.setIdentifier(typeConstructor, type.ref);
     this.enhancePrototype(typeConstructor.prototype, type);

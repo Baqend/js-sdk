@@ -1,7 +1,7 @@
 'use strict';
 
 import { Entity } from "../binding/Entity";
-import { model } from "../model";
+import * as model from "../model";
 import { Json, JsonMap } from "../util/Json";
 
 export interface PushMessageOptions {

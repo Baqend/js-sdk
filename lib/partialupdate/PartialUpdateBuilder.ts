@@ -115,8 +115,8 @@ export class PartialUpdateBuilder<T extends Entity> {
     if (val instanceof Set) {
       val = Array.from(val);
     } else if (val instanceof Map) {
-      const newValue = {};
-      val.forEach((v, k) => {
+      const newValue: {[key: string]: any} = {};
+      val.forEach((v: any, k: string) => {
         newValue[k] = v;
       });
       val = newValue;
@@ -227,7 +227,7 @@ export class PartialUpdateBuilder<T extends Entity> {
    * @return
    */
   put(field: string, key: string | number | {[key: string]: any}, value?: any) : this {
-    const obj = {};
+    const obj: {[key: string]: any} = {};
     if (typeof key === 'string' || typeof key === 'number') {
       obj[key] = value;
     } else if (typeof key === 'object') {
@@ -356,7 +356,7 @@ export class PartialUpdateBuilder<T extends Entity> {
    * @param newPath The new field name
    * @return
    */
-  rename(oldPath, newPath) {
+  rename(oldPath: string, newPath: string) {
     return this.addOperation(oldPath, '$rename', newPath);
   }
 
@@ -367,13 +367,13 @@ export class PartialUpdateBuilder<T extends Entity> {
    */
   toJSON(): Json {
     return this.operations.reduce((json, operation: UpdateOperation) => {
-      const obj = {};
+      const obj: {[path: string]: any} = {};
       obj[operation.path] = operation.value;
 
       json[operation.name] = Object.assign({}, json[operation.name], obj);
 
       return json;
-    }, {});
+    }, {} as {[path: string]: any});
   }
 
   /**

@@ -2,12 +2,15 @@
 
 import * as msg from "../message";
 import { EntityManager } from "../EntityManager";
+import { Json, JsonMap } from "../util";
+
+export type LogLevel = 'trace' | 'debug' | 'info' | 'warn' | 'error';
 
 /**
  * A Logger to store log notes when running the app.
  */
 export class Logger {
-  static readonly LEVELS = ['trace', 'debug', 'info', 'warn', 'error'];
+  static readonly LEVELS: LogLevel[] = ['trace', 'debug', 'info', 'warn', 'error'];
   static readonly FORMAT_REGEXP = /%[sdj%]/g;
 
   public entityManager: EntityManager = null as any;
@@ -44,7 +47,7 @@ export class Logger {
    * The log level can be one of 'trace', 'debug', 'info', 'warn', 'error'
    * @type string
    */
-  get level() {
+  get level(): LogLevel {
     return Logger.LEVELS[this.levelIndex];
   }
 
@@ -52,7 +55,7 @@ export class Logger {
    * Sets the log level which will be logged
    * @param value
    */
-  set level(value: string) {
+  set level(value: LogLevel) {
     const index = Logger.LEVELS.indexOf(value);
     if (index === -1) {
       throw new Error('Unknown logging level ' + value);
@@ -72,7 +75,7 @@ export class Logger {
    * @return A promise which resolves when the log messages was logged, or null if the log level has
    * skipped the message
    */
-  log(message: string, ...args: any[]);
+  log(message: string, ...args: any[]): Promise<any>;
 
   /**
    * Logs a message in the default level 'info'
@@ -84,7 +87,7 @@ export class Logger {
    * @return A promise which resolves when the log messages was logged, or null if the log level has
    * skipped the message
    */
-  log(message: string, data: any);
+  log(message: string, data: any): Promise<any>;
 
   /**
    * Logs a message with the given log level
@@ -98,7 +101,7 @@ export class Logger {
    * @return A promise which resolves when the log messages was logged, or null if the log level has
    * skipped the message
    */
-  log(level: string, message: string, ...args: any[]);
+  log(level: string, message: string, ...args: any[]): Promise<any>;
 
   /**
    * Logs a message with the given log level
@@ -113,17 +116,17 @@ export class Logger {
    */
   log(level: string, message: string, data: any): Promise<any>;
 
-  log() {
+  log(): Promise<any> {
     const args = Array.prototype.slice.call(arguments);
-    const level = Logger.LEVELS.indexOf(args[0]) === -1 ? 'info' : args.shift();
+    const level: LogLevel = Logger.LEVELS.indexOf(args[0]) === -1 ? 'info' : args.shift();
 
     if (this.levelIndex > Logger.LEVELS.indexOf(level)) {
-      return null;
+      return Promise.resolve(null);
     }
 
-    let message = typeof args[0] === 'string' ? this.format(args.shift(), args) : '[no message]';
+    let message: string = typeof args[0] === 'string' ? this.format(args.shift(), args) : '[no message]';
 
-    let data: { name?: string, message?: string, stack?: string, data?: {}, status?: number } | null = null;
+    let data: { data: any } | { name: string, message: string, stack: string, data: {}, status: number } | null = null;
     if (args.length) {
       const arg = data = args.pop();
       if (typeof arg !== 'object' || Array.isArray(arg)) {
@@ -148,15 +151,15 @@ export class Logger {
     }
 
     return this.logJSON({
-      date: new Date(),
+      date: new Date().toISOString(),
       message,
       level,
-      user: this.entityManager.me?.id,
       data,
+      ...(this.entityManager.me && {user: this.entityManager.me.id })
     });
   }
 
-  format(message, args) {
+  format(message: string, args: any) {
     if (args.length === 0) {
       return message;
     }
@@ -196,7 +199,7 @@ export class Logger {
     });
   }
 
-  logJSON(json) {
+  logJSON(json: JsonMap): Promise<any> {
     if (!this.entityManager.isReady) {
       return this.entityManager.ready(this.logJSON.bind(this, json));
     }

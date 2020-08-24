@@ -5,6 +5,7 @@ import { EntityManager } from "../EntityManager";
 import { ManagedType } from "../metamodel";
 import { Managed } from "./Managed";
 import { Json } from "../util";
+import { Metadata } from "../intersection";
 
 export class ManagedFactory<T extends Managed> extends Factory<T> {
 
@@ -58,10 +59,12 @@ export class ManagedFactory<T extends Managed> extends Factory<T> {
    * @param json
    * @return A new created instance of T
    */
-  fromJSON(json: Json) {
+  fromJSON(json: Json): T {
     const instance = this.newInstance();
     const metadata = instance._metadata;
-    return this.managedType.fromJsonValue(metadata, json, instance, {});
+    // TODO: casting to Metadata is not really correct here since embeddable types have an lightweight meta object
+    // However the lightweight Metadata is compatible with the Metadata object which is expected by the managed types
+    return this.managedType.fromJsonValue(metadata as Metadata, json, instance, { persisting: false })!!;
   }
 
   /**

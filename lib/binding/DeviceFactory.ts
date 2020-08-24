@@ -2,7 +2,7 @@
 
 import * as message from "../message";
 import { PushMessage } from "../intersection";
-import { model } from "../model";
+import * as model from "../model";
 import { EntityFactory } from "./EntityFactory";
 
 export class DeviceFactory extends EntityFactory<model.Device> {
@@ -47,7 +47,7 @@ export class DeviceFactory extends EntityFactory<model.Device> {
    * @param failCallback Called when the operation failed.
    * @return The registered device
    */
-  register(os: string, tokenOrSubscription: string | PushSubscription, doneCallback?, failCallback?): Promise<model.Device>;
+  register(os: string, tokenOrSubscription: string | PushSubscription, doneCallback?: any, failCallback?: any): Promise<model.Device>;
 
   /**
    * Register a new device with the given device token and OS.
@@ -59,9 +59,9 @@ export class DeviceFactory extends EntityFactory<model.Device> {
    * @param failCallback Called when the operation failed.
    * @return The registered device
    */
-  register(os: string, tokenOrSubscription: string | PushSubscription, device: model.Device | null, doneCallback?, failCallback?): Promise<model.Device>;
+  register(os: string, tokenOrSubscription: string | PushSubscription, device: model.Device | null, doneCallback?: any, failCallback?: any): Promise<model.Device>;
 
-  register(os: string, tokenOrSubscription: string | PushSubscription, device: model.Device | Function | null, doneCallback?, failCallback?): Promise<model.Device> {
+  register(os: string, tokenOrSubscription: string | PushSubscription, device: model.Device | Function | null, doneCallback?: any, failCallback?: any): Promise<model.Device> {
     if (device instanceof Function) {
       return this.register(os, tokenOrSubscription, null, device, doneCallback);
     }
@@ -78,7 +78,7 @@ export class DeviceFactory extends EntityFactory<model.Device> {
    * @param failCallback Called when the operation failed.
    * @return
    */
-  push(pushMessage: PushMessage, doneCallback?, failCallback?): Promise<void> {
+  push(pushMessage: PushMessage, doneCallback?: any, failCallback?: any): Promise<void> {
     return this.db.pushDevice(pushMessage).then(doneCallback, failCallback);
   }
 }

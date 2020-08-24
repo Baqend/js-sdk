@@ -1,7 +1,6 @@
 'use strict';
 
 import { hmac } from "../util/hmac";
-import supports = CSS.supports;
 
 export interface TokenData {
    val: any;
@@ -62,7 +61,7 @@ export class TokenStorage {
     return this.tokenData ? this.tokenData.val : null;
   }
 
-  static create(origin) {
+  static create(origin: string) {
     return Promise.resolve(new TokenStorage(origin));
   }
 
@@ -144,7 +143,7 @@ export class TokenStorage {
 }
 
 class GlobalStorage extends TokenStorage {
-  private static tokens = {};
+  private static tokens: {[origin: string]: string} = {};
 
   /**
    * Creates a global token storage instance for the given origin
@@ -212,7 +211,7 @@ class WebStorage extends TokenStorage {
   /**
    * @inheritDoc
    */
-  saveToken(origin, token, temporary) {
+  saveToken(origin: string, token: string | null, temporary: boolean) {
     const webStorage = temporary ? sessionStorage : localStorage;
     if (token) {
       webStorage.setItem('BAT:' + origin, token);

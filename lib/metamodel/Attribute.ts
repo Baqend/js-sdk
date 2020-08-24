@@ -120,7 +120,7 @@ export abstract class Attribute<T> {
    * @param options additional options which are applied through the conversion
    * @return The converted json value
    */
-  abstract getJsonValue(state: Metadata, object: Managed, options: { excludeMetadata?: boolean; depth?: number | boolean }): Json;
+  abstract getJsonValue(state: Metadata, object: Managed, options: { excludeMetadata?: boolean; depth?: number | boolean, persisting: boolean }): Json | undefined;
 
   /**
    * Sets this attribute value from json to the object
@@ -130,7 +130,7 @@ export abstract class Attribute<T> {
    * @param options additional options which are applied through the conversion
    * @return
    */
-  abstract setJsonValue(state: Metadata, object: Managed, jsonValue: Json, options: { onlyMetadata?: boolean }): void;
+  abstract setJsonValue(state: Metadata, object: Managed, jsonValue: Json, options: { onlyMetadata?: boolean, persisting: boolean }): void;
 
   /**
    * Converts this attribute field to json

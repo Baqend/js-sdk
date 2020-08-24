@@ -1,9 +1,10 @@
 'use strict';
 
 import { JsonMap } from "../util/Json";
+import { Validator } from "./Validator";
 
 export class ValidationResult {
-  fields = {}
+  public fields: {[property: string]: Validator} = {}
 
   /**
    * Indicates if all fields are valid
@@ -14,7 +15,7 @@ export class ValidationResult {
   }
 
   toJSON(): JsonMap {
-    const json = {};
+    const json: JsonMap = {};
     Object.keys(this.fields).forEach((key) => {
       json[key] = this.fields[key].toJSON();
     });

@@ -3,7 +3,7 @@
 import { ManagedType } from "./ManagedType";
 import { PersistenceType } from "./Type";
 import { Managed, ManagedFactory } from "../binding";
-import { Class } from "../util";
+import { Class, Json } from "../util";
 import { EntityManager } from "../EntityManager";
 import { Metadata } from "../intersection";
 
@@ -32,7 +32,7 @@ export class EmbeddableType<T extends Managed> extends ManagedType<T> {
   /**
    * @inheritDoc
    */
-  toJsonValue(state: Metadata, object: T | null, options: { excludeMetadata?: boolean; depth?: number | boolean }) {
+  toJsonValue(state: Metadata, object: T | null, options: { excludeMetadata?: boolean; depth?: number | boolean, persisting: boolean }) {
     if (state.root && object instanceof this.typeConstructor && !object._metadata.root) {
       object._metadata.root = state.root;
     }
@@ -43,7 +43,7 @@ export class EmbeddableType<T extends Managed> extends ManagedType<T> {
   /**
    * @inheritDoc
    */
-  fromJsonValue(state, jsonObject, currentObject, options) {
+  fromJsonValue(state: Metadata, jsonObject: Json, currentObject: T | null, options: { onlyMetadata?: boolean, persisting: boolean }) {
     let obj = currentObject;
 
     if (jsonObject) {

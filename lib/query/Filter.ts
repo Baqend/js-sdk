@@ -5,7 +5,8 @@ import { Condition } from "./Condition";
 import { Json } from "../util";
 import { Entity } from "../binding";
 
-export type FilterObject = {[key: string]: Json | Entity | Date};
+export type FilterObject = {[key: string]: NestedFilter | Json | Entity | Date };
+export type NestedFilter = {[filter: string]: Json | Entity | Date};
 
 /**
  * A Filter saves the state for a filtered query
@@ -20,17 +21,19 @@ export class Filter<T extends Entity> extends Node<T> {
   /**
    * @inheritDoc
    */
-  addFilter(field, filter, value) {
+  addFilter(field: string | null, filter: string | null, value: any): Filter<T> {
     if (field !== null) {
-      if (!(Object(field) instanceof String)) {
+      if (typeof field !== "string") {
         throw new Error('Field must be a string.');
       }
 
       if (filter) {
-        let fieldFilter = this.filter[field];
-        if (!(fieldFilter instanceof Object) || Object.getPrototypeOf(fieldFilter) !== Object.prototype) {
-          fieldFilter = {};
-          this.filter[field] = fieldFilter;
+        const currentFilter = this.filter[field];
+        let fieldFilter: NestedFilter;
+        if (typeof currentFilter === "object" && Object.getPrototypeOf(currentFilter) === Object.prototype) {
+          fieldFilter = currentFilter as NestedFilter;
+        } else {
+          fieldFilter = this.filter[field] = {};
         }
 
         fieldFilter[filter] = value;
@@ -44,7 +47,7 @@ export class Filter<T extends Entity> extends Node<T> {
     return this;
   }
 
-  toJSON() {
+  toJSON(): FilterObject {
     return this.filter;
   }
 }

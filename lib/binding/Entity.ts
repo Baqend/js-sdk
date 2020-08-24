@@ -6,9 +6,16 @@ import { enumerable } from "../util/enumerable";
 import { PersistentError } from "../error";
 import { Filter } from "../query";
 import { Json, JsonMap } from "../util";
-import { ValidationResult } from "../intersection";
+import { Metadata, ValidationResult } from "../intersection";
 import { EntityManager } from "../EntityManager";
+import { ManagedMetadata } from "../intersection/Metadata";
 
+export interface Entity {
+  /**
+   * Contains the metadata of this managed object
+   */
+  _metadata: Metadata;
+}
 export class Entity extends Managed {
 
   /**
@@ -134,7 +141,7 @@ export class Entity extends Managed {
    * @return A Promise that will be fulfilled when the asynchronous operation completes.
    */
   @enumerable(false)
-  save(options?: { force?: boolean, depth?: number | boolean, refresh?: boolean}, doneCallback?, failCallback?): Promise<this> {
+  save(options?: { force?: boolean, depth?: number | boolean, refresh?: boolean}, doneCallback?: any, failCallback?: any): Promise<this> {
     if (options instanceof Function) {
       return this.save({}, options, doneCallback);
     }
@@ -154,7 +161,7 @@ export class Entity extends Managed {
    * @method
    */
   @enumerable(false)
-  insert(options?: { depth?: number | boolean, refresh?: boolean }, doneCallback?, failCallback?): Promise<this> {
+  insert(options?: { depth?: number | boolean, refresh?: boolean }, doneCallback?: any, failCallback?: any): Promise<this> {
     if (options instanceof Function) {
       return this.insert({}, options, doneCallback);
     }
@@ -179,7 +186,7 @@ export class Entity extends Managed {
    * @method
    */
   @enumerable(false)
-  update(options?: { force?: boolean, depth?: number | boolean, refresh?: boolean }, doneCallback?, failCallback?): Promise<this> {
+  update(options?: { force?: boolean, depth?: number | boolean, refresh?: boolean }, doneCallback?: any, failCallback?: any): Promise<this> {
     if (options instanceof Function) {
       return this.update({}, options, doneCallback);
     }
@@ -203,7 +210,7 @@ export class Entity extends Managed {
    * @method
    */
   @enumerable(false)
-  load(options?: { depth?: number | boolean, refresh?: boolean }, doneCallback?, failCallback?): Promise<this> {
+  load(options?: { depth?: number | boolean, refresh?: boolean }, doneCallback?: any, failCallback?: any): Promise<this> {
     if (options instanceof Function) {
       return this.load({}, options, doneCallback);
     }
@@ -230,7 +237,7 @@ export class Entity extends Managed {
    * @method
    */
   @enumerable(false)
-  delete(options?: { force?: boolean, depth?: number | boolean }, doneCallback?, failCallback?): Promise<this> {
+  delete(options?: { force?: boolean, depth?: number | boolean }, doneCallback?: any, failCallback?: any): Promise<this> {
     if (options instanceof Function) {
       return this.delete({}, options, doneCallback);
     }
@@ -251,7 +258,7 @@ export class Entity extends Managed {
    * @method
    */
   @enumerable(false)
-  optimisticSave(cb: (entity: this, abort: () => void) => any, doneCallback?, failCallback?): Promise<this> {
+  optimisticSave(cb: (entity: this, abort: () => void) => any, doneCallback?: any, failCallback?: any): Promise<this> {
     return this._metadata.db.optimisticSave(this, cb).then(doneCallback, failCallback);
   }
 
@@ -298,10 +305,10 @@ export class Entity extends Managed {
     // Query all possibly referencing objects
     const allResults = Array.from(references).map(([ ref, attrs]) => {
       // Create query for given entity
-      const qb = db.createQueryBuilder(ref.typeConstructor);
+      const qb = db.createQueryBuilder<Entity>(ref.typeConstructor);
 
       // Add term for each attribute
-      const terms: Filter<any>[] = [];
+      const terms: Filter<Entity>[] = [];
       attrs.forEach((attr) => {
         terms.push(qb.equal(attr, this));
       });
@@ -317,7 +324,7 @@ export class Entity extends Managed {
       results.filter(result => !!result.length)
     )).then(results => (
       // Flat the array of results
-      [].concat.apply([], results)
+      Array.prototype.concat.apply([] as Entity[], results)
     ));
   }
 

@@ -71,6 +71,8 @@ export abstract class Message {
   public progressCallback: null | ProgressListener = null;
   public request: Request;
 
+  private [RESPONSE_TYPE]: ResponseBodyType | null = null;
+
   /**
    * Returns the specification of this message
    */
@@ -137,7 +139,7 @@ export abstract class Message {
   }
 
   get isBinary() {
-    return (this.request.type && this.request.type in Message.BINARY) || this[RESPONSE_TYPE] in Message.BINARY;
+    return (this.request.type && this.request.type in Message.BINARY) || this[RESPONSE_TYPE]!! in Message.BINARY;
   }
 
   /**
@@ -293,9 +295,9 @@ export abstract class Message {
    * @param eTag the If-Match ETag value
    * @return This message object
    */
-  ifMatch(eTag: string | null): this;
+  ifMatch(eTag: string | number | null): this;
 
-  ifMatch(eTag?: string | null): this | string {
+  ifMatch(eTag?: string | number | null): this | string {
     return this.header('If-Match', this.formatETag(eTag));
   }
 
@@ -419,7 +421,7 @@ export abstract class Message {
    * Gets the response type which should be returned
    * @return This message object
    */
-  responseType(): ResponseBodyType;
+  responseType(): ResponseBodyType | null;
 
   /**
    * Sets the response type which should be returned
@@ -428,7 +430,7 @@ export abstract class Message {
    */
   responseType(type: ResponseBodyType | null): this;
 
-  responseType(type?: ResponseBodyType | null): this | ResponseBodyType {
+  responseType(type?: ResponseBodyType | null): this | ResponseBodyType | null {
     if (type !== undefined) {
       this[RESPONSE_TYPE] = type;
       return this;
@@ -468,7 +470,7 @@ export abstract class Message {
    * @return
    */
   addQueryString(query: string | {[key: string]: string}): this {
-    if (Object(query) instanceof String) {
+    if (typeof query === "string") {
       this.request.path += query;
       return this;
     }
@@ -484,15 +486,15 @@ export abstract class Message {
     return this;
   }
 
-  formatETag(eTag?: string | null) {
-    let tag = eTag;
-    if (tag && tag !== '*') {
-      tag = '' + tag;
-      if (tag.indexOf('"') === -1) {
-        tag = '"' + tag + '"';
-      }
+  formatETag(eTag?: string | number | null): string | undefined | null {
+    if (eTag === null || eTag === undefined || eTag === '*') {
+      return eTag;
     }
 
+    let tag = '' + eTag;
+    if (tag.indexOf('"') === -1) {
+      tag = '"' + tag + '"';
+    }
     return tag;
   }
 

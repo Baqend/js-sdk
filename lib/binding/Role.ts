@@ -1,6 +1,6 @@
 'use strict';
 
-import { model } from "../model";
+import * as model from "../model";
 import { User } from "./User";
 import { Entity } from "./Entity";
 import { enumerable } from "../util/enumerable";

@@ -3,8 +3,6 @@
 import { Class, Json } from "../util";
 import { Metadata } from "../intersection";
 
-const TYPE_CONSTRUCTOR = Symbol('TypeConstructor');
-
 export enum PersistenceType {
   BASIC = 0,
   EMBEDDABLE = 1,
@@ -13,10 +11,12 @@ export enum PersistenceType {
 }
 
 export abstract class Type<T> {
-  public static readonly TYPE_CONSTRUCTOR = TYPE_CONSTRUCTOR;
-
   public readonly ref: string;
   public readonly name: string;
+
+  // this property cant be made protected right now, since it cause a wired error in the BasicTypes class
+  // @see #https://github.com/microsoft/TypeScript/issues/17293
+  /* protected */ _typeConstructor?: Class<T>
 
   /**
    * The persistent type of this type
@@ -61,17 +61,17 @@ export abstract class Type<T> {
    * The type constructor of this type
    */
   get typeConstructor(): Class<T> {
-    return this[TYPE_CONSTRUCTOR];
+    return this._typeConstructor!!;
   }
 
   /**
    * @param typeConstructor - sets the type constructor of this type if it is not already set
    */
   set typeConstructor(typeConstructor: Class<T>) {
-    if (this[TYPE_CONSTRUCTOR]) {
+    if (this._typeConstructor) {
       throw new Error('typeConstructor has already been set.');
     }
-    this[TYPE_CONSTRUCTOR] = typeConstructor;
+    this._typeConstructor = typeConstructor;
   }
 
   /**
@@ -85,7 +85,7 @@ export abstract class Type<T> {
 
     this.ref = ref;
     this.name = ref.substring(4);
-    this[TYPE_CONSTRUCTOR] = typeConstructor;
+    this._typeConstructor = typeConstructor;
   }
 
   /**
@@ -100,7 +100,7 @@ export abstract class Type<T> {
    * Used to update the internal change tracking state of collections and mark the object persistent or dirty afterwards
    * @return The merged object instance
    */
-  abstract fromJsonValue(state: Metadata, jsonValue: Json, currentValue: T | null, options: { persisting?: boolean, onlyMetadata?: boolean }) : T | null;
+  abstract fromJsonValue(state: Metadata, jsonValue: Json, currentValue: T | null, options: { persisting: boolean, onlyMetadata?: boolean }) : T | null;
 
   /**
    * Converts the given object to json

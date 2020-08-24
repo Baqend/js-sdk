@@ -33,6 +33,9 @@ export class EntityManagerFactory extends Lockable {
 
   public connectData?: ConnectData;
 
+  private [WS]?: WebSocketConnector;
+  private [CONNECTED]?: () => any;
+
   /**
    * Retrieves the websocket connection if the websocket SDK is available
    */
@@ -47,7 +50,7 @@ export class EntityManagerFactory extends Lockable {
       }
       this[WS] = WebSocketConnector.create(url);
     }
-    return this[WS];
+    return this[WS]!!;
   }
 
   /**
@@ -182,7 +185,7 @@ export class EntityManagerFactory extends Lockable {
    */
   connect(hostOrApp: string, port?: number, secure?: boolean, basePath?: string): Promise<this>;
 
-  connect(hostOrApp, port?, secure?, basePath?): Promise<this> {
+  connect(hostOrApp: string, port?: number | boolean | undefined, secure?: string | boolean | undefined, basePath?: string | undefined): Promise<this> {
     if (this.connection) {
       throw new Error('The EntityManagerFactory is already connected.');
     }
@@ -191,9 +194,9 @@ export class EntityManagerFactory extends Lockable {
       return this.connect(hostOrApp, 0, port, secure as string);
     }
 
-    this.connection = Connector.create(hostOrApp, port, secure, basePath);
+    this.connection = Connector.create(hostOrApp, port, secure as boolean, basePath);
 
-    this[CONNECTED]();
+    this[CONNECTED]!!();
     return this.ready();
   }
 

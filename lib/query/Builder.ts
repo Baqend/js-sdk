@@ -103,19 +103,19 @@ export class Builder<T extends Entity> extends Query<T> {
     return new Operator(this.entityManager, this.resultClass, operator, args);
   }
 
-  addOrder(fieldOrSort, order?) {
+  addOrder(fieldOrSort: string | {[field: string]: 1 | -1}, order?: 1 | -1) {
     return new Filter(this.entityManager, this.resultClass).addOrder(fieldOrSort, order);
   }
 
-  addFilter(field, filter, value) {
+  addFilter(field: string | null, filter: string | null, value: any): Filter<T> {
     return new Filter(this.entityManager, this.resultClass).addFilter(field, filter, value);
   }
 
-  addOffset(offset) {
+  addOffset(offset: number) {
     return new Filter(this.entityManager, this.resultClass).addOffset(offset);
   }
 
-  addLimit(limit) {
+  addLimit(limit: number) {
     return new Filter(this.entityManager, this.resultClass).addLimit(limit);
   }
 }

@@ -1,6 +1,6 @@
 'use strict';
 
-import { DeviceFactory, Entity, EntityFactory, Role, User, UserFactory } from "../binding";
+import { DeviceFactory, Entity, EntityFactory, Managed, Role, User, UserFactory } from "../binding";
 
 import { Class, Json, JsonMap } from "../util";
 import { ManagedType } from "./ManagedType";
@@ -11,10 +11,9 @@ import { Acl } from "../Acl";
 import { EntityManager } from "../EntityManager";
 import { PluralAttribute } from "./index";
 import { Metadata, Permission } from "../intersection";
-import { model } from "../model";
 
 export class EntityType<T extends Entity> extends ManagedType<T> {
-  public static Object;
+  public static Object: typeof ObjectType;
 
   public declaredId: SingularAttribute<String> | null = null;
   public declaredVersion: SingularAttribute<Number> | null = null;
@@ -37,21 +36,21 @@ export class EntityType<T extends Entity> extends ManagedType<T> {
   /**
    * @type metamodel.SingularAttribute
    */
-  get id() {
+  get id(): SingularAttribute<String> {
     return this.declaredId || this.superType!!.id;
   }
 
   /**
    * @type metamodel.SingularAttribute
    */
-  get version() {
+  get version(): SingularAttribute<Number> {
     return this.declaredVersion || this.superType!!.version;
   }
 
   /**
    * @type metamodel.SingularAttribute
    */
-  get acl() {
+  get acl(): SingularAttribute<Acl> {
     return this.declaredAcl || this.superType!!.acl;
   }
 
@@ -165,7 +164,6 @@ export class EntityType<T extends Entity> extends ManagedType<T> {
     }, options);
 
     let obj;
-    let objectState;
     if (currentObject) {
       const currentObjectState = Metadata.get(currentObject);
       // merge state into the current object if:
@@ -174,15 +172,14 @@ export class EntityType<T extends Entity> extends ManagedType<T> {
       // 3. The provided json has the same id as the current object, they can differ on embedded json for a reference
       if (!json.id || !currentObjectState.id || json.id === currentObjectState.id) {
         obj = currentObject;
-        objectState = currentObjectState;
       }
     }
 
     if (!obj) {
       obj = state.db.getReference(this.typeConstructor, json.id as string);
-      objectState = Metadata.get(obj);
     }
 
+    const objectState = Metadata.get(obj);
     // deserialize our properties
     objectState.enable(false);
     super.fromJsonValue(objectState, json, obj, opt);
@@ -208,9 +205,8 @@ export class EntityType<T extends Entity> extends ManagedType<T> {
    *  Used to update the internal change tracking state of collections and mark the object persistent if its true
    * @return JSON-Object
    */
-  toJsonValue(state: Metadata, object: T | null, options?: { excludeMetadata?: boolean, depth?: number | boolean }): Json {
-    const { depth = 0 } = options || {};
-
+  toJsonValue(state: Metadata, object: T | null, options?: { excludeMetadata?: boolean, depth?: number | boolean, persisting?: boolean }): Json {
+    const { depth = 0, persisting = false } = options || {};
     const isInDepth = depth === true || depth > -1;
 
     // check if object is already loaded in state
@@ -218,7 +214,9 @@ export class EntityType<T extends Entity> extends ManagedType<T> {
     if (isInDepth && objectState && objectState.isAvailable) {
       // serialize our properties
       objectState.enable(false);
-      const json = super.toJsonValue(objectState, object, { ...options,
+      const json = super.toJsonValue(objectState, object, {
+        ...options,
+        persisting,
         depth: typeof depth === "boolean" ? depth : depth - 1,
       });
       objectState.enable(true);
@@ -269,13 +267,13 @@ export class ObjectType extends EntityType<any> {
         super('id', BasicType.String, true);
       }
 
-      getJsonValue(state) {
-        return state.id || undefined;
+      getJsonValue(state: Metadata): Json {
+        return state.id || undefined as any;
       }
 
-      setJsonValue(state, object, jsonValue) {
+      setJsonValue(state: Metadata, object: Managed, jsonValue: Json) {
         if (!state.id) {
-          state.id = jsonValue;
+          state.id = jsonValue as string;
         }
       }
     }();
@@ -287,13 +285,13 @@ export class ObjectType extends EntityType<any> {
         super('version', BasicType.Integer, true);
       }
 
-      getJsonValue(state) {
-        return state.version || undefined;
+      getJsonValue(state: Metadata) {
+        return state.version || undefined as any;
       }
 
-      setJsonValue(state, object, jsonValue) {
+      setJsonValue(state: Metadata, object: Managed, jsonValue: Json) {
         if (jsonValue) {
-          state.version = jsonValue;
+          state.version = jsonValue as number;
         }
       }
     }();
@@ -305,12 +303,12 @@ export class ObjectType extends EntityType<any> {
         super('acl', BasicType.JsonObject as BasicType<any>, true);
       }
 
-      getJsonValue(state) {
+      getJsonValue(state: Metadata) {
         return state.acl.toJSON();
       }
 
-      setJsonValue(state, object, jsonValue) {
-        state.acl.fromJSON(jsonValue || {});
+      setJsonValue(state: Metadata, object: Managed, jsonValue: Json) {
+        state.acl.fromJSON(jsonValue as JsonMap || {});
       }
     }();
 

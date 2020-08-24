@@ -1,7 +1,7 @@
 'use strict';
 
 /* eslint-disable no-console */
-export function deprecated(obj, signature, alternative) {
+export function deprecated(obj: object, signature: string, alternative: string) {
   const cls = obj.constructor.name;
   Object.defineProperty(obj, signature, {
     get() {

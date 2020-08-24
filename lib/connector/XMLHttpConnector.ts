@@ -3,11 +3,12 @@
 
 'use strict';
 
-import { Connector, Response, ResponseBodyType } from "./Connector";
+import { Connector, Receiver, Request, Response, ResponseBodyType } from "./Connector";
 import { atob } from "../util";
+import { Message } from "./Message";
 
 export class XMLHttpConnector extends Connector {
-  private oAuthHandle?: (msg: { status: number, entity: string }) => void;
+  private oAuthHandle?: (msg: Response) => void;
 
   /**
    * @inheritDoc
@@ -19,21 +20,21 @@ export class XMLHttpConnector extends Connector {
   /**
    * @inheritDoc
    */
-  doSend(message, request, receive) {
+  doSend(message: Message, request: Request, receive: Receiver) {
     if (request.method === 'OAUTH') {
       if (this.oAuthHandle) {
-        this.oAuthHandle({ status: 409, entity: '{"message": "A new OAuth request was sent."}' });
+        this.oAuthHandle({ status: 409, headers: {}, entity: '{"message": "A new OAuth request was sent."}' });
       }
 
       localStorage.removeItem('oauth-response');
 
-      const handler = (event) => {
-        if (event.key === 'oauth-response' && this.oAuthHandle) {
+      const handler = (event: StorageEvent) => {
+        if (event.key === 'oauth-response' && this.oAuthHandle && event.newValue) {
           this.oAuthHandle(JSON.parse(event.newValue));
         }
       };
 
-      this.oAuthHandle = (msg) => {
+      this.oAuthHandle = (msg: Response) => {
         receive(msg);
         localStorage.removeItem('oauth-response');
         removeEventListener('storage', handler, false);
@@ -53,14 +54,14 @@ export class XMLHttpConnector extends Connector {
       }
 
       if (xhr.readyState === 4) {
-        const response = {
+        const response: Response = {
           headers: {},
           status: xhr.status,
           entity: xhr.response || xhr.responseText,
         };
 
         Connector.RESPONSE_HEADERS.forEach((name) => {
-          response.headers[name] = xhr.getResponseHeader(name);
+          response.headers[name] = xhr.getResponseHeader(name) || '';
         });
 
         receive(response);
@@ -104,7 +105,7 @@ export class XMLHttpConnector extends Connector {
   /**
    * @inheritDoc
    */
-  fromFormat(response: Response, entity, type: ResponseBodyType) {
+  fromFormat(response: Response, entity: any, type: ResponseBodyType | null) {
     if (type === 'json') {
       return JSON.parse(entity);
     }
@@ -133,7 +134,7 @@ export class XMLHttpConnector extends Connector {
   /**
    * @inheritDoc
    */
-  toFormat(message) {
+  toFormat(message: Message) {
     let type = message.request.type;
 
     if (type) {

@@ -2,8 +2,8 @@
 
 import { CommunicationError } from "../error";
 import { WebSocket } from "../util/websocket";
-import { Observable } from "../util/observable";
-import { Json } from "../util";
+import { Observable, Subscriber } from "../util/observable";
+import { Json, JsonMap } from "../util";
 import { TokenStorage } from "../intersection";
 
 export interface ObservableStream extends Observable<ChannelMessage> {
@@ -11,7 +11,7 @@ export interface ObservableStream extends Observable<ChannelMessage> {
    * Sends a message through the websocket channel
    * @param message - The message to send
    */
-  send(message: Json): void;
+  send(message: JsonMap): void;
 }
 
 export type ChannelMessage = {
@@ -37,8 +37,8 @@ export class WebSocketConnector {
    */
   private static websockets: { [origin: string]: WebSocketConnector } = {};
 
-  private observers: {};
-  private socket: Promise<WebSocket> | null;
+  private observers: {[subscriberId: string]: Subscriber<ChannelMessage>} = {};
+  private socket: Promise<WebSocket> | null = null;
   private url: string;
 
   /**
@@ -58,17 +58,15 @@ export class WebSocketConnector {
    *url
    */
   constructor(url: string) {
-    this.observers = {};
-    this.socket = null;
     this.url = url;
   }
 
   open(): Promise<WebSocket> {
     if (!this.socket) {
       const socket = new WebSocket(this.url);
-      let socketPromise;
+      let socketPromise: Promise<WebSocket>;
 
-      const handleSocketCompletion = (error) => {
+      const handleSocketCompletion = (error: Error | any) => {
         // observable error calls can throw an exception therefore cleanup beforehand
         let isError = false;
         if (this.socket === socketPromise) {
@@ -76,7 +74,7 @@ export class WebSocketConnector {
           this.socket = null;
         }
 
-        let firstErr;
+        let firstErr: Error | null = null;
         Object.keys(this.observers).forEach((id) => {
           const observer = this.observers[id];
           delete this.observers[id]; // unsubscribe to allow re subscriptions
@@ -85,7 +83,11 @@ export class WebSocketConnector {
           }
           try {
             if (isError) {
-              observer.error(new CommunicationError(null, error));
+              observer.error(new CommunicationError(null, {
+                status: 0,
+                headers: {},
+                ...(error instanceof Error && {error}),
+              }));
             } else {
               observer.complete();
             }
@@ -157,7 +159,7 @@ export class WebSocketConnector {
     });
     
     Object.assign(stream, {
-      send: (message) => {
+      send: (message: JsonMap) => {
         this.open().then((socket) => {
           message.id = id;
           if (tokenStorage.token) { message.token = tokenStorage.token; }

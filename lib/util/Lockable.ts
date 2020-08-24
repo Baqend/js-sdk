@@ -7,20 +7,23 @@ const readyPromise = Symbol('ReadyPromise');
  * This base class provides an lock interface to execute exclusive operations
  */
 export class Lockable {
+  private isLocked: boolean;
+  private readyPromise: Promise<this>;
+
   constructor() {
     /**
      * Indicates if there is currently an onging exclusive operation
      * @type boolean
      * @private
      */
-    this[isLocked] = false;
+    this.isLocked = false;
 
     /**
      * A promise which represents the state of the least exclusive operation
      * @type Promise
      * @private
      */
-    this[readyPromise] = Promise.resolve(this);
+    this.readyPromise = Promise.resolve(this);
   }
 
   /**
@@ -28,7 +31,7 @@ export class Lockable {
    * <code>true</code> If no exclusive lock is hold
    */
   get isReady(): boolean {
-    return !this[isLocked];
+    return !this.isLocked;
   }
 
   /**
@@ -40,8 +43,8 @@ export class Lockable {
    * @return A promise which completes successfully, when the previously requested
    * operation completes
    */
-  ready(doneCallback?: (this) => any, failCallback?: (Error) => any): Promise<this> {
-    return this[readyPromise].then(doneCallback, failCallback);
+  ready(doneCallback?: (this: this) => any, failCallback?: (error: Error) => any): Promise<this> {
+    return this.readyPromise.then(doneCallback, failCallback);
   }
 
   /**
@@ -54,23 +57,23 @@ export class Lockable {
    * @protected
    */
   withLock<T>(callback: () => Promise<T>, critical = false): Promise<T> {
-    if (this[isLocked]) {
+    if (this.isLocked) {
       throw new Error('Current operation has not been finished.');
     }
 
     try {
-      this[isLocked] = true;
+      this.isLocked = true;
       const result = callback().then((res) => {
-        this[isLocked] = false;
+        this.isLocked = false;
         return res;
       }, (e) => {
         if (!critical) {
-          this[isLocked] = false;
+          this.isLocked = false;
         }
         throw e;
       });
 
-      this[readyPromise] = result.then(() => this, (e) => {
+      this.readyPromise = result.then(() => this, (e) => {
         if (!critical) {
           return this;
         }
@@ -80,9 +83,9 @@ export class Lockable {
       return result;
     } catch (e) {
       if (critical) {
-        this[readyPromise] = Promise.reject(e);
+        this.readyPromise = Promise.reject(e);
       } else {
-        this[isLocked] = false;
+        this.isLocked = false;
       }
       throw e;
     }

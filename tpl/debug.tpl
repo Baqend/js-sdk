@@ -18,14 +18,16 @@
     chai.config.includeStack = true;
   </script>
 
-  <!-- <script type="module" src="./dist/bundles/baqend.es2015.js"></script>
-  <script type="module">
-    import DB from './dist/bundles/baqend.es2015.js';
-    window.DB = DB;
-  <script nomodule src="./dist/bundles/baqend.es5.js"></script>
-  </script> -->
   <script src="./node_modules/rxjs/bundles/rxjs.umd.js"></script>
   <script src="./node_modules/validator/validator.js"></script>
+  <!--
+  <script type="module">
+    import DB from './bundles/baqend.es2015.js';
+    window.DB = DB;
+  </script>
+  <script nomodule src="./bundles/baqend.es5.js"></script>
+  </script>
+  -->
   <script src="./bundles/baqend.es5.js"></script>
   <script src="./spec/env.js"></script>
 

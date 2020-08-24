@@ -7,8 +7,8 @@ import * as message from "../message";
 import { Message, ProgressListener, StatusCode } from "../connector/Message";
 import { trailingSlashIt } from "../util/trailingSlashIt";
 import { EntityManager } from "../EntityManager";
-import { Json, JsonMap } from "../util";
-import { ResponseBodyType } from "../connector/Connector";
+import { Json, JsonArray, JsonLike, JsonMap } from "../util";
+import { RequestBodyType, Response, ResponseBodyType } from "../connector/Connector";
 
 const FILE_BUCKET = '/file';
 const FILE_BUCKET_LENGTH = FILE_BUCKET.length;
@@ -43,11 +43,11 @@ export interface FileData {
    * The initial file content, which will be uploaded by
    * invoking {@link #upload} later on.
    */
-  data?: string | Blob | File | ArrayBuffer | Json,
+  data?: string | Blob | ArrayBuffer | JsonArray | JsonMap,
   /**
    * A optional type hint used to correctly interpret the provided data
    */
-  type?: string,
+  type?: RequestBodyType,
 }
 
 export interface FileMetadata {
@@ -145,6 +145,10 @@ export class File {
    */
   public db: EntityManager = null as any; // is lazy initialized and never null
 
+  private [ID]: string;
+  private [METADATA]: FileMetadata;
+  private [DATA]: FileData | null = null;
+
   /**
    * The complete id of the file, including folder and name
    */
@@ -167,7 +171,7 @@ export class File {
   /**
    * The mimeType of the file, only accessible after fetching the metadata or downloading/uploading/providing the file
    */
-  get mimeType(): string {
+  get mimeType(): string | undefined {
     if (this.isFolder) {
       throw new Error('A folder has no mimeType');
     }
@@ -178,7 +182,7 @@ export class File {
   /**
    * The current file acl, only accessible after fetching the metadata or downloading/uploading/providing the file
    */
-  get acl(): Acl {
+  get acl(): Acl | undefined {
     this.checkAvailable();
     return this[METADATA].acl;
   }
@@ -187,30 +191,30 @@ export class File {
    * The last modified date of the file, only accessible after fetching the metadata
    * or downloading/uploading/providing the eTag
    */
-  get lastModified(): Date | null {
+  get lastModified(): Date | undefined {
     if (this.isFolder) {
       throw new Error('A folder has no lastModified');
     }
     this.checkAvailable();
-    return this[METADATA].lastModified;
+    return this[METADATA].lastModified as Date;
   }
 
   /**
    * The creation date of the file, only accessible after fetching the metadata
    * or downloading/uploading/providing the eTag
    */
-  get createdAt(): Date {
+  get createdAt(): Date | undefined {
     if (this.isFolder) {
       throw new Error('A folder has no creation date');
     }
     this.checkAvailable();
-    return this[METADATA].createdAt;
+    return this[METADATA].createdAt as Date;
   }
 
   /**
    * The eTag of the file, only accessible after fetching the metadata or downloading/uploading/providing the file
    */
-  get eTag(): string {
+  get eTag(): string | undefined {
     if (this.isFolder) {
       throw new Error('A folder has no eTag');
     }
@@ -228,13 +232,13 @@ export class File {
     }
 
     this.checkAvailable();
-    return this[METADATA].headers;
+    return this[METADATA].headers!!;
   }
 
   /**
    * The size of the file, only accessible after fetching the metadata or downloading/uploading/providing the file
    */
-  get size(): number {
+  get size(): number | undefined {
     if (this.isFolder) {
       throw new Error('A folder has no size');
     }
@@ -347,7 +351,7 @@ export class File {
    * @param failCallback The callback is invoked if any error is occurred
    * @return A promise which will be fulfilled with this file object where the metadata is updated
    */
-  upload(uploadOptions?: FileData & FileMetadata & { force?: boolean, progress?: ProgressListener }, doneCallback?, failCallback?): Promise<this> {
+  upload(uploadOptions?: FileData & FileMetadata & { force?: boolean, progress?: ProgressListener }, doneCallback?: any, failCallback?: any): Promise<this> {
     const opt = uploadOptions || {};
 
     if (this.isFolder) {
@@ -357,14 +361,14 @@ export class File {
     this.setDataOptions(opt);
 
     const uploadMessage = new message.UploadFile(this.bucket, this.key)
-      .entity(this[DATA].data, this[DATA].type);
+      .entity(this[DATA]!!.data!!, this[DATA]?.type);
 
     const meta = this[METADATA];
     if (meta) {
-      uploadMessage.acl(meta.acl);
-      uploadMessage.contentLength(meta.size);
-      uploadMessage.mimeType(meta.mimeType);
-      uploadMessage.customHeaders(meta.headers);
+      uploadMessage.acl(meta.acl!!);
+      uploadMessage.contentLength(meta.size!!);
+      uploadMessage.mimeType(meta.mimeType!!);
+      uploadMessage.customHeaders(meta.headers!!);
     }
 
     uploadMessage.progress(opt.progress || null);
@@ -372,7 +376,7 @@ export class File {
     this.conditional(uploadMessage, opt);
 
     this.db.addToBlackList(this.id);
-    return this.db.send(uploadMessage).then((response) => {
+    return this.db.send(uploadMessage).then((response: Response) => {
       this[DATA] = null;
       this.fromJSON(response.entity);
       return this;
@@ -389,7 +393,7 @@ export class File {
    * @param failCallback The callback is invoked if any error is occurred
    * @return A promise which will be fulfilled with the downloaded file content
    */
-  download(downloadOptions?: { type?: ResponseBodyType, refresh?: false }, doneCallback?, failCallback?): Promise<string|Blob|File|ArrayBuffer|Json> {
+  download(downloadOptions?: { type?: ResponseBodyType, refresh?: false }, doneCallback?: any, failCallback?: any): Promise<string|Blob|File|ArrayBuffer|Json> {
     const opt = downloadOptions || {};
 
     if (this.isFolder) {
@@ -424,7 +428,7 @@ export class File {
    * @return A promise which will be fulfilled with this file object,
    * or with a list of all deleted files, if this file is an folder
    */
-  delete(deleteOptions?: { force?: boolean }, doneCallback?, failCallback?): Promise<this | File[]> {
+  delete(deleteOptions?: { force?: boolean }, doneCallback?: any, failCallback?: any): Promise<this | File[]> {
     const opt = deleteOptions || {};
 
     const deleteMessage = new message.DeleteFile(this.bucket, this.key);
@@ -439,7 +443,7 @@ export class File {
         return this;
       }
 
-      return response.entity.map(fileId => new this.db.File(fileId));
+      return (response.entity as string[]).map(fileId => new this.db.File(fileId));
     }).then(doneCallback, failCallback);
   }
 
@@ -458,7 +462,7 @@ export class File {
         throw new Error('Invalid parent name: ' + parent);
       }
 
-      const name = fileOptions.name || (fileOptions?.data as File)?.name || uuid();
+      const name = fileOptions.name || (fileOptions?.data as any)?.name || uuid();
       path = parent + name;
     }
 
@@ -492,8 +496,8 @@ export class File {
       return;
     }
 
-    msg.ifUnmodifiedSince(meta.lastModified);
-    msg.ifMatch(meta.eTag);
+    msg.ifUnmodifiedSince(meta.lastModified as Date);
+    msg.ifMatch(meta.eTag!!);
   }
 
   /**
@@ -504,7 +508,7 @@ export class File {
    * @param failCallback The callback is invoked if any error has occurred
    * @return A promise which will be fulfilled with this file
    */
-  loadMetadata(options?: { refresh?: boolean }, doneCallback?, failCallback?): Promise<this> {
+  loadMetadata(options?: { refresh?: boolean }, doneCallback?: any, failCallback?: any): Promise<this> {
     const opt = options || {};
 
     if (this.isFolder) {
@@ -533,7 +537,7 @@ export class File {
    * @param failCallback The callback is invoked if any error has occurred
    * @return A promise which will be fulfilled with this file
    */
-  saveMetadata(options?: { force?: boolean }, doneCallback?, failCallback?): Promise<this> {
+  saveMetadata(options?: { force?: boolean }, doneCallback?: any, failCallback?: any): Promise<this> {
     const opt = options || {};
 
     const json = this.toJSON();
@@ -627,7 +631,7 @@ export class File {
     } else {
       acl = meta.acl || new Acl();
       if (json.acl) {
-        acl.fromJSON(json.acl);
+        acl.fromJSON(json.acl as JsonMap);
       }
     }
 
@@ -655,12 +659,12 @@ export class File {
       id: this.id,
       mimeType: meta.mimeType,
       eTag: meta.eTag,
-      acl: meta.acl.toJSON(),
+      acl: meta.acl?.toJSON(),
       size: meta.size,
-      lastModified: meta.lastModified && meta.lastModified.toISOString(),
-      createdAt: meta.createdAt && meta.createdAt.toISOString(),
+      lastModified: meta.lastModified && (meta.lastModified as Date).toISOString(),
+      createdAt: meta.createdAt && (meta.createdAt as Date).toISOString(),
       headers: meta.headers,
-    };
+    } as JsonMap;
   }
 
   /**

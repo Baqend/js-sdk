@@ -51,7 +51,7 @@ export class Metamodel extends Lockable {
    * @param arg
    * @return
    */
-  getRef(arg: Class<Managed> | Function | string): string {
+  getRef(arg: Class<Managed> | Function | string): string | null {
     let ref;
     if (typeof arg === 'string') {
       ref = arg;
@@ -126,7 +126,7 @@ export class Metamodel extends Lockable {
    * @return the added type
    */
   addType(type: Type<any>): Type<any> {
-    let types;
+    let types: {[name: string]: Type<any>} = {};
 
     if (type.isBasic) {
       types = this.baseTypes;
@@ -192,14 +192,14 @@ export class Metamodel extends Lockable {
    * @param data The JSON which will be send to the UpdateAllSchemas resource.
    * @return
    */
-  update(data: Json): Promise<Metamodel> {
+  update(data: JsonMap | JsonArray): Promise<Metamodel> {
     return this.sendUpdate(data).then((response) => {
       this.fromJSON(response.entity);
       return this;
     });
   }
 
-  sendUpdate(data) {
+  private sendUpdate(data: ManagedType<any> | JsonMap | JsonArray) {
     return this.withLock(() => {
       let msg;
       if (data instanceof ManagedType) {
@@ -216,7 +216,7 @@ export class Metamodel extends Lockable {
    * Get the current schema types as json
    * @return the json data
    */
-  toJSON(): Json {
+  toJSON(): JsonArray {
     if (!this.isInitialized) {
       throw new Error('Metamodel is not initialized.');
     }
@@ -289,7 +289,7 @@ export class Metamodel extends Lockable {
   getIndexes(bucket: string): Promise<DbIndex[]> {
     const msg = new message.ListIndexes(bucket);
     return this.entityManagerFactory.send(msg)
-      .then(response => response.entity.map(el => new DbIndex(el.keys, el.unique)))
+      .then(response => response.entity.map((el: JsonMap) => new DbIndex(el.keys as {[prop: string]: string}, el.unique as boolean)))
       .catch((e) => {
         if (e.status === StatusCode.BUCKET_NOT_FOUND || e.status === StatusCode.OBJECT_NOT_FOUND) {
           return null;

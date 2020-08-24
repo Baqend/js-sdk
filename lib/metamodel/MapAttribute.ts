@@ -3,7 +3,9 @@
 import { CollectionType, PluralAttribute } from "./PluralAttribute";
 import { PersistentError } from "../error";
 import { Type } from "./Type";
-import { JsonMap } from "../util";
+import { Json, JsonMap } from "../util";
+import { Metadata } from "../intersection";
+import { Managed } from "../binding";
 
 export class MapAttribute<K, V> extends PluralAttribute<Map<K | null, V | null>, V> {
   public keyType: Type<K>;
@@ -36,7 +38,7 @@ export class MapAttribute<K, V> extends PluralAttribute<Map<K | null, V | null>,
   /**
    * @inheritDoc
    */
-  getJsonValue(state, object, options): JsonMap | null {
+  getJsonValue(state: Metadata, object: Managed, options: { excludeMetadata?: boolean; depth?: number | boolean; persisting: boolean }): JsonMap | null {
     const value = this.getValue(object);
 
     if (!(value instanceof this.typeConstructor)) {
@@ -78,7 +80,7 @@ export class MapAttribute<K, V> extends PluralAttribute<Map<K | null, V | null>,
   /**
    * @inheritDoc
    */
-  setJsonValue(state, obj, json, options) {
+  setJsonValue(state: Metadata, obj: Managed, json: JsonMap, options: { onlyMetadata?: boolean; persisting: boolean }) {
     let value: Map<K | null, V | null> | null = null;
 
     if (json) {

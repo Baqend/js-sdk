@@ -368,7 +368,7 @@ export const Condition: Partial<Condition<any>> = {
       .addFilter(field, '$lt', lessValue);
   },
 
-  in(this: Condition<any>, field /* , ...args */) {
+  in(this: Condition<any>, field: string /* , ...args */) {
     return this.addFilter(field, '$in', varargs(1, arguments));
   },
 

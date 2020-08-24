@@ -1,10 +1,11 @@
 'use strict';
 
-import { Connector } from "./Connector";
+import { Connector, Request, Response, ResponseBodyType } from "./Connector";
 import { PersistentError } from "../error";
 
 import https from "https";
 import http from "http";
+import { Message } from "./Message";
 
 export class NodeConnector extends Connector {
   private cookie: string | null;
@@ -18,7 +19,7 @@ export class NodeConnector extends Connector {
     return !!(http && http.Server);
   }
 
-  constructor(host, port, secure, basePath) {
+  constructor(host: string, port: number, secure: boolean, basePath: string) {
     super(host, port, secure, basePath);
     this.cookie = null;
     this.http = secure ? https : http;
@@ -27,11 +28,7 @@ export class NodeConnector extends Connector {
   /**
    * @inheritDoc
    */
-  doSend(message, request, receive) {
-    request.host = this.host;
-    request.port = this.port;
-    request.path = this.basePath + request.path;
-
+  doSend(message: Message, request: Request, receive: (response: Response) => void) {
     const entity = request.entity;
     const type = request.type;
     let responseType = message.responseType();
@@ -40,14 +37,15 @@ export class NodeConnector extends Connector {
       request.headers.cookie = this.cookie;
     }
 
-    const req = this.http.request(request, (res) => {
+    const nodeRequest = { ...request, host: this.host, port: this.port, path: this.basePath + request.path };
+    const req = this.http.request(nodeRequest, (res: http.IncomingMessage) => {
       const cookie = res.headers['set-cookie'];
       if (cookie) {
         // cookie may be an array, convert it to a string
         this.cookie = this.parseCookie(cookie + '');
       }
 
-      const status = res.statusCode;
+      const status = res.statusCode || 0;
       if (status >= 400) {
         responseType = 'json';
       }
@@ -55,7 +53,7 @@ export class NodeConnector extends Connector {
       if (responseType === 'stream') {
         receive({
           status,
-          headers: res.headers,
+          headers: res.headers as {[headerName: string]: string},
           entity: res,
         });
         return;
@@ -74,15 +72,16 @@ export class NodeConnector extends Connector {
       res.on('end', () => {
         receive({
           status,
-          headers: res.headers,
+          headers: res.headers as {[headerName: string]: string},
           entity: binary ? Buffer.concat(chunks as Buffer[]) : chunks.join(''),
         });
       });
     });
 
-    req.on('error', (e) => {
+    req.on('error', (e: Error) => {
       receive({
         status: 0,
+        headers: {},
         error: e,
       });
     });
@@ -123,7 +122,7 @@ export class NodeConnector extends Connector {
   /**
    * @inheritDoc
    */
-  toFormat(message) {
+  toFormat(message: Message) {
     let type = message.request.type;
 
     if (type) {
@@ -179,7 +178,7 @@ export class NodeConnector extends Connector {
   /**
    * @inheritDoc
    */
-  fromFormat(response, entity, type) {
+  fromFormat(response: Response, entity: any, type: ResponseBodyType | null) {
     switch (type) {
       case 'json':
         return JSON.parse(entity);

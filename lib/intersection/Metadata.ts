@@ -6,8 +6,32 @@ import { EntityManager } from "../EntityManager";
 import { Entity } from "../binding/Entity";
 import { EntityType, ManagedType } from "../metamodel";
 import { PersistentError } from "../error";
-import { Json } from "../util/Json";
+import { Json, JsonMap } from "../util/Json";
 import { Managed } from "../binding";
+
+export interface ManagedMetadata {
+  db?: EntityManager;
+  root?: Entity;
+  type: ManagedType<any>;
+
+  /**
+   * Signals that the object will be accessed by a read
+   *
+   * Ensures that the object was loaded already.
+   *
+   * @return
+   */
+  readAccess(): void;
+
+  /**
+   * Signals that the object will be accessed by a write
+   *
+   * Ensures that the object was loaded already and marks the object as dirty.
+   *
+   * @return
+   */
+  writeAccess(): void;
+}
 
 /**
  * The Metadata instance tracks the state of an object and checks if the object state was changed since last
@@ -19,7 +43,7 @@ import { Managed } from "../binding";
  *
  * {@link Metadata#get(object)} can be used on any managed object to retrieve the metadata of the root object
  */
-export class Metadata extends Lockable {
+export class Metadata extends Lockable implements ManagedMetadata {
   entityManager: EntityManager | null = null;
   type: EntityType<any>;
   decodedKey: string | null = null;
@@ -37,16 +61,19 @@ export class Metadata extends Lockable {
    * @param object The object instance of the type
    * @return The created metadata for the object
    */
-  static create<T extends Managed>(type: ManagedType<T>, object: T): Metadata {
-    let meta;
+  static create<T extends Entity>(type: EntityType<T>, object: T): Metadata;
+  static create<T extends Managed>(type: ManagedType<T>, object: T): ManagedMetadata;
+  static create<T extends Managed>(type: ManagedType<T>, object: T): ManagedMetadata {
     if (type.isEntity) {
       if (!(object instanceof Entity)) {
         throw new Error('Object is not an entity, metadata can\'t be created. ' + object);
       }
 
-      meta = new Metadata(object as Entity, type as EntityType<any>);
-    } else if (type.isEmbeddable) {
-      meta = {
+      return new Metadata(object as Entity, type as EntityType<any>);
+    }
+
+    if (type.isEmbeddable) {
+      return {
         type,
         readAccess() {
           const metadata = this.root && this.root._metadata;
@@ -61,11 +88,9 @@ export class Metadata extends Lockable {
           }
         },
       };
-    } else {
-      throw new Error('Illegal type ' + type);
     }
 
-    return meta;
+    throw new Error('Illegal type ' + type);
   }
 
   /**
@@ -73,7 +98,8 @@ export class Metadata extends Lockable {
    * @param managed
    * @return
    */
-  static get(managed: Managed): Metadata {
+  static get(managed: Entity): Metadata;
+  static get(managed: Managed): ManagedMetadata {
     return managed._metadata;
   }
 
@@ -278,8 +304,8 @@ export class Metadata extends Lockable {
    * @return JSON-Object
    * @deprecated
    */
-  getJson(options?: boolean | { excludeMetadata?: boolean, depth?: boolean | number, persisting?: boolean }): Json {
-    return this.type.toJsonValue(this, this.root, typeof options !== 'object' ? { excludeMetadata: options } : options);
+  getJson(options?: boolean | { excludeMetadata?: boolean, depth?: boolean | number, persisting?: boolean }): JsonMap {
+    return this.type.toJsonValue(this, this.root, typeof options !== 'object' ? { excludeMetadata: options } : options) as JsonMap;
   }
 
   /**

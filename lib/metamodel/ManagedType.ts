@@ -12,7 +12,6 @@ import { EmbeddableType } from "./index";
 import { Metadata, Permission } from "../intersection";
 
 const VALIDATION_CODE = Symbol('ValidationCode');
-const TYPE_CONSTRUCTOR = Type.TYPE_CONSTRUCTOR;
 
 export abstract class ManagedType<T extends Managed> extends Type<T> {
   public enhancer: Enhancer | null = null;
@@ -21,6 +20,8 @@ export abstract class ManagedType<T extends Managed> extends Type<T> {
   public schemaReplacePermission: Permission = new Permission();
   public metadata: {[key: string]: string} | null = null;
   public superType: EntityType<any> | null = null;
+
+  private [VALIDATION_CODE]: Function | null;
 
   /**
    * @type Function
@@ -40,10 +41,10 @@ export abstract class ManagedType<T extends Managed> extends Type<T> {
    * The Managed class
    */
   get typeConstructor(): Class<T> {
-    if (!this[TYPE_CONSTRUCTOR]) {
+    if (!this._typeConstructor) {
       this.typeConstructor = this.createProxyClass();
     }
-    return this[TYPE_CONSTRUCTOR];
+    return this._typeConstructor!!;
   }
 
   /**
@@ -51,7 +52,7 @@ export abstract class ManagedType<T extends Managed> extends Type<T> {
    * @param typeConstructor The managed class constructor
    */
   set typeConstructor(typeConstructor: Class<T>) {
-    if (this[TYPE_CONSTRUCTOR]) {
+    if (this._typeConstructor) {
       throw new Error('Type constructor has already been set.');
     }
 
@@ -65,7 +66,7 @@ export abstract class ManagedType<T extends Managed> extends Type<T> {
     }
 
     this.enhancer!!.enhance(this, typeConstructor);
-    this[TYPE_CONSTRUCTOR] = typeConstructor;
+    this._typeConstructor = typeConstructor;
   }
 
   /**
@@ -83,8 +84,8 @@ export abstract class ManagedType<T extends Managed> extends Type<T> {
   init(enhancer: Enhancer): void {
     this.enhancer = enhancer;
 
-    if (this[TYPE_CONSTRUCTOR] && !Enhancer.getIdentifier(this[TYPE_CONSTRUCTOR])) {
-      Enhancer.setIdentifier(this[TYPE_CONSTRUCTOR], this.ref);
+    if (this._typeConstructor && !Enhancer.getIdentifier(this._typeConstructor!!)) {
+      Enhancer.setIdentifier(this._typeConstructor!!, this.ref);
     }
   }
 
@@ -120,7 +121,7 @@ export abstract class ManagedType<T extends Managed> extends Type<T> {
    * @return
    */
   attributes(): IterableIterator<Attribute<any>> {
-    let iter;
+    let iter: Iterator<Attribute<any>> | null;
     let index = 0;
     const type = this;
 
@@ -149,7 +150,7 @@ export abstract class ManagedType<T extends Managed> extends Type<T> {
           return { value, done: false };
         }
 
-        return { done: true };
+        return { done: true, value: undefined };
       },
     };
   }
@@ -175,8 +176,8 @@ export abstract class ManagedType<T extends Managed> extends Type<T> {
     attr.init(this, initOrder);
 
     this.declaredAttributes.push(attr);
-    if (this[TYPE_CONSTRUCTOR] && this.name !== 'Object') {
-      this.enhancer!!.enhanceProperty(this[TYPE_CONSTRUCTOR], attr);
+    if (this._typeConstructor && this.name !== 'Object') {
+      this.enhancer!!.enhanceProperty(this._typeConstructor, attr);
     }
   }
 
@@ -219,7 +220,7 @@ export abstract class ManagedType<T extends Managed> extends Type<T> {
   /**
    * @inheritDoc
    */
-  fromJsonValue(state: Metadata, jsonObject: Json, currentObject: T | null, options: { onlyMetadata?: boolean }) {
+  fromJsonValue(state: Metadata, jsonObject: Json, currentObject: T | null, options: { onlyMetadata?: boolean, persisting: boolean }) {
     if (!jsonObject || !currentObject) {
       return null;
     }
@@ -228,7 +229,7 @@ export abstract class ManagedType<T extends Managed> extends Type<T> {
     for (let el = iter.next(); !el.done; el = iter.next()) {
       const attribute = el.value;
       if (!options.onlyMetadata || attribute.isMetadata) {
-        attribute.setJsonValue(state, currentObject, jsonObject[attribute.name], options);
+        attribute.setJsonValue(state, currentObject, (jsonObject as JsonMap)[attribute.name], options);
       }
     }
 
@@ -238,12 +239,12 @@ export abstract class ManagedType<T extends Managed> extends Type<T> {
   /**
    * @inheritDoc
    */
-  toJsonValue(state: Metadata, object: T | null, options: { excludeMetadata?: boolean; depth?: number | boolean }): Json {
+  toJsonValue(state: Metadata, object: T | null, options: { excludeMetadata?: boolean; depth?: number | boolean, persisting: boolean }): Json {
     if (!(object instanceof this.typeConstructor)) {
       return null;
     }
 
-    const value = {};
+    const value: {[attr: string]: any} = {};
     const iter = this.attributes();
     for (let el = iter.next(); !el.done; el = iter.next()) {
       const attribute = el.value;
@@ -260,7 +261,7 @@ export abstract class ManagedType<T extends Managed> extends Type<T> {
    * @return
    */
   toJSON(): JsonMap {
-    const fields = {};
+    const fields: {[attr: string]: any} = {};
     this.declaredAttributes.forEach((attribute) => {
       if (!attribute.isMetadata) {
         fields[attribute.name] = attribute;

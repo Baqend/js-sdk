@@ -2,10 +2,12 @@
 
 import { Entity } from "../binding";
 import { EntityManager } from "../EntityManager";
-import { Class } from "../util";
+import { Class, Json } from "../util";
 import { PersistentError } from "../error";
 import { MatchType, Operation, RealtimeEvent } from "./RealtimeEvent";
 import { Observable, Subscription } from "rxjs"
+import { Filter } from "./Filter";
+import { Node } from "./Node";
 
 /**
  * An abstract Query which allows retrieving results
@@ -27,7 +29,7 @@ export abstract class Query<T extends Entity> {
    * @param field The field to sort
    * @return The resulting Query
    */
-  ascending(field: string): this {
+  ascending(field: string): Node<T> {
     return this.addOrder(field, 1);
   }
 
@@ -36,7 +38,7 @@ export abstract class Query<T extends Entity> {
    * @param field The field to sort
    * @return The resulting Query
    */
-  descending(field: string): this {
+  descending(field: string): Node<T> {
     return this.addOrder(field, -1);
   }
 
@@ -48,8 +50,8 @@ export abstract class Query<T extends Entity> {
    *
    * @see http://docs.mongodb.org/manual/reference/method/cursor.sort/
    */
-  sort(sort: {[field: string]: 1 | -1}): this {
-    if (!(sort instanceof Object) || Object.getPrototypeOf(sort) !== Object.prototype) {
+  sort(sort: {[field: string]: 1 | -1}): Node<T> {
+    if (typeof sort !== "object" || Object.getPrototypeOf(sort) !== Object.prototype) {
       throw new Error('sort must be an object.');
     }
 
@@ -63,7 +65,7 @@ export abstract class Query<T extends Entity> {
    *
    * @see http://docs.mongodb.org/manual/reference/method/cursor.skip/
    */
-  offset(offset: number): this {
+  offset(offset: number): Node<T> {
     if (offset < 0) {
       throw new Error('The offset can\'t be nagative.');
     }
@@ -78,7 +80,7 @@ export abstract class Query<T extends Entity> {
    *
    * @see http://docs.mongodb.org/manual/reference/method/cursor.limit/
    */
-  limit(limit: number): this {
+  limit(limit: number): Node<T> {
     if (limit < 0) {
       throw new Error('The limit can\'t be nagative.');
     }
@@ -263,13 +265,13 @@ export abstract class Query<T extends Entity> {
    */
   abstract count(doneCallback?: CountCallback, failCallback?: FailCallback): Promise<number>;
 
-  abstract addOrder(field: string, order: 1 | -1);
-  abstract addOrder(order: {[field: string]: 1 | -1});
-  abstract addOffset(offset);
-  abstract addLimit(limit);
+  abstract addOrder(field: string, order: 1 | -1): Node<T>;
+  abstract addOrder(order: {[field: string]: 1 | -1}): Node<T>;
+  abstract addOffset(offset: number): Node<T>;
+  abstract addLimit(limit: number): Node<T>;
 }
 
-export function varargs(offset, args) {
+export function varargs(offset: number, args: IArguments | any[]) {
   return Array.prototype.concat.apply([], Array.prototype.slice.call(args, offset));
 }
 

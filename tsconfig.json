@@ -6,7 +6,7 @@
     "esModuleInterop": true,
     "rootDir": "./",
     "inlineSourceMap": true,
-    "noImplicitAny": false,
+    "noImplicitAny": true,
     "experimentalDecorators": true,
     "typeRoots": [
       "./node_modules/@types"

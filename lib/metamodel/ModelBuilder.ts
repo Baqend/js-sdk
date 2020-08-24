@@ -12,14 +12,14 @@ import { JsonMap } from "../util";
 import { Type } from "./Type";
 import { ManagedType } from "./ManagedType";
 import { Attribute } from "./Attribute";
-import { Validator } from "../intersection";
+import { Permission, Validator } from "../intersection";
 
 export class ModelBuilder {
   private models: {[name: string]: Type<any>} = {};
   private modelDescriptors: {[name: string]: JsonMap} | null = null;
 
   constructor() {
-    Object.keys(BasicType).forEach((typeName) => {
+    (Object.keys(BasicType) as (keyof typeof BasicType)[]).forEach((typeName) => {
       const basicType = BasicType[typeName];
       if (basicType instanceof BasicType) {
         this.models[basicType.ref] = basicType;
@@ -73,14 +73,14 @@ export class ModelBuilder {
    */
   buildModel(ref: string): ManagedType<any> {
     const modelDescriptor = this.modelDescriptors![ref];
-    let type;
+    let type: ManagedType<any>;
     if (ref === EntityType.Object.ref) {
       type = new EntityType.Object();
     } else if (modelDescriptor) {
       if (modelDescriptor.embedded) {
         type = new EmbeddableType(ref);
       } else {
-        const superTypeIdentifier = modelDescriptor.superClass || EntityType.Object.ref;
+        const superTypeIdentifier = modelDescriptor.superClass as string || EntityType.Object.ref;
         type = new EntityType(ref, this.getModel(superTypeIdentifier) as EntityType<any>);
       }
     } else {
@@ -90,10 +90,11 @@ export class ModelBuilder {
     type.metadata = {};
 
     if (modelDescriptor) {
-      type.metadata = modelDescriptor.metadata || {};
+      type.metadata = modelDescriptor.metadata as {[key: string]: string} || {};
       const permissions = modelDescriptor.acl || {};
-      Object.keys(permissions).forEach((permission) => {
-        type[permission + 'Permission'].fromJSON(permissions[permission]);
+      (Object.keys(permissions) as Array<keyof typeof permissions>).forEach((permission) => {
+        const permissionProperty = permission + 'Permission';
+        ((type as any)[permissionProperty] as Permission).fromJSON(permissions[permission]);
       });
     }
 
@@ -106,12 +107,12 @@ export class ModelBuilder {
    */
   buildAttributes(model: ManagedType<any>): void {
     const modelDescriptor = this.modelDescriptors![model.ref];
-    const fields = modelDescriptor.fields!;
+    const fields = modelDescriptor.fields as JsonMap;
 
     Object.keys(fields).forEach((name) => {
-      const field = fields[name];
+      const field = fields[name] as JsonMap;
       if (!model.getAttribute(name)) { // skip predefined attributes
-        model.addAttribute(this.buildAttribute(field), field.order);
+        model.addAttribute(this.buildAttribute(field as any), field.order as number);
       }
     });
 

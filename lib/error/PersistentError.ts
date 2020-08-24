@@ -5,7 +5,7 @@ interface PersistentErrorConstructor {
    * Wraps the given error into a persistent error, if the error is not already an persistent error
    * @param error - The error to wrap
    */
-  of(error: Error);
+  of(error: Error): PersistentError;
 
   /**
    * @param message - a error message
@@ -55,14 +55,6 @@ export const PersistentError = (function() {
     }
   }
 
-  PersistentError.of = function of(error: Error): PersistentError {
-    if (error instanceof PersistentError) {
-      return error;
-    }
-
-    return new PersistentError(null, error);
-  };
-
   // custom errors must be manually extended, since JS Errors can't be super called in a class hierarchy,
   // otherwise the super call destroys the origin 'this' reference
   PersistentError.prototype = Object.create(Error.prototype, {
@@ -76,5 +68,13 @@ export const PersistentError = (function() {
 
   return PersistentError as any as PersistentErrorConstructor;
 })();
+
+PersistentError.of = function of(error: Error): PersistentError {
+  if (error instanceof PersistentError) {
+    return error;
+  }
+
+  return new PersistentError(null, error);
+};
 
 

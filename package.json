@@ -38,8 +38,9 @@
       "require": "./commonjs/lib/index.es5.js"
     }
   },
-  "typings": "./esm/lib/index.2015.d.ts",
+  "types": "./esm/lib/index.2015.d.ts",
   "dependencies": {
+    "@types/validator": "^13.1.0",
     "commander": "^2.19.0",
     "glob": "^7.0.6",
     "opn": "^4.0.2",
@@ -68,6 +69,7 @@
   "devDependencies": {
     "@purtuga/esm-webpack-plugin": "^1.2.1",
     "@types/node": "^10.17.26",
+    "@types/uuid": "^8.0.0",
     "@types/webpack": "^4.41.17",
     "@types/websocket": "^1.0.0",
     "baqend-coding-standard": "^1.1.2",
@@ -105,7 +107,7 @@
     "terser-webpack-plugin": "^3.0.6",
     "ts-loader": "^7.0.5",
     "ts-node": "^8.10.2",
-    "typescript": "^3.9.5",
+    "typescript": "^3.9.7",
     "webpack": "^4.43.0",
     "webpack-cli": "^3.3.11",
     "webpack-dev-server": "^3.11.0",
@@ -115,10 +117,11 @@
     "test": "npm run test:node && npm run test:karma",
     "test:node": "mocha --config mocharc.json --exit",
     "test:karma": "karma start",
-    "clean": "shx rm -rf dist",
-    "dev-node": "tsc --watch -m commonjs --target es5 --outDir commonjs",
+    "clean": "shx rm -rf bundles commonjs esm",
+    "dev-node-commojs": "tsc --watch -m commonjs --target es5 --outDir commonjs --declaration",
+    "dev-node-esm": "tsc --watch -m es2015 --target es6 --outDir esm --declaration",
     "dev-browser": "webpack-dev-server --config webpack.config.js --open",
-    "build-commonjs": "tsc -m commonjs --target es5 --outDir commonjs --declaration",
+    "build-commonjs": "tsc -m commonjs --target es5 --outDir commonjs",
     "build-esm": "tsc -m es2015 --target es6 --outDir esm --declaration",
     "build-bundles": "webpack --config-name=es5 && webpack --config-name=es2015",
     "dist": "npm run build-commonjs && npm run build-esm && npm run build-bundles",

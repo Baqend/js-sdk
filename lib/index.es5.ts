@@ -23,7 +23,7 @@ import { db, baqend } from "./baqend";
     Object.defineProperty(util, type, {
         get(): any {
             console.log(`Usage of util.${type} is deprecated, use intersection.${type} instead.`);
-            return intersection[type];
+            return (intersection as any)[type];
         }
     });
 });
