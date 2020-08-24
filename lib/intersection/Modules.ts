@@ -24,7 +24,7 @@ export class Modules {
    * The optional query parameter will be attached as GET-parameters.
    *
    * @param bucket Name of the module
-   * @param [query] GET-Parameter as key-value-pairs or query string
+   * @param query GET-Parameter as key-value-pairs or query string
    * @param options Additional request options
    * @param options.responseType The type used to provide the response data, defaults to text oder json
    * depends on the received data, can be one of arraybuffer, blob, json, text, base64, data-url
@@ -32,7 +32,7 @@ export class Modules {
    * @param failCallback
    * @return
    */
-  get(bucket: string, query: {[param: string]: string} | Function, options?: { responseType?: ResponseBodyType } | Function, doneCallback?: any, failCallback?: any): Promise<any> {
+  get(bucket: string, query: {[param: string]: string} | string | Function, options?: { responseType?: ResponseBodyType } | Function, doneCallback?: any, failCallback?: any): Promise<any> {
     if (query instanceof Function) {
       return this.get(bucket, {}, query, options, doneCallback);
     }
