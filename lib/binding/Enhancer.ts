@@ -1,8 +1,7 @@
-'use strict';
-
-import { Class } from "../util";
-import { Attribute, ManagedType } from "../metamodel";
-import { Managed } from "./Managed";
+/* eslint-disable no-param-reassign,max-classes-per-file */
+import { Class } from '../util/Class';
+import { Attribute, ManagedType } from '../metamodel';
+import type { Managed } from './Managed';
 
 const BAQEND_ID = Symbol('BaqendId');
 const BAQEND_TYPE = Symbol('BaqendType');
@@ -95,7 +94,7 @@ export class Enhancer {
    * @param attribute
    */
   enhanceProperty<T>(proto: T, attribute: Attribute<any>): void {
-    const name = '$' + attribute.name;
+    const name = `$${attribute.name}`;
     Object.defineProperty(proto, attribute.name, {
       get() {
         const metadata = this._metadata;

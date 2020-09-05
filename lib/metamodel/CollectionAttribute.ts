@@ -1,8 +1,6 @@
-'use strict';
-
-import { CollectionType, PluralAttribute } from "./PluralAttribute";
-import { Class } from "../util";
-import { Type } from "./Type";
+import { CollectionType, PluralAttribute } from './PluralAttribute';
+import { Class } from '../util';
+import { Type } from './Type';
 
 export abstract class CollectionAttribute<T, E> extends PluralAttribute<T, E> {
   /**

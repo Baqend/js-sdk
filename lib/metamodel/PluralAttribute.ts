@@ -1,8 +1,6 @@
-'use strict';
-
-import { Class, Json, JsonMap } from "../util";
-import { Type } from "./Type";
-import { Attribute, PersistentAttributeType } from "./Attribute";
+import { Class, Json } from '../util';
+import { Type } from './Type';
+import { Attribute, PersistentAttributeType } from './Attribute';
 
 const ATTACHED_STATE = Symbol('AttachedState');
 const ATTACHED_SIZE = Symbol('AttachedSize');
@@ -18,6 +16,7 @@ export abstract class PluralAttribute<T, E> extends Attribute<T> {
   public static readonly CollectionType = CollectionType;
 
   public elementType: Type<E>;
+
   public typeConstructor: Class<T>;
 
   /**
@@ -90,7 +89,7 @@ export abstract class PluralAttribute<T, E> extends Attribute<T> {
    */
   protected keyValue(json: Json): string {
     if (json && typeof json === 'object' && 'id' in json) {
-      return String(json['id']);
+      return String(json.id);
     }
 
     return String(json);

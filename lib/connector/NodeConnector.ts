@@ -1,20 +1,18 @@
-'use strict';
+import https from 'https';
+import http from 'http';
+import {
+  Connector, Request, Response, ResponseBodyType,
+} from './Connector';
+import { PersistentError } from '../error';
 
-import { Connector, Request, Response, ResponseBodyType } from "./Connector";
-import { PersistentError } from "../error";
-
-import https from "https";
-import http from "http";
-import { Message } from "./Message";
+import { Message } from './Message';
 
 export class NodeConnector extends Connector {
   private cookie: string | null;
+
   private http: any;
 
   static isUsable() {
-    if (!http) {
-
-    }
     // prevent using when it is shimmed
     return !!(http && http.Server);
   }
@@ -29,20 +27,22 @@ export class NodeConnector extends Connector {
    * @inheritDoc
    */
   doSend(message: Message, request: Request, receive: (response: Response) => void) {
-    const entity = request.entity;
-    const type = request.type;
+    const { entity } = request;
+    const { type } = request;
     let responseType = message.responseType();
 
     if (this.cookie && message.withCredentials) {
       request.headers.cookie = this.cookie;
     }
 
-    const nodeRequest = { ...request, host: this.host, port: this.port, path: this.basePath + request.path };
+    const nodeRequest = {
+      ...request, host: this.host, port: this.port, path: this.basePath + request.path,
+    };
     const req = this.http.request(nodeRequest, (res: http.IncomingMessage) => {
       const cookie = res.headers['set-cookie'];
       if (cookie) {
         // cookie may be an array, convert it to a string
-        this.cookie = this.parseCookie(cookie + '');
+        this.cookie = this.parseCookie(`${cookie}`);
       }
 
       const status = res.statusCode || 0;
@@ -97,7 +97,6 @@ export class NodeConnector extends Connector {
     }
   }
 
-
   /**
    * Parse the cookie header
    * @param header
@@ -123,10 +122,10 @@ export class NodeConnector extends Connector {
    * @inheritDoc
    */
   toFormat(message: Message) {
-    let type = message.request.type;
+    let { type } = message.request;
 
     if (type) {
-      let entity = message.request.entity;
+      let { entity } = message.request;
       let mimeType = message.mimeType();
 
       switch (type) {
@@ -144,6 +143,7 @@ export class NodeConnector extends Connector {
         case 'data-url': {
           const match = entity.match(/^data:(.+?)(;base64)?,(.*)$/);
           const isBase64 = match[2];
+          // eslint-disable-next-line prefer-destructuring
           entity = match[3];
 
           type = 'buffer';
@@ -168,7 +168,7 @@ export class NodeConnector extends Connector {
         case 'text':
           break;
         default:
-          throw new Error('The request type ' + type + ' is not supported');
+          throw new Error(`The request type ${type} is not supported`);
       }
 
       message.entity(entity, type).mimeType(mimeType);
@@ -189,7 +189,7 @@ export class NodeConnector extends Connector {
           return base64;
         }
 
-        return 'data:' + response.headers['content-type'] + ';base64,' + base64;
+        return `data:${response.headers['content-type']};base64,${base64}`;
       }
       case 'arraybuffer':
         return entity.buffer.slice(entity.byteOffset, entity.byteOffset + entity.byteLength);

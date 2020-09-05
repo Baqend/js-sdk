@@ -1,17 +1,16 @@
-'use strict';
+import * as message from '../message';
+import { StatusCode } from '../connector';
+import type { EntityManagerFactory } from '../EntityManagerFactory';
+import type { Metamodel, ManagedType } from '../metamodel';
 
-import * as message from "../message";
-import { StatusCode } from "../connector/Message";
-import { EntityManagerFactory } from "../EntityManagerFactory";
-import { Metamodel } from "../metamodel/Metamodel";
-import { ManagedType } from "../metamodel";
-import { Validator } from "./Validator";
+import { Validator } from './Validator';
 
 /**
  * Representation of a Code which runs on Baqend.
  */
 export class Code {
   metamodel: Metamodel;
+
   entityManagerFactory: EntityManagerFactory;
 
   /**
@@ -53,6 +52,7 @@ export class Code {
    * @return The deserialized function
    */
   stringToFunction(signature: string[], code: string): Function {
+    // eslint-disable-next-line @typescript-eslint/no-implied-eval
     return new Function(signature as any /* typings are incorrect here */, code); // eslint-disable-line no-new-func
   }
 
@@ -64,7 +64,7 @@ export class Code {
   loadModules(): Promise<string[]> {
     const msg = new message.GetAllModules();
     return this.entityManagerFactory.send(msg)
-      .then(response => response.entity);
+      .then((response) => response.entity);
   }
 
   /**
@@ -91,13 +91,13 @@ export class Code {
    */
   loadCode(type: ManagedType<any> | string, codeType: string, asFunction?: false): Promise<string>;
 
-  loadCode(type: ManagedType<any> | string, codeType: string, asFunction: boolean = false): Promise<Function | string | null>  {
+  loadCode(type: ManagedType<any> | string, codeType: string, asFunction = false): Promise<Function | string | null> {
     const bucket = typeof type === 'string' ? type : type.name;
     const msg = new message.GetBaqendCode(bucket, codeType)
       .responseType('text');
 
     return this.entityManagerFactory.send(msg)
-      .then(response => this.parseCode(bucket, codeType, asFunction, response.entity), (e) => {
+      .then((response) => this.parseCode(bucket, codeType, asFunction, response.entity), (e) => {
         if (e.status === StatusCode.OBJECT_NOT_FOUND) {
           return null;
         }
@@ -136,7 +136,7 @@ export class Code {
       .responseType('text');
 
     return this.entityManagerFactory.send(msg)
-      .then(response => this.parseCode(bucket, codeType, fn instanceof Function, response.entity)!);
+      .then((response) => this.parseCode(bucket, codeType, fn instanceof Function, response.entity)!);
   }
 
   /**

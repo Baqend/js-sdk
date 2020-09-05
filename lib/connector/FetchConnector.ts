@@ -1,7 +1,7 @@
-'use strict';
-
-import { Connector, Request, Response, ResponseBodyType } from "./Connector";
-import { Message } from "./Message";
+import {
+  Connector, Request, Response, ResponseBodyType,
+} from './Connector';
+import { Message } from './Message';
 
 export class FetchConnector extends Connector {
   /**
@@ -17,9 +17,9 @@ export class FetchConnector extends Connector {
    */
   doSend(message: Message, request: Request, receive: (response: Response) => void) {
     const url = this.origin + this.basePath + request.path;
-    const method = request.method;
-    const headers = request.headers;
-    const entity = request.entity;
+    const { method } = request;
+    const { headers } = request;
+    const { entity } = request;
     const credentials = message.withCredentials ? 'include' : 'same-origin';
 
     return fetch(url, {
@@ -28,15 +28,15 @@ export class FetchConnector extends Connector {
       body: entity,
       credentials,
     }).then((res) => {
-      const headers: {[headerName: string]: string} = {};
+      const responseHeaders: {[headerName: string]: string} = {};
       Connector.RESPONSE_HEADERS.forEach((name) => {
-        headers[name] = res.headers.get ? res.headers.get(name) : (res.headers as any)[name];
+        responseHeaders[name] = res.headers.get ? res.headers.get(name) : (res.headers as any)[name];
       });
 
       const response: Response = {
-        headers,
+        headers: responseHeaders,
         status: res.status,
-        entity: res
+        entity: res,
       };
 
       receive(response);
@@ -49,9 +49,9 @@ export class FetchConnector extends Connector {
   fromFormat(response: Response, rawEntity: any, type: ResponseBodyType | null) {
     if (type === 'json') {
       return rawEntity.json();
-    } else if (type === 'blob') {
+    } if (type === 'blob') {
       return rawEntity.blob();
-    } else if (type === 'data-url' || type === 'base64') {
+    } if (type === 'data-url' || type === 'base64') {
       return rawEntity.blob().then((entity: Blob) => {
         const reader = new FileReader();
         reader.readAsDataURL(entity);
@@ -75,10 +75,10 @@ export class FetchConnector extends Connector {
    * @inheritDoc
    */
   toFormat(message: Message) {
-    let type = message.request.type;
+    let { type } = message.request;
 
     if (type) {
-      let entity = message.request.entity;
+      let { entity } = message.request;
       let mimeType = message.mimeType();
       switch (type) {
         case 'blob':
@@ -90,6 +90,7 @@ export class FetchConnector extends Connector {
         case 'data-url': {
           const match = entity.match(/^data:(.+?)(;base64)?,(.*)$/);
           const isBase64 = match[2];
+          // eslint-disable-next-line prefer-destructuring
           entity = match[3];
 
           type = 'blob';
@@ -119,7 +120,7 @@ export class FetchConnector extends Connector {
         case 'text':
           break;
         default:
-          throw new Error('Supported request format:' + type);
+          throw new Error(`Supported request format:${type}`);
       }
 
       message.entity(entity, type).mimeType(mimeType);

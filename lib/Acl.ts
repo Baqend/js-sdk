@@ -1,7 +1,6 @@
-'use strict';
-
-import { Permission, TrustedEntity, Metadata } from "./intersection";
-import { Json, JsonMap } from "./util";
+import { Permission } from './intersection/Permission';
+import type { TrustedEntity, Metadata } from './intersection';
+import type { JsonMap } from './util';
 
 /**
  * Creates a new Acl object, with an empty rule set for an object
@@ -11,6 +10,7 @@ export class Acl {
    * The read permission of the object
    */
   readonly read: Permission;
+
   /**
    * The write permission of the object
    */
@@ -28,7 +28,7 @@ export class Acl {
    * Removes all acl rules, read and write access is public afterwards
    *
    * @return
-   **/
+   * */
   clear(): void {
     this.read.clear();
     this.write.clear();
@@ -61,7 +61,7 @@ export class Acl {
    * Note: All other allow read rules will be removed.
    *
    * @return
-   **/
+   * */
   setPublicReadAllowed(): void {
     return this.read.setPublicAllowed();
   }
@@ -134,7 +134,7 @@ export class Acl {
    * Note: All other allow write rules will be removed.
    *
    * @return
-   **/
+   * */
   setPublicWriteAllowed(): void {
     return this.write.setPublicAllowed();
   }

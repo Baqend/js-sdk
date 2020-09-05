@@ -1,20 +1,21 @@
 /* eslint-disable no-restricted-globals */
 
-'use strict';
-
-import { PersistentError } from "../error";
-import { Message } from "./Message";
-import { Json, JsonMap, Class } from "../util";
+import { PersistentError } from '../error';
+import { Message } from './Message';
+import { Json, JsonMap, Class } from '../util';
 
 export type Receiver = (response: Response) => void;
 export type RequestBody = string | Blob | Buffer | ArrayBuffer | FormData | Json;
 export type RequestBodyType = 'json'|'text'|'blob'|'buffer'|'arraybuffer'|'data-url'|'base64'|'form'|'stream';
 export type ResponseBodyType = 'json'|'text'|'blob'|'arraybuffer'|'data-url'|'base64'|'stream';
-export type Request = { method: string, path: string, type?: RequestBodyType, entity?: any, headers: {[headerName: string]: string} };
+export type Request = {
+  method: string, path: string, type?: RequestBodyType, entity?: any, headers: {[headerName: string]: string}
+};
 export type Response = { status: number, headers: {[headerName: string]: string}, entity?: any, error?: Error};
 
 export abstract class Connector {
   static readonly DEFAULT_BASE_PATH = '/v1';
+
   static readonly HTTP_DOMAIN = '.app.baqend.com';
 
   /**
@@ -50,6 +51,7 @@ export abstract class Connector {
    * @param basePath - The base path of the api endpoint
    * @return <code>true</code> if this connector is usable in the current environment
    */
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   static isUsable(host: string, port: number, secure: boolean, basePath: string): boolean {
     return false;
   }
@@ -92,7 +94,7 @@ export abstract class Connector {
         p = Number(matches[4]);
         b = matches[5] || '';
       } else {
-        throw new Error('The connection uri host ' + h + ' seems not to be valid');
+        throw new Error(`The connection uri host ${h} seems not to be valid`);
       }
     } else if (h !== 'localhost' && /^[a-z0-9-]*$/.test(h)) {
       // handle app names as hostname
@@ -127,8 +129,8 @@ export abstract class Connector {
   }
 
   static toUri(host: string, port: number, secure: boolean, basePath: string) {
-    let uri = (secure ? 'https://' : 'http://') + (host.indexOf(':') !== -1 ? '[' + host + ']' : host);
-    uri += ((secure && port !== 443) || (!secure && port !== 80)) ? ':' + port : '';
+    let uri = (secure ? 'https://' : 'http://') + (host.indexOf(':') !== -1 ? `[${host}]` : host);
+    uri += ((secure && port !== 443) || (!secure && port !== 80)) ? `:${port}` : '';
     uri += basePath;
     return uri;
   }
@@ -151,10 +153,10 @@ export abstract class Connector {
    * @param basePath - The base path of the api endpoint
    */
   constructor(
-      public readonly host: string,
-      public readonly port: number,
-      public readonly secure: boolean,
-      public readonly basePath: string
+    public readonly host: string,
+    public readonly port: number,
+    public readonly secure: boolean,
+    public readonly basePath: string,
   ) {}
 
   /**
@@ -165,11 +167,9 @@ export abstract class Connector {
     let response: Response = { status: 0, headers: {} };
     return Promise.resolve()
       .then(() => this.prepareRequest(message))
-      .then(() => {
-        return new Promise<Response>((resolve) => {
-          this.doSend(message, message.request, resolve);
-        });
-      })
+      .then(() => new Promise<Response>((resolve) => {
+        this.doSend(message, message.request, resolve);
+      }))
       .then((res) => { response = res; })
       .then(() => this.prepareResponse(message, response))
       .then(() => {
@@ -197,7 +197,7 @@ export abstract class Connector {
   prepareRequest(message: Message): Promise<Message> | Message {
     const mimeType = message.mimeType();
     if (!mimeType) {
-      const type = message.request.type;
+      const { type } = message.request;
       if (type === 'json') {
         message.mimeType('application/json;charset=utf-8');
       } else if (type === 'text') {
@@ -226,27 +226,30 @@ export abstract class Connector {
     if (this.gzip) {
       const ifNoneMatch = message.ifNoneMatch();
       if (ifNoneMatch && ifNoneMatch !== '""' && ifNoneMatch !== '*') {
-        message.ifNoneMatch(ifNoneMatch.slice(0, -1) + '--gzip"');
+        message.ifNoneMatch(`${ifNoneMatch.slice(0, -1)}--gzip"`);
       }
     }
 
+    const tokenStorage = message.tokenStorage();
     if (message.request.path === '/connect') {
-      return message.tokenStorage!.signPath(this.basePath + message.request.path)
-        .then(signedPath => {
+      return tokenStorage!.signPath(this.basePath + message.request.path)
+        .then((signedPath) => {
+          // eslint-disable-next-line no-param-reassign
           message.request.path = signedPath.substring(this.basePath.length);
 
           if (message.cacheControl()) {
-            message.request.path += (message.tokenStorage!.token ? '&' : '?') + 'BCB';
+            // eslint-disable-next-line no-param-reassign
+            message.request.path += `${tokenStorage!.token ? '&' : '?'}BCB`;
           }
 
           return message;
         });
     }
 
-    if (message.tokenStorage) {
-      const token = message.tokenStorage.token;
+    if (tokenStorage) {
+      const { token } = tokenStorage;
       if (token) {
-        message.header('authorization', 'BAT ' + token);
+        message.header('authorization', `BAT ${token}`);
       }
     }
 
@@ -288,10 +291,11 @@ export abstract class Connector {
       headers.etag = headers.etag.replace('--gzip', '');
     }
 
-    if (message.tokenStorage) {
+    const tokenStorage = message.tokenStorage();
+    if (tokenStorage) {
       const token = headers['baqend-authorization-token'] || headers['Baqend-Authorization-Token'];
       if (token) {
-        message.tokenStorage.update(token);
+        tokenStorage.update(token);
       }
     }
 
@@ -304,7 +308,7 @@ export abstract class Connector {
         this.gzip = !!(resultEntity as JsonMap).gzip;
       }
     }, (e) => {
-      throw new Error('Response was not valid ' + type + ': ' + e.message);
+      throw new Error(`Response was not valid ${type}: ${e.message}`);
     });
   }
 

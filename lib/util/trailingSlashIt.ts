@@ -1,5 +1,3 @@
-'use strict';
-
 /**
  * Adds a trailing slash to a string if it is missing
  * @param str
@@ -10,7 +8,7 @@
  */
 export function trailingSlashIt(str: string): string {
   if (str.charAt(str.length - 1) !== '/') {
-    return str + '/';
+    return `${str}/`;
   }
 
   return str;

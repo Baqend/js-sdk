@@ -1,10 +1,8 @@
-'use strict';
-
-import { CollectionType, PluralAttribute } from "./PluralAttribute";
-import { Type } from "./Type";
-import { JsonArray } from "../util";
-import { Metadata } from "../intersection";
-import { Managed } from "../binding";
+import { CollectionType, PluralAttribute } from './PluralAttribute';
+import { Type } from './Type';
+import { JsonArray } from '../util';
+import { Metadata } from '../intersection';
+import { Managed } from '../binding';
 
 export class SetAttribute<T> extends PluralAttribute<Set<T | null>, T> {
   /**
@@ -33,7 +31,8 @@ export class SetAttribute<T> extends PluralAttribute<Set<T | null>, T> {
   /**
    * @inheritDoc
    */
-  getJsonValue(state: Metadata, object: Managed, options: { excludeMetadata?: boolean; depth?: number | boolean, persisting: boolean }): JsonArray | null {
+  getJsonValue(state: Metadata, object: Managed,
+    options: { excludeMetadata?: boolean; depth?: number | boolean, persisting: boolean }): JsonArray | null {
     const value = this.getValue(object);
 
     if (!(value instanceof this.typeConstructor)) {
@@ -71,7 +70,8 @@ export class SetAttribute<T> extends PluralAttribute<Set<T | null>, T> {
   /**
    * @inheritDoc
    */
-  setJsonValue(state: Metadata, obj: Managed, json: JsonArray, options: { onlyMetadata?: boolean; persisting: boolean }) {
+  setJsonValue(state: Metadata, obj: Managed, json: JsonArray,
+    options: { onlyMetadata?: boolean; persisting: boolean }) {
     let value: Set<T | null> | null = null;
 
     if (json) {
@@ -109,7 +109,7 @@ export class SetAttribute<T> extends PluralAttribute<Set<T | null>, T> {
    */
   toJSON() {
     return {
-      type: SetAttribute.ref + '[' + this.elementType.ref + ']',
+      type: `${SetAttribute.ref}[${this.elementType.ref}]`,
       ...super.toJSON(),
     };
   }

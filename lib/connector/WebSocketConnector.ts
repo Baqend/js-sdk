@@ -1,10 +1,8 @@
-'use strict';
-
-import { CommunicationError } from "../error";
-import { WebSocket } from "../util/websocket";
-import { Observable, Subscriber } from "../util/observable";
-import { Json, JsonMap } from "../util";
-import { TokenStorage } from "../intersection";
+import { CommunicationError } from '../error';
+import { WebSocket } from '../util/websocket';
+import { Observable, Subscriber } from '../util/observable';
+import { JsonMap } from '../util';
+import { TokenStorage } from '../intersection';
 
 export interface ObservableStream extends Observable<ChannelMessage> {
   /**
@@ -29,7 +27,7 @@ export type ChannelMessage = {
    * server-time from the instant at which the event was generated
    */
   date: Date;
-}
+};
 
 export class WebSocketConnector {
   /**
@@ -38,7 +36,9 @@ export class WebSocketConnector {
   private static websockets: { [origin: string]: WebSocketConnector } = {};
 
   private observers: {[subscriberId: string]: Subscriber<ChannelMessage>} = {};
+
   private socket: Promise<WebSocket> | null = null;
+
   private url: string;
 
   /**
@@ -86,7 +86,7 @@ export class WebSocketConnector {
               observer.error(new CommunicationError(null, {
                 status: 0,
                 headers: {},
-                ...(error instanceof Error && {error}),
+                ...(error instanceof Error && { error }),
               }));
             } else {
               observer.complete();
@@ -98,7 +98,7 @@ export class WebSocketConnector {
           }
         });
 
-        if (firstErr) { throw firstErr; }
+        if (firstErr) { throw firstErr as Error; }
       };
 
       socket.onerror = handleSocketCompletion;
@@ -107,7 +107,7 @@ export class WebSocketConnector {
         const message = JSON.parse(event.data as string);
         message.date = new Date(message.date);
 
-        const id = message.id;
+        const { id } = message;
         if (!id) {
           if (message.type === 'error') { handleSocketCompletion(message); }
           return;
@@ -157,17 +157,19 @@ export class WebSocketConnector {
         if (this.observers[id] === observer) { delete this.observers[id]; }
       };
     });
-    
+
     Object.assign(stream, {
       send: (message: JsonMap) => {
         this.open().then((socket) => {
-          message.id = id;
-          if (tokenStorage.token) { message.token = tokenStorage.token; }
-          const jsonMessage = JSON.stringify(message);
+          const jsonMessage = JSON.stringify({
+            id,
+            ...message,
+            ...(tokenStorage.token && { token: tokenStorage.token }),
+          });
           socket.send(jsonMessage);
         });
-      }
-    })
+      },
+    });
 
     return stream as ObservableStream;
   }

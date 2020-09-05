@@ -1,9 +1,7 @@
-'use strict';
-
-import { enumerable } from "../util/enumerable";
-import { Entity } from "./Entity";
-import * as model from "../model";
-import { Class, JsonMap } from "../util";
+import { enumerable } from '../util/enumerable';
+import { Entity } from './Entity';
+import type * as model from '../model';
+import { Class, JsonMap } from '../util';
 
 export class User extends Entity {
   /**
@@ -55,6 +53,7 @@ export class User extends Entity {
    */
   @enumerable(false)
   requestAPIToken(doneCallback?: any, failCallback?: any): Promise<JsonMap> {
-    return this._metadata.db.requestAPIToken(this.constructor as Class<model.User>, this).then(doneCallback, failCallback);
+    return this._metadata.db.requestAPIToken(this.constructor as Class<model.User>, this)
+      .then(doneCallback, failCallback);
   }
 }

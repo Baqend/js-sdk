@@ -1,8 +1,7 @@
-'use strict';
+import { Observable, Subscription } from 'rxjs';
+import { Entity } from '../binding';
 
-import { Entity } from "../binding";
-
-import { Json, JsonArray, JsonMap } from '../util';
+import { JsonMap } from '../util';
 import {
   CompleteCallback,
   CountCallback,
@@ -14,14 +13,13 @@ import {
   ResultListCallback,
   ResultOptions,
   ResultStreamOptions,
-  SingleResultCallback
-} from "./Query";
-import * as message from "../message";
-import { FilterObject } from "./Filter";
-import { Observable, Subscription } from "rxjs";
-import { RealtimeEvent } from "./RealtimeEvent";
-import { Metadata } from "../intersection";
-import { Stream } from "./Stream";
+  SingleResultCallback,
+} from './Query';
+import * as message from '../message';
+import type { FilterObject } from './Filter';
+import { RealtimeEvent } from './RealtimeEvent';
+import { Metadata } from '../intersection';
+import { Stream } from './Stream';
 
 /**
  * A Query Node saves the state of the query being built
@@ -45,8 +43,11 @@ export class Node<T extends Entity> extends Query<T> {
   public order: { [field: string]: 1 | -1 } = {};
 
   eventStream(options?: EventStreamOptions): Observable<RealtimeEvent<T>>;
-  eventStream(options?: EventStreamOptions | NextEventCallback<T>, onNext?: NextEventCallback<T> | FailCallback, onError?: FailCallback | CompleteCallback, onComplete?: CompleteCallback): Subscription;
-  eventStream(options?: EventStreamOptions | NextEventCallback<T>, onNext?: NextEventCallback<T> | FailCallback, onError?: FailCallback | CompleteCallback, onComplete?: CompleteCallback): Observable<RealtimeEvent<T>> | Subscription {
+  eventStream(options?: EventStreamOptions | NextEventCallback<T>, onNext?: NextEventCallback<T> | FailCallback,
+    onError?: FailCallback | CompleteCallback, onComplete?: CompleteCallback): Subscription;
+  eventStream(options?: EventStreamOptions | NextEventCallback<T>, onNext?: NextEventCallback<T> | FailCallback,
+    onError?: FailCallback | CompleteCallback, onComplete?: CompleteCallback):
+    Observable<RealtimeEvent<T>> | Subscription {
     if (options instanceof Function) {
       return this.eventStream({}, options as NextEventCallback<T>, onNext as FailCallback, onError as CompleteCallback);
     }
@@ -61,10 +62,14 @@ export class Node<T extends Entity> extends Query<T> {
   }
 
   resultStream(options?: ResultStreamOptions): Observable<T[]>;
-  resultStream(options?: ResultStreamOptions | NextResultCallback<T>, onNext?: NextResultCallback<T> | FailCallback, onError?: FailCallback | CompleteCallback, onComplete?: CompleteCallback): Subscription;
-  resultStream(options?: ResultStreamOptions | NextResultCallback<T>, onNext?: NextResultCallback<T> | FailCallback, onError?: FailCallback | CompleteCallback, onComplete?: CompleteCallback): Observable<T[]> | Subscription {
+  resultStream(options?: ResultStreamOptions | NextResultCallback<T>, onNext?: NextResultCallback<T> | FailCallback,
+    onError?: FailCallback | CompleteCallback, onComplete?: CompleteCallback): Subscription;
+  resultStream(options?: ResultStreamOptions | NextResultCallback<T>, onNext?: NextResultCallback<T> | FailCallback,
+    onError?: FailCallback | CompleteCallback, onComplete?: CompleteCallback): Observable<T[]> | Subscription {
     if (options instanceof Function) {
-      return this.resultStream({}, options as NextResultCallback<T>, onNext as FailCallback, onError as CompleteCallback);
+      return this.resultStream(
+        {}, options as NextResultCallback<T>, onNext as FailCallback, onError as CompleteCallback,
+      );
     }
 
     const observable = Stream.createResultStream<T>(this.entityManager, this.createRealTimeQuery(), options);
@@ -79,7 +84,8 @@ export class Node<T extends Entity> extends Query<T> {
   /**
    * @inheritDoc
    */
-  resultList(options?: ResultOptions | ResultListCallback<T>, doneCallback?: ResultListCallback<T> | FailCallback, failCallback?: FailCallback): Promise<T[]> {
+  resultList(options?: ResultOptions | ResultListCallback<T>, doneCallback?: ResultListCallback<T> | FailCallback,
+    failCallback?: FailCallback): Promise<T[]> {
     if (options instanceof Function) {
       return this.resultList({}, options as ResultListCallback<T>, doneCallback as FailCallback);
     }
@@ -104,14 +110,15 @@ export class Node<T extends Entity> extends Query<T> {
     }
 
     return this.entityManager.send(msg)
-      .then(response => this.createResultList(response.entity, options as ResultOptions))
+      .then((response) => this.createResultList(response.entity, options as ResultOptions))
       .then(doneCallback as ResultListCallback<T>, failCallback);
   }
 
   /**
    * @inheritDoc
    */
-  singleResult(options?: ResultOptions | SingleResultCallback<T>, doneCallback?: SingleResultCallback<T> | FailCallback, failCallback?: FailCallback): Promise<T | null> {
+  singleResult(options?: ResultOptions | SingleResultCallback<T>, doneCallback?: SingleResultCallback<T> | FailCallback,
+    failCallback?: FailCallback): Promise<T | null> {
     if (options instanceof Function) {
       return this.singleResult({} as ResultOptions, options as SingleResultCallback<T>, doneCallback as FailCallback);
     }
@@ -135,8 +142,8 @@ export class Node<T extends Entity> extends Query<T> {
     }
 
     return this.entityManager.send(msg)
-      .then(response => this.createResultList(response.entity, options as ResultOptions))
-      .then(list => (list.length ? list[0] : null))
+      .then((response) => this.createResultList(response.entity, options as ResultOptions))
+      .then((list) => (list.length ? list[0] : null))
       .then(doneCallback as SingleResultCallback<T>, failCallback);
   }
 
@@ -162,7 +169,7 @@ export class Node<T extends Entity> extends Query<T> {
     }
 
     return this.entityManager.send(msg)
-      .then(response => response.entity.count)
+      .then((response) => response.entity.count)
       .then(doneCallback, failCallback);
   }
 
@@ -172,7 +179,7 @@ export class Node<T extends Entity> extends Query<T> {
       const typedValue = this[k];
       if (typedValue instanceof Date) {
         return { $date: v };
-      } else if (typedValue instanceof Entity) {
+      } if (typedValue instanceof Entity) {
         return typedValue.id;
       }
       return v;
@@ -195,7 +202,7 @@ export class Node<T extends Entity> extends Query<T> {
 
         return this.entityManager.load<T>(Object.keys(el)[0]);
       }))
-        .then(objects => objects.filter((val: T | null) => !!val) as T[]);
+        .then((objects) => objects.filter((val: T | null) => !!val) as T[]);
     }
 
     return Promise.resolve([]);

@@ -1,11 +1,9 @@
-'use strict';
-
-import { ManagedType } from "./ManagedType";
-import { PersistenceType } from "./Type";
-import { Managed, ManagedFactory } from "../binding";
-import { Class, Json } from "../util";
-import { EntityManager } from "../EntityManager";
-import { Metadata } from "../intersection";
+import { ManagedType } from './ManagedType';
+import { PersistenceType } from './Type';
+import { Managed, ManagedFactory } from '../binding';
+import { Class, Json } from '../util';
+import type { EntityManager } from '../EntityManager';
+import { Metadata } from '../intersection';
 
 export class EmbeddableType<T extends Managed> extends ManagedType<T> {
   /**
@@ -32,9 +30,13 @@ export class EmbeddableType<T extends Managed> extends ManagedType<T> {
   /**
    * @inheritDoc
    */
-  toJsonValue(state: Metadata, object: T | null, options: { excludeMetadata?: boolean; depth?: number | boolean, persisting: boolean }) {
-    if (state.root && object instanceof this.typeConstructor && !object._metadata.root) {
-      object._metadata.root = state.root;
+  toJsonValue(state: Metadata, object: T | null,
+    options: { excludeMetadata?: boolean; depth?: number | boolean, persisting: boolean }) {
+    if (state.root && object instanceof this.typeConstructor) {
+      const metadata = Metadata.get(object);
+      if (!metadata.root) {
+        metadata.root = state.root;
+      }
     }
 
     return super.toJsonValue(state, object, options);
@@ -43,7 +45,8 @@ export class EmbeddableType<T extends Managed> extends ManagedType<T> {
   /**
    * @inheritDoc
    */
-  fromJsonValue(state: Metadata, jsonObject: Json, currentObject: T | null, options: { onlyMetadata?: boolean, persisting: boolean }) {
+  fromJsonValue(state: Metadata, jsonObject: Json, currentObject: T | null,
+    options: { onlyMetadata?: boolean, persisting: boolean }) {
     let obj = currentObject;
 
     if (jsonObject) {
@@ -51,8 +54,11 @@ export class EmbeddableType<T extends Managed> extends ManagedType<T> {
         obj = this.create();
       }
 
-      if (state.root && !obj._metadata.root) {
-        obj._metadata.root = state.root;
+      if (state.root) {
+        const metadata = Metadata.get(obj);
+        if (!metadata.root) {
+          metadata.root = state.root;
+        }
       }
     }
 
@@ -60,6 +66,6 @@ export class EmbeddableType<T extends Managed> extends ManagedType<T> {
   }
 
   toString() {
-    return 'EmbeddableType(' + this.ref + ')';
+    return `EmbeddableType(${this.ref})`;
   }
 }

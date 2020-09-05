@@ -1,14 +1,11 @@
-'use strict';
-
-import { varargs } from "./Query";
-import { Entity } from "../binding";
-import { Filter } from "./Filter";
-import { JsonMap } from "../util";
-import { GeoPoint } from "../GeoPoint";
+import { flatArgs } from './Query';
+import type { Entity } from '../binding';
+import type { Filter } from './Filter';
+import { JsonMap } from '../util';
+import type { GeoPoint } from '../GeoPoint';
 
 /**
  * The Condition interface defines all existing query filters
- * @interface query.Condition<T>
  */
 export interface Condition<T extends Entity> {
 
@@ -258,7 +255,7 @@ export interface Condition<T extends Entity> {
   /**
    * Adds a less than filter to the field
    *
-   * Shorthand for {@link query.Condition#lessThan}.
+   * Shorthand for {@link Condition#lessThan}.
    *
    * @method
    * @param field The field to filter
@@ -272,7 +269,7 @@ export interface Condition<T extends Entity> {
   /**
    * Adds a less than or equal to filter to the field
    *
-   * Shorthand for {@link query.Condition#lessThanOrEqualTo}.
+   * Shorthand for {@link Condition#lessThanOrEqualTo}.
    *
    * @param field The field to filter
    * @param value The value used to filter
@@ -285,7 +282,7 @@ export interface Condition<T extends Entity> {
   /**
    * Adds a greater than filter to the field
    *
-   * Shorthand for {@link query.Condition#greaterThan}.
+   * Shorthand for {@link Condition#greaterThan}.
    *
    * @param field The field to filter
    * @param value The value used to filter
@@ -298,7 +295,7 @@ export interface Condition<T extends Entity> {
   /**
    * Adds a greater than or equal to filter to the field
    *
-   * Shorthand for {@link query.Condition#greaterThanOrEqualTo}.
+   * Shorthand for {@link Condition#greaterThanOrEqualTo}.
    *
    * @param field The field to filter
    * @param value The value used to filter
@@ -312,7 +309,7 @@ export interface Condition<T extends Entity> {
    * The collection must contains one of the given values
    *
    * Adds a contains any filter to the collection field.
-   * Alias for {@link query.Condition#in}.
+   * Alias for {@link Condition#in}.
    *
    * @param field The field to filter
    * @param args The field value or values to filter
@@ -368,12 +365,12 @@ export const Condition: Partial<Condition<any>> = {
       .addFilter(field, '$lt', lessValue);
   },
 
-  in(this: Condition<any>, field: string /* , ...args */) {
-    return this.addFilter(field, '$in', varargs(1, arguments));
+  in(this: Condition<any>, field: string, ...args: any[]) {
+    return this.addFilter(field, '$in', flatArgs(args));
   },
 
-  notIn(this: Condition<any>, field /* , ...args */) {
-    return this.addFilter(field, '$nin', varargs(1, arguments));
+  notIn(this: Condition<any>, field, ...args: any[]) {
+    return this.addFilter(field, '$nin', flatArgs(args));
   },
 
   isNull(this: Condition<any>, field) {
@@ -385,8 +382,8 @@ export const Condition: Partial<Condition<any>> = {
       .addFilter(field, '$ne', null);
   },
 
-  containsAll(this: Condition<any>, field /* , ...args */) {
-    return this.addFilter(field, '$all', varargs(1, arguments));
+  containsAll(this: Condition<any>, field, ...args: any[]) {
+    return this.addFilter(field, '$all', flatArgs(args));
   },
 
   mod(this: Condition<any>, field, divisor, remainder) {
@@ -430,12 +427,12 @@ export const Condition: Partial<Condition<any>> = {
     });
   },
 
-  withinPolygon(this: Condition<any>, field /* , geoPoints */) {
-    const geoPoints = varargs(1, arguments);
+  withinPolygon(this: Condition<any>, field, ...args: any[]) {
+    const geoPoints = flatArgs(args);
     return this.addFilter(field, '$geoWithin', {
       $geometry: {
         type: 'Polygon',
-        coordinates: [geoPoints.map(geoPoint => [geoPoint.longitude, geoPoint.latitude])],
+        coordinates: [geoPoints.map((geoPoint) => [geoPoint.longitude, geoPoint.latitude])],
       },
     });
   },

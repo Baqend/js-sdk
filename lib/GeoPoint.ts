@@ -1,6 +1,4 @@
-'use strict';
-
-import { JsonMap } from "./util";
+import { JsonMap } from './util';
 
 /**
  * Creates a new GeoPoint instance
@@ -60,7 +58,8 @@ export class GeoPoint {
    * a GeoPoint like object or the GeoPoint's latitude
    * @param longitude The GeoPoint's longitude
    */
-  constructor(latitude?: number | string | { latitude: number, longitude: number } | [number, number], longitude?: number) {
+  constructor(latitude?: number | string | { latitude: number, longitude: number } | [number, number],
+    longitude?: number) {
     let lat: number;
     let lng: number;
     if (typeof latitude === 'string') {
@@ -68,25 +67,24 @@ export class GeoPoint {
       lat = Number(latitude.substring(0, index));
       lng = Number(latitude.substring(index + 1));
     } else if (Array.isArray(latitude)) {
-      lat = latitude[0];
-      lng = latitude[1];
+      [lat, lng] = latitude;
     } else if (typeof latitude === 'object') {
       lat = latitude.latitude;
       lng = latitude.longitude;
     } else {
       lat = typeof latitude === 'number' ? latitude : 0;
-      lng = typeof longitude === 'number' ? longitude: 0;
+      lng = typeof longitude === 'number' ? longitude : 0;
     }
 
     this.longitude = lng;
     this.latitude = lat;
 
     if (this.latitude < -90 || this.latitude > 90) {
-      throw new Error('Latitude ' + this.latitude + ' is not in bound of -90 <= latitude <= 90');
+      throw new Error(`Latitude ${this.latitude} is not in bound of -90 <= latitude <= 90`);
     }
 
     if (this.longitude < -180 || this.longitude > 180) {
-      throw new Error('Longitude ' + this.longitude + ' is not in bound of -180 <= longitude <= 180');
+      throw new Error(`Longitude ${this.longitude} is not in bound of -180 <= longitude <= 180`);
     }
   }
 
@@ -139,7 +137,7 @@ export class GeoPoint {
    * @return The string representation of this class
    */
   toString(): string {
-    return this.latitude + ';' + this.longitude;
+    return `${this.latitude};${this.longitude}`;
   }
 
   /**

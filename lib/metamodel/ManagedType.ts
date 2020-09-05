@@ -1,40 +1,43 @@
-'use strict';
-
-import { Type } from "./Type";
-import { Class, Json, JsonMap } from "../util";
-import { Enhancer, Entity, Managed, ManagedFactory } from "../binding";
-import { Attribute } from "./Attribute";
-import { EntityManager } from "../EntityManager";
-import { EntityType } from "./EntityType";
-import { PluralAttribute } from "./PluralAttribute";
-import { SingularAttribute } from "./SingularAttribute";
-import { EmbeddableType } from "./index";
-import { Metadata, Permission } from "../intersection";
-
-const VALIDATION_CODE = Symbol('ValidationCode');
+import { Type } from './Type';
+import { Class, Json, JsonMap } from '../util';
+import {
+  Enhancer, Entity, Managed, ManagedFactory,
+} from '../binding';
+import type { Attribute } from './Attribute';
+import type { EntityManager } from '../EntityManager';
+import type { EntityType } from './EntityType';
+import type { PluralAttribute } from './PluralAttribute';
+import type { SingularAttribute } from './SingularAttribute';
+import type { EmbeddableType } from './index';
+import { Metadata, Permission } from '../intersection';
 
 export abstract class ManagedType<T extends Managed> extends Type<T> {
   public enhancer: Enhancer | null = null;
+
   public declaredAttributes: Attribute<any>[] = [];
+
   public schemaAddPermission: Permission = new Permission();
+
   public schemaReplacePermission: Permission = new Permission();
+
   public metadata: {[key: string]: string} | null = null;
+
   public superType: EntityType<any> | null = null;
 
-  private [VALIDATION_CODE]: Function | null;
+  private _validationCode: Function | null = null;
 
   /**
    * @type Function
    */
   get validationCode(): Function | null {
-    return this[VALIDATION_CODE];
+    return this._validationCode;
   }
 
   /**
    * @param code
    */
   set validationCode(code: Function | null) {
-    this[VALIDATION_CODE] = code;
+    this._validationCode = code;
   }
 
   /**
@@ -74,7 +77,7 @@ export abstract class ManagedType<T extends Managed> extends Type<T> {
    * @param typeConstructor The type constructor of the managed lass
    */
   constructor(ref: string, typeConstructor?: Class<T>) {
-    super(ref.indexOf('/db/') !== 0 ? '/db/' + ref : ref, typeConstructor);
+    super(ref.indexOf('/db/') !== 0 ? `/db/${ref}` : ref, typeConstructor);
   }
 
   /**
@@ -163,7 +166,7 @@ export abstract class ManagedType<T extends Managed> extends Type<T> {
    */
   addAttribute(attr: Attribute<any>, order?: number): void {
     if (this.getAttribute(attr.name)) {
-      throw new Error('An attribute with the name ' + attr.name + ' is already declared.');
+      throw new Error(`An attribute with the name ${attr.name} is already declared.`);
     }
 
     let initOrder;
@@ -187,11 +190,11 @@ export abstract class ManagedType<T extends Managed> extends Type<T> {
    * @return
    */
   removeAttribute(name: string): void {
-    const length = this.declaredAttributes.length;
-    this.declaredAttributes = this.declaredAttributes.filter(val => val.name !== name);
+    const { length } = this.declaredAttributes;
+    this.declaredAttributes = this.declaredAttributes.filter((val) => val.name !== name);
 
     if (length === this.declaredAttributes.length) {
-      throw new Error('An Attribute with the name ' + name + ' is not declared.');
+      throw new Error(`An Attribute with the name ${name} is not declared.`);
     }
   }
 
@@ -214,13 +217,14 @@ export abstract class ManagedType<T extends Managed> extends Type<T> {
    * @return
    */
   getDeclaredAttribute(val: string | number): Attribute<any> | null {
-    return this.declaredAttributes.filter(attr => attr.name === val || attr.order === val)[0] || null;
+    return this.declaredAttributes.filter((attr) => attr.name === val || attr.order === val)[0] || null;
   }
 
   /**
    * @inheritDoc
    */
-  fromJsonValue(state: Metadata, jsonObject: Json, currentObject: T | null, options: { onlyMetadata?: boolean, persisting: boolean }) {
+  fromJsonValue(state: Metadata, jsonObject: Json, currentObject: T | null,
+    options: { onlyMetadata?: boolean, persisting: boolean }) {
     if (!jsonObject || !currentObject) {
       return null;
     }
@@ -239,7 +243,8 @@ export abstract class ManagedType<T extends Managed> extends Type<T> {
   /**
    * @inheritDoc
    */
-  toJsonValue(state: Metadata, object: T | null, options: { excludeMetadata?: boolean; depth?: number | boolean, persisting: boolean }): Json {
+  toJsonValue(state: Metadata, object: T | null,
+    options: { excludeMetadata?: boolean; depth?: number | boolean, persisting: boolean }): Json {
     if (!(object instanceof this.typeConstructor)) {
       return null;
     }
@@ -275,9 +280,9 @@ export abstract class ManagedType<T extends Managed> extends Type<T> {
         schemaAdd: this.schemaAddPermission.toJSON(),
         schemaReplace: this.schemaReplacePermission.toJSON(),
       },
-      ...(this.superType && {superClass: this.superType.ref}),
-      ...(this.isEmbeddable && {embedded: true}),
-      ...(this.metadata && {metadata: this.metadata}),
+      ...(this.superType && { superClass: this.superType.ref }),
+      ...(this.isEmbeddable && { embedded: true }),
+      ...(this.metadata && { metadata: this.metadata }),
     };
   }
 
@@ -313,12 +318,12 @@ export abstract class ManagedType<T extends Managed> extends Type<T> {
 
           attribute = item.value;
           const type = attribute.isCollection
-              ? (attribute as PluralAttribute<any, any>).elementType
-              : (attribute as SingularAttribute<any>).type;
+            ? (attribute as PluralAttribute<any, any>).elementType
+            : (attribute as SingularAttribute<any>).type;
 
           if (type.isEntity) {
             return { value: { path: [attribute.name] } };
-          } else if (type.isEmbeddable) {
+          } if (type.isEmbeddable) {
             embeddedAttributes = (type as EmbeddableType<any>).references();
           }
         }

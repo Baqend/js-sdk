@@ -1,11 +1,9 @@
-'use strict';
-
-import { CollectionType, PluralAttribute } from "./PluralAttribute";
-import { PersistentError } from "../error";
-import { Type } from "./Type";
-import { Json, JsonMap } from "../util";
-import { Metadata } from "../intersection";
-import { Managed } from "../binding";
+import { CollectionType, PluralAttribute } from './PluralAttribute';
+import { PersistentError } from '../error';
+import { Type } from './Type';
+import { JsonMap } from '../util';
+import { Metadata } from '../intersection';
+import { Managed } from '../binding';
 
 export class MapAttribute<K, V> extends PluralAttribute<Map<K | null, V | null>, V> {
   public keyType: Type<K>;
@@ -38,7 +36,8 @@ export class MapAttribute<K, V> extends PluralAttribute<Map<K | null, V | null>,
   /**
    * @inheritDoc
    */
-  getJsonValue(state: Metadata, object: Managed, options: { excludeMetadata?: boolean; depth?: number | boolean; persisting: boolean }): JsonMap | null {
+  getJsonValue(state: Metadata, object: Managed,
+    options: { excludeMetadata?: boolean; depth?: number | boolean; persisting: boolean }): JsonMap | null {
     const value = this.getValue(object);
 
     if (!(value instanceof this.typeConstructor)) {
@@ -87,6 +86,7 @@ export class MapAttribute<K, V> extends PluralAttribute<Map<K | null, V | null>,
       value = this.getValue(obj);
 
       if (!(value instanceof this.typeConstructor)) {
+        // eslint-disable-next-line new-cap
         value = new this.typeConstructor();
       }
 
@@ -120,8 +120,8 @@ export class MapAttribute<K, V> extends PluralAttribute<Map<K | null, V | null>,
    */
   toJSON() {
     return {
-      type: MapAttribute.ref + '[' + this.keyType.ref + ',' + this.elementType.ref + ']',
-      ...super.toJSON()
-    }
+      type: `${MapAttribute.ref}[${this.keyType.ref},${this.elementType.ref}]`,
+      ...super.toJSON(),
+    };
   }
 }

@@ -1,13 +1,11 @@
-'use strict';
-
-import { Observable, Subscription, Subscriber } from "../util/observable";
+import { Observable, Subscription, Subscriber } from '../util/observable';
 import { uuid, JsonMap } from '../util';
-import { ChannelMessage } from "../connector";
-import { MatchType, Operation, RealtimeEvent } from "./RealtimeEvent";
-import { Entity } from "../binding";
-import { EntityManager } from "../EntityManager";
-import { EventStreamOptions, ResultStreamOptions } from "./Query";
-import { Metadata } from "../intersection";
+import { ChannelMessage } from '../connector';
+import { MatchType, Operation, RealtimeEvent } from './RealtimeEvent';
+import { Entity } from '../binding';
+import type { EntityManager } from '../EntityManager';
+import { EventStreamOptions, ResultStreamOptions } from './Query';
+import { Metadata } from '../intersection';
 
 type InitialResultEvent = ChannelMessage & {
   /**
@@ -20,7 +18,7 @@ type InitialResultEvent = ChannelMessage & {
    * an array of entities, if this event type is an initial result
    */
   data: JsonMap[];
-}
+};
 
 type MatchEvent = ChannelMessage & {
   /**
@@ -58,14 +56,14 @@ type MatchEvent = ChannelMessage & {
    * for sorting queries only: the position of the matching entity in the ordered result (-1 for non-matching entities)
    */
   index: number;
-}
+};
 
 type ErrorEvent = ChannelMessage & {
   /**
    * The event type can be initial result, match event or an error
    */
   type: 'error';
-}
+};
 
 type BaseEvent = InitialResultEvent | MatchEvent | ErrorEvent;
 
@@ -84,7 +82,8 @@ export class Stream {
    * @param options an object containing parameters
    * @return The query result as a live updating stream of objects
    */
-  static createEventStream<T extends Entity>(entityManager: EntityManager, query: JsonMap, options?: EventStreamOptions): Observable<RealtimeEvent<T>> {
+  static createEventStream<T extends Entity>(entityManager: EntityManager, query: JsonMap,
+    options?: EventStreamOptions): Observable<RealtimeEvent<T>> {
     const opt = options || {};
     opt.reconnects = 0;
     return Stream.streamObservable<T, RealtimeEvent<T>>(entityManager, query, opt, (msg, next) => {
@@ -98,7 +97,7 @@ export class Stream {
             initial: true,
             ...eventProps,
             data: Stream.resolveObject(entityManager, obj),
-            ...(query.sort && { index })
+            ...(query.sort && { index }),
           };
 
           next(event);
@@ -129,7 +128,8 @@ export class Stream {
    * @param options an object containing parameters
    * @return The query result as a live updating query result
    */
-  static createResultStream<T extends Entity>(entityManager: EntityManager, query: JsonMap, options?: ResultStreamOptions): Observable<T[]> {
+  static createResultStream<T extends Entity>(entityManager: EntityManager, query: JsonMap,
+    options?: ResultStreamOptions): Observable<T[]> {
     const opt: EventStreamOptions = options || {};
     opt.initial = true;
     opt.matchTypes = 'all';
@@ -139,7 +139,7 @@ export class Stream {
     const ordered = !!query.sort;
     return Stream.streamObservable<T, T[]>(entityManager, query, opt, (event: BaseEvent, next) => {
       if (event.type === 'result') {
-        result = event.data.map(obj => Stream.resolveObject(entityManager, obj));
+        result = event.data.map((obj) => Stream.resolveObject(entityManager, obj));
         next(result.slice());
       }
 
@@ -170,7 +170,8 @@ export class Stream {
     });
   }
 
-  static streamObservable<T extends Entity, R>(entityManager: EntityManager, query: JsonMap, options: EventStreamOptions, mapper: (event: BaseEvent, next: (result: R) => any) => any): Observable<R> {
+  static streamObservable<T extends Entity, R>(entityManager: EntityManager, query: JsonMap,
+    options: EventStreamOptions, mapper: (event: BaseEvent, next: (result: R) => any) => any): Observable<R> {
     const opt = Stream.parseOptions(options);
 
     const socket = entityManager.entityManagerFactory.websocket;
@@ -181,7 +182,7 @@ export class Stream {
       stream.send({
         type: 'subscribe',
         ...query,
-        ...opt
+        ...opt,
       });
 
       let closed = false;
@@ -217,16 +218,16 @@ export class Stream {
     const observers: Subscriber<T>[] = [];
     return new Observable<T>((observer) => {
       if (!subscription) {
-        let remainingRetries = options.reconnects as number
+        let remainingRetries = options.reconnects as number;
         let backoff = 1;
         const subscriptionObserver = {
           next(msg: T) {
             // reset the backoff if we get a message
             backoff = 1;
-            observers.forEach(o => o.next(msg));
+            observers.forEach((o) => o.next(msg));
           },
           error(e: Error) {
-            observers.forEach(o => o.error(e));
+            observers.forEach((o) => o.error(e));
           },
           complete() {
             if (remainingRetries !== 0) {
@@ -238,7 +239,7 @@ export class Stream {
 
               backoff *= 2;
             } else {
-              observers.forEach(o => o.complete());
+              observers.forEach((o) => o.complete());
             }
           },
         };
@@ -293,7 +294,8 @@ export class Stream {
     return Stream.normalizeSortedSet(list, 'any', 'operations', ['delete', 'insert', 'none', 'update']);
   }
 
-  static normalizeSortedSet(list: string | string[] | undefined, wildcard: string, itemType: string, allowedItems: string[]) {
+  static normalizeSortedSet(list: string | string[] | undefined, wildcard: string, itemType: string,
+    allowedItems: string[]) {
     if (!list) {
       return [wildcard];
     }
@@ -307,7 +309,7 @@ export class Stream {
     // sort, remove duplicates and check whether all values are allowed
     li.sort();
     let item;
-    let lastItem;
+    let lastItem = null;
     for (let i = li.length - 1; i >= 0; i -= 1) {
       item = li[i];
       if (!item) { // undefined and null item in the list --> invalid!
@@ -320,7 +322,7 @@ export class Stream {
         return [wildcard];
       }
       if (allowedItems.indexOf(item) === -1) { // raise error on invalid elements
-        throw new Error(item + ' not allowed for ' + itemType + '! (permitted: ' + allowedItems + '.)');
+        throw new Error(`${item} not allowed for ${itemType}! (permitted: ${allowedItems}.)`);
       }
       lastItem = item;
     }

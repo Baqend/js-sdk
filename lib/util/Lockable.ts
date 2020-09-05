@@ -1,13 +1,9 @@
-'use strict';
-
-const isLocked = Symbol('IsLocked');
-const readyPromise = Symbol('ReadyPromise');
-
 /**
  * This base class provides an lock interface to execute exclusive operations
  */
 export class Lockable {
   private isLocked: boolean;
+
   private readyPromise: Promise<this>;
 
   constructor() {

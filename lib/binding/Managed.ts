@@ -1,10 +1,8 @@
-'use strict';
-
-import { enumerable } from "../util/enumerable";
-import { Class, Json, JsonMap } from "../util";
-import { Enhancer } from "./Enhancer";
-import { Metadata } from "../intersection";
-import { ManagedMetadata } from "../intersection/Metadata";
+import { enumerable } from '../util/enumerable';
+import { Class, Json } from '../util';
+import { Enhancer } from './Enhancer';
+import { Metadata } from '../intersection';
+import type { ManagedMetadata } from '../intersection/Metadata';
 
 export interface Managed {
   /**
@@ -43,6 +41,7 @@ export class Managed {
    * @return {Class<*>} The extended child class
    */
   static extend(childClass: Class<any> | Function): Class<any> | Function {
+    // eslint-disable-next-line no-param-reassign
     childClass.prototype = Object.create(this.prototype, {
       constructor: {
         value: childClass,
@@ -50,6 +49,7 @@ export class Managed {
         writable: true,
       },
     });
+    // eslint-disable-next-line no-param-reassign
     (childClass as any).extend = Managed.extend;
     return childClass;
   }

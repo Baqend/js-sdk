@@ -1,9 +1,7 @@
-'use strict';
-
-import { Entity } from "../binding";
-import { Node } from "./Node";
-import { EntityManager } from "../EntityManager";
-import { Class, JsonMap } from "../util";
+import { Entity } from '../binding';
+import { Node } from './Node';
+import type { EntityManager } from '../EntityManager';
+import { Class } from '../util';
 
 /**
  * An Operator saves the state of a combined query

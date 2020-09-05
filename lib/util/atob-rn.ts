@@ -1,11 +1,9 @@
-'use strict';
-
 // This implementation is based on https://github.com/mathiasbynens/base64/blob/master/src/base64.js
 const TABLE = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/';
 
 export function atob(input: string): string {
   const str = input.length % 4 === 0 ? input.replace(/==?$/, '') : input;
-  const length = str.length;
+  const { length } = str;
 
   let bitCounter = 0;
   let bitStorage = 0;

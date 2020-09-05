@@ -1,15 +1,16 @@
-'use strict';
-
-import { Request, RequestBody, RequestBodyType, Response, ResponseBodyType } from "./Connector";
-import { CommunicationError } from "../error";
-import { Acl } from "../Acl";
-import { TokenStorage } from "../intersection";
+// eslint-disable-next-line max-classes-per-file
+import type {
+  Request, RequestBody, RequestBodyType, Response, ResponseBodyType,
+} from './Connector';
+import { CommunicationError } from '../error';
+import { Acl } from '../Acl';
+import { TokenStorage } from '../intersection/TokenStorage';
 
 export type RestSpecification = {
   method: string;
   status: number[];
   path: string;
-}
+};
 
 export type MessageSpec = {
   status: number[];
@@ -17,7 +18,7 @@ export type MessageSpec = {
   method: string;
   path: string[];
   query: string[];
-}
+};
 
 /**
  * The progress callback is called, when you send a message to the server and a progress is noticed
@@ -26,14 +27,11 @@ export type MessageSpec = {
  */
 export type ProgressListener = (event: ProgressEvent) => any;
 
-export type ExternalMessage<T> = typeof Message & (new(...args: string[]) => Message & T);
-
 /**
  * Checks whether the user uses a browser which does support revalidation.
  */
 // @ts-ignore
 const REVALIDATION_SUPPORTED = typeof navigator === 'undefined' || (typeof chrome !== 'undefined' && /google/i.test(navigator.vendor)) || (/cros i686/i.test(navigator.platform));
-const RESPONSE_TYPE = Symbol('ResponseType');
 
 export const StatusCode = {
   NOT_MODIFIED: 304,
@@ -53,10 +51,11 @@ export const StatusCode = {
   TYPE_ALREADY_EXISTS: 473,
   TYPE_STILL_REFERENCED: 474,
   SCRIPT_ABORTION: 475,
-}
+};
 
 export abstract class Message {
   static readonly StatusCode = StatusCode;
+
   static readonly BINARY = {
     blob: true,
     buffer: true,
@@ -67,16 +66,19 @@ export abstract class Message {
   };
 
   public withCredentials: boolean = false;
-  public tokenStorage: TokenStorage | null = null;
+
   public progressCallback: null | ProgressListener = null;
+
   public request: Request;
 
-  private [RESPONSE_TYPE]: ResponseBodyType | null = null;
+  private _tokenStorage: TokenStorage | null = null;
+
+  private _responseType: ResponseBodyType | null = null;
 
   /**
    * Returns the specification of this message
    */
-  public get spec(): MessageSpec { return null as any };
+  public get spec(): MessageSpec { return null as any; }
 
   /**
    * Creates a new message class with the given message specification
@@ -120,8 +122,8 @@ export abstract class Message {
 
     const spec: MessageSpec = {
       dynamic: false,
-      path: [ path ],
-      ...props
+      path: [path],
+      ...props,
     };
 
     /**
@@ -139,7 +141,7 @@ export abstract class Message {
   }
 
   get isBinary() {
-    return (this.request.type && this.request.type in Message.BINARY) || this[RESPONSE_TYPE]!! in Message.BINARY;
+    return (this.request.type && this.request.type in Message.BINARY) || this._responseType!! in Message.BINARY;
   }
 
   /**
@@ -164,7 +166,7 @@ export abstract class Message {
       index += 1;
       if (arg !== undefined && arg !== null) {
         query += (query || path.indexOf('?') !== -1) ? '&' : '?';
-        query += this.spec.query[i] + '=' + encodeURIComponent(arg);
+        query += `${this.spec.query[i]}=${encodeURIComponent(arg)}`;
       }
     }
 
@@ -180,6 +182,28 @@ export abstract class Message {
     }
 
     this.responseType('json');
+  }
+
+  /**
+   * Gets the tokenStorage which stored credentials are used to authorize this message
+   * @return The header value
+   */
+  tokenStorage(): TokenStorage | null;
+
+  /**
+   * Sets the tokenStorage which stored credentials are used to authorize this message
+   * @param value The new tokenStorage used to authorize this message
+   * @return This message object
+   */
+  tokenStorage(value: TokenStorage | null): this;
+
+  tokenStorage(value?: TokenStorage | null): this | TokenStorage | null {
+    if (value === undefined) {
+      return this._tokenStorage;
+    }
+
+    this._tokenStorage = value;
+    return this;
   }
 
   /**
@@ -279,7 +303,7 @@ export abstract class Message {
 
   contentLength(contentLength?: number): this | number {
     if (contentLength !== undefined) {
-      return this.header('content-length', '' + contentLength);
+      return this.header('content-length', `${contentLength}`);
     }
     return Number(this.header('content-length'));
   }
@@ -432,11 +456,11 @@ export abstract class Message {
 
   responseType(type?: ResponseBodyType | null): this | ResponseBodyType | null {
     if (type !== undefined) {
-      this[RESPONSE_TYPE] = type;
+      this._responseType = type;
       return this;
     }
 
-    return this[RESPONSE_TYPE];
+    return this._responseType;
   }
 
   /**
@@ -470,7 +494,7 @@ export abstract class Message {
    * @return
    */
   addQueryString(query: string | {[key: string]: string}): this {
-    if (typeof query === "string") {
+    if (typeof query === 'string') {
       this.request.path += query;
       return this;
     }
@@ -478,7 +502,7 @@ export abstract class Message {
     if (query) {
       let sep = this.request.path.indexOf('?') >= 0 ? '&' : '?';
       Object.keys(query).forEach((key) => {
-        this.request.path += sep + key + '=' + encodeURIComponent(query[key]);
+        this.request.path += `${sep + key}=${encodeURIComponent(query[key])}`;
         sep = '&';
       });
     }
@@ -491,9 +515,9 @@ export abstract class Message {
       return eTag;
     }
 
-    let tag = '' + eTag;
+    let tag = `${eTag}`;
     if (tag.indexOf('"') === -1) {
-      tag = '"' + tag + '"';
+      tag = `"${tag}"`;
     }
     return tag;
   }
@@ -518,10 +542,10 @@ export const GoogleOAuth = Message.createExternal({
 }, {
   addRedirectOrigin(this: Message, baseUri: string) {
     this.addQueryString({
-      redirect_uri: baseUri + '/db/User/OAuth/google',
+      redirect_uri: `${baseUri}/db/User/OAuth/google`,
     });
   },
-})
+});
 
 export const FacebookOAuth = Message.createExternal({
   method: 'OAUTH',
@@ -531,7 +555,7 @@ export const FacebookOAuth = Message.createExternal({
 }, {
   addRedirectOrigin(this: Message, baseUri: string) {
     this.addQueryString({
-      redirect_uri: baseUri + '/db/User/OAuth/facebook',
+      redirect_uri: `${baseUri}/db/User/OAuth/facebook`,
     });
   },
 });
@@ -544,7 +568,7 @@ export const GitHubOAuth = Message.createExternal({
 }, {
   addRedirectOrigin(this: Message, baseUri: string) {
     this.addQueryString({
-      redirect_uri: baseUri + '/db/User/OAuth/github',
+      redirect_uri: `${baseUri}/db/User/OAuth/github`,
     });
   },
 });
@@ -557,18 +581,20 @@ export const LinkedInOAuth = Message.createExternal({
 }, {
   addRedirectOrigin(this: Message, baseUri: string) {
     this.addQueryString({
-      redirect_uri: baseUri + '/db/User/OAuth/linkedin',
+      redirect_uri: `${baseUri}/db/User/OAuth/linkedin`,
     });
   },
 });
 
 export const TwitterOAuth = Message.createExternal({
-    method: 'OAUTH',
-    path: '',
-    query: [],
-    status: [200],
+  method: 'OAUTH',
+  path: '',
+  query: [],
+  status: [200],
 }, {
   addRedirectOrigin(this: Message, baseUri: string) {
-    this.request.path = baseUri + '/db/User/OAuth1/twitter';
+    this.request.path = `${baseUri}/db/User/OAuth1/twitter`;
   },
 });
+
+export type ExternalMessage<T> = typeof Message & (new(...args: string[]) => Message & T);

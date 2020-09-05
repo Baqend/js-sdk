@@ -1,6 +1,4 @@
-'use strict';
-
-import { PersistentError } from "./PersistentError";
+import { PersistentError } from './PersistentError';
 
 export class RollbackError extends PersistentError {
   constructor(cause: Error) {

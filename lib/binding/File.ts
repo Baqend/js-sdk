@@ -1,14 +1,15 @@
-'use strict';
-
 import { PersistentError } from '../error';
-import { Acl } from "../Acl";
-import { uuid } from "../util/uuid";
-import * as message from "../message";
-import { Message, ProgressListener, StatusCode } from "../connector/Message";
-import { trailingSlashIt } from "../util/trailingSlashIt";
-import { EntityManager } from "../EntityManager";
-import { Json, JsonArray, JsonLike, JsonMap } from "../util";
-import { RequestBodyType, Response, ResponseBodyType } from "../connector/Connector";
+import { Acl } from '../Acl';
+import {
+  uuid, trailingSlashIt,
+  Json, JsonArray, JsonMap,
+} from '../util';
+import * as message from '../message';
+import {
+  Message, ProgressListener, StatusCode, RequestBodyType, ResponseBodyType,
+} from '../connector';
+
+import type { EntityManager } from '../EntityManager';
 
 const FILE_BUCKET = '/file';
 const FILE_BUCKET_LENGTH = FILE_BUCKET.length;
@@ -65,7 +66,7 @@ export interface FileMetadata {
    */
   eTag?: string,
   /**
-   * The cration date of the file
+   * The creation date of the file
    */
   createdAt?: string | Date
   /**
@@ -134,7 +135,6 @@ export type FileOptions = (FileIdentifiers & FileData & FileMetadata) | string;
  *
  */
 export class File {
-
   /**
    * Specifies whether this file is a folder.
    */
@@ -146,7 +146,9 @@ export class File {
   public db: EntityManager = null as any; // is lazy initialized and never null
 
   private [ID]: string;
+
   private [METADATA]: FileMetadata;
+
   private [DATA]: FileData | null = null;
 
   /**
@@ -158,7 +160,7 @@ export class File {
 
   // @ts-ignore
   get url(): string {
-    throw new Error("This method is removed. Use the asynchronous File.createURL() method instead.");
+    throw new Error('This method is removed. Use the asynchronous File.createURL() method instead.');
   }
 
   /**
@@ -294,7 +296,7 @@ export class File {
       // Check validity of id
       const nameSeparator = opt.id.indexOf('/', '/file/'.length);
       if (nameSeparator === -1 || opt.id.indexOf('/file/') !== 0) {
-        throw new Error('Invalid file reference ' + opt.id);
+        throw new Error(`Invalid file reference ${opt.id}`);
       }
 
       this[ID] = opt.id;
@@ -327,18 +329,16 @@ export class File {
 
   /**
    * The fully url to the file, can be directly used to link the file, i.e. in link tags ot image sources
-   * @param authorize - Authorize the the link with an temporary token, to give authorized access to this protected resource
-   * default false if the root bucket is www, true otherwise
+   * @param authorize - Authorize the the link with an temporary token, to give authorized access to this protected
+   * resource default false if the root bucket is www, true otherwise
    * @return A url with an optional token, to give direct access o the linked resource
    */
   createURL(authorize?: boolean): Promise<string> {
-    authorize = typeof authorize === "boolean" ? authorize : this.bucket !== 'www';
-
     if (this.isFolder) {
       throw new Error('Url can not be created for folders.');
     }
 
-    return this.db.createURL(this.id, authorize);
+    return this.db.createURL(this.id, typeof authorize === 'boolean' ? authorize : this.bucket !== 'www');
   }
 
   /**
@@ -351,7 +351,8 @@ export class File {
    * @param failCallback The callback is invoked if any error is occurred
    * @return A promise which will be fulfilled with this file object where the metadata is updated
    */
-  upload(uploadOptions?: FileData & FileMetadata & { force?: boolean, progress?: ProgressListener }, doneCallback?: any, failCallback?: any): Promise<this> {
+  upload(uploadOptions?: FileData & FileMetadata & { force?: boolean, progress?: ProgressListener }, doneCallback?: any,
+    failCallback?: any): Promise<this> {
     const opt = uploadOptions || {};
 
     if (this.isFolder) {
@@ -376,7 +377,7 @@ export class File {
     this.conditional(uploadMessage, opt);
 
     this.db.addToBlackList(this.id);
-    return this.db.send(uploadMessage).then((response: Response) => {
+    return this.db.send(uploadMessage).then((response) => {
       this[DATA] = null;
       this.fromJSON(response.entity);
       return this;
@@ -393,7 +394,8 @@ export class File {
    * @param failCallback The callback is invoked if any error is occurred
    * @return A promise which will be fulfilled with the downloaded file content
    */
-  download(downloadOptions?: { type?: ResponseBodyType, refresh?: false }, doneCallback?: any, failCallback?: any): Promise<string|Blob|File|ArrayBuffer|Json> {
+  download(downloadOptions?: { type?: ResponseBodyType, refresh?: false }, doneCallback?: any,
+    failCallback?: any): Promise<string|Blob|File|ArrayBuffer|Json> {
     const opt = downloadOptions || {};
 
     if (this.isFolder) {
@@ -443,7 +445,7 @@ export class File {
         return this;
       }
 
-      return (response.entity as string[]).map(fileId => new this.db.File(fileId));
+      return (response.entity as string[]).map((fileId) => new this.db.File(fileId));
     }).then(doneCallback, failCallback);
   }
 
@@ -459,7 +461,7 @@ export class File {
     } else {
       const parent = trailingSlashIt(fileOptions.parent || '/www');
       if (parent.length < 3) {
-        throw new Error('Invalid parent name: ' + parent);
+        throw new Error(`Invalid parent name: ${parent}`);
       }
 
       const name = fileOptions.name || (fileOptions?.data as any)?.name || uuid();
@@ -468,12 +470,12 @@ export class File {
 
     // Add leading slash if missing
     if (path.charAt(0) !== '/') {
-      path = '/' + path;
+      path = `/${path}`;
     }
 
     // Check path validity
     if (path.indexOf('//') !== -1 || path.length < 3) {
-      throw new Error('Invalid path: ' + path);
+      throw new Error(`Invalid path: ${path}`);
     }
 
     return FILE_BUCKET + path;
@@ -512,7 +514,7 @@ export class File {
     const opt = options || {};
 
     if (this.isFolder) {
-      throw new Error('A folder has no matadata.');
+      throw new Error('A folder has no mata data.');
     }
 
     const msg = new message.GetFileMetadata(this.bucket, this.key);
@@ -530,7 +532,7 @@ export class File {
   }
 
   /**
-   * Updates the matadata of this file.
+   * Updates the mata data of this file.
    * @param options The save metadata options
    * @param [options.force=false] force the update and overwrite the existing metadata without validating it
    * @param doneCallback The callback is invoked after the metadata is saved
@@ -578,7 +580,7 @@ export class File {
    * @private
    */
   guessMimeType(options: FileData & FileMetadata): string | null {
-    const mimeType = options.mimeType;
+    const { mimeType } = options;
     if (mimeType) {
       return mimeType;
     }
@@ -620,7 +622,7 @@ export class File {
   fromJSON(json: JsonMap | FileMetadata): void {
     const { id } = json as JsonMap;
     if (id && this.id !== id) {
-      throw new Error('This file id ' + this.id + ' does not match the given json id ' + id);
+      throw new Error(`This file id ${this.id} does not match the given json id ${id}`);
     }
 
     const meta = this[METADATA] || {};
@@ -636,15 +638,16 @@ export class File {
     }
 
     // keep last known lastModified, createdAt, eTag and headers
-    this[METADATA] = Object.assign({}, this[METADATA], {
-      mimeType: json.mimeType,
+    this[METADATA] = {
+      ...this[METADATA],
+      mimeType: json.mimeType as string,
       lastModified: (json.lastModified && new Date(json.lastModified as string)) || meta.lastModified,
       createdAt: (json.createdAt && new Date(json.createdAt as string)) || meta.createdAt,
-      eTag: json.eTag || meta.eTag,
+      eTag: json.eTag as string || meta.eTag,
       acl,
-      size: typeof json.size === 'number' ? json.size : (json as JsonMap).contentLength,
-      headers: json.headers || meta.headers || {},
-    });
+      size: typeof json.size === 'number' ? json.size : (json as JsonMap).contentLength as number,
+      headers: json.headers as {[header: string]: string} || meta.headers || {},
+    };
   }
 
   /**
@@ -673,7 +676,7 @@ export class File {
    */
   checkAvailable(): void {
     if (!this.isMetadataLoaded) {
-      throw new PersistentError('The file metadata of ' + this.id + ' is not available.');
+      throw new PersistentError(`The file metadata of ${this.id} is not available.`);
     }
   }
 }

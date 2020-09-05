@@ -1,9 +1,6 @@
-'use strict';
-
-import { PersistentError } from "./PersistentError";
-import { Json } from "../util/Json";
-import { Message } from "../connector/Message";
-import { Response } from "../connector/Connector";
+import { PersistentError } from './PersistentError';
+import { Json } from '../util';
+import { Message, Response } from '../connector';
 
 export class CommunicationError extends PersistentError {
   /**
@@ -29,8 +26,8 @@ export class CommunicationError extends PersistentError {
     const entity = response.entity || response.error || {};
     const state = (response.status === 0 ? 'Request' : 'Response');
     const message = entity.message
-        || (httpMessage && 'Handling the ' + state + ' for ' + httpMessage.request.method + ' ' + httpMessage.request.path)
-        || 'A communication error occurred.'
+        || (httpMessage && `Handling the ${state} for ${httpMessage.request.method} ${httpMessage.request.path}`)
+        || 'A communication error occurred.';
 
     super(message, entity);
 
@@ -44,14 +41,14 @@ export class CommunicationError extends PersistentError {
 
     let cause = entity;
     while (cause && cause.stackTrace) {
-      this.stack += '\nServerside Caused by: ' + cause.className + ' ' + cause.message;
+      this.stack += `\nServerside Caused by: ${cause.className} ${cause.message}`;
 
-      const stackTrace = cause.stackTrace;
+      const { stackTrace } = cause;
       for (let i = 0; i < stackTrace.length; i += 1) {
         const el = stackTrace[i];
 
-        this.stack += '\n    at ' + el.className + '.' + el.methodName;
-        this.stack += ' (' + el.fileName + ':' + el.lineNumber + ')';
+        this.stack += `\n    at ${el.className}.${el.methodName}`;
+        this.stack += ` (${el.fileName}:${el.lineNumber})`;
       }
 
       cause = cause.cause;

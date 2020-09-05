@@ -1,17 +1,11 @@
-'use strict';
-
-import { ManagedFactory } from "./ManagedFactory";
-import { Entity } from "./Entity";
-import { Json, JsonMap } from "../util";
-import { Builder } from "../query";
-import { EntityPartialUpdateBuilder } from "../partialupdate";
-import { Metadata } from "../intersection";
-import { Managed } from "./Managed";
-import { ManagedType } from "../metamodel";
-import { EntityManager } from "../EntityManager";
+import { ManagedFactory } from './ManagedFactory';
+import { Entity } from './Entity';
+import { Json, JsonMap } from '../util';
+import { Builder } from '../query';
+import { EntityPartialUpdateBuilder } from '../partialupdate';
+import { Metadata } from '../intersection';
 
 export class EntityFactory<T extends Entity> extends ManagedFactory<T> {
-
   /**
    * Loads the instance for the given id, or null if the id does not exists.
    * @param id The id to query
@@ -25,8 +19,9 @@ export class EntityFactory<T extends Entity> extends ManagedFactory<T> {
    * @param failCallback Called when the operation failed.
    * @return A Promise that will be fulfilled when the asynchronous operation completes.
    */
-  load(id: string, options?: { depth?: number | boolean, refresh?: boolean, local?: boolean,  }, doneCallback?: any, failCallback?: any): Promise<T | null> {
-    if (options instanceof Function) {
+  load(id: string, options?: { depth?: number | boolean, refresh?: boolean, local?: boolean, }, doneCallback?: any,
+    failCallback?: any): Promise<T | null> {
+    if (typeof options === 'function') {
       return this.load(id, {}, options, doneCallback);
     }
 

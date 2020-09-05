@@ -1,9 +1,8 @@
-'use strict';
-
-import * as message from "../message";
-import { EntityManager } from "../EntityManager";
-import { RequestBody, RequestBodyType, ResponseBodyType } from "../connector/Connector";
-import { Message } from "../connector";
+import * as message from '../message';
+import type { EntityManager } from '../EntityManager';
+import {
+  RequestBody, RequestBodyType, ResponseBodyType, Message,
+} from '../connector';
 
 /**
  * An executor of Modules running on Baqend.
@@ -32,7 +31,8 @@ export class Modules {
    * @param failCallback
    * @return
    */
-  get(bucket: string, query: {[param: string]: string} | string | Function, options?: { responseType?: ResponseBodyType } | Function, doneCallback?: any, failCallback?: any): Promise<any> {
+  get(bucket: string, query: {[param: string]: string} | string | Function,
+    options?: { responseType?: ResponseBodyType } | Function, doneCallback?: any, failCallback?: any): Promise<any> {
     if (query instanceof Function) {
       return this.get(bucket, {}, query, options, doneCallback);
     }
@@ -66,8 +66,9 @@ export class Modules {
    * @param failCallback
    * @return
    */
-  post(bucket: string, body: RequestBody, options?: { requestType?: RequestBodyType, mimeType?: string, responseType?: ResponseBodyType  }, doneCallback?: any, failCallback?: any): Promise<any> {
-    if (typeof options === "function") {
+  post(bucket: string, body: RequestBody, options?: { requestType?: RequestBodyType, mimeType?: string,
+    responseType?: ResponseBodyType }, doneCallback?: any, failCallback?: any): Promise<any> {
+    if (typeof options === 'function') {
       return this.post(bucket, body, {}, options, doneCallback);
     }
 
@@ -83,8 +84,7 @@ export class Modules {
 
   send(msg: Message, doneCallback?: any, failCallback?: any) {
     return this.entityManager.send(msg)
-      .then(response => response.entity)
+      .then((response) => response.entity)
       .then(doneCallback, failCallback);
   }
 }
-

@@ -1,7 +1,5 @@
-'use strict';
-
-import { EntityFactory } from "./EntityFactory";
-import * as model from "../model";
+import { EntityFactory } from './EntityFactory';
+import type * as model from '../model';
 
 export enum LoginOption {
   /**
@@ -78,7 +76,8 @@ export class UserFactory extends EntityFactory<model.User> {
    * @param failCallback Called when the operation failed.
    * @return The created user object, for the new registered user.
    */
-  register(user: string | model.User, password: string, loginOption?: boolean | LoginOption | Function, doneCallback?: any, failCallback?: any): Promise<model.User> {
+  register(user: string | model.User, password: string, loginOption?: boolean | LoginOption | Function,
+    doneCallback?: any, failCallback?: any): Promise<model.User> {
     if (loginOption instanceof Function) {
       return this.register(user, password, true, loginOption, doneCallback);
     }
@@ -98,7 +97,8 @@ export class UserFactory extends EntityFactory<model.User> {
    * @param failCallback Called when the operation failed.
    * @return
    */
-  login(username: string, password: string, loginOption?: boolean | LoginOption | Function, doneCallback?: any, failCallback?: any): Promise<model.User> {
+  login(username: string, password: string, loginOption?: boolean | LoginOption | Function, doneCallback?: any,
+    failCallback?: any): Promise<model.User> {
     if (loginOption instanceof Function) {
       return this.login(username, password, true, loginOption, doneCallback);
     }
@@ -116,7 +116,8 @@ export class UserFactory extends EntityFactory<model.User> {
    * @param failCallback Called when the operation failed.
    * @return
    */
-  loginWithToken(token: string, loginOption?: boolean | LoginOption | Function, doneCallback?: any, failCallback?: any): Promise<model.User> {
+  loginWithToken(token: string, loginOption?: boolean | LoginOption | Function, doneCallback?: any,
+    failCallback?: any): Promise<model.User> {
     if (loginOption instanceof Function) {
       return this.loginWithToken(token, true, loginOption, doneCallback);
     }
@@ -145,7 +146,8 @@ export class UserFactory extends EntityFactory<model.User> {
    * @param failCallback Called when the operation failed.
    * @return
    */
-  newPassword(username: string, password: string, newPassword: string, doneCallback?: any, failCallback?: any): Promise<model.User>;
+  newPassword(username: string, password: string, newPassword: string, doneCallback?: any,
+    failCallback?: any): Promise<model.User>;
 
   /**
    * Change the password of a user, which will be identified by the given token from the reset password e-mail
@@ -159,27 +161,26 @@ export class UserFactory extends EntityFactory<model.User> {
    * @param failCallback Called when the operation failed.
    * @return
    */
-  newPassword(token: string, newPassword: string, loginOption?: boolean | LoginOption, doneCallback?: any, failCallback?: any): Promise<model.User>;
+  newPassword(token: string, newPassword: string, loginOption?: boolean | LoginOption, doneCallback?: any,
+    failCallback?: any): Promise<model.User>;
 
-  newPassword(username: string, password: string, newPassword?: string | boolean | LoginOption, doneCallback?: any, failCallback?: any): Promise<model.User> {
+  newPassword(...args: any[]): Promise<model.User> {
     // detect signature newPassword(token, newPassword, [loginOption=true][, doneCallback[, failCallback]])
-    if (typeof newPassword === 'string') {
+    if (typeof args[2] === 'string') {
+      const [username, password, newPassword, doneCallback, failCallback] = args as [string, string, string, any, any];
       return this.db.newPassword(username, password, newPassword).then(doneCallback, failCallback);
     }
 
-    const arg = arguments;
-    const token: string = arg[0];
-    const newPassword2: string = arg[1];
-    let loginOption2: boolean | LoginOption | Function | undefined = arg[2];
-    let doneCallback2 = arg[3];
-    let failCallback2 = arg[4];
-    if (loginOption2 instanceof Function) {
-      failCallback2 = doneCallback2;
-      doneCallback2 = loginOption2;
-      loginOption2 = true;
+    // eslint-disable-next-line prefer-const
+    let [token, newPassword, loginOption, doneCallback, failCallback] = args as [
+      string, string, undefined | boolean | LoginOption | Function, any, any];
+    if (loginOption instanceof Function) {
+      failCallback = doneCallback;
+      doneCallback = loginOption;
+      loginOption = true;
     }
 
-    return this.db.newPasswordWithToken(token, newPassword2, loginOption2).then(doneCallback2, failCallback2);
+    return this.db.newPasswordWithToken(token, newPassword, loginOption).then(doneCallback, failCallback);
   }
 
   /**
@@ -209,7 +210,8 @@ export class UserFactory extends EntityFactory<model.User> {
    * @param failCallback Called when the operation failed.
    * @return
    */
-  changeUsername(username: string, newUsername: string, password: string, doneCallback?: any, failCallback?: any): Promise<any> {
+  changeUsername(username: string, newUsername: string, password: string, doneCallback?: any,
+    failCallback?: any): Promise<any> {
     return this.db.changeUsername(username, newUsername, password).then(doneCallback, failCallback);
   }
 
@@ -272,7 +274,8 @@ export interface UserFactory extends EntityFactory<model.User> {
    * @param failCallback Called when the operation failed.
    * @return
    */
-  loginWithFacebook(clientID: string, options: OAuthOptions, doneCallback?: any, failCallback?: any): Promise<model.User>;
+  loginWithFacebook(clientID: string, options: OAuthOptions, doneCallback?: any,
+    failCallback?: any): Promise<model.User>;
 
   /**
    * Logs the user in with GitHub via OAuth
@@ -302,7 +305,8 @@ export interface UserFactory extends EntityFactory<model.User> {
    * @param failCallback Called when the operation failed.
    * @return
    */
-  loginWithTwitter(clientID: string, options: OAuthOptions, doneCallback?: any, failCallback?: any): Promise<model.User>;
+  loginWithTwitter(clientID: string, options: OAuthOptions, doneCallback?: any,
+    failCallback?: any): Promise<model.User>;
 
   /**
    * Logs the user in with LinkedIn via OAuth
@@ -317,7 +321,8 @@ export interface UserFactory extends EntityFactory<model.User> {
    * @param failCallback Called when the operation failed.
    * @return
    */
-  loginWithLinkedIn(clientID: string, options: OAuthOptions, doneCallback?: any, failCallback?: any): Promise<model.User>;
+  loginWithLinkedIn(clientID: string, options: OAuthOptions, doneCallback?: any,
+    failCallback?: any): Promise<model.User>;
 
   /**
    * Creates a new user object
@@ -332,51 +337,49 @@ export interface OAuthOptions {
   /**
    * UserFactory.LoginOption} [loginOption=true] The default keeps the user logged in over multiple sessions
    */
-  loginOption: boolean;
+  loginOption?: boolean;
   /**
    *  [title="Login"] sets the title of the popup window
    */
-  title: string;
+  title?: string;
   /**
    *  [width=585] defines the width of the popup window
    */
-  width: number;
+  width?: number;
   /**
    *  [height=545] defines the height of the popup window
    */
-  height: number;
+  height?: number;
   /**
    *  [scope="email"] the range of rights requested from the user
    */
-  scope: string;
+  scope?: string;
   /**
    *  [state=]
    */
-  state: Object;
+  state?: Object;
   /**
    *  [timeout=5 * 60 * 1000]
    */
-  timeout: number;
+  timeout?: number;
   /**
    * [redirect=""] if set this changes the oauth behaviour to redirect mode,
    * i.e. this site is closed to open the providers login page.
    * Once the login is finished this redirect url will be opened with the logged-in user's token attached.
    */
-  redirect: string;
+  redirect?: string;
 }
 
-
-
-
 ['Google', 'Facebook', 'GitHub', 'Twitter', 'LinkedIn'].forEach((name) => {
-  const methodName = 'loginWith' + name;
+  const methodName = `loginWith${name}`;
   // do not use a lambda here since we will loose the this context
-  (UserFactory.prototype as any)[methodName] = function (clientID: string, options: OAuthOptions | Function, doneCallback?: any, failCallback?: any) {
+  (UserFactory.prototype as any)[methodName] = function loginWithOAuth(clientID: string,
+    options: OAuthOptions | Function, doneCallback?: any, failCallback?: any) {
     if (options instanceof Function) {
       return this[methodName](clientID, {}, options, doneCallback);
     }
 
-    const opt = Object.assign({}, (UserFactory.DefaultOptions as any)[name.toLowerCase()], options || {});
+    const opt = { ...(UserFactory.DefaultOptions as any)[name.toLowerCase()], ...options || {} };
 
     return this.db.loginWithOAuth(name, clientID, opt).then(doneCallback, failCallback);
   };

@@ -1,12 +1,10 @@
-'use strict';
-
-import { Factory } from "./Factory";
-import { File, FileOptions } from "./File";
-import * as message from "../message";
-import { JsonMap, trailingSlashIt } from "../util";
-import { StatusCode } from "../connector";
-import { EntityManager } from "../EntityManager";
-import { Permission } from "../intersection";
+import { Factory } from './Factory';
+import { File, FileOptions } from './File';
+import * as message from '../message';
+import { JsonMap, trailingSlashIt } from '../util';
+import { StatusCode } from '../connector';
+import type { EntityManager } from '../EntityManager';
+import { Permission } from '../intersection';
 
 export type RootFolderMetadata = {
   /**
@@ -34,11 +32,10 @@ export type RootFolderMetadata = {
    * within a bucket
    */
   query?: Permission,
-}
+};
 
 export interface FileFactory extends Factory<File>, FileConstructor {}
 export class FileFactory extends Factory<File> {
-
   /**
    * Creates a new FileFactory for the given type
    * @param db
@@ -87,7 +84,7 @@ export class FileFactory extends Factory<File> {
    * @return A promise which will fulfilled with the updated metadata
    */
   saveMetadata(bucket: string, metadata: RootFolderMetadata, doneCallback?: any, failCallback?: any): Promise<any> {
-    const msg = new message.SetFileBucketMetadata(bucket, metadata);
+    const msg = new message.SetFileBucketMetadata(bucket, metadata as JsonMap);
     return this.db.send(msg).then(doneCallback, failCallback);
   }
 
@@ -99,9 +96,10 @@ export class FileFactory extends Factory<File> {
    * @param doneCallback
    * The callback is invoked after the metadata is fetched
    * @param failCallback The callback is invoked if any error has occurred
-   * @return A promise which will be fulfilled with the bucket acls
+   * @return A promise which will be fulfilled with the bucket ACLs
    */
-  loadMetadata(bucket: string, options?: { refresh?: boolean }, doneCallback?: any, failCallback?: any): Promise<RootFolderMetadata> {
+  loadMetadata(bucket: string, options?: { refresh?: boolean }, doneCallback?: any,
+    failCallback?: any): Promise<RootFolderMetadata> {
     const msg = new message.GetFileBucketMetadata(bucket);
     // this._db.ensureCacheHeader(this.id, msg, options.refresh);
     // do not white list the file, because head-request does not revalidate the cache.
@@ -127,8 +125,8 @@ export class FileFactory extends Factory<File> {
    * @return The listed buckets.
    */
   listBuckets(doneCallback?: any, failCallback?: any): Promise<File[]> {
-    return this.db.send(new message.ListBuckets()).then(response => (
-        (response.entity as string[]).map(bucket => this.new(bucket + '/'))
+    return this.db.send(new message.ListBuckets()).then((response) => (
+      (response.entity as string[]).map((bucket) => this.new(`${bucket}/`))
     )).then(doneCallback, failCallback);
   }
 
@@ -142,7 +140,8 @@ export class FileFactory extends Factory<File> {
    * @param failCallback The callback is invoked if any error has occurred
    * @return The listed files/folders.
    */
-  listFiles(folderOrPath: File|string, start: File, count: number, doneCallback?: any, failCallback?: any): Promise<File[]> {
+  listFiles(folderOrPath: File|string, start: File, count: number, doneCallback?: any,
+    failCallback?: any): Promise<File[]> {
     let folder;
 
     if (typeof folderOrPath === 'string') {
@@ -153,9 +152,9 @@ export class FileFactory extends Factory<File> {
     }
 
     const path = folder.key;
-    const bucket = folder.bucket;
-    return this.db.send(new message.ListFiles(bucket, path, start ? start.key : undefined, count)).then(response => (
-        (response.entity as string[]).map(file => this.new(file))
+    const { bucket } = folder;
+    return this.db.send(new message.ListFiles(bucket, path, start ? start.key : undefined, count)).then((response) => (
+      (response.entity as string[]).map((file) => this.new(file))
     )).then(doneCallback, failCallback);
   }
 }
@@ -172,4 +171,3 @@ interface FileConstructor {
    */
   new(fileOptions: FileOptions) : File
 }
-

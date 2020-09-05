@@ -1,8 +1,8 @@
-'use strict';
-import { EntityManagerFactory } from "./EntityManagerFactory";
-import { EntityManager} from "./EntityManager";
-import { TokenStorage, TokenStorageFactory } from "./intersection";
+import { EntityManagerFactory } from './EntityManagerFactory';
+import { EntityManager } from './EntityManager';
+import { TokenStorage, TokenStorageFactory } from './intersection';
 
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export interface baqend extends EntityManager {
   /**
    * Configures the DB with additional config options
@@ -13,7 +13,8 @@ export interface baqend extends EntityManager {
    * @param [options.staleness=60] The maximum staleness of objects that are acceptable while reading cached
    * data, <code>0</code> to always bypass the browser cache
    */
-  configure(options: {tokenStorage?: TokenStorage, tokenStorageFactory?: TokenStorageFactory, staleness?: number}): this;
+  configure(options: {tokenStorage?: TokenStorage, tokenStorageFactory?: TokenStorageFactory, staleness?: number}):
+  this;
 
   /**
    * Connects the DB with the server and calls the callback on success
@@ -27,11 +28,11 @@ export interface baqend extends EntityManager {
   connect(hostOrApp: string, secure?: boolean, doneCallback?: any, failCallback?: any): Promise<EntityManager>;
 }
 
-export const db = function() {
+export const db = (() => {
   const emf = new EntityManagerFactory();
-  const db = emf.createEntityManager(true);
+  const bq = emf.createEntityManager(true);
 
-  Object.assign(db, {
+  Object.assign(bq, {
     configure(this: baqend, options) {
       emf.configure(options);
       return this;
@@ -47,5 +48,5 @@ export const db = function() {
     },
   } as Partial<baqend>);
 
-  return db as baqend;
-}();
+  return bq as baqend;
+})();

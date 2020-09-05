@@ -1,6 +1,4 @@
-'use strict';
-
-import { Json, JsonArray, JsonMap } from "../util";
+import { JsonMap } from '../util';
 
 type IndexSpec = {[name: string]: string}[];
 
@@ -10,14 +8,16 @@ type IndexSpec = {[name: string]: string}[];
  */
 export class DbIndex {
   public static readonly ASC = 'asc';
+
   public static readonly DESC = 'desc';
+
   public static readonly GEO: 'geo';
 
   /**
    * An array of mappings from field to index type which are parts of this index/compound index
    */
   public keys: IndexSpec;
-  public drop: boolean;
+
   public unique: boolean;
 
   /**
@@ -49,7 +49,6 @@ export class DbIndex {
       throw new Error('The keys parameter must be an String, Object or Array.');
     }
 
-    this.drop = false;
     this.unique = unique === true;
   }
 
@@ -90,11 +89,10 @@ export class DbIndex {
    *
    * @return A Json of this Index object
    */
-  toJSON(): Json {
+  toJSON(): JsonMap {
     return {
       unique: this.unique,
       keys: this.keys,
-      drop: this.drop,
     };
   }
 }

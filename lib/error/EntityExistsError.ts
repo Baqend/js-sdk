@@ -1,7 +1,5 @@
-'use strict';
-
-import { PersistentError } from "./PersistentError";
-import { Entity } from "../binding";
+import { PersistentError } from './PersistentError';
+import { Entity } from '../binding';
 
 export class EntityExistsError extends PersistentError {
   /**
@@ -13,7 +11,7 @@ export class EntityExistsError extends PersistentError {
    * @param entity - The entity which cause the error
    */
   constructor(entity: Entity) {
-    super('The entity ' + entity + ' is managed by a different db.');
+    super(`The entity ${entity} is managed by a different db.`);
     this.entity = entity;
   }
 }

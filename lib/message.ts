@@ -1,9 +1,7 @@
-'use strict';
-
 /* DO NOT TOUCH THIS AUTO-GENERATED FILE */
 /* eslint-disable max-len */
-import { Message } from "./connector";
-type json = any;
+import { Message } from './connector';
+import { Json as json } from './util';
 
 interface ListAllResources {
   /**
@@ -50,7 +48,7 @@ interface GetBloomFilter {
    *
    * @param rules indicates whether the AssetFilter rules should be returned with the current BloomFilter
    */
-  new(rules?: boolean | null, ): Message;
+  new(rules?: boolean | null,): Message;
 }
 export const GetBloomFilter = Message.create<GetBloomFilter>({
   method: 'GET',
@@ -77,7 +75,7 @@ interface DeleteBloomFilter {
    *
    * @param flush indeicates all maintained caches should also be flushed (CDN and SW Caches)
    */
-  new(flush?: boolean | null, ): Message;
+  new(flush?: boolean | null,): Message;
 }
 export const DeleteBloomFilter = Message.create<DeleteBloomFilter>({
   method: 'DELETE',
@@ -157,7 +155,7 @@ interface BannedIp {
    *
    * @param ip The ip to test
    */
-  new(ip?: string | null, ): Message;
+  new(ip?: string | null,): Message;
 }
 export const BannedIp = Message.create<BannedIp>({
   method: 'GET',
@@ -197,7 +195,7 @@ interface UnbanIp {
    *
    * @param ip The ip to reset
    */
-  new(ip?: string | null, ): Message;
+  new(ip?: string | null,): Message;
 }
 export const UnbanIp = Message.create<UnbanIp>({
   method: 'DELETE',
@@ -228,7 +226,7 @@ interface GetBucketIds {
    * @param start The offset to skip
    * @param count The upper limit to return
    */
-  new(bucket?: string | null, start?: number | null, count?: number | null, ): Message;
+  new(bucket?: string | null, start?: number | null, count?: number | null,): Message;
 }
 export const GetBucketIds = Message.create<GetBucketIds>({
   method: 'GET',
@@ -243,7 +241,7 @@ interface ExportBucket {
    *
    * @param bucket The bucket name
    */
-  new(bucket?: string | null, ): Message;
+  new(bucket?: string | null,): Message;
 }
 export const ExportBucket = Message.create<ExportBucket>({
   method: 'GET',
@@ -275,7 +273,7 @@ interface TruncateBucket {
    *
    * @param bucket The bucket name
    */
-  new(bucket?: string | null, ): Message;
+  new(bucket?: string | null,): Message;
 }
 export const TruncateBucket = Message.create<TruncateBucket>({
   method: 'DELETE',
@@ -308,7 +306,7 @@ interface GetObject {
    * @param bucket The bucket name
    * @param oid The unique object identifier
    */
-  new(bucket?: string | null, oid?: string | null, ): Message;
+  new(bucket?: string | null, oid?: string | null,): Message;
 }
 export const GetObject = Message.create<GetObject>({
   method: 'GET',
@@ -347,7 +345,7 @@ interface DeleteObject {
    * @param bucket The bucket name
    * @param oid The unique object identifier
    */
-  new(bucket?: string | null, oid?: string | null, ): Message;
+  new(bucket?: string | null, oid?: string | null,): Message;
 }
 export const DeleteObject = Message.create<DeleteObject>({
   method: 'DELETE',
@@ -407,7 +405,7 @@ interface GetSchema {
    *
    * @param bucket The bucket name
    */
-  new(bucket?: string | null, ): Message;
+  new(bucket?: string | null,): Message;
 }
 export const GetSchema = Message.create<GetSchema>({
   method: 'GET',
@@ -454,7 +452,7 @@ interface DeleteSchema {
    *
    * @param bucket The bucket name
    */
-  new(bucket?: string | null, ): Message;
+  new(bucket?: string | null,): Message;
 }
 export const DeleteSchema = Message.create<DeleteSchema>({
   method: 'DELETE',
@@ -475,7 +473,7 @@ interface AdhocQuery {
    * @param eager indicates if the query result should be sent back as ids or as objects
    * @param hinted indicates whether the query should be cached even when capacity limit is reached
    */
-  new(bucket?: string | null, q?: string | null, start?: number | null, count?: number | null, sort?: string | null, eager?: boolean | null, hinted?: boolean | null, ): Message;
+  new(bucket?: string | null, q?: string | null, start?: number | null, count?: number | null, sort?: string | null, eager?: boolean | null, hinted?: boolean | null,): Message;
 }
 export const AdhocQuery = Message.create<AdhocQuery>({
   method: 'GET',
@@ -510,7 +508,7 @@ interface AdhocCountQuery {
    * @param bucket The bucket name
    * @param q The query
    */
-  new(bucket?: string | null, q?: string | null, ): Message;
+  new(bucket?: string | null, q?: string | null,): Message;
 }
 export const AdhocCountQuery = Message.create<AdhocCountQuery>({
   method: 'GET',
@@ -567,7 +565,7 @@ interface ListThisQueryResources {
    *
    * @param qid The query id
    */
-  new(qid?: string | null, ): Message;
+  new(qid?: string | null,): Message;
 }
 export const ListThisQueryResources = Message.create<ListThisQueryResources>({
   method: 'GET',
@@ -581,7 +579,7 @@ interface GetQueryCode {
    *
    * @param qid The query id
    */
-  new(qid?: string | null, ): Message;
+  new(qid?: string | null,): Message;
 }
 export const GetQueryCode = Message.create<GetQueryCode>({
   method: 'GET',
@@ -597,7 +595,7 @@ interface RunQuery {
    * @param start The offset from where to start from
    * @param count The number of objects to enlist
    */
-  new(qid?: string | null, start?: number | null, count?: number | null, ): Message;
+  new(qid?: string | null, start?: number | null, count?: number | null,): Message;
 }
 export const RunQuery = Message.create<RunQuery>({
   method: 'GET',
@@ -611,7 +609,7 @@ interface GetQueryParameters {
    *
    * @param qid The query id
    */
-  new(qid?: string | null, ): Message;
+  new(qid?: string | null,): Message;
 }
 export const GetQueryParameters = Message.create<GetQueryParameters>({
   method: 'GET',
@@ -797,7 +795,7 @@ interface Verify {
    *
    * @param token Token to verify the user
    */
-  new(token?: string | null, ): Message;
+  new(token?: string | null,): Message;
 }
 export const Verify = Message.create<Verify>({
   method: 'GET',
@@ -825,7 +823,7 @@ interface VerifyUsername {
    *
    * @param token Token to verify the user
    */
-  new(token?: string | null, ): Message;
+  new(token?: string | null,): Message;
 }
 export const VerifyUsername = Message.create<VerifyUsername>({
   method: 'GET',
@@ -845,7 +843,7 @@ interface OAuth2 {
    * @param oauth_token OAuth 1.0 identifier
    * @param error_description The error description of the oauth provider
    */
-  new(provider?: string | null, state?: string | null, code?: string | null, oauth_verifier?: string | null, oauth_token?: string | null, error_description?: string | null, ): Message;
+  new(provider?: string | null, state?: string | null, code?: string | null, oauth_verifier?: string | null, oauth_token?: string | null, error_description?: string | null,): Message;
 }
 export const OAuth2 = Message.create<OAuth2>({
   method: 'GET',
@@ -861,7 +859,7 @@ interface OAuth1 {
    *
    * @param provider The OAuth provider
    */
-  new(provider?: string | null, ): Message;
+  new(provider?: string | null,): Message;
 }
 export const OAuth1 = Message.create<OAuth1>({
   method: 'GET',
@@ -876,7 +874,7 @@ interface UserToken {
    *
    * @param oid The unique object identifier
    */
-  new(oid?: string | null, ): Message;
+  new(oid?: string | null,): Message;
 }
 export const UserToken = Message.create<UserToken>({
   method: 'POST',
@@ -891,7 +889,7 @@ interface RevokeUserToken {
    *
    * @param oid The unique object identifier
    */
-  new(oid?: string | null, ): Message;
+  new(oid?: string | null,): Message;
 }
 export const RevokeUserToken = Message.create<RevokeUserToken>({
   method: 'DELETE',
@@ -906,7 +904,7 @@ interface GetBaqendCode {
    * @param bucket The bucket name
    * @param type The type of the script
    */
-  new(bucket?: string | null, type?: string | null, ): Message;
+  new(bucket?: string | null, type?: string | null,): Message;
 }
 export const GetBaqendCode = Message.create<GetBaqendCode>({
   method: 'GET',
@@ -937,7 +935,7 @@ interface DeleteBaqendCode {
    * @param bucket The bucket name
    * @param type The type of the script
    */
-  new(bucket?: string | null, type?: string | null, ): Message;
+  new(bucket?: string | null, type?: string | null,): Message;
 }
 export const DeleteBaqendCode = Message.create<DeleteBaqendCode>({
   method: 'DELETE',
@@ -951,7 +949,7 @@ interface PostBaqendModule {
    *
    * @param bucket The method name
    */
-  new(bucket?: string | null, ): Message;
+  new(bucket?: string | null,): Message;
 }
 export const PostBaqendModule = Message.create<PostBaqendModule>({
   method: 'POST',
@@ -965,7 +963,7 @@ interface GetBaqendModule {
    *
    * @param bucket The module name
    */
-  new(bucket?: string | null, ): Message;
+  new(bucket?: string | null,): Message;
 }
 export const GetBaqendModule = Message.create<GetBaqendModule>({
   method: 'GET',
@@ -997,7 +995,7 @@ interface ListFiles {
    * @param count The upper limit to return, -1 is equal to the upper limit of 1000
    * @param deep If true, files of subdirectories are returned as well
    */
-  new(bucket?: string | null, path?: string | null, start?: string | null, count?: number | null, deep?: boolean | null, ): Message;
+  new(bucket?: string | null, path?: string | null, start?: string | null, count?: number | null, deep?: boolean | null,): Message;
 }
 export const ListFiles = Message.create<ListFiles>({
   method: 'GET',
@@ -1026,7 +1024,7 @@ interface DownloadArchive {
    *
    * @param archive The archive file name
    */
-  new(archive?: string | null, ): Message;
+  new(archive?: string | null,): Message;
 }
 export const DownloadArchive = Message.create<DownloadArchive>({
   method: 'GET',
@@ -1057,7 +1055,7 @@ interface GetFileBucketMetadata {
    *
    * @param bucket The bucket name
    */
-  new(bucket?: string | null, ): Message;
+  new(bucket?: string | null,): Message;
 }
 export const GetFileBucketMetadata = Message.create<GetFileBucketMetadata>({
   method: 'GET',
@@ -1088,7 +1086,7 @@ interface DeleteFileBucket {
    *
    * @param bucket The bucket name
    */
-  new(bucket?: string | null, ): Message;
+  new(bucket?: string | null,): Message;
 }
 export const DeleteFileBucket = Message.create<DeleteFileBucket>({
   method: 'DELETE',
@@ -1103,7 +1101,7 @@ interface CreateFile {
    *
    * @param bucket The bucket name
    */
-  new(bucket?: string | null, ): Message;
+  new(bucket?: string | null,): Message;
 }
 export const CreateFile = Message.create<CreateFile>({
   method: 'POST',
@@ -1119,7 +1117,7 @@ interface DownloadFile {
    * @param bucket The bucket name
    * @param oid The unique object identifier
    */
-  new(bucket?: string | null, oid?: string | null, ): Message;
+  new(bucket?: string | null, oid?: string | null,): Message;
 }
 export const DownloadFile = Message.create<DownloadFile>({
   method: 'GET',
@@ -1136,7 +1134,7 @@ interface UploadFile {
    * @param bucket The bucket name
    * @param oid The unique file identifier
    */
-  new(bucket?: string | null, oid?: string | null, ): Message;
+  new(bucket?: string | null, oid?: string | null,): Message;
 }
 export const UploadFile = Message.create<UploadFile>({
   method: 'PUT',
@@ -1152,7 +1150,7 @@ interface GetFileMetadata {
    * @param bucket The bucket name
    * @param oid The unique object identifier
    */
-  new(bucket?: string | null, oid?: string | null, ): Message;
+  new(bucket?: string | null, oid?: string | null,): Message;
 }
 export const GetFileMetadata = Message.create<GetFileMetadata>({
   method: 'HEAD',
@@ -1186,7 +1184,7 @@ interface DeleteFile {
    * @param bucket The bucket name
    * @param oid The unique file identifier
    */
-  new(bucket?: string | null, oid?: string | null, ): Message;
+  new(bucket?: string | null, oid?: string | null,): Message;
 }
 export const DeleteFile = Message.create<DeleteFile>({
   method: 'DELETE',
@@ -1216,7 +1214,7 @@ interface DownloadAsset {
    *
    * @param url The url of the external asset to download
    */
-  new(url?: string | null, ): Message;
+  new(url?: string | null,): Message;
 }
 export const DownloadAsset = Message.create<DownloadAsset>({
   method: 'GET',
@@ -1246,7 +1244,7 @@ interface GetRevalidationStatus {
    *
    * @param id The status id
    */
-  new(id?: string | null, ): Message;
+  new(id?: string | null,): Message;
 }
 export const GetRevalidationStatus = Message.create<GetRevalidationStatus>({
   method: 'GET',
@@ -1261,7 +1259,7 @@ interface CancelRevalidation {
    *
    * @param id The revalidation id
    */
-  new(id?: string | null, ): Message;
+  new(id?: string | null,): Message;
 }
 export const CancelRevalidation = Message.create<CancelRevalidation>({
   method: 'DELETE',
@@ -1276,7 +1274,7 @@ interface GetAllRevalidationStatus {
    *
    * @param state Filter status by its state
    */
-  new(state?: string | null, ): Message;
+  new(state?: string | null,): Message;
 }
 export const GetAllRevalidationStatus = Message.create<GetAllRevalidationStatus>({
   method: 'GET',
@@ -1306,7 +1304,7 @@ interface ListIndexes {
    *
    * @param bucket The bucket name
    */
-  new(bucket?: string | null, ): Message;
+  new(bucket?: string | null,): Message;
 }
 export const ListIndexes = Message.create<ListIndexes>({
   method: 'GET',
@@ -1337,7 +1335,7 @@ interface DropAllIndexes {
    *
    * @param bucket The bucket name
    */
-  new(bucket?: string | null, ): Message;
+  new(bucket?: string | null,): Message;
 }
 export const DropAllIndexes = Message.create<DropAllIndexes>({
   method: 'DELETE',
@@ -1454,7 +1452,7 @@ interface Install {
    * @param x ignored - Workaround to allow regex in path. TODO: Allow regex for all path in restful-jetty
    * @param d The domain to get the corresponding config
    */
-  new(x?: string | null, d?: string | null, ): Message;
+  new(x?: string | null, d?: string | null,): Message;
 }
 export const Install = Message.create<Install>({
   method: 'GET',
@@ -1471,7 +1469,7 @@ interface SW {
    * @param r String The ID of the Speed Kit install object
    * @param v The version of a released Speed Kit version
    */
-  new(x?: string | null, r?: string | null, v?: string | null, ): Message;
+  new(x?: string | null, r?: string | null, v?: string | null,): Message;
 }
 export const SW = Message.create<SW>({
   method: 'GET',
@@ -1479,3 +1477,17 @@ export const SW = Message.create<SW>({
   status: [200],
 });
 
+interface Beacon {
+  /**
+   * Insert RUM Beacon
+   * Inserts a RUM Beacon in JSON format.
+   *
+   * @param body The massage Content
+   */
+  new(body?: json): Message;
+}
+export const Beacon = Message.create<Beacon>({
+  method: 'POST',
+  path: '/rum/pi',
+  status: [200],
+});

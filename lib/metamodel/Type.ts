@@ -1,7 +1,5 @@
-'use strict';
-
-import { Class, Json } from "../util";
-import { Metadata } from "../intersection";
+import { Class, Json } from '../util';
+import { Metadata } from '../intersection';
 
 export enum PersistenceType {
   BASIC = 0,
@@ -12,11 +10,12 @@ export enum PersistenceType {
 
 export abstract class Type<T> {
   public readonly ref: string;
+
   public readonly name: string;
 
   // this property cant be made protected right now, since it cause a wired error in the BasicTypes class
   // @see #https://github.com/microsoft/TypeScript/issues/17293
-  /* protected */ _typeConstructor?: Class<T>
+  /* protected */ _typeConstructor?: Class<T>;
 
   /**
    * The persistent type of this type
@@ -80,7 +79,7 @@ export abstract class Type<T> {
    */
   protected constructor(ref: string, typeConstructor?: Class<T>) {
     if (ref.indexOf('/db/') !== 0) {
-      throw new SyntaxError('Type ref ' + ref + ' is invalid.');
+      throw new SyntaxError(`Type ref ${ref} is invalid.`);
     }
 
     this.ref = ref;
@@ -100,7 +99,8 @@ export abstract class Type<T> {
    * Used to update the internal change tracking state of collections and mark the object persistent or dirty afterwards
    * @return The merged object instance
    */
-  abstract fromJsonValue(state: Metadata, jsonValue: Json, currentValue: T | null, options: { persisting: boolean, onlyMetadata?: boolean }) : T | null;
+  abstract fromJsonValue(state: Metadata, jsonValue: Json, currentValue: T | null,
+    options: { persisting: boolean, onlyMetadata?: boolean }) : T | null;
 
   /**
    * Converts the given object to json
@@ -113,5 +113,6 @@ export abstract class Type<T> {
    *  Used to update the internal change tracking state of collections and mark the object persistent if its true
    * @return The converted object as json
    */
-  abstract toJsonValue(state: Metadata, object: T | null, options: { excludeMetadata?: boolean, depth?: number | boolean, persisting: boolean }): Json;
+  abstract toJsonValue(state: Metadata, object: T | null,
+    options: { excludeMetadata?: boolean, depth?: number | boolean, persisting: boolean }): Json;
 }

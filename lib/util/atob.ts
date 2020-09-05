@@ -1,5 +1,3 @@
-'use strict';
-
 /**
  * Converts Base64-encoded data to string.
  *

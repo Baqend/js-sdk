@@ -1,8 +1,6 @@
-'use strict';
-
-import { Entity } from "../binding/Entity";
-import * as model from "../model";
-import { Json, JsonMap } from "../util/Json";
+import { Entity } from '../binding';
+import type * as model from '../model';
+import type { Json, JsonMap } from '../util';
 
 export interface PushMessageOptions {
   /**
@@ -80,10 +78,12 @@ export class PushMessage {
    * Set of devices
    */
   public devices: Set<model.Device>;
+
   /**
    * Push notification message
    */
   public message?: string;
+
   /**
    * Push notification subject
    */
@@ -100,7 +100,8 @@ export class PushMessage {
    * @param [badge] The badge for iOS or Web Push devices
    * @param [data] The data object which can contain additional information.
    */
-  constructor(devices: model.Device|Set<model.Device>|Iterable<model.Device>, message?: string, subject?: string, options?: string | PushMessageOptions, badge?: string|number, data?: Json) {
+  constructor(devices: model.Device|Set<model.Device>|Iterable<model.Device>, message?: string, subject?: string,
+    options?: string | PushMessageOptions, badge?: string|number, data?: Json) {
     const opts = typeof options === 'string' ? { sound: options, badge, data } : (options || {});
 
     this.devices = PushMessage.initDevices(devices);
@@ -150,7 +151,7 @@ export class PushMessage {
     }
 
     return Object.assign({} as JsonMap, this, {
-      devices: Array.from(this.devices, device => device.id),
+      devices: Array.from(this.devices, (device) => device.id),
     });
   }
 }

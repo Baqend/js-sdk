@@ -1,13 +1,10 @@
-'use strict';
-
-import { Entity } from "../binding";
-import { EntityManager } from "../EntityManager";
-import { Class, Json } from "../util";
-import { PersistentError } from "../error";
-import { MatchType, Operation, RealtimeEvent } from "./RealtimeEvent";
-import { Observable, Subscription } from "rxjs"
-import { Filter } from "./Filter";
-import { Node } from "./Node";
+import { Observable, Subscription } from 'rxjs';
+import { Entity } from '../binding';
+import type { EntityManager } from '../EntityManager';
+import { Class } from '../util';
+import { PersistentError } from '../error';
+import { MatchType, Operation, RealtimeEvent } from './RealtimeEvent';
+import type { Node } from './Node';
 
 /**
  * An abstract Query which allows retrieving results
@@ -21,7 +18,7 @@ export abstract class Query<T extends Entity> {
    */
   constructor(
     public readonly entityManager: EntityManager,
-    public readonly resultClass: Class<T>
+    public readonly resultClass: Class<T>,
   ) {}
 
   /**
@@ -51,7 +48,7 @@ export abstract class Query<T extends Entity> {
    * @see http://docs.mongodb.org/manual/reference/method/cursor.sort/
    */
   sort(sort: {[field: string]: 1 | -1}): Node<T> {
-    if (typeof sort !== "object" || Object.getPrototypeOf(sort) !== Object.prototype) {
+    if (typeof sort !== 'object' || Object.getPrototypeOf(sort) !== Object.prototype) {
       throw new Error('sort must be an object.');
     }
 
@@ -100,7 +97,8 @@ export abstract class Query<T extends Entity> {
    * @param failCallback Called when the operation failed.
    * @return A promise that will be resolved with the query result as a list
    */
-  abstract resultList(options?: ResultOptions, doneCallback?: ResultListCallback<T>, failCallback?: FailCallback): Promise<T[]>;
+  abstract resultList(options?: ResultOptions, doneCallback?: ResultListCallback<T>,
+    failCallback?: FailCallback): Promise<T[]>;
 
   /**
    * Execute the query and return the query results as a List
@@ -125,7 +123,8 @@ export abstract class Query<T extends Entity> {
    * @param failCallback Called when the operation failed.
    * @return A promise that will be resolved with the query result as a single result
    */
-  abstract singleResult(options?: ResultOptions, doneCallback?: SingleResultCallback<T>, failCallback?: FailCallback): Promise<T | null>;
+  abstract singleResult(options?: ResultOptions, doneCallback?: SingleResultCallback<T>,
+    failCallback?: FailCallback): Promise<T | null>;
 
   /**
    * Execute the query that returns a single result
@@ -180,7 +179,8 @@ export abstract class Query<T extends Entity> {
    * lost Wi-Fi connection)
    * @return a real-time query subscription
    */
-  abstract eventStream(options?: EventStreamOptions, onNext?: NextEventCallback<T>, onError?: FailCallback, onComplete?: CompleteCallback): Subscription;
+  abstract eventStream(options?: EventStreamOptions, onNext?: NextEventCallback<T>, onError?: FailCallback,
+    onComplete?: CompleteCallback): Subscription;
 
   /**
    * Returns a subscription that handles change events for a real-time query.
@@ -194,7 +194,8 @@ export abstract class Query<T extends Entity> {
    * lost Wi-Fi connection)
    * @return a real-time query subscription
    */
-  abstract eventStream(onNext?: NextEventCallback<T>, onError?: FailCallback, onComplete?: CompleteCallback): Subscription;
+  abstract eventStream(onNext?: NextEventCallback<T>, onError?: FailCallback,
+    onComplete?: CompleteCallback): Subscription;
 
   /**
    * Returns an observable that receives the complete real-time query result
@@ -235,7 +236,8 @@ export abstract class Query<T extends Entity> {
    * called when infinite reconnects are configured (default)
    * @return a real-time query subscription handling complete query results.
    */
-  abstract resultStream(options?: ResultStreamOptions, onNext?: NextResultCallback<T>, onError?: FailCallback, onComplete?: CompleteCallback): Subscription;
+  abstract resultStream(options?: ResultStreamOptions, onNext?: NextResultCallback<T>, onError?: FailCallback,
+    onComplete?: CompleteCallback): Subscription;
 
   /**
    * Returns a subscription that handles the complete real-time query result
@@ -255,7 +257,8 @@ export abstract class Query<T extends Entity> {
    * called when infinite reconnects are configured (default)
    * @return a real-time query subscription handling complete query results.
    */
-  abstract resultStream(onNext?: NextResultCallback<T>, onError?: FailCallback, onComplete?: CompleteCallback): Subscription;
+  abstract resultStream(onNext?: NextResultCallback<T>, onError?: FailCallback,
+    onComplete?: CompleteCallback): Subscription;
 
   /**
    * Execute the query that returns the matching objects count.
@@ -266,13 +269,16 @@ export abstract class Query<T extends Entity> {
   abstract count(doneCallback?: CountCallback, failCallback?: FailCallback): Promise<number>;
 
   abstract addOrder(field: string, order: 1 | -1): Node<T>;
+
   abstract addOrder(order: {[field: string]: 1 | -1}): Node<T>;
+
   abstract addOffset(offset: number): Node<T>;
+
   abstract addLimit(limit: number): Node<T>;
 }
 
-export function varargs(offset: number, args: IArguments | any[]) {
-  return Array.prototype.concat.apply([], Array.prototype.slice.call(args, offset));
+export function flatArgs(args: any[]) {
+  return Array.prototype.concat.apply([], args);
 }
 
 export type ResultOptions = {depth?: number | boolean};

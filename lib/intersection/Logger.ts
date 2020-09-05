@@ -1,8 +1,6 @@
-'use strict';
-
-import * as msg from "../message";
-import { EntityManager } from "../EntityManager";
-import { Json, JsonMap } from "../util";
+import * as msg from '../message';
+import type { EntityManager } from '../EntityManager';
+import { JsonMap } from '../util';
 
 export type LogLevel = 'trace' | 'debug' | 'info' | 'warn' | 'error';
 
@@ -11,9 +9,11 @@ export type LogLevel = 'trace' | 'debug' | 'info' | 'warn' | 'error';
  */
 export class Logger {
   static readonly LEVELS: LogLevel[] = ['trace', 'debug', 'info', 'warn', 'error'];
+
   static readonly FORMAT_REGEXP = /%[sdj%]/g;
 
   public entityManager: EntityManager = null as any;
+
   public levelIndex: number = 2;
 
   /**
@@ -24,21 +24,21 @@ export class Logger {
   static create(entityManager: EntityManager): Logger {
     const proto = this.prototype;
 
-    const Logger = function() {
-      function Logger() {
-        proto.log.apply(Logger, arguments as any);
+    const logger = (() => {
+      function LoggerFunction(...args: any[]) {
+        proto.log.apply(LoggerFunction, args as any);
       }
 
       Object.getOwnPropertyNames(proto).forEach((key) => {
-        Object.defineProperty(Logger, key, Object.getOwnPropertyDescriptor(proto, key)!);
+        Object.defineProperty(LoggerFunction, key, Object.getOwnPropertyDescriptor(proto, key)!);
       });
 
-      return Logger as any as Logger;
-    }();
+      return LoggerFunction as any as Logger;
+    })();
 
-    Logger.init(entityManager);
+    logger.init(entityManager);
 
-    return Logger;
+    return logger;
   }
 
   /**
@@ -58,7 +58,7 @@ export class Logger {
   set level(value: LogLevel) {
     const index = Logger.LEVELS.indexOf(value);
     if (index === -1) {
-      throw new Error('Unknown logging level ' + value);
+      throw new Error(`Unknown logging level ${value}`);
     }
 
     this.levelIndex = index;
@@ -116,8 +116,7 @@ export class Logger {
    */
   log(level: string, message: string, data: any): Promise<any>;
 
-  log(): Promise<any> {
-    const args = Array.prototype.slice.call(arguments);
+  log(...args: any[]): Promise<any> {
     const level: LogLevel = Logger.LEVELS.indexOf(args[0]) === -1 ? 'info' : args.shift();
 
     if (this.levelIndex > Logger.LEVELS.indexOf(level)) {
@@ -128,26 +127,29 @@ export class Logger {
 
     let data: { data: any } | { name: string, message: string, stack: string, data: {}, status: number } | null = null;
     if (args.length) {
-      const arg = data = args.pop();
+      const arg = args.pop();
+      data = arg;
       if (typeof arg !== 'object' || Array.isArray(arg)) {
         data = { data: arg };
       }
       if (arg instanceof Error) {
         // errors aren't loggable by default, since they do not have any visible property
-        // @ts-ignore
-        const {stack, data: data1, message: message1, name, status} = arg;
+        const {
+          // @ts-ignore
+          stack, data: data1, message: message1, name, status,
+        } = arg;
         data = {
-          name: name,
+          name,
           message: message1,
-          stack: stack,
-          status: status,
+          stack,
+          status,
           data: data1,
         };
       }
     }
 
     if (args.length) {
-      message += ', ' + args.join(', ');
+      message += `, ${args.join(', ')}`;
     }
 
     return this.logJSON({
@@ -155,7 +157,7 @@ export class Logger {
       message,
       level,
       data,
-      ...(this.entityManager.me && {user: this.entityManager.me.id })
+      ...(this.entityManager.me && { user: this.entityManager.me.id }),
     });
   }
 

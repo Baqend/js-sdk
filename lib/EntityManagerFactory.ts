@@ -1,14 +1,11 @@
-'use strict';
-
-import { EntityManager } from "./EntityManager";
-import * as message from "./message";
-import { Connector, Message } from "./connector";
-import { JsonMap, Lockable } from "./util";
-import { TokenStorage, TokenStorageFactory } from "./intersection/TokenStorage";
-import { Metamodel } from "./metamodel/Metamodel";
-import { Response } from "./connector/Connector";
-import { WebSocketConnector } from "./connector/WebSocketConnector";
-import { Code } from "./intersection";
+import { EntityManager } from './EntityManager';
+import * as message from './message';
+import {
+  Connector, Message, Response, WebSocketConnector,
+} from './connector';
+import { JsonMap, Lockable } from './util';
+import { TokenStorage, TokenStorageFactory, Code } from './intersection';
+import { Metamodel } from './metamodel';
 
 const CONNECTED = Symbol('Connected');
 const WS = Symbol('WebSocket');
@@ -21,19 +18,25 @@ export type ConnectData = {
   user?: JsonMap,
   bloomFilter?: JsonMap,
   websocket?: string,
-}
+};
 
 export class EntityManagerFactory extends Lockable {
   public connection: Connector | null = null;
+
   public metamodel: Metamodel = this.createMetamodel();
+
   public code: Code = new Code(this.metamodel, this);
+
   public tokenStorageFactory: TokenStorageFactory = TokenStorage.WEB_STORAGE || TokenStorage.GLOBAL;
+
   public tokenStorage: TokenStorage | null = null;
+
   public staleness: number | null = null;
 
   public connectData?: ConnectData;
 
   private [WS]?: WebSocketConnector;
+
   private [CONNECTED]?: () => any;
 
   /**
@@ -41,12 +44,12 @@ export class EntityManagerFactory extends Lockable {
    */
   get websocket(): WebSocketConnector {
     if (!this[WS]) {
-      const secure = this.connection!.secure;
+      const { secure } = this.connection!;
       let url;
       if (this.connectData!.websocket) {
         url = (secure ? 'wss:' : 'ws:') + this.connectData!.websocket;
       } else {
-        url = this.connection!.origin.replace(/^http/, 'ws') + this.connection!.basePath + '/events';
+        url = `${this.connection!.origin.replace(/^http/, 'ws') + this.connection!.basePath}/events`;
       }
       this[WS] = WebSocketConnector.create(url);
     }
@@ -68,16 +71,15 @@ export class EntityManagerFactory extends Lockable {
    * data
    */
   constructor(options: {
-      host?: string,
-      port?: number,
-      secure?: boolean,
-      basePath?: string,
-      schema?: JsonMap,
-      tokenStorage?: TokenStorage,
-      tokenStorageFactory?: TokenStorageFactory,
-      staleness?: number
-    } | string = {}
-  ) {
+    host?: string,
+    port?: number,
+    secure?: boolean,
+    basePath?: string,
+    schema?: JsonMap,
+    tokenStorage?: TokenStorage,
+    tokenStorageFactory?: TokenStorageFactory,
+    staleness?: number
+  } | string = {}) {
     super();
 
     const opt = typeof options === 'string' ? { host: options } : options || {};
@@ -148,7 +150,8 @@ export class EntityManagerFactory extends Lockable {
    * data, <code>0</code> to always bypass the browser cache
    * @return
    */
-  configure(options: { tokenStorage?: TokenStorage, tokenStorageFactory?: TokenStorageFactory, staleness?: number }): void {
+  configure(options: { tokenStorage?: TokenStorage, tokenStorageFactory?: TokenStorageFactory,
+    staleness?: number }): void {
     if (this.connection) {
       throw new Error('The EntityManagerFactory can only be configured before is is connected.');
     }
@@ -185,7 +188,8 @@ export class EntityManagerFactory extends Lockable {
    */
   connect(hostOrApp: string, port?: number, secure?: boolean, basePath?: string): Promise<this>;
 
-  connect(hostOrApp: string, port?: number | boolean | undefined, secure?: string | boolean | undefined, basePath?: string | undefined): Promise<this> {
+  connect(hostOrApp: string, port?: number | boolean | undefined, secure?: string | boolean | undefined,
+    basePath?: string | undefined): Promise<this> {
     if (this.connection) {
       throw new Error('The EntityManagerFactory is already connected.');
     }
@@ -199,7 +203,6 @@ export class EntityManagerFactory extends Lockable {
     this[CONNECTED]!!();
     return this.ready();
   }
-
 
   /**
    * Creates a new Metamodel instance, which is not connected
@@ -225,14 +228,14 @@ export class EntityManagerFactory extends Lockable {
       em.connected(
         this.connection!,
         this.connectData!,
-        useSharedTokenStorage ? this.tokenStorage! : new TokenStorage(this.connection!.origin)
+        useSharedTokenStorage ? this.tokenStorage! : new TokenStorage(this.connection!.origin),
       );
     } else {
       em.withLock(() => this.ready().then(() => {
         em.connected(
           this.connection!,
           this.connectData!,
-          useSharedTokenStorage ? this.tokenStorage! : new TokenStorage(this.connection!.origin)
+          useSharedTokenStorage ? this.tokenStorage! : new TokenStorage(this.connection!.origin),
         );
       }), true);
     }
@@ -241,10 +244,9 @@ export class EntityManagerFactory extends Lockable {
   }
 
   send(msg: Message): Promise<Response> {
-    if (!msg.tokenStorage) {
-      msg.tokenStorage = this.tokenStorage;
+    if (!msg.tokenStorage()) {
+      msg.tokenStorage(this.tokenStorage);
     }
     return this.connection!.send(msg);
   }
 }
-

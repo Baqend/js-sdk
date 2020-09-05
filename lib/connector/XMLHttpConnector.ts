@@ -1,11 +1,11 @@
 /* this connector will only be choose in browser compatible environments */
 /* eslint no-restricted-globals: ["off", "addEventListener", "removeEventListener"] */
 
-'use strict';
-
-import { Connector, Receiver, Request, Response, ResponseBodyType } from "./Connector";
-import { atob } from "../util";
-import { Message } from "./Message";
+import {
+  Connector, Receiver, Request, Response, ResponseBodyType,
+} from './Connector';
+import { atob } from '../util';
+import { Message } from './Message';
 
 export class XMLHttpConnector extends Connector {
   private oAuthHandle?: (msg: Response) => void;
@@ -13,6 +13,7 @@ export class XMLHttpConnector extends Connector {
   /**
    * @inheritDoc
    */
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   static isUsable(host: string, port: number, secure: boolean, basePath: string) {
     return typeof XMLHttpRequest !== 'undefined';
   }
@@ -75,8 +76,8 @@ export class XMLHttpConnector extends Connector {
 
     xhr.open(request.method, url, true);
 
-    const entity = request.entity;
-    const headers = request.headers;
+    const { entity } = request;
+    const { headers } = request;
 
     const headerNames = Object.keys(headers);
     for (let i = 0, len = headerNames.length; i < len; i += 1) {
@@ -118,7 +119,7 @@ export class XMLHttpConnector extends Connector {
         reader.onload = resolve;
         reader.onerror = reject;
       }).then(() => {
-        let result = reader.result;
+        let { result } = reader;
 
         if (type === 'base64' && typeof result === 'string') {
           result = result.substring(result.indexOf(',') + 1);
@@ -135,10 +136,10 @@ export class XMLHttpConnector extends Connector {
    * @inheritDoc
    */
   toFormat(message: Message) {
-    let type = message.request.type;
+    let { type } = message.request;
 
     if (type) {
-      let entity = message.request.entity;
+      let { entity } = message.request;
       let mimeType = message.mimeType();
       switch (type) {
         case 'blob':
@@ -150,6 +151,7 @@ export class XMLHttpConnector extends Connector {
         case 'data-url': {
           const match = entity.match(/^data:(.+?)(;base64)?,(.*)$/);
           const isBase64 = match[2];
+          // eslint-disable-next-line prefer-destructuring
           entity = match[3];
 
           type = 'blob';
@@ -179,7 +181,7 @@ export class XMLHttpConnector extends Connector {
         case 'text':
           break;
         default:
-          throw new Error('Supported request format:' + type);
+          throw new Error(`Supported request format:${type}`);
       }
 
       message.entity(entity, type).mimeType(mimeType);

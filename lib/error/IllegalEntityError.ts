@@ -1,7 +1,5 @@
-'use strict';
-
-import { PersistentError } from "./PersistentError";
-import { Entity } from "../binding";
+import { PersistentError } from './PersistentError';
+import { Entity } from '../binding';
 
 export class IllegalEntityError extends PersistentError {
   /**
@@ -13,7 +11,7 @@ export class IllegalEntityError extends PersistentError {
    * @param entity - The entity which cause the error
    */
   constructor(entity: Entity) {
-    super('Entity ' + entity + ' is not a valid entity');
+    super(`Entity ${entity} is not a valid entity`);
     this.entity = entity;
   }
 }

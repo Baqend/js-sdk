@@ -1,14 +1,11 @@
-'use strict';
-
-import { Managed } from "./Managed";
-import { EntityPartialUpdateBuilder } from "../partialupdate";
-import { enumerable } from "../util/enumerable";
-import { PersistentError } from "../error";
-import { Filter } from "../query";
-import { Json, JsonMap } from "../util";
-import { Metadata, ValidationResult } from "../intersection";
-import { EntityManager } from "../EntityManager";
-import { ManagedMetadata } from "../intersection/Metadata";
+import { Managed } from './Managed';
+import { EntityPartialUpdateBuilder } from '../partialupdate';
+import { enumerable } from '../util/enumerable';
+import { PersistentError } from '../error';
+import { Filter } from '../query';
+import { Json, JsonMap } from '../util';
+import { Metadata, ValidationResult } from '../intersection';
+import type { EntityManager } from '../EntityManager';
 
 export interface Entity {
   /**
@@ -17,7 +14,6 @@ export interface Entity {
   _metadata: Metadata;
 }
 export class Entity extends Managed {
-
   /**
    * Date of the creation of the object
    * @name createdAt
@@ -51,11 +47,11 @@ export class Entity extends Managed {
 
   set id(value: string | null) {
     if (this._metadata.id) {
-      throw new Error('The id can\'t be set twice: ' + value);
+      throw new Error(`The id can't be set twice: ${value}`);
     }
 
-    const val = value + '';
-    if (val.indexOf('/db/' + this._metadata.bucket + '/') === 0) {
+    const val = `${value}`;
+    if (val.indexOf(`/db/${this._metadata.bucket}/`) === 0) {
       this._metadata.id = value;
     } else {
       this.key = value;
@@ -108,7 +104,6 @@ export class Entity extends Managed {
 
   /**
    * Waits on the previously requested operation on this object completes
-   * @param doneCallback The callback which will be invoked when the previously
    * operations on this object is completed.
    * @return A promise which completes successfully, when the previously requested
    * operation completes
@@ -141,8 +136,9 @@ export class Entity extends Managed {
    * @return A Promise that will be fulfilled when the asynchronous operation completes.
    */
   @enumerable(false)
-  save(options?: { force?: boolean, depth?: number | boolean, refresh?: boolean}, doneCallback?: any, failCallback?: any): Promise<this> {
-    if (options instanceof Function) {
+  save(options?: { force?: boolean, depth?: number | boolean, refresh?: boolean}, doneCallback?: any,
+    failCallback?: any): Promise<this> {
+    if (typeof options === 'function') {
       return this.save({}, options, doneCallback);
     }
 
@@ -161,8 +157,9 @@ export class Entity extends Managed {
    * @method
    */
   @enumerable(false)
-  insert(options?: { depth?: number | boolean, refresh?: boolean }, doneCallback?: any, failCallback?: any): Promise<this> {
-    if (options instanceof Function) {
+  insert(options?: { depth?: number | boolean, refresh?: boolean }, doneCallback?: any,
+    failCallback?: any): Promise<this> {
+    if (typeof options === 'function') {
       return this.insert({}, options, doneCallback);
     }
 
@@ -186,8 +183,9 @@ export class Entity extends Managed {
    * @method
    */
   @enumerable(false)
-  update(options?: { force?: boolean, depth?: number | boolean, refresh?: boolean }, doneCallback?: any, failCallback?: any): Promise<this> {
-    if (options instanceof Function) {
+  update(options?: { force?: boolean, depth?: number | boolean, refresh?: boolean }, doneCallback?: any,
+    failCallback?: any): Promise<this> {
+    if (typeof options === 'function') {
       return this.update({}, options, doneCallback);
     }
 
@@ -210,8 +208,9 @@ export class Entity extends Managed {
    * @method
    */
   @enumerable(false)
-  load(options?: { depth?: number | boolean, refresh?: boolean }, doneCallback?: any, failCallback?: any): Promise<this> {
-    if (options instanceof Function) {
+  load(options?: { depth?: number | boolean, refresh?: boolean }, doneCallback?: any,
+    failCallback?: any): Promise<this> {
+    if (typeof options === 'function') {
       return this.load({}, options, doneCallback);
     }
 
@@ -237,8 +236,9 @@ export class Entity extends Managed {
    * @method
    */
   @enumerable(false)
-  delete(options?: { force?: boolean, depth?: number | boolean }, doneCallback?: any, failCallback?: any): Promise<this> {
-    if (options instanceof Function) {
+  delete(options?: { force?: boolean, depth?: number | boolean }, doneCallback?: any,
+    failCallback?: any): Promise<this> {
+    if (typeof options === 'function') {
       return this.delete({}, options, doneCallback);
     }
 
@@ -299,11 +299,11 @@ export class Entity extends Managed {
    */
   @enumerable(false)
   getReferencing(options?: { classes: string[] }): Promise<Entity[]> {
-    const db = this._metadata.db;
+    const { db } = this._metadata;
     const references = this._metadata.type.getReferencing(db, options);
 
     // Query all possibly referencing objects
-    const allResults = Array.from(references).map(([ ref, attrs]) => {
+    const allResults = Array.from(references).map(([ref, attrs]) => {
       // Create query for given entity
       const qb = db.createQueryBuilder<Entity>(ref.typeConstructor);
 
@@ -319,10 +319,10 @@ export class Entity extends Managed {
       return query.resultList();
     });
 
-    return Promise.all(allResults).then(results => (
+    return Promise.all(allResults).then((results) => (
       // Filter out all objects which did not match
-      results.filter(result => !!result.length)
-    )).then(results => (
+      results.filter((result) => !!result.length)
+    )).then((results) => (
       // Flat the array of results
       Array.prototype.concat.apply([] as Entity[], results)
     ));

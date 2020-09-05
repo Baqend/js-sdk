@@ -1,3 +1,1 @@
-'use strict';
-
-export { BloomFilter } from "./BloomFilter";
+export { BloomFilter } from './BloomFilter';

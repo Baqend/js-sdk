@@ -1,11 +1,18 @@
-'use strict'
+
 
 module.exports = {
-  plugins: ['node'],
+  parser: '@typescript-eslint/parser',
+
+  plugins: [
+    '@typescript-eslint',
+    'node',
+  ],
 
   extends: [
-    require.resolve('eslint-config-airbnb-base'),
-    'plugin:node/recommended',
+    'airbnb-typescript/base',
+    'plugin:@typescript-eslint/eslint-recommended',
+    // "plugin:@typescript-eslint/recommended",
+    // 'plugin:node/recommended-module',
   ],
 
   env: {
@@ -15,8 +22,9 @@ module.exports = {
   },
 
   parserOptions: {
-    sourceType: 'script',
-    ecmaVersion: 6,
+    sourceType: 'module',
+    ecmaVersion: 2015,
+    project: './tsconfig.json',
   },
 
   rules: {
@@ -26,29 +34,13 @@ module.exports = {
 
     strict: ['error', 'global'],
 
-    // FIXME allow all currently used _fields for now
-    'no-underscore-dangle': ['warn', { allow: ['_metadata'] }],
-    // 'no-underscore-dangle': ['error', { allowAfterThis: true }],
+    // we disallow default exports
+    "import/prefer-default-export": "off",
+    "import/no-default-export": "error",
 
-    // Node 4 does not support backtick therefore disallow them
-    quotes: ['error', 'single'],
-    'prefer-template': 'off',
-
-    // comma dangling for functions is not supported in es2016
-    'comma-dangle': ['error', {
-      arrays: 'always-multiline',
-      objects: 'always-multiline',
-      imports: 'always-multiline',
-      exports: 'always-multiline',
-      functions: 'never',
-    }],
-
-    // Change these rules if we drop Node 4 support
-    'prefer-spread': 'off',
-    'prefer-rest-params': 'off',
-    'prefer-destructuring': 'off',
-    'no-param-reassign': ['error', { props: false }],
+    // we use this in several places, should be discussed if we want to re-enable this
     'class-methods-use-this': 'off',
+    "no-underscore-dangle": ['error', { "allowAfterThis": true }],
 
     'node/no-deprecated-api': 'error',
     'no-buffer-constructor': 'error',
@@ -70,15 +62,15 @@ module.exports = {
       files: ['spec/*.js'],
 
       globals: {
-        'Abort': true,
-        'ArrayBuffer': true,
-        'DB': true,
-        'env': true,
-        'expect': true,
-        'helper': true,
-        'Map': true,
-        'Promise': true,
-        'Set': true,
+        Abort: true,
+        ArrayBuffer: true,
+        DB: true,
+        env: true,
+        expect: true,
+        helper: true,
+        Map: true,
+        Promise: true,
+        Set: true,
       },
 
       env: {
@@ -115,4 +107,4 @@ module.exports = {
       },
     },
   ],
-}
+};

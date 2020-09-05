@@ -3,11 +3,12 @@
  * @param value - the enumerable value of the property descriptor
  */
 export function enumerable(value: boolean) {
-    return function(
-        target: any,
-        propertyKey: string,
-        descriptor: PropertyDescriptor
-    ) {
-        descriptor.enumerable = value;
-    };
+  return function decorate(
+    target: any,
+    propertyKey: string,
+    descriptor: PropertyDescriptor,
+  ) {
+    // eslint-disable-next-line no-param-reassign
+    descriptor.enumerable = value;
+  };
 }

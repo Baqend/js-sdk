@@ -1,7 +1,5 @@
-'use strict';
-
-import { Managed } from "./Managed";
-import { Attribute } from "../metamodel";
+import { Managed } from './Managed';
+import { Attribute } from '../metamodel';
 
 export class Accessor {
   /**
@@ -19,6 +17,7 @@ export class Accessor {
    * @param value
    */
   setValue<T>(object: Managed, attribute: Attribute<T>, value: T): void {
+    // eslint-disable-next-line no-param-reassign
     object[attribute.name] = value;
   }
 }

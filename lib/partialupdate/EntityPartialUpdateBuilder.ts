@@ -1,10 +1,8 @@
-'use strict';
-
-import { PartialUpdateBuilder } from "./PartialUpdateBuilder";
-import { JsonMap } from "../util";
-import * as message from "../message";
-import { Entity } from "../binding";
-import { Metadata } from "../intersection";
+import { PartialUpdateBuilder } from './PartialUpdateBuilder';
+import { JsonMap } from '../util';
+import * as message from '../message';
+import { Entity } from '../binding';
+import { Metadata } from '../intersection';
 
 export class EntityPartialUpdateBuilder<T extends Entity> extends PartialUpdateBuilder<T> {
   /**

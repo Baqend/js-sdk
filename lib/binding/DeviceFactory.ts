@@ -1,9 +1,7 @@
-'use strict';
-
-import * as message from "../message";
-import { PushMessage } from "../intersection";
-import * as model from "../model";
-import { EntityFactory } from "./EntityFactory";
+import * as message from '../message';
+import { PushMessage } from '../intersection';
+import type * as model from '../model';
+import { EntityFactory } from './EntityFactory';
 
 export class DeviceFactory extends EntityFactory<model.Device> {
   /**
@@ -36,7 +34,7 @@ export class DeviceFactory extends EntityFactory<model.Device> {
   loadWebPushKey(): Promise<ArrayBuffer> {
     const msg = new message.VAPIDPublicKey();
     msg.responseType('arraybuffer');
-    return this.db.send(msg).then(response => response.entity);
+    return this.db.send(msg).then((response) => response.entity);
   }
 
   /**
@@ -47,7 +45,8 @@ export class DeviceFactory extends EntityFactory<model.Device> {
    * @param failCallback Called when the operation failed.
    * @return The registered device
    */
-  register(os: string, tokenOrSubscription: string | PushSubscription, doneCallback?: any, failCallback?: any): Promise<model.Device>;
+  register(os: string, tokenOrSubscription: string | PushSubscription, doneCallback?: any, failCallback?: any):
+  Promise<model.Device>;
 
   /**
    * Register a new device with the given device token and OS.
@@ -59,9 +58,11 @@ export class DeviceFactory extends EntityFactory<model.Device> {
    * @param failCallback Called when the operation failed.
    * @return The registered device
    */
-  register(os: string, tokenOrSubscription: string | PushSubscription, device: model.Device | null, doneCallback?: any, failCallback?: any): Promise<model.Device>;
+  register(os: string, tokenOrSubscription: string | PushSubscription, device: model.Device | null, doneCallback?: any,
+    failCallback?: any): Promise<model.Device>;
 
-  register(os: string, tokenOrSubscription: string | PushSubscription, device: model.Device | Function | null, doneCallback?: any, failCallback?: any): Promise<model.Device> {
+  register(os: string, tokenOrSubscription: string | PushSubscription, device: model.Device | Function | null,
+    doneCallback?: any, failCallback?: any): Promise<model.Device> {
     if (device instanceof Function) {
       return this.register(os, tokenOrSubscription, null, device, doneCallback);
     }

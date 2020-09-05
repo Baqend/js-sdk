@@ -1,9 +1,7 @@
-'use strict';
-
-import * as model from "../model";
-import { User } from "./User";
-import { Entity } from "./Entity";
-import { enumerable } from "../util/enumerable";
+import type * as model from '../model';
+import { User } from './User';
+import { Entity } from './Entity';
+import { enumerable } from '../util/enumerable';
 
 export class Role extends Entity {
   /**

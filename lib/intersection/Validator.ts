@@ -1,23 +1,25 @@
-import { Entity } from "../binding";
-import { ManagedType } from "../metamodel";
-import validator from "validator";
+import validator from 'validator';
+import { Entity } from '../binding';
+import { ManagedType } from '../metamodel';
 
 const FallBachValLib = {};
 let valLib: Partial<typeof validator> = FallBachValLib;
 try {
   // we load this module as an optional external dependency
-  valLib = require("validator");
-} catch(e) {}
+  // eslint-disable-next-line global-require
+  valLib = require('validator');
+} catch (e) {
+  // ignore loading optional module error
+}
 
 type Validators = Omit<
     typeof validator, // Extract<typeof validator, Function>,
-    "version" | "blacklist" | "escape" | "unescape" | "ltrim" | "normalizeEmail" | "rtrim" | "stripLow" | "toBoolean" | "toDate" | "toFloat" | "toInt" | "trim" | "whitelist" | "toString"
+'version' | 'blacklist' | 'escape' | 'unescape' | 'ltrim' | 'normalizeEmail' | 'rtrim' | 'stripLow' | 'toBoolean' | 'toDate' | 'toFloat' | 'toInt' | 'trim' | 'whitelist' | 'toString'
 >;
 
 // import all validators from the validation library
 export interface Validator extends Pick<Validators, keyof Validators>{}
 export class Validator {
-
   /**
    * Compiles the given validation code for the managedType
    * @param managedType The managedType of the code
@@ -32,14 +34,14 @@ export class Validator {
       keys.push(attr.name);
     }
 
-    // eslint-disable-next-line no-new-func
+    // eslint-disable-next-line @typescript-eslint/no-implied-eval,no-new-func
     const fn = new Function(...keys, validationCode);
     return function onValidate(argObj: {[arg: string]: Validator}) {
       if (valLib === FallBachValLib) {
         throw new Error('Validation code will not be executed. Make sure that the validator package is correctly provided as an external dependency.');
       }
 
-      const args = keys.map(name => argObj[name]);
+      const args = keys.map((name) => argObj[name]);
       return fn.apply({}, args);
     };
   }
@@ -117,7 +119,7 @@ export class Validator {
     this.entity = entity;
   }
 
-  callMethod(method: keyof typeof validator, errorMessage: string, argumentList: any[]) {
+  callMethod(method: keyof typeof validator, errorMessage: string | null, argumentList: any[]) {
     const args = argumentList || [];
     try {
       args.unshift(this.toStringValue());
@@ -131,7 +133,7 @@ export class Validator {
   }
 
   toStringValue() {
-    const value = this.value;
+    const { value } = this;
     if (typeof value === 'string' || value instanceof Date) {
       return value;
     }
@@ -150,9 +152,10 @@ export class Validator {
 const OTHER_VALIDATORS: string[] = ['contains', 'equals', 'matches'];
 (Object.keys(valLib) as (keyof Validators)[]).forEach((name: (keyof Validators)) => {
   if (name.startsWith('is') || OTHER_VALIDATORS.includes(name)) {
-    (Validator.prototype[name] as any) = function validate(this: Validator, error: any) { // use function here to keep the correct this context
-      const hasErrorMessage = typeof error === 'string';
-      return this.callMethod(name, hasErrorMessage ? error : null, Array.prototype.slice.call(arguments, hasErrorMessage ? 1 : 0));
+    // use function here to keep the correct this context
+    (Validator.prototype[name] as any) = function validate(this: Validator, ...args: any[]) {
+      const error = typeof args[0] === 'string' ? args.shift() : null;
+      return this.callMethod(name, error, args);
     };
   }
 });

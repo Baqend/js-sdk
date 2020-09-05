@@ -1,29 +1,106 @@
-'use strict';
+// eslint-disable-next-line max-classes-per-file
+import {
+  DeviceFactory, Entity, EntityFactory, Managed, Role, User, UserFactory,
+} from '../binding';
 
-import { DeviceFactory, Entity, EntityFactory, Managed, Role, User, UserFactory } from "../binding";
-
-import { Class, Json, JsonMap } from "../util";
-import { ManagedType } from "./ManagedType";
-import { PersistenceType } from "./Type";
-import { BasicType } from "./BasicType";
-import { SingularAttribute } from "./SingularAttribute";
-import { Acl } from "../Acl";
-import { EntityManager } from "../EntityManager";
-import { PluralAttribute } from "./index";
-import { Metadata, Permission } from "../intersection";
+import { Class, Json, JsonMap } from '../util';
+import { ManagedType } from './ManagedType';
+import { PersistenceType } from './Type';
+import { BasicType } from './BasicType';
+import { SingularAttribute } from './SingularAttribute';
+import type { Acl } from '../Acl';
+import type { EntityManager } from '../EntityManager';
+import { PluralAttribute } from './PluralAttribute';
+import { Metadata, Permission } from '../intersection';
 
 export class EntityType<T extends Entity> extends ManagedType<T> {
-  public static Object: typeof ObjectType;
+  public static Object = class ObjectType extends EntityType<any> {
+    static get ref() {
+      return '/db/Object';
+    }
+
+    constructor() {
+      super(EntityType.Object.ref, null as any, Object);
+
+      this.declaredId = new class extends SingularAttribute<String> {
+        constructor() {
+          super('id', BasicType.String, true);
+        }
+
+        getJsonValue(state: Metadata): Json {
+          return state.id || undefined as any;
+        }
+
+        setJsonValue(state: Metadata, object: Managed, jsonValue: Json) {
+          if (!state.id) {
+            // eslint-disable-next-line no-param-reassign
+            state.id = jsonValue as string;
+          }
+        }
+      }();
+      this.declaredId.init(this, 0);
+      this.declaredId.isId = true;
+
+      this.declaredVersion = new class extends SingularAttribute<Number> {
+        constructor() {
+          super('version', BasicType.Integer, true);
+        }
+
+        getJsonValue(state: Metadata) {
+          return state.version || undefined as any;
+        }
+
+        setJsonValue(state: Metadata, object: Managed, jsonValue: Json) {
+          if (jsonValue) {
+            // eslint-disable-next-line no-param-reassign
+            state.version = jsonValue as number;
+          }
+        }
+      }();
+      this.declaredVersion.init(this, 1);
+      this.declaredVersion.isVersion = true;
+
+      this.declaredAcl = new class extends SingularAttribute<Acl> {
+        constructor() {
+          super('acl', BasicType.JsonObject as BasicType<any>, true);
+        }
+
+        getJsonValue(state: Metadata) {
+          return state.acl.toJSON();
+        }
+
+        setJsonValue(state: Metadata, object: Managed, jsonValue: Json) {
+          state.acl.fromJSON(jsonValue as JsonMap || {});
+        }
+      }();
+
+      this.declaredAcl.init(this, 2);
+      this.declaredAcl.isAcl = true;
+
+      this.declaredAttributes = [this.declaredId, this.declaredVersion, this.declaredAcl];
+    }
+
+    createObjectFactory(): EntityFactory<any> {
+      throw new Error("Objects can't be directly created and persisted");
+    }
+  };
 
   public declaredId: SingularAttribute<String> | null = null;
+
   public declaredVersion: SingularAttribute<Number> | null = null;
+
   public declaredAcl: SingularAttribute<Acl> | null = null;
 
   public loadPermission: Permission = new Permission();
+
   public updatePermission: Permission = new Permission();
+
   public deletePermission: Permission = new Permission();
+
   public queryPermission: Permission = new Permission();
+
   public schemaSubclassPermission: Permission = new Permission();
+
   public insertPermission: Permission = new Permission();
 
   /**
@@ -33,23 +110,14 @@ export class EntityType<T extends Entity> extends ManagedType<T> {
     return PersistenceType.ENTITY;
   }
 
-  /**
-   * @type metamodel.SingularAttribute
-   */
   get id(): SingularAttribute<String> {
     return this.declaredId || this.superType!!.id;
   }
 
-  /**
-   * @type metamodel.SingularAttribute
-   */
   get version(): SingularAttribute<Number> {
     return this.declaredVersion || this.superType!!.version;
   }
 
-  /**
-   * @type metamodel.SingularAttribute
-   */
   get acl(): SingularAttribute<Acl> {
     return this.declaredAcl || this.superType!!.acl;
   }
@@ -68,22 +136,22 @@ export class EntityType<T extends Entity> extends ManagedType<T> {
    * @inheritDoc
    */
   createProxyClass(): Class<T> {
-    let Class = this.superType!!.typeConstructor;
-    if (Class === Object) {
+    let { typeConstructor } = this.superType!!;
+    if (typeConstructor === Object) {
       switch (this.name) {
         case 'User':
-          Class = User;
+          typeConstructor = User;
           break;
         case 'Role':
-          Class = Role;
+          typeConstructor = Role;
           break;
         default:
-          Class = Entity;
+          typeConstructor = Entity;
           break;
       }
     }
 
-    return this.enhancer!!.createProxy(Class);
+    return this.enhancer!!.createProxy(typeConstructor);
   }
 
   /**
@@ -95,8 +163,8 @@ export class EntityType<T extends Entity> extends ManagedType<T> {
    * @return A map from every referencing class to a set of its referencing attribute names
    */
   getReferencing(db: EntityManager, options?: {classes?: string[]}): Map<ManagedType<any>, Set<string>> {
-    const opts = Object.assign({}, options);
-    const entities = db.metamodel.entities;
+    const opts = { ...options };
+    const { entities } = db.metamodel;
     const referencing = new Map();
 
     const names = Object.keys(entities!);
@@ -109,7 +177,8 @@ export class EntityType<T extends Entity> extends ManagedType<T> {
         for (let el = iter.next(); !el.done; el = iter.next()) {
           const attr = el.value;
           // Filter only referencing singular and collection attributes
-          if (attr instanceof SingularAttribute && attr.type === this || attr instanceof PluralAttribute && attr.elementType === this) {
+          if ((attr instanceof SingularAttribute && attr.type === this)
+            || (attr instanceof PluralAttribute && attr.elementType === this)) {
             const typeReferences = referencing.get(attr.declaringType) || new Set();
             typeReferences.add(attr.name);
             referencing.set(attr.declaringType, typeReferences);
@@ -146,7 +215,8 @@ export class EntityType<T extends Entity> extends ManagedType<T> {
    * @param [options.onlyMetadata=false] Indicates if only the metadata should be updated
    * @return The merged entity instance
    */
-  fromJsonValue(state: Metadata, jsonObject: Json, currentObject: T | null, options: { persisting?: boolean, onlyMetadata?: boolean }): T | null {
+  fromJsonValue(state: Metadata, jsonObject: Json, currentObject: T | null,
+    options: { persisting?: boolean, onlyMetadata?: boolean }): T | null {
     // handle references
     if (typeof jsonObject === 'string') {
       return state.db.getReference(jsonObject) as T;
@@ -158,10 +228,11 @@ export class EntityType<T extends Entity> extends ManagedType<T> {
 
     const json = jsonObject as JsonMap;
 
-    const opt = Object.assign({
+    const opt = {
       persisting: false,
       onlyMetadata: false,
-    }, options);
+      ...options,
+    };
 
     let obj;
     if (currentObject) {
@@ -205,7 +276,8 @@ export class EntityType<T extends Entity> extends ManagedType<T> {
    *  Used to update the internal change tracking state of collections and mark the object persistent if its true
    * @return JSON-Object
    */
-  toJsonValue(state: Metadata, object: T | null, options?: { excludeMetadata?: boolean, depth?: number | boolean, persisting?: boolean }): Json {
+  toJsonValue(state: Metadata, object: T | null,
+    options?: { excludeMetadata?: boolean, depth?: number | boolean, persisting?: boolean }): Json {
     const { depth = 0, persisting = false } = options || {};
     const isInDepth = depth === true || depth > -1;
 
@@ -217,7 +289,7 @@ export class EntityType<T extends Entity> extends ManagedType<T> {
       const json = super.toJsonValue(objectState, object, {
         ...options,
         persisting,
-        depth: typeof depth === "boolean" ? depth : depth - 1,
+        depth: typeof depth === 'boolean' ? depth : depth - 1,
       });
       objectState.enable(true);
 
@@ -233,7 +305,7 @@ export class EntityType<T extends Entity> extends ManagedType<T> {
   }
 
   toString() {
-    return 'EntityType(' + this.ref + ')';
+    return `EntityType(${this.ref})`;
   }
 
   toJSON(): JsonMap {
@@ -249,78 +321,7 @@ export class EntityType<T extends Entity> extends ManagedType<T> {
         update: this.updatePermission.toJSON(),
         delete: this.deletePermission.toJSON(),
         query: this.queryPermission.toJSON(),
-      }
-    }
+      },
+    };
   }
 }
-
-export class ObjectType extends EntityType<any> {
-  static get ref() {
-    return '/db/Object';
-  }
-
-  constructor() {
-    super(EntityType.Object.ref, null as any, Object);
-
-    this.declaredId = new class extends SingularAttribute<String> {
-      constructor() {
-        super('id', BasicType.String, true);
-      }
-
-      getJsonValue(state: Metadata): Json {
-        return state.id || undefined as any;
-      }
-
-      setJsonValue(state: Metadata, object: Managed, jsonValue: Json) {
-        if (!state.id) {
-          state.id = jsonValue as string;
-        }
-      }
-    }();
-    this.declaredId.init(this, 0);
-    this.declaredId.isId = true;
-
-    this.declaredVersion = new class extends SingularAttribute<Number> {
-      constructor() {
-        super('version', BasicType.Integer, true);
-      }
-
-      getJsonValue(state: Metadata) {
-        return state.version || undefined as any;
-      }
-
-      setJsonValue(state: Metadata, object: Managed, jsonValue: Json) {
-        if (jsonValue) {
-          state.version = jsonValue as number;
-        }
-      }
-    }();
-    this.declaredVersion.init(this, 1);
-    this.declaredVersion.isVersion = true;
-
-    this.declaredAcl = new class extends SingularAttribute<Acl> {
-      constructor() {
-        super('acl', BasicType.JsonObject as BasicType<any>, true);
-      }
-
-      getJsonValue(state: Metadata) {
-        return state.acl.toJSON();
-      }
-
-      setJsonValue(state: Metadata, object: Managed, jsonValue: Json) {
-        state.acl.fromJSON(jsonValue as JsonMap || {});
-      }
-    }();
-
-    this.declaredAcl.init(this, 2);
-    this.declaredAcl.isAcl = true;
-
-    this.declaredAttributes = [this.declaredId, this.declaredVersion, this.declaredAcl];
-  }
-
-  createObjectFactory(db: EntityManager): EntityFactory<any> {
-    throw new Error("Objects can't be directly created and persisted");
-  }
-}
-
-EntityType.Object = ObjectType;

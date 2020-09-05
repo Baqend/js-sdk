@@ -1,13 +1,13 @@
-'use strict';
-
-import { hmac } from "../util/hmac";
+import { hmac } from '../util';
+import type { GlobalStorage } from './GlobalStorage';
+import type { WebStorage } from './WebStorage';
 
 export interface TokenData {
-   val: any;
-   sig: string;
-   createdAt: number;
-   data: string;
-   expireAt: number;
+  val: any;
+  sig: string;
+  createdAt: number;
+  data: string;
+  expireAt: number;
 }
 
 export interface TokenStorageFactory {
@@ -21,6 +21,7 @@ export interface TokenStorageFactory {
 
 export class TokenStorage {
   static GLOBAL: typeof GlobalStorage;
+
   static WEB_STORAGE: typeof WebStorage;
 
   /**
@@ -102,7 +103,8 @@ export class TokenStorage {
    * @deprecated Use TokenStorage#saveToken instead
    * @protected
    */
-  protected _saveToken(origin: string, token: string | null, temporary: boolean): void {} // eslint-disable-line no-unused-vars
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  protected _saveToken(origin: string, token: string | null, temporary: boolean): void {}
 
   /**
    * Update the token for the givin origin, the operation may be asynchronous
@@ -127,100 +129,14 @@ export class TokenStorage {
    * @return A resource token which can only be used to access the specified resource
    */
   signPath(resource: string, sign: boolean = true): Promise<string> {
-    const tokenData = this.tokenData;
+    const { tokenData } = this;
     const result = Promise.resolve(resource.split('/').map(encodeURIComponent).join('/'));
 
     if (!tokenData || !sign) {
       return result;
     }
 
-    return result.then(path => {
-      return hmac(path + tokenData.data, tokenData.sig).then(hmac => {
-        return path + '?BAT=' + (tokenData.data + hmac);
-      });
-    });
+    return result.then((path) => hmac(path + tokenData.data, tokenData.sig)
+      .then((hash) => `${path}?BAT=${tokenData.data + hash}`));
   }
-}
-
-class GlobalStorage extends TokenStorage {
-  private static tokens: {[origin: string]: string} = {};
-
-  /**
-   * Creates a global token storage instance for the given origin
-   * A global token storage use a global variable to store the actual origin tokens
-   * @param origin
-   * @return
-   */
-  static create(origin: string): Promise<GlobalStorage> {
-    return Promise.resolve(new GlobalStorage(origin, GlobalStorage.tokens[origin]));
-  }
-
-  /**
-   * @inheritDoc
-   */
-  saveToken(origin: string, token: string, temporary: boolean) {
-    if (!temporary) {
-      if (token) {
-        GlobalStorage.tokens[origin] = token;
-      } else {
-        delete GlobalStorage.tokens[origin];
-      }
-    }
-  }
-}
-
-TokenStorage.GLOBAL = GlobalStorage;
-
-/**
- * @ignore
- */
-class WebStorage extends TokenStorage {
-  static isAvailable() {
-    try {
-      // firefox throws an exception if cookies are disabled
-      if (typeof localStorage === 'undefined') {
-        return false;
-      }
-
-      localStorage.setItem('bq_webstorage_test', 'bq');
-      localStorage.removeItem('bq_webstorage_test');
-      return true;
-    } catch (e) {
-      return false;
-    }
-  }
-
-  /**
-   * Creates a global web storage instance for the given origin
-   * A web token storage use the localStorage or sessionStorage to store the origin tokens
-   * @param origin
-   * @return
-   */
-  static create(origin: string): Promise<WebStorage> {
-    let temporary = false;
-    let token = localStorage.getItem('BAT:' + origin);
-
-    if (!token && typeof sessionStorage !== 'undefined') {
-      token = sessionStorage.getItem('BAT:' + origin);
-      temporary = !!token;
-    }
-
-    return Promise.resolve(new WebStorage(origin, token, temporary));
-  }
-
-  /**
-   * @inheritDoc
-   */
-  saveToken(origin: string, token: string | null, temporary: boolean) {
-    const webStorage = temporary ? sessionStorage : localStorage;
-    if (token) {
-      webStorage.setItem('BAT:' + origin, token);
-    } else {
-      webStorage.removeItem('BAT:' + origin);
-    }
-  }
-}
-
-if (WebStorage.isAvailable()) {
-  TokenStorage.WEB_STORAGE = WebStorage;
 }

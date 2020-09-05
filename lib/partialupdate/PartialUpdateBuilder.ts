@@ -1,8 +1,6 @@
-'use strict';
-
-import { UpdateOperation } from "./UpdateOperation";
-import { Json, JsonMap } from "../util";
-import { Entity } from "../binding";
+import { UpdateOperation } from './UpdateOperation';
+import { Json, JsonMap } from '../util';
+import { Entity } from '../binding';
 
 const ALLOWED_OPERATIONS = [
   '$add',
@@ -366,14 +364,13 @@ export class PartialUpdateBuilder<T extends Entity> {
    * @return
    */
   toJSON(): Json {
-    return this.operations.reduce((json, operation: UpdateOperation) => {
-      const obj: {[path: string]: any} = {};
-      obj[operation.path] = operation.value;
-
-      json[operation.name] = Object.assign({}, json[operation.name], obj);
-
-      return json;
-    }, {} as {[path: string]: any});
+    return this.operations.reduce((json, operation: UpdateOperation) => ({
+      ...json,
+      [operation.name]: {
+        ...json[operation.name],
+        [operation.path]: operation.value,
+      },
+    }), {} as {[path: string]: any});
   }
 
   /**
@@ -401,7 +398,7 @@ export class PartialUpdateBuilder<T extends Entity> {
     }
 
     if (ALLOWED_OPERATIONS.indexOf(operator) === -1) {
-      throw new Error('Operation invalid: ' + operator);
+      throw new Error(`Operation invalid: ${operator}`);
     }
 
     if (this.hasOperationOnPath(path)) {
@@ -450,12 +447,12 @@ export class PartialUpdateBuilder<T extends Entity> {
    * @private
    */
   hasOperationOnPath(path: string): boolean {
-    return this.operations.some(op => op.path === path);
+    return this.operations.some((op) => op.path === path);
   }
 }
 
 // aliases
-Object.assign(PartialUpdateBuilder.prototype,{
+Object.assign(PartialUpdateBuilder.prototype, {
   increment: PartialUpdateBuilder.prototype.inc,
   decrement: PartialUpdateBuilder.prototype.dec,
   multiply: PartialUpdateBuilder.prototype.mul,

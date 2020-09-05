@@ -1,14 +1,14 @@
-'use strict';
-
-import { Attribute, PersistentAttributeType } from "./Attribute";
-import { PersistenceType, Type } from "./Type";
-import { Class, Json, JsonArray, JsonMap } from "../util";
-import { Metadata } from "../intersection";
-import { Managed } from "../binding";
+import { Attribute, PersistentAttributeType } from './Attribute';
+import { PersistenceType, Type } from './Type';
+import {
+  Class, Json,
+} from '../util';
+import { Metadata } from '../intersection';
+import { Managed } from '../binding';
 
 export class SingularAttribute<T> extends Attribute<T> {
   public type: Type<T>;
-  
+
   /**
    * The constructor of the element type of this attribute
    */
@@ -45,14 +45,16 @@ export class SingularAttribute<T> extends Attribute<T> {
   /**
    * @inheritDoc
    */
-  getJsonValue(state: Metadata, object: Managed, options: { excludeMetadata?: boolean; depth?: number | boolean, persisting: boolean }): Json | undefined {
+  getJsonValue(state: Metadata, object: Managed,
+    options: { excludeMetadata?: boolean; depth?: number | boolean, persisting: boolean }): Json | undefined {
     return this.type.toJsonValue(state, this.getValue(object), options);
   }
 
   /**
    * @inheritDoc
    */
-  setJsonValue(state: Metadata, object: Managed, jsonValue: Json, options: { onlyMetadata?: boolean, persisting: boolean }) {
+  setJsonValue(state: Metadata, object: Managed, jsonValue: Json,
+    options: { onlyMetadata?: boolean, persisting: boolean }) {
     this.setValue(object, this.type.fromJsonValue(state, jsonValue, this.getValue(object), options));
   }
 
@@ -62,7 +64,7 @@ export class SingularAttribute<T> extends Attribute<T> {
   toJSON() {
     return {
       type: this.type.ref,
-      ...super.toJSON()
-    }
+      ...super.toJSON(),
+    };
   }
 }

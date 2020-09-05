@@ -1,20 +1,22 @@
 /* this connector will only be choose in browser compatible environments */
 /* eslint no-restricted-globals: ["off", "location", "addEventListener"] */
 
-'use strict';
-
-import { Connector, Receiver, Request } from "./Connector";
-import { XMLHttpConnector } from "./XMLHttpConnector";
-import { Message } from "./Message";
-import { JsonMap } from "../util/Json";
+import { Connector, Receiver, Request } from './Connector';
+import { XMLHttpConnector } from './XMLHttpConnector';
+import { Message } from './Message';
+import { JsonMap } from '../util';
 
 export class IFrameConnector extends XMLHttpConnector {
   public static readonly style = 'width:1px;height:1px;position:absolute;top:-10px;left:-10px;';
 
   private mid: number;
+
   private messages: { [messageId: number]: Receiver };
+
   private iframe?: HTMLIFrameElement;
+
   private queue: any[] | null = null;
+
   private connected: boolean = false;
 
   /**
@@ -62,7 +64,7 @@ export class IFrameConnector extends XMLHttpConnector {
       return;
     }
 
-    const queue = this.queue;
+    const { queue } = this;
 
     for (let i = 0; i < queue.length; i += 1) {
       this.postMessage(queue[i]);
@@ -84,6 +86,7 @@ export class IFrameConnector extends XMLHttpConnector {
     if (!this.iframe) {
       this.load(message.request.path);
       // ensure that we get a local resource cache hit
+      // eslint-disable-next-line no-param-reassign
       message.request.path = '/connect';
     }
 
@@ -112,7 +115,7 @@ export class IFrameConnector extends XMLHttpConnector {
           receive({
             status: 0,
             error: new Error('Connection refused.'),
-            headers: {}
+            headers: {},
           });
         }
       }, 10000);

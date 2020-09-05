@@ -1,10 +1,11 @@
-'use strict';
-
-import { Class, Json, JsonMap, JsonArray } from "../util";
-import { File } from "../binding";
-import { GeoPoint } from "../GeoPoint";
-import { PersistenceType, Type } from "./Type";
-import { Metadata } from "../intersection";
+// eslint-disable-next-line max-classes-per-file
+import {
+  Class, Json, JsonMap, JsonArray,
+} from '../util';
+import { File } from '../binding';
+import { GeoPoint } from '../GeoPoint';
+import { PersistenceType, Type } from './Type';
+import { Metadata } from '../intersection';
 
 function dateToJson(value: Date | null): string | null {
   // remove trailing zeros
@@ -70,7 +71,7 @@ export class BasicType<T> extends Type<T> {
     }
 
     fromJsonValue(state: Metadata, json: Json, currentValue: Date | null): Date | null {
-      return typeof json === 'string' ? jsonToDate('1970-01-01T' + json, currentValue) : null;
+      return typeof json === 'string' ? jsonToDate(`1970-01-01T${json}`, currentValue) : null;
     }
   }('Time', Date);
 
@@ -136,7 +137,7 @@ export class BasicType<T> extends Type<T> {
    * @param noResolving Indicates if this type is not the main type of the constructor
    */
   constructor(ref: string, typeConstructor: Class<T>, noResolving?: boolean) {
-    const id = ref.indexOf('/db/') === 0 ? ref : '/db/' + ref;
+    const id = ref.indexOf('/db/') === 0 ? ref : `/db/${ref}`;
 
     super(id, typeConstructor);
 
@@ -153,11 +154,12 @@ export class BasicType<T> extends Type<T> {
   /**
    * @inheritDoc
    */
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   fromJsonValue(state: Metadata, json: Json, currentValue: T | null): T | null {
     return json === null || json === undefined ? null : json as any;
   }
 
   toString() {
-    return 'BasicType(' + this.ref + ')';
+    return `BasicType(${this.ref})`;
   }
 }

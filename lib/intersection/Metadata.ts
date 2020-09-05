@@ -1,13 +1,9 @@
-'use strict';
-
-import { Acl } from "../Acl";
-import { Lockable } from "../util/Lockable";
-import { EntityManager } from "../EntityManager";
-import { Entity } from "../binding/Entity";
-import { EntityType, ManagedType } from "../metamodel";
-import { PersistentError } from "../error";
-import { Json, JsonMap } from "../util/Json";
-import { Managed } from "../binding";
+import { Acl } from '../Acl';
+import { Lockable, Json, JsonMap } from '../util';
+import type { EntityManager } from '../EntityManager';
+import { Entity, Managed } from '../binding';
+import type { EntityType, ManagedType } from '../metamodel';
+import { PersistentError } from '../error';
 
 export interface ManagedMetadata {
   db?: EntityManager;
@@ -33,6 +29,12 @@ export interface ManagedMetadata {
   writeAccess(): void;
 }
 
+export enum MetadataState {
+  UNAVAILABLE = -1,
+  PERSISTENT = 0,
+  DIRTY = 1,
+}
+
 /**
  * The Metadata instance tracks the state of an object and checks if the object state was changed since last
  * load/update. The metadata keeps therefore the state of:
@@ -45,13 +47,21 @@ export interface ManagedMetadata {
  */
 export class Metadata extends Lockable implements ManagedMetadata {
   entityManager: EntityManager | null = null;
+
   type: EntityType<any>;
+
   decodedKey: string | null = null;
+
   id: string | null = null;
+
   state: MetadataState;
+
   version: number | null;
+
   enabled: boolean;
+
   acl: Acl;
+
   root: Entity;
 
   /**
@@ -66,7 +76,7 @@ export class Metadata extends Lockable implements ManagedMetadata {
   static create<T extends Managed>(type: ManagedType<T>, object: T): ManagedMetadata {
     if (type.isEntity) {
       if (!(object instanceof Entity)) {
-        throw new Error('Object is not an entity, metadata can\'t be created. ' + object);
+        throw new Error(`Object is not an entity, metadata can't be created. ${object}`);
       }
 
       return new Metadata(object as Entity, type as EntityType<any>);
@@ -76,13 +86,13 @@ export class Metadata extends Lockable implements ManagedMetadata {
       return {
         type,
         readAccess() {
-          const metadata = this.root && this.root._metadata;
+          const metadata = this.root && Metadata.get(this.root);
           if (metadata) {
             metadata.readAccess();
           }
         },
         writeAccess() {
-          const metadata = this.root && this.root._metadata;
+          const metadata = this.root && Metadata.get(this.root);
           if (metadata) {
             metadata.writeAccess();
           }
@@ -90,7 +100,7 @@ export class Metadata extends Lockable implements ManagedMetadata {
       };
     }
 
-    throw new Error('Illegal type ' + type);
+    throw new Error(`Illegal type ${type}`);
   }
 
   /**
@@ -99,7 +109,9 @@ export class Metadata extends Lockable implements ManagedMetadata {
    * @return
    */
   static get(managed: Entity): Metadata;
+  static get(managed: Managed): ManagedMetadata;
   static get(managed: Managed): ManagedMetadata {
+    // eslint-disable-next-line no-underscore-dangle
     return managed._metadata;
   }
 
@@ -151,13 +163,13 @@ export class Metadata extends Lockable implements ManagedMetadata {
    * @param value
    */
   set key(value: string | null) {
-    const val = value + '';
+    const val = `${value}`;
 
     if (this.id) {
       throw new Error('The id can\'t be set twice.');
     }
 
-    this.id = '/db/' + this.bucket + '/' + encodeURIComponent(val);
+    this.id = `/db/${this.bucket}/${encodeURIComponent(val)}`;
     this.decodedKey = val;
   }
 
@@ -233,7 +245,7 @@ export class Metadata extends Lockable implements ManagedMetadata {
   readAccess(): void {
     if (this.enabled) {
       if (!this.isAvailable) {
-        throw new PersistentError('This object ' + this.id + ' is not available.');
+        throw new PersistentError(`This object ${this.id} is not available.`);
       }
     }
   }
@@ -248,7 +260,7 @@ export class Metadata extends Lockable implements ManagedMetadata {
   writeAccess(): void {
     if (this.enabled) {
       if (!this.isAvailable) {
-        throw new PersistentError('This object ' + this.id + ' is not available.');
+        throw new PersistentError(`This object ${this.id} is not available.`);
       }
 
       this.setDirty();
@@ -321,10 +333,4 @@ export class Metadata extends Lockable implements ManagedMetadata {
   setJson(json: Json, options?: { persisting?: boolean, onlyMetadata?: boolean }): void {
     this.type.fromJsonValue(this, json, this.root, options || {});
   }
-}
-
-export enum MetadataState {
-  UNAVAILABLE = -1,
-  PERSISTENT = 0,
-  DIRTY = 1,
 }

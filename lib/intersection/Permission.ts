@@ -1,8 +1,6 @@
-'use strict';
-
-import { Metadata } from "./Metadata";
-import * as model from "../model";
-import { Json, JsonMap } from "../util/Json";
+import type { Metadata } from './Metadata';
+import type * as model from '../model';
+import { Json, JsonMap } from '../util';
 
 export type TrustedEntity = model.User | model.Role | string;
 export type BasePermission = ['load', 'update', 'delete', 'query', 'insert'];
@@ -14,6 +12,7 @@ export class Permission {
   static readonly BASE_PERMISSIONS: BasePermission = ['load', 'update', 'delete', 'query', 'insert'];
 
   public rules: {[ref: string]: string} = {};
+
   private _metadata: Metadata | null;
 
   /**
@@ -67,7 +66,7 @@ export class Permission {
       return false;
     }
 
-    return !this.allRules().some(ref => this.rules[ref] === 'allow');
+    return !this.allRules().some((ref) => this.rules[ref] === 'allow');
   }
 
   /**
@@ -212,4 +211,3 @@ export class Permission {
     throw new TypeError('The given object isn\'t a user, role or a valid reference.');
   }
 }
-

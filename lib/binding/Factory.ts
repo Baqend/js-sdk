@@ -1,6 +1,4 @@
-'use strict';
-
-import { Class } from "../util/Class";
+import { Class } from '../util/Class';
 
 /**
  * This factory creates instances of type T, by invoking the {@link #new()} method
@@ -18,7 +16,6 @@ export interface InstanceFactory<T> {
 
 // @ts-ignore
 export class Factory<T> implements InstanceFactory<T> {
-
   private static extend<T, P extends Factory<any>>(target: T, proto: P): T & P {
     if (proto !== Factory.prototype) {
       this.extend(target, Object.getPrototypeOf(proto));
@@ -40,8 +37,8 @@ export class Factory<T> implements InstanceFactory<T> {
    */
   protected static createFactory<F extends Factory<T>, T>(this: Class<F>, type: Class<T>): F {
     // We want te explicitly name the created factory and give the constructor a properly argument name
-    const factory = Factory.extend((function Factory() {
-      return factory.newInstance(arguments);
+    const factory = Factory.extend((function FactoryConstructor(...args: any[]) {
+      return factory.newInstance(args);
     }) as any as F, this.prototype);
 
     // lets instanceof work properly
@@ -52,6 +49,7 @@ export class Factory<T> implements InstanceFactory<T> {
   }
 
   public type: Class<T> = null as any;
+
   public prototype: T = null as any;
 
   /**
@@ -61,7 +59,7 @@ export class Factory<T> implements InstanceFactory<T> {
    * @instance
    */
   new(...args: any[]): T {
-    return this.newInstance!(arguments);
+    return this.newInstance!(args);
   }
 
   /**
@@ -86,4 +84,3 @@ export class Factory<T> implements InstanceFactory<T> {
     return new boundConstructor();
   }
 }
-

@@ -1,5 +1,3 @@
-'use strict';
-
 interface PersistentErrorConstructor {
   /**
    * Wraps the given error into a persistent error, if the error is not already an persistent error
@@ -36,8 +34,8 @@ export interface PersistentError extends Error {
   cause?: Error;
 }
 
-export const PersistentError = (function() {
-  function PersistentError(this: PersistentError, message: string | null, cause?: Error) {
+export const PersistentError = (() => {
+  function PersistentErrorConstructor(this: PersistentError, message: string | null, cause?: Error) {
     if (Object.prototype.hasOwnProperty.call(Error, 'captureStackTrace')) {
       Error.captureStackTrace(this, this.constructor);
     } else {
@@ -50,23 +48,23 @@ export const PersistentError = (function() {
     if (cause) {
       this.cause = cause;
       if (cause.stack) {
-        this.stack += '\nCaused By: ' + cause.stack;
+        this.stack += `\nCaused By: ${cause.stack}`;
       }
     }
   }
 
   // custom errors must be manually extended, since JS Errors can't be super called in a class hierarchy,
   // otherwise the super call destroys the origin 'this' reference
-  PersistentError.prototype = Object.create(Error.prototype, {
+  PersistentErrorConstructor.prototype = Object.create(Error.prototype, {
     constructor: {
-      value: PersistentError,
+      value: PersistentErrorConstructor,
       writable: true,
       enumerable: false,
       configurable: true,
     },
   });
 
-  return PersistentError as any as PersistentErrorConstructor;
+  return PersistentErrorConstructor as any as PersistentErrorConstructor;
 })();
 
 PersistentError.of = function of(error: Error): PersistentError {
@@ -76,5 +74,3 @@ PersistentError.of = function of(error: Error): PersistentError {
 
   return new PersistentError(null, error);
 };
-
-

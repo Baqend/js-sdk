@@ -1,27 +1,32 @@
-'use strict';
-
-import { ManagedType } from "./ManagedType";
-import { EntityType } from "./EntityType";
-import { Enhancer, Managed } from "../binding";
-import { ModelBuilder } from "./ModelBuilder";
-import { DbIndex } from "./DbIndex";
-import { Class, Json, JsonArray, JsonMap, Lockable } from "../util";
-import { StatusCode } from "../connector";
-import * as message from "../message";
-import { EntityManagerFactory } from "../EntityManagerFactory";
-import { EmbeddableType } from "./EmbeddableType";
-import { BasicType } from "./BasicType";
-import { Type } from "./Type";
+import { ManagedType } from './ManagedType';
+import { EntityType } from './EntityType';
+import { Enhancer, Managed } from '../binding';
+import { ModelBuilder } from './ModelBuilder';
+import { DbIndex } from './DbIndex';
+import {
+  Class, Json, JsonArray, JsonMap, Lockable,
+} from '../util';
+import { StatusCode } from '../connector';
+import * as message from '../message';
+import type { EntityManagerFactory } from '../EntityManagerFactory';
+import type { EmbeddableType } from './EmbeddableType';
+import type { BasicType } from './BasicType';
+import type { Type } from './Type';
 
 export class Metamodel extends Lockable {
   /**
    * Defines if the Metamodel has been finalized
    */
   public isInitialized: boolean = false;
+
   public entityManagerFactory: EntityManagerFactory;
+
   public entities: {[name: string]: EntityType<any>} = {};
+
   public embeddables: {[name: string]: EmbeddableType<any>} = {};
+
   public baseTypes: {[name: string]: BasicType<any>} = {};
+
   public enhancer: Enhancer = new Enhancer();
 
   /**
@@ -57,7 +62,7 @@ export class Metamodel extends Lockable {
       ref = arg;
 
       if (ref.indexOf('/db/') !== 0) {
-        ref = '/db/' + arg;
+        ref = `/db/${arg}`;
       }
     } else {
       ref = Enhancer.getIdentifier(arg);
@@ -144,7 +149,7 @@ export class Metamodel extends Lockable {
     }
 
     if (types[type.ref]) {
-      throw new Error('The type ' + type.ref + ' is already declared.');
+      throw new Error(`The type ${type.ref} is already declared.`);
     }
 
     types[type.ref] = type;
@@ -222,8 +227,8 @@ export class Metamodel extends Lockable {
     }
 
     return ([] as JsonArray).concat(
-      Object.keys(this.entities).map(ref => this.entities[ref].toJSON()),
-      Object.keys(this.embeddables).map(ref => this.embeddables[ref].toJSON())
+      Object.keys(this.entities).map((ref) => this.entities[ref].toJSON()),
+      Object.keys(this.embeddables).map((ref) => this.embeddables[ref].toJSON()),
     );
   }
 
@@ -240,7 +245,7 @@ export class Metamodel extends Lockable {
     this.embeddables = {};
     this.entities = {};
 
-    Object.keys(models).forEach(ref => this.addType(models[ref]));
+    Object.keys(models).forEach((ref) => this.addType(models[ref]));
   }
 
   /**
@@ -251,8 +256,7 @@ export class Metamodel extends Lockable {
    * @return
    */
   createIndex(bucket: string, index: DbIndex): Promise<any> {
-    index.drop = false;
-    const msg = new message.CreateDropIndex(bucket, index.toJSON());
+    const msg = new message.CreateDropIndex(bucket, { ...index.toJSON(), drop: false });
     return this.entityManagerFactory.send(msg);
   }
 
@@ -264,8 +268,7 @@ export class Metamodel extends Lockable {
    * @return
    */
   dropIndex(bucket: string, index: DbIndex): Promise<any> {
-    index.drop = true;
-    const msg = new message.CreateDropIndex(bucket, index.toJSON());
+    const msg = new message.CreateDropIndex(bucket, { ...index.toJSON(), drop: true });
     return this.entityManagerFactory.send(msg);
   }
 
@@ -289,7 +292,9 @@ export class Metamodel extends Lockable {
   getIndexes(bucket: string): Promise<DbIndex[]> {
     const msg = new message.ListIndexes(bucket);
     return this.entityManagerFactory.send(msg)
-      .then(response => response.entity.map((el: JsonMap) => new DbIndex(el.keys as {[prop: string]: string}, el.unique as boolean)))
+      .then((response) => response.entity.map((el: JsonMap) => new DbIndex(
+        el.keys as {[prop: string]: string}, el.unique as boolean,
+      )))
       .catch((e) => {
         if (e.status === StatusCode.BUCKET_NOT_FOUND || e.status === StatusCode.OBJECT_NOT_FOUND) {
           return null;
