@@ -112,7 +112,6 @@ module.exports = {
         'prefer-arrow-callback': 'off',
         'prefer-promise-reject-errors': 'warn',
         'vars-on-top': 'off',
-        'node/no-deprecated-api': 'warn',
       },
     },
   ],
