@@ -24,7 +24,7 @@ export abstract class ManagedType<T extends Managed> extends Type<T> {
 
   public superType: EntityType<any> | null = null;
 
-  private _validationCode: Function | null = null;
+  public _validationCode: Function | null = null;
 
   /**
    * @type Function

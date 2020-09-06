@@ -2,7 +2,7 @@
 /.grunt
 /node_modules
 /build
-/bundles
+/dist
 /commonjs
 /esm
 /doc

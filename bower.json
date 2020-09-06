@@ -1,8 +1,8 @@
 {
   "name": "baqend",
   "description": "Baqend JavaScript SDK",
-  "main": "bundles/baqend.es5.js",
-  "module": "bundles/baqend.es2015.js",
+  "main": "dist/baqend.es5.js",
+  "module": "dist/baqend.es2015.js",
   "authors": [
     "Baqend.com <info@baqend.com>"
   ],

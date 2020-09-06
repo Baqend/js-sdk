@@ -15,7 +15,15 @@ export * as model from './model';
 export { EntityManagerFactory, ConnectData } from './EntityManagerFactory';
 export { EntityManager } from './EntityManager';
 export { Acl } from './Acl';
+export { GeoPoint } from './GeoPoint';
 export { db, baqend } from './baqend';
+export { connect, configure } from './deperecated-exports';
+
+const SetType = Set;
+const MapType = Map;
+const ListType = Array;
+
+export { SetType as Set, ListType as List, MapType as Map };
 
 // Use one global default export of this module
 // eslint-disable-next-line import/no-default-export

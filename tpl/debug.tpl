@@ -22,13 +22,13 @@
   <script src="./node_modules/validator/validator.js"></script>
   <!--
   <script type="module">
-    import DB from './bundles/baqend.es2015.js';
+    import DB from './dist/baqend.es2015.js';
     window.DB = DB;
   </script>
-  <script nomodule src="./bundles/baqend.es5.js"></script>
+  <script nomodule src="./dist/baqend.es5.js"></script>
   </script>
   -->
-  <script src="./bundles/baqend.es5.js"></script>
+  <script src="./dist/baqend.es5.js"></script>
   <script src="./spec/env.js"></script>
 
   <script>

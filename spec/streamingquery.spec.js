@@ -1,9 +1,8 @@
 'use strict';
 
-var DB, operators;
+var operators;
 if (typeof module !== 'undefined') {
   require('./node');
-  DB = require('../');
   operators = require('rxjs/operators');
 } else {
   operators = rxjs.operators;

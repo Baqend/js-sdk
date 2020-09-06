@@ -21,8 +21,8 @@ module.exports = function (config) {
     files: [
       { pattern: 'node_modules/rxjs/bundles/rxjs.umd.js', included: true },
       { pattern: 'node_modules/validator/validator.js', included: true },
-      { pattern: 'bundles/baqend.es5.js', watched: true, included: true },
-      { pattern: 'bundles/baqend.es5.js.map', included: false, served: true, watched: true },
+      { pattern: 'dist/baqend.es5.js', watched: true, included: true },
+      { pattern: 'dist/baqend.es5.js.map', included: false, served: true, watched: true },
       'spec/env.js',
       'spec/helper.js',
       'spec/**/*.spec.js',

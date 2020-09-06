@@ -44,14 +44,14 @@ function bundleLib(target) {
     name: target,
     mode: 'production',
     entry: {
-      [`baqend.${target}`]: `./lib/index.${target}.ts`,
-      [`baqend.${target}.min`]: `./lib/index.${target}.ts`,
+      [`baqend.${target}`]: `./lib/index.ts`,
+      [`baqend.${target}.min`]: `./lib/index.ts`,
     },
     output: {
-      path: path.resolve(__dirname, 'bundles/'),
+      path: path.resolve(__dirname, 'dist/'),
       filename: '[name].js',
       libraryTarget: target === 'es2015' ? 'var' : 'umd',
-      library: 'DB',
+      library: 'Baqend',
       umdNamedDefine: target !== 'es2015'
     },
     externals: {
@@ -59,7 +59,7 @@ function bundleLib(target) {
       validator: 'validator'
     },
     resolve: {
-      extensions: ['.ts', '.js'],
+      extensions: ['.ts'],
       aliasFields: ['browser']
     },
     devtool: 'source-map',

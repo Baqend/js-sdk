@@ -2,7 +2,6 @@
 
 if (typeof module !== 'undefined') {
   require('./node');
-  DB = require('../');
 }
 
 describe('Test Partial Updates', function () {

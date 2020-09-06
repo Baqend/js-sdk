@@ -8,10 +8,10 @@
     "email": "info@baqend.com"
   },
   "homepage": "https://www.baqend.com",
-  "main": "./commonjs/lib/index.es5.js",
-  "module": "./bundles/baqend.es2015.js",
+  "main": "./commonjs/lib/index.js",
+  "module": "./dist/baqend.es2015.js",
   "browser": {
-    ".": "./bundles/baqend.es5.js",
+    ".": "./dist/baqend.es5.js",
     "./lib/util/atob.ts": "./lib/util/atob-browser.ts",
     "./lib/util/is-node.ts": "./lib/util/is-node-browser.ts",
     "./lib/util/hmac.ts": "./lib/util/hmac-browser.ts",
@@ -20,7 +20,7 @@
     "./lib/connector/FetchConnector": false
   },
   "react-native": {
-    ".": "./commonjs/lib/index.es5.js",
+    ".": "./commonjs/lib/index.js",
     "./commonjs/lib/util/atob.js": "./commonjs/lib/util/atob-rn.js",
     "./commonjs/lib/util/is-node.js": "./commonjs/lib/util/is-node-browser.js",
     "./commonjs/lib/util/hmac.js": "./commonjs/lib/util/hmac-browser.js",
@@ -30,15 +30,15 @@
   },
   "exports": {
     "browser": {
-      "import": "./bundles/baqend.es2015.js",
-      "require": "./bundles/baqend.es5.js"
+      "import": "./dist/baqend.es2015.js",
+      "require": "./dist/baqend.es5.js"
     },
     "default": {
-      "import": "./esm/lib/index.es2015.js",
-      "require": "./commonjs/lib/index.es5.js"
+      "import": "./esm/lib/index.js",
+      "require": "./commonjs/lib/index.js"
     }
   },
-  "types": "./esm/lib/index.2015.d.ts",
+  "types": "./esm/lib/index.d.ts",
   "dependencies": {
     "@types/validator": "^13.1.0",
     "commander": "^2.19.0",
@@ -119,14 +119,14 @@
     "test": "npm run test:node && npm run test:karma",
     "test:node": "mocha --config mocharc.json --exit",
     "test:karma": "karma start",
-    "clean": "shx rm -rf bundles commonjs esm",
+    "clean": "shx rm -rf dist commonjs esm doc",
     "dev-node-commonjs": "tsc --watch -m commonjs --target es5 --outDir commonjs --declaration",
     "dev-node-esm": "tsc --watch -m es2015 --target es6 --outDir esm --declaration",
     "dev-browser": "webpack-dev-server --config webpack.config.js --open",
     "build-commonjs": "tsc -m commonjs --target es5 --outDir commonjs",
     "build-esm": "tsc -m es2015 --target es6 --outDir esm --declaration",
-    "build-bundles": "webpack --config-name=es5 && webpack --config-name=es2015",
-    "dist": "npm run build-commonjs && npm run build-esm && npm run build-bundles",
+    "build-dist": "webpack --config-name=es5 && webpack --config-name=es2015",
+    "dist": "npm run build-commonjs && npm run build-esm && npm run build-dist",
     "release": "node scripts/release",
     "typings": "npm run typings:test",
     "typings:test": "tsc --version && tsc -p spec-ts/tsconfig.json",
