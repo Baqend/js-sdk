@@ -859,7 +859,7 @@ describe('Test file', function () {
     it('should download json format', function () {
       var file = new rootDb.File(jsonFile.id);
       return file.download({ type: 'json' }).then(function (data) {
-        expect(file.mimeType.toLowerCase().replace(' ', '')).eql('application/json;charset=utf-8');
+        expect(file.mimeType.toLowerCase()).eql('application/json;charset=utf-8');
         expect(data).eql(json);
       });
     });
@@ -955,7 +955,7 @@ describe('Test file', function () {
         expect(file.lastModified).lt(new Date(Date.now() + 5 * 60 * 1000));
         expect(file.createdAt).gt(new Date(Date.now() - 5 * 60 * 1000));
         expect(file.createdAt).lt(new Date(Date.now() + 5 * 60 * 1000));
-        expect(file.mimeType.toLowerCase().replace(' ', '')).eql('application/json;charset=utf-8');
+        expect(file.mimeType).eql('application/json;charset=utf-8');
         expect(file.size).eql(jsonFile.size);
         expect(file.headers.hello).eql('World');
         expect(file.headers.schmukey).eql('Schmu');
