@@ -16,7 +16,9 @@ import {
   Lockable,
   uuid,
 } from './util';
-import { Message, StatusCode, Connector } from './connector';
+import {
+  Message, StatusCode, Connector, OAuthMessages, OAuthMessage,
+} from './connector';
 import { BloomFilter } from './caching';
 import { GeoPoint } from './GeoPoint';
 import type { ConnectData, EntityManagerFactory } from './EntityManagerFactory';
@@ -968,12 +970,16 @@ export class EntityManager extends Lockable {
       Object.assign(opt.state, { redirect: opt.redirect, loginOption: opt.loginOption });
     }
 
-    let msg;
-    if ((Message as any)[`${provider}OAuth`]) {
-      msg = new (Message as any)[`${provider}OAuth`](clientID, opt.scope, JSON.stringify(opt.state));
+    let msg: OAuthMessage;
+    if (OAuthMessages[provider]) {
+      msg = new OAuthMessages[provider](clientID, opt.scope as string, JSON.stringify(opt.state)) as OAuthMessage;
       msg.addRedirectOrigin(this.connection.origin + this.connection.basePath);
     } else {
       throw new Error(`OAuth provider ${provider} not supported.`);
+    }
+
+    if (opt.path) {
+      msg.path(opt.path);
     }
 
     const windowOptions = { width: `${opt.width}`, height: `${opt.height}` };

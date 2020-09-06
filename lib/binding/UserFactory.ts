@@ -31,6 +31,7 @@ export class UserFactory extends EntityFactory<model.User> {
    * @property github default oauth properties for GitHub
    * @property twitter default oauth properties for Twitter
    * @property linkedin default oauth properties for LinkedIn
+   * @property {Object} oauth.salesforce default oauth properties for Salesforce
    */
   public static readonly DefaultOptions = {
     google: {
@@ -56,6 +57,11 @@ export class UserFactory extends EntityFactory<model.User> {
       width: 630,
       height: 530,
       scope: 'r_liteprofile',
+    },
+    salesforce: {
+      width: 585,
+      height: 545,
+      scope: 'email',
     },
   };
 
@@ -325,6 +331,23 @@ export interface UserFactory extends EntityFactory<model.User> {
     failCallback?: any): Promise<model.User>;
 
   /**
+   * Logs the user in with Salesforce via OAuth
+   *
+   * Prompts the user for the Salesforce login in a new window. Before using OAuth you need to setup your application
+   * on the provider website, add the redirect uri: <code>https://example.net/db/User/OAuth/salesforce</code> and copy the
+   * client id and the client secret to your Baqend dashboard settings. When the returned promise succeeds the user is
+   * logged in.
+   *
+   * @param clientID
+   * @param options
+   * @param doneCallback Called when the operation succeed.
+   * @param failCallback Called when the operation failed.
+   * @return
+   */
+  loginWithSalesforce(clientID: string, options: OAuthOptions, doneCallback?: any,
+    failCallback?: any): Promise<model.User>;
+
+  /**
    * Creates a new user object
    *
    * @param properties Additional properties which will be applied to the created instance
@@ -368,9 +391,14 @@ export interface OAuthOptions {
    * Once the login is finished this redirect url will be opened with the logged-in user's token attached.
    */
   redirect?: string;
+
+  /**
+   * The OAuth login endpoint of the salesforce server
+   */
+  path?: string;
 }
 
-['Google', 'Facebook', 'GitHub', 'Twitter', 'LinkedIn'].forEach((name) => {
+['Google', 'Facebook', 'GitHub', 'Twitter', 'LinkedIn', 'Salesforce'].forEach((name) => {
   const methodName = `loginWith${name}`;
   // do not use a lambda here since we will loose the this context
   (UserFactory.prototype as any)[methodName] = function loginWithOAuth(clientID: string,

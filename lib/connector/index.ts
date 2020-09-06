@@ -1,6 +1,6 @@
 export {
-  Message, ProgressListener, GoogleOAuth, ExternalMessage, MessageSpec, StatusCode, FacebookOAuth, GitHubOAuth,
-  LinkedInOAuth, RestSpecification, TwitterOAuth,
+  Message, ProgressListener, ExternalMessage, MessageSpec, StatusCode,
+  RestSpecification, OAuthMessages, OAuthMessage,
 } from './Message';
 export {
   ResponseBodyType, RequestBodyType, RequestBody, Response, Connector, Request, Receiver,

@@ -207,6 +207,30 @@ export abstract class Message {
   }
 
   /**
+   * Gets the request path
+   * @return The path of the message value
+   */
+  path(): string;
+
+  /**
+   * Sets the request path
+   * @param path The new path value, any query parameters provided with the path will be merged with the
+   * exiting query params
+   * @return This message object
+   */
+  path(path: string): this;
+
+  path(path?: string): this | string {
+    if (path !== undefined) {
+      const queryIndex = this.request.path.indexOf('?') + 1;
+      this.request.path = path + (queryIndex > 0 ? (path.indexOf('?') > -1 ? '&' : '?') + this.request.path.substring(queryIndex) : '');
+      return this;
+    }
+
+    return this.request.path;
+  }
+
+  /**
    * Gets the value of a the specified request header
    * @param name The header name
    * @return The header value
@@ -534,67 +558,83 @@ export abstract class Message {
   }
 }
 
-export const GoogleOAuth = Message.createExternal({
-  method: 'OAUTH',
-  path: 'https://accounts.google.com/o/oauth2/auth?response_type=code&access_type=online',
-  query: ['client_id', 'scope', 'state'],
-  status: [200],
-}, {
-  addRedirectOrigin(this: Message, baseUri: string) {
-    this.addQueryString({
-      redirect_uri: `${baseUri}/db/User/OAuth/google`,
-    });
-  },
-});
+export const OAuthMessages: {[OAuthProvider: string]: ExternalMessage<OAuthMessage> } = {
+  Google: Message.createExternal({
+    method: 'OAUTH',
+    path: 'https://accounts.google.com/o/oauth2/auth?response_type=code&access_type=online',
+    query: ['client_id', 'scope', 'state'],
+    status: [200],
+  }, {
+    addRedirectOrigin(this: Message, baseUri: string) {
+      this.addQueryString({
+        redirect_uri: `${baseUri}/db/User/OAuth/google`,
+      });
+    },
+  }),
 
-export const FacebookOAuth = Message.createExternal({
-  method: 'OAUTH',
-  path: 'https://www.facebook.com/v7.0/dialog/oauth?response_type=code',
-  query: ['client_id', 'scope', 'state'],
-  status: [200],
-}, {
-  addRedirectOrigin(this: Message, baseUri: string) {
-    this.addQueryString({
-      redirect_uri: `${baseUri}/db/User/OAuth/facebook`,
-    });
-  },
-});
+  Facebook: Message.createExternal({
+    method: 'OAUTH',
+    path: 'https://www.facebook.com/v7.0/dialog/oauth?response_type=code',
+    query: ['client_id', 'scope', 'state'],
+    status: [200],
+  }, {
+    addRedirectOrigin(this: Message, baseUri: string) {
+      this.addQueryString({
+        redirect_uri: `${baseUri}/db/User/OAuth/facebook`,
+      });
+    },
+  }),
 
-export const GitHubOAuth = Message.createExternal({
-  method: 'OAUTH',
-  path: 'https://github.com/login/oauth/authorize?response_type=code&access_type=online',
-  query: ['client_id', 'scope', 'state'],
-  status: [200],
-}, {
-  addRedirectOrigin(this: Message, baseUri: string) {
-    this.addQueryString({
-      redirect_uri: `${baseUri}/db/User/OAuth/github`,
-    });
-  },
-});
+  GitHub: Message.createExternal({
+    method: 'OAUTH',
+    path: 'https://github.com/login/oauth/authorize?response_type=code&access_type=online',
+    query: ['client_id', 'scope', 'state'],
+    status: [200],
+  }, {
+    addRedirectOrigin(this: Message, baseUri: string) {
+      this.addQueryString({
+        redirect_uri: `${baseUri}/db/User/OAuth/github`,
+      });
+    },
+  }),
 
-export const LinkedInOAuth = Message.createExternal({
-  method: 'OAUTH',
-  path: 'https://www.linkedin.com/oauth/v2/authorization?response_type=code',
-  query: ['client_id', 'scope', 'state'],
-  status: [200],
-}, {
-  addRedirectOrigin(this: Message, baseUri: string) {
-    this.addQueryString({
-      redirect_uri: `${baseUri}/db/User/OAuth/linkedin`,
-    });
-  },
-});
+  LinkedIn: Message.createExternal({
+    method: 'OAUTH',
+    path: 'https://www.linkedin.com/oauth/v2/authorization?response_type=code',
+    query: ['client_id', 'scope', 'state'],
+    status: [200],
+  }, {
+    addRedirectOrigin(this: Message, baseUri: string) {
+      this.addQueryString({
+        redirect_uri: `${baseUri}/db/User/OAuth/linkedin`,
+      });
+    },
+  }),
 
-export const TwitterOAuth = Message.createExternal({
-  method: 'OAUTH',
-  path: '',
-  query: [],
-  status: [200],
-}, {
-  addRedirectOrigin(this: Message, baseUri: string) {
-    this.request.path = `${baseUri}/db/User/OAuth1/twitter`;
-  },
-});
+  Twitter: Message.createExternal({
+    method: 'OAUTH',
+    path: '',
+    query: [],
+    status: [200],
+  }, {
+    addRedirectOrigin(this: Message, baseUri: string) {
+      this.request.path = `${baseUri}/db/User/OAuth1/twitter`;
+    },
+  }),
 
-export type ExternalMessage<T> = typeof Message & (new(...args: string[]) => Message & T);
+  Salesforce: Message.createExternal({
+    method: 'OAUTH',
+    path: '',
+    query: ['client_id', 'scope', 'state'],
+    status: [200],
+  }, {
+    addRedirectOrigin(this: Message, baseUri: string) {
+      this.addQueryString({
+        redirect_uri: `${baseUri}/db/User/OAuth/salesforce`,
+      });
+    },
+  }),
+};
+
+export type ExternalMessage<T> = typeof Message & { new(...args: string[]): Message & T };
+export type OAuthMessage = Message & { addRedirectOrigin(baseUri: string): void };
