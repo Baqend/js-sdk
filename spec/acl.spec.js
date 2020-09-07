@@ -157,52 +157,59 @@ describe('Test Acl', function () {
 
       person._metadata.setPersistent();
       acl.allowReadAccess(db.User.me);
+      person.toJSON({ persisting: true });
       expect(person._metadata.isDirty).be.true;
 
       person._metadata.setPersistent();
       acl.denyReadAccess(db.User.me);
+      person.toJSON({ persisting: true });
       expect(person._metadata.isDirty).be.true;
 
       person._metadata.setPersistent();
       acl.deleteReadAccess(db.User.me);
+      person.toJSON({ persisting: true });
       expect(person._metadata.isDirty).be.true;
 
       person._metadata.setPersistent();
       acl.allowWriteAccess(db.User.me);
+      person.toJSON({ persisting: true });
       expect(person._metadata.isDirty).be.true;
 
       person._metadata.setPersistent();
       acl.denyWriteAccess(db.User.me);
+      person.toJSON({ persisting: true });
       expect(person._metadata.isDirty).be.true;
 
       person._metadata.setPersistent();
       acl.deleteWriteAccess(db.User.me);
+      person.toJSON({ persisting: true });
       expect(person._metadata.isDirty).be.true;
 
+      acl.allowReadAccess(db.User.me);
+      person.toJSON({ persisting: true });
       person._metadata.setPersistent();
       acl.clear();
+      person.toJSON({ persisting: true });
       expect(person._metadata.isDirty).be.true;
     });
 
 
     it('should be copyable', function () {
-      var acl1 = (new db.AclPerson()).acl;
-      var acl2 = (new db.AclPerson()).acl;
+      var person1 = new db.AclPerson();
+      var acl1 = person1.acl;
+      var person2 = new db.AclPerson();
+      var acl2 = person2.acl;
 
       acl1.read.denyAccess(db.User.me);
       acl2.read.allowAccess(db.User.me);
       acl1.write.denyAccess(db.User.me);
       acl2.write.allowAccess(db.User.me);
 
-      acl1.read._metadata.setPersistent();
-      acl1.write._metadata.setPersistent();
-      acl2.read._metadata.setPersistent();
-      acl2.write._metadata.setPersistent();
+      person1.toJSON({ persisting: true });
+      person2.toJSON({ persisting: true });
+      person1._metadata.setPersistent();
+      person2._metadata.setPersistent();
 
-      expect(acl1.read._metadata.isDirty).be.false;
-      expect(acl1.write._metadata.isDirty).be.false;
-      expect(acl2.read._metadata.isDirty).be.false;
-      expect(acl2.write._metadata.isDirty).be.false;
       expect(acl1.isReadAllowed(db.User.me)).to.be.false;
       expect(acl1.isWriteAllowed(db.User.me)).to.be.false;
       expect(acl2.isReadAllowed(db.User.me)).to.be.true;
@@ -210,10 +217,10 @@ describe('Test Acl', function () {
 
       expect(acl1.copy(acl2)).to.equal(acl1);
 
-      expect(acl1.read._metadata.isDirty).be.true;
-      expect(acl1.write._metadata.isDirty).be.true;
-      expect(acl2.read._metadata.isDirty).be.false;
-      expect(acl2.write._metadata.isDirty).be.false;
+      person1.toJSON();
+      person2.toJSON();
+      expect(person1._metadata.isDirty).be.true;
+      expect(person2._metadata.isDirty).be.false;
       expect(acl1.isReadAllowed(db.User.me)).to.be.true;
       expect(acl1.isWriteAllowed(db.User.me)).to.be.true;
       expect(acl2.isReadAllowed(db.User.me)).to.be.true;
