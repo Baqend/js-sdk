@@ -1,8 +1,9 @@
 import { CollectionType, PluralAttribute } from './PluralAttribute';
+import { Attribute } from './Attribute';
 import { Type } from './Type';
-import { JsonArray } from '../util';
-import { Metadata } from '../intersection';
+import { JsonArray, JsonMap } from '../util';
 import { Managed } from '../binding';
+import { ManagedState } from '../intersection';
 
 export class SetAttribute<T> extends PluralAttribute<Set<T | null>, T> {
   /**
@@ -31,7 +32,7 @@ export class SetAttribute<T> extends PluralAttribute<Set<T | null>, T> {
   /**
    * @inheritDoc
    */
-  getJsonValue(state: Metadata, object: Managed,
+  getJsonValue(state: ManagedState, object: Managed,
     options: { excludeMetadata?: boolean; depth?: number | boolean, persisting: boolean }): JsonArray | null {
     const value = this.getValue(object);
 
@@ -40,8 +41,8 @@ export class SetAttribute<T> extends PluralAttribute<Set<T | null>, T> {
     }
 
     const persisting: {[key: string]: T | null} = {};
-    const persistedState = PluralAttribute.getAttachedState(value) || {};
-    let changed = PluralAttribute.getAttachedSize(value) !== value.size;
+    const persistedState: JsonMap = Attribute.attachState(value) || {};
+    let changed = Attribute.attachSize(value) !== value.size;
 
     const json: JsonArray = [];
     const iter = value.values();
@@ -56,11 +57,11 @@ export class SetAttribute<T> extends PluralAttribute<Set<T | null>, T> {
     }
 
     if (options.persisting) {
-      PluralAttribute.attachState(value, persisting);
-      PluralAttribute.attachSize(value, value.size);
+      Attribute.attachState(value, persisting, true);
+      Attribute.attachSize(value, value.size);
     }
 
-    if (state.isPersistent && changed) {
+    if (changed) {
       state.setDirty();
     }
 
@@ -70,19 +71,19 @@ export class SetAttribute<T> extends PluralAttribute<Set<T | null>, T> {
   /**
    * @inheritDoc
    */
-  setJsonValue(state: Metadata, obj: Managed, json: JsonArray,
-    options: { onlyMetadata?: boolean; persisting: boolean }) {
+  setJsonValue(state: ManagedState, object: Managed, json: JsonArray,
+    options: { onlyMetadata?: boolean; persisting: boolean }): void {
     let value: Set<T | null> | null = null;
 
     if (json) {
-      value = this.getValue(obj);
+      value = this.getValue(object);
 
       if (!(value instanceof this.typeConstructor)) {
         value = new this.typeConstructor(); // eslint-disable-line new-cap
       }
 
       const persisting: { [keyValue: string]: T | null } = {};
-      const persistedState = PluralAttribute.getAttachedState(value) || {};
+      const persistedState: { [keyValue: string]: T | null } = Attribute.attachState(value) || {};
 
       value.clear();
       for (let i = 0, len = json.length; i < len; i += 1) {
@@ -96,12 +97,12 @@ export class SetAttribute<T> extends PluralAttribute<Set<T | null>, T> {
       }
 
       if (options.persisting) {
-        PluralAttribute.attachState(value, persisting);
-        PluralAttribute.attachSize(value, value.size);
+        Attribute.attachState(value, persisting, true);
+        Attribute.attachSize(value, value.size);
       }
     }
 
-    this.setValue(obj, value);
+    this.setValue(object, value);
   }
 
   /**

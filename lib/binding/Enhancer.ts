@@ -64,6 +64,10 @@ export class Enhancer {
    * @param type
    */
   enhancePrototype<T extends Managed>(proto: T, type: ManagedType<T>): void {
+    if (type.isEmbeddable) {
+      return; // we do not need to enhance the prototype of embeddable
+    }
+
     if (proto.toString === Object.prototype.toString) {
       // implements a better convenience toString method
       Object.defineProperty(proto, 'toString', {
@@ -94,17 +98,20 @@ export class Enhancer {
    * @param attribute
    */
   enhanceProperty<T>(proto: T, attribute: Attribute<any>): void {
-    const name = `$${attribute.name}`;
-    Object.defineProperty(proto, attribute.name, {
+    const { name } = attribute;
+    Object.defineProperty(proto, name, {
       get() {
-        const metadata = this._metadata;
-        metadata.readAccess();
-        return metadata[name];
+        this._metadata.throwUnloadedPropertyAccess(name);
+        return null;
       },
       set(value) {
-        const metadata = this._metadata;
-        metadata.writeAccess();
-        metadata[name] = value;
+        this._metadata.throwUnloadedPropertyAccess(name);
+        Object.defineProperty(this, name, {
+          value,
+          writable: true,
+          enumerable: true,
+          configurable: true,
+        });
       },
       configurable: true,
       enumerable: true,

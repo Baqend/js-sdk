@@ -1,8 +1,9 @@
 import { CollectionType, PluralAttribute } from './PluralAttribute';
+import { Attribute } from './Attribute';
 import { JsonArray } from '../util';
 import { Type } from './Type';
-import { Metadata } from '../intersection';
 import { Managed } from '../binding';
+import { ManagedState } from '../intersection/Metadata';
 
 export class ListAttribute<E> extends PluralAttribute<Array<E | null>, E> {
   /**
@@ -30,7 +31,7 @@ export class ListAttribute<E> extends PluralAttribute<Array<E | null>, E> {
   /**
    * @inheritDoc
    */
-  getJsonValue(state: Metadata, object: Managed,
+  getJsonValue(state: ManagedState, object: Managed,
     options: { excludeMetadata?: boolean; depth?: number | boolean; persisting: boolean }): JsonArray | null {
     const value = this.getValue(object);
 
@@ -40,7 +41,7 @@ export class ListAttribute<E> extends PluralAttribute<Array<E | null>, E> {
 
     const len = value.length;
     const persisting: (E | null)[] = new Array(len);
-    const attachedState = PluralAttribute.getAttachedState(value);
+    const attachedState: any[] | undefined = Attribute.attachState(value);
     const persistedState = attachedState || [];
 
     let changed = !attachedState || attachedState.length !== len;
@@ -55,10 +56,10 @@ export class ListAttribute<E> extends PluralAttribute<Array<E | null>, E> {
     }
 
     if (options.persisting) {
-      PluralAttribute.attachState(value, persisting);
+      Attribute.attachState(value, persisting, true);
     }
 
-    if (state.isPersistent && changed) {
+    if (changed) {
       state.setDirty();
     }
 
@@ -68,12 +69,12 @@ export class ListAttribute<E> extends PluralAttribute<Array<E | null>, E> {
   /**
    * @inheritDoc
    */
-  setJsonValue(state: Metadata, obj: Managed, json: JsonArray,
-    options: { onlyMetadata?: boolean; persisting: boolean }) {
+  setJsonValue(state: ManagedState, object: Managed, json: JsonArray,
+    options: { onlyMetadata?: boolean; persisting: boolean }): void {
     let value: (E | null)[] | null = null;
 
     if (json) {
-      value = this.getValue(obj);
+      value = this.getValue(object);
 
       const len = json.length;
       if (!(value instanceof this.typeConstructor)) {
@@ -81,7 +82,7 @@ export class ListAttribute<E> extends PluralAttribute<Array<E | null>, E> {
       }
 
       const persisting = new Array(len);
-      const persistedState = PluralAttribute.getAttachedState(value) || [];
+      const persistedState: any[] = Attribute.attachState(value) || [];
 
       // clear additional items
       if (len < value.length) {
@@ -95,11 +96,11 @@ export class ListAttribute<E> extends PluralAttribute<Array<E | null>, E> {
       }
 
       if (options.persisting) {
-        PluralAttribute.attachState(value, persisting);
+        Attribute.attachState(value, persisting, true);
       }
     }
 
-    this.setValue(obj, value);
+    this.setValue(object, value);
   }
 
   /**

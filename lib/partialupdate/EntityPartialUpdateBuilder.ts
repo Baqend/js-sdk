@@ -24,7 +24,7 @@ export class EntityPartialUpdateBuilder<T extends Entity> extends PartialUpdateB
     return state.withLock(() => (
       state.db.send(msg).then((response) => {
         // Update the entity’s values
-        state.setJson(response.entity, { persisting: true });
+        state.type.fromJsonValue(state, response.entity, this.entity, { persisting: true });
         return this.entity;
       })
     ));

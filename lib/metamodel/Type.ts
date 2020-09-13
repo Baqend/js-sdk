@@ -1,5 +1,5 @@
 import { Class, Json } from '../util';
-import { Metadata } from '../intersection';
+import { ManagedState } from '../intersection';
 
 export enum PersistenceType {
   BASIC = 0,
@@ -99,7 +99,7 @@ export abstract class Type<T> {
    * Used to update the internal change tracking state of collections and mark the object persistent or dirty afterwards
    * @return The merged object instance
    */
-  abstract fromJsonValue(state: Metadata, jsonValue: Json, currentValue: T | null,
+  abstract fromJsonValue(state: ManagedState, jsonValue: Json, currentValue: T | null,
     options: { persisting: boolean, onlyMetadata?: boolean }) : T | null;
 
   /**
@@ -113,6 +113,6 @@ export abstract class Type<T> {
    *  Used to update the internal change tracking state of collections and mark the object persistent if its true
    * @return The converted object as json
    */
-  abstract toJsonValue(state: Metadata, object: T | null,
+  abstract toJsonValue(state: ManagedState, object: T | null,
     options: { excludeMetadata?: boolean, depth?: number | boolean, persisting: boolean }): Json;
 }

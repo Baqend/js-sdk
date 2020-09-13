@@ -1,11 +1,24 @@
 import { ManagedFactory } from './ManagedFactory';
-import { Entity } from './Entity';
+import type { Entity } from './Entity';
 import { Json, JsonMap } from '../util';
 import { Builder } from '../query';
 import { EntityPartialUpdateBuilder } from '../partialupdate';
 import { Metadata } from '../intersection';
 
 export class EntityFactory<T extends Entity> extends ManagedFactory<T> {
+  /**
+   * Creates a new instance of the factory type
+   *
+   * @param args Constructor arguments used for instantiation, the constructor will not be called
+   * when no arguments are passed
+   * @return A new created instance of T
+   */
+  newInstance(args?: any[] | IArguments) {
+    const instance = super.newInstance(args);
+    Metadata.get(instance).db = this.db;
+    return instance;
+  }
+
   /**
    * Loads the instance for the given id, or null if the id does not exists.
    * @param id The id to query

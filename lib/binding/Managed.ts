@@ -2,7 +2,8 @@ import { enumerable } from '../util/enumerable';
 import { Class, Json } from '../util';
 import { Enhancer } from './Enhancer';
 import { Metadata } from '../intersection';
-import type { ManagedMetadata } from '../intersection/Metadata';
+import type { ManagedState } from '../intersection/Metadata';
+import type { EntityType } from '../metamodel';
 
 export interface Managed {
   /**
@@ -13,7 +14,7 @@ export interface Managed {
   /**
    * Contains the metadata of this managed object
    */
-  _metadata: ManagedMetadata;
+  _metadata: ManagedState;
 }
 export class Managed {
   /**
@@ -22,10 +23,10 @@ export class Managed {
    * @param properties The optional properties to set on the instance
    */
   static init(instance: Managed, properties?: {[property: string]: any}): void {
-    const type = Enhancer.getBaqendType(instance.constructor);
-    if (type) {
+    const type = Enhancer.getBaqendType(instance.constructor)!;
+    if (type.isEntity) {
       Object.defineProperty(instance, '_metadata', {
-        value: Metadata.create(type, instance),
+        value: Metadata.create(type as EntityType<any>),
         configurable: true,
       });
     }
@@ -63,14 +64,23 @@ export class Managed {
   }
 
   /**
+   * Returns this object identifier or the baqend type of this object
+   * @return the object id or type whatever is available
+   */
+  @enumerable(false)
+  toString(): string {
+    const type = Enhancer.getBaqendType(this.constructor);
+    return type!.ref;
+  }
+
+  /**
    * Converts the managed object to an JSON-Object.
    * @return JSON-Object
    * @method
    */
   @enumerable(false)
   toJSON(): Json {
-    // TODO: casting to Metadata is not really correct here since embeddable types have an lightweight meta object
-    // However the lightweight Metadata is compatible with the Metadata object which is expected by the managed types
-    return this._metadata.type.toJsonValue(this._metadata as Metadata, this, { persisting: false });
+    const type = Enhancer.getBaqendType(this.constructor)!;
+    return type.toJsonValue(Metadata.create(type), this, { persisting: false });
   }
 }

@@ -511,7 +511,7 @@ export class EntityManager extends Lockable {
       this.addToWhiteList(response.entity.id);
 
       if (response.status !== StatusCode.NOT_MODIFIED) {
-        state.setJson(response.entity, { persisting: true });
+        state.type.fromJsonValue(state, response.entity, entity, { persisting: true });
       }
 
       return this.resolveDepth(entity, opt);
@@ -663,9 +663,9 @@ export class EntityManager extends Lockable {
     let json: JsonMap;
     if (state.isAvailable) {
       // getting json will check all collections changes, therefore we must do it before proofing the dirty state
-      json = state.getJson({
+      json = state.type.toJsonValue(state, entity, {
         persisting: true,
-      });
+      }) as JsonMap;
     }
 
     if (state.isDirty) {
@@ -680,7 +680,7 @@ export class EntityManager extends Lockable {
           this._attach(entity);
         }
 
-        state.setJson(response.entity, {
+        state.type.fromJsonValue(state, response.entity, entity, {
           persisting: options.refresh,
           onlyMetadata: !options.refresh,
         });
@@ -1053,7 +1053,7 @@ export class EntityManager extends Lockable {
   private _updateUser(obj: JsonMap, updateMe = false) {
     const user = this.getReference(obj.id as string) as model.User;
     const metadata = Metadata.get(user);
-    metadata.setJson(obj, { persisting: true });
+    metadata.type.fromJsonValue(metadata, obj, user, { persisting: true });
 
     if (updateMe) {
       this.me = user;
@@ -1108,7 +1108,7 @@ export class EntityManager extends Lockable {
   private _updateDevice(obj: JsonMap) {
     const device = this.getReference(obj.id as string);
     const metadata = Metadata.get(device);
-    metadata.setJson(obj, { persisting: true });
+    metadata.type.fromJsonValue(metadata, obj, device, { persisting: true });
 
     this.deviceMe = device;
     return device;
