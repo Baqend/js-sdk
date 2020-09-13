@@ -303,6 +303,7 @@ describe('Test crud', function () {
         version = person._metadata.version;
 
         person.name = 'Paul Panther';
+        person.toJSON(); // trigger dirty check
         expect(person._metadata.isDirty).be.true;
 
         return person.save();
@@ -412,6 +413,7 @@ describe('Test crud', function () {
       var promise = person.save();
       person.name = 'New Name';
       return promise.then(function () {
+        person.toJSON(); // trigger dirty check
         expect(person._metadata.isDirty).be.true;
         expect(person.name).equals('New Name');
       });
@@ -580,7 +582,7 @@ describe('Test crud', function () {
       // Check unloaded reference is not loaded
       expect(function () {
         obj4.name;
-      }).to.throw('This object ' + person.id + ' is not available.');
+      }).to.throw('Illegal property access on ' + person.id);
     });
 
     it('should get referencing classes', function () {

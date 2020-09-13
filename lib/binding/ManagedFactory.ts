@@ -1,8 +1,8 @@
 import { Factory } from './Factory';
 import type { EntityManager } from '../EntityManager';
-import { ManagedType } from '../metamodel';
-import { Managed } from './Managed';
-import { Json } from '../util';
+import type { ManagedType } from '../metamodel';
+import type { Managed } from './Managed';
+import type { Json } from '../util';
 import { Metadata } from '../intersection';
 
 export class ManagedFactory<T extends Managed> extends Factory<T> {
@@ -39,29 +39,15 @@ export class ManagedFactory<T extends Managed> extends Factory<T> {
   public db: EntityManager = null as any;
 
   /**
-   * Creates a new instance of the factory type
-   *
-   * @param args Constructor arguments used for instantiation, the constructor will not be called
-   * when no arguments are passed
-   * @return A new created instance of T
-   */
-  newInstance(args?: any[] | IArguments) {
-    const instance = super.newInstance(args);
-    Metadata.get(instance).db = this.db;
-    return instance;
-  }
-
-  /**
    * Creates a new instance and sets the Managed Object to the given json
    * @param json
    * @return A new created instance of T
    */
   fromJSON(json: Json): T {
     const instance = this.newInstance();
-    const metadata = Metadata.get(instance);
-    // TODO: casting to Metadata is not really correct here since embeddable types have an lightweight meta object
-    // However the lightweight Metadata is compatible with the Metadata object which is expected by the managed types
-    return this.managedType.fromJsonValue(metadata as Metadata, json, instance, { persisting: false })!!;
+    return this.managedType.fromJsonValue(Metadata.create(this.managedType, this.db), json, instance, {
+      persisting: false,
+    })!;
   }
 
   /**

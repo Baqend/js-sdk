@@ -1,32 +1,19 @@
 import { Acl } from '../Acl';
-import { Lockable, Json, JsonMap } from '../util';
+import { Lockable } from '../util';
 import type { EntityManager } from '../EntityManager';
-import { Entity, Managed } from '../binding';
-import type { EntityType, ManagedType } from '../metamodel';
+import type { Entity, Managed } from '../binding';
 import { PersistentError } from '../error';
+import type { EntityType, ManagedType } from '../metamodel';
 
-export interface ManagedMetadata {
+export interface ManagedState {
+
   db?: EntityManager;
-  root?: Entity;
   type: ManagedType<any>;
 
   /**
-   * Signals that the object will be accessed by a read
-   *
-   * Ensures that the object was loaded already.
-   *
-   * @return
+   * Indicates the the object is modified by the user
    */
-  readAccess(): void;
-
-  /**
-   * Signals that the object will be accessed by a write
-   *
-   * Ensures that the object was loaded already and marks the object as dirty.
-   *
-   * @return
-   */
-  writeAccess(): void;
+  setDirty(): void;
 }
 
 export enum MetadataState {
@@ -45,7 +32,7 @@ export enum MetadataState {
  *
  * {@link Metadata#get(object)} can be used on any managed object to retrieve the metadata of the root object
  */
-export class Metadata extends Lockable implements ManagedMetadata {
+export class Metadata extends Lockable implements ManagedState {
   entityManager: EntityManager | null = null;
 
   type: EntityType<any>;
@@ -62,42 +49,29 @@ export class Metadata extends Lockable implements ManagedMetadata {
 
   acl: Acl;
 
-  root: Entity;
-
   /**
-   * Creates a metadata instance for the given type and object instance
+   * Creates temporary metadata instance for the given embeddable type
    *
    * @param type The type of the object
-   * @param object The object instance of the type
+   * @param db a EntityManager which will be attached to the state
    * @return The created metadata for the object
    */
-  static create<T extends Entity>(type: EntityType<T>, object: T): Metadata;
-  static create<T extends Managed>(type: ManagedType<T>, object: T): ManagedMetadata;
-  static create<T extends Managed>(type: ManagedType<T>, object: T): ManagedMetadata {
+  static create<T extends Managed>(type: ManagedType<T>, db?: EntityManager): ManagedState;
+
+  /**
+   * Creates a metadata instance for the given entity type
+   *
+   * @param type The type of the object
+   * @param db a optional EntityManager which will be attached to the state
+   * @return The created metadata for the object
+   */
+  static create<T extends Entity>(type: EntityType<T>, db?: EntityManager): ManagedState | Metadata;
+
+  static create<T extends Entity>(type: ManagedType<T>, db?: EntityManager): ManagedState | Metadata {
     if (type.isEntity) {
-      if (!(object instanceof Entity)) {
-        throw new Error(`Object is not an entity, metadata can't be created. ${object}`);
-      }
-
-      return new Metadata(object as Entity, type as EntityType<any>);
-    }
-
-    if (type.isEmbeddable) {
-      return {
-        type,
-        readAccess() {
-          const metadata = this.root && Metadata.get(this.root);
-          if (metadata) {
-            metadata.readAccess();
-          }
-        },
-        writeAccess() {
-          const metadata = this.root && Metadata.get(this.root);
-          if (metadata) {
-            metadata.writeAccess();
-          }
-        },
-      };
+      return new Metadata(type as EntityType<T>);
+    } if (type.isEmbeddable) {
+      return { type, db, setDirty() {} };
     }
 
     throw new Error(`Illegal type ${type}`);
@@ -108,9 +82,7 @@ export class Metadata extends Lockable implements ManagedMetadata {
    * @param managed
    * @return
    */
-  static get(managed: Entity): Metadata;
-  static get(managed: Managed): ManagedMetadata;
-  static get(managed: Managed): ManagedMetadata {
+  static get(managed: Entity): Metadata {
     // eslint-disable-next-line no-underscore-dangle
     return managed._metadata;
   }
@@ -211,19 +183,17 @@ export class Metadata extends Lockable implements ManagedMetadata {
   }
 
   /**
-   * @param entity
    * @param type
    */
-  constructor(entity: Entity, type: EntityType<any>) {
+  constructor(type: EntityType<any>) {
     super();
 
-    this.root = entity;
     this.state = MetadataState.DIRTY;
     this.enabled = true;
     this.id = null;
     this.version = null;
     this.type = type;
-    this.acl = new Acl(this);
+    this.acl = new Acl();
   }
 
   /**
@@ -236,34 +206,12 @@ export class Metadata extends Lockable implements ManagedMetadata {
   }
 
   /**
-   * Signals that the object will be accessed by a read
-   *
-   * Ensures that the object was loaded already.
-   *
-   * @return
+   * Throws the corresponding error if a property is accessed before the owning object is loaded
+   * @throws an exception if the object properties aren't available and the object is enabled
    */
-  readAccess(): void {
-    if (this.enabled) {
-      if (!this.isAvailable) {
-        throw new PersistentError(`This object ${this.id} is not available.`);
-      }
-    }
-  }
-
-  /**
-   * Signals that the object will be accessed by a write
-   *
-   * Ensures that the object was loaded already and marks the object as dirty.
-   *
-   * @return
-   */
-  writeAccess(): void {
-    if (this.enabled) {
-      if (!this.isAvailable) {
-        throw new PersistentError(`This object ${this.id} is not available.`);
-      }
-
-      this.setDirty();
+  throwUnloadedPropertyAccess(property: string) {
+    if (this.enabled && !this.isAvailable) {
+      throw new PersistentError(`Illegal property access on ${this.id}#${property} , ensure that this reference is loaded before it's properties are accessed.`);
     }
   }
 
@@ -304,33 +252,5 @@ export class Metadata extends Lockable implements ManagedMetadata {
       this.setDirty();
       this.version = null;
     }
-  }
-
-  /**
-   * Converts the object to an JSON-Object
-   * @param [options=false] to json options by default excludes the metadata
-   * @param [options.excludeMetadata=false] Excludes the metadata form the serialized json
-   * @param [options.depth=0] Includes up to depth referenced objects into the serialized json
-   * @param [options.persisting=false] indicates if the current state will be persisted.
-   *  Used to update the internal change tracking state of collections and mark the object persistent if its true
-   * @return JSON-Object
-   * @deprecated
-   */
-  getJson(options?: boolean | { excludeMetadata?: boolean, depth?: boolean | number, persisting?: boolean }): JsonMap {
-    return this.type.toJsonValue(this, this.root, typeof options !== 'object' ? { excludeMetadata: options } : options) as JsonMap;
-  }
-
-  /**
-   * Sets the object content from json
-   * @param json The updated json content
-   * @param options The options used to apply the json
-   * @param [options.persisting=false] indicates if the current state will be persisted.
-   * Used to update the internal change tracking state of collections and mark the object persistent or dirty afterwards
-   * @param [options.onlyMetadata=false} Indicates if only the metadata should be updated
-   * @return
-   * @deprecated
-   */
-  setJson(json: Json, options?: { persisting?: boolean, onlyMetadata?: boolean }): void {
-    this.type.fromJsonValue(this, json, this.root, options || {});
   }
 }

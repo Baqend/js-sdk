@@ -1,4 +1,4 @@
-export { Metadata, MetadataState } from './Metadata';
+export { Metadata, MetadataState, ManagedState } from './Metadata';
 export { Permission, TrustedEntity } from './Permission';
 export { Validator } from './Validator';
 export { ValidationResult } from './ValidationResult';

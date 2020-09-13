@@ -3,8 +3,8 @@ import { PersistenceType, Type } from './Type';
 import {
   Class, Json,
 } from '../util';
-import { Metadata } from '../intersection';
 import { Managed } from '../binding';
+import { ManagedState } from '../intersection';
 
 export class SingularAttribute<T> extends Attribute<T> {
   public type: Type<T>;
@@ -45,17 +45,36 @@ export class SingularAttribute<T> extends Attribute<T> {
   /**
    * @inheritDoc
    */
-  getJsonValue(state: Metadata, object: Managed,
-    options: { excludeMetadata?: boolean; depth?: number | boolean, persisting: boolean }): Json | undefined {
-    return this.type.toJsonValue(state, this.getValue(object), options);
+  getJsonValue(state: ManagedState, object: Managed,
+    options: { excludeMetadata?: boolean; depth?: number | boolean; persisting: boolean }): Json | undefined {
+    const persistedState: { [key: string]: any } = Attribute.attachState(object, {});
+    const value = this.getValue(object);
+    const changed = persistedState[this.name] !== value;
+
+    if (options.persisting) {
+      persistedState[this.name] = value;
+    }
+
+    if (changed) {
+      state.setDirty();
+    }
+
+    return this.type.toJsonValue(state, value, options);
   }
 
   /**
    * @inheritDoc
    */
-  setJsonValue(state: Metadata, object: Managed, jsonValue: Json,
-    options: { onlyMetadata?: boolean, persisting: boolean }) {
-    this.setValue(object, this.type.fromJsonValue(state, jsonValue, this.getValue(object), options));
+  setJsonValue(state: ManagedState, object: Managed, jsonValue: Json,
+    options: { onlyMetadata?: boolean; persisting: boolean }): void {
+    const value = this.type.fromJsonValue(state, jsonValue, this.getValue(object), options);
+
+    if (options.persisting) {
+      const persistedState: { [key: string]: any } = Attribute.attachState(object, {});
+      persistedState[this.name] = value;
+    }
+
+    this.setValue(object, value);
   }
 
   /**

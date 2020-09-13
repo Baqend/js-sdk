@@ -196,7 +196,7 @@ export class Node<T extends Entity> extends Query<T> {
         if (el.id) {
           const entity: T = this.entityManager.getReference(this.resultClass, el.id as string);
           const metadata = Metadata.get(entity);
-          metadata.setJson(el, { persisting: true });
+          metadata.type.fromJsonValue(metadata, el, entity, { persisting: true });
           return this.entityManager.resolveDepth(entity, options);
         }
 

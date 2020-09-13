@@ -1,5 +1,5 @@
 import { Permission } from './intersection/Permission';
-import type { TrustedEntity, Metadata } from './intersection';
+import type { TrustedEntity } from './intersection';
 import type { JsonMap } from './util';
 
 /**
@@ -9,20 +9,12 @@ export class Acl {
   /**
    * The read permission of the object
    */
-  readonly read: Permission;
+  readonly read: Permission = new Permission();
 
   /**
    * The write permission of the object
    */
-  readonly write: Permission;
-
-  /**
-   * @param metadata the metadata of the object, null for files
-   */
-  constructor(metadata?: Metadata) {
-    this.read = new Permission(metadata);
-    this.write = new Permission(metadata);
-  }
+  readonly write: Permission = new Permission();
 
   /**
    * Removes all acl rules, read and write access is public afterwards

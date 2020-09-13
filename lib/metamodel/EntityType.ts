@@ -11,7 +11,8 @@ import { SingularAttribute } from './SingularAttribute';
 import type { Acl } from '../Acl';
 import type { EntityManager } from '../EntityManager';
 import { PluralAttribute } from './PluralAttribute';
-import { Metadata, Permission } from '../intersection';
+import { Attribute } from './Attribute';
+import { Metadata, Permission, ManagedState } from '../intersection';
 
 export class EntityType<T extends Entity> extends ManagedType<T> {
   public static Object = class ObjectType extends EntityType<any> {
@@ -27,14 +28,14 @@ export class EntityType<T extends Entity> extends ManagedType<T> {
           super('id', BasicType.String, true);
         }
 
-        getJsonValue(state: Metadata): Json {
-          return state.id || undefined as any;
+        getJsonValue(state: ManagedState): Json {
+          return (state as Metadata).id || undefined as any;
         }
 
-        setJsonValue(state: Metadata, object: Managed, jsonValue: Json) {
-          if (!state.id) {
+        setJsonValue(state: ManagedState, object: Managed, jsonValue: Json) {
+          if (!(state as Metadata).id) {
             // eslint-disable-next-line no-param-reassign
-            state.id = jsonValue as string;
+            (state as Metadata).id = jsonValue as string;
           }
         }
       }();
@@ -46,14 +47,14 @@ export class EntityType<T extends Entity> extends ManagedType<T> {
           super('version', BasicType.Integer, true);
         }
 
-        getJsonValue(state: Metadata) {
-          return state.version || undefined as any;
+        getJsonValue(state: ManagedState) {
+          return (state as Metadata).version || undefined as any;
         }
 
-        setJsonValue(state: Metadata, object: Managed, jsonValue: Json) {
+        setJsonValue(state: ManagedState, object: Managed, jsonValue: Json) {
           if (jsonValue) {
             // eslint-disable-next-line no-param-reassign
-            state.version = jsonValue as number;
+            (state as Metadata).version = jsonValue as number;
           }
         }
       }();
@@ -65,12 +66,43 @@ export class EntityType<T extends Entity> extends ManagedType<T> {
           super('acl', BasicType.JsonObject as BasicType<any>, true);
         }
 
-        getJsonValue(state: Metadata) {
-          return state.acl.toJSON();
+        getJsonValue(state: ManagedState, object: Managed,
+          options: { excludeMetadata?: boolean; depth?: number | boolean; persisting: boolean }) {
+          const persisted: { acl?: JsonMap } = Attribute.attachState(object, {});
+          const persistedAcl = persisted.acl || {};
+          const acl = (state as Metadata).acl.toJSON();
+
+          const unchanged = Object.keys(acl).every((permission) => {
+            const oldPermission = (persistedAcl[permission] || {}) as JsonMap;
+            const newPermission = acl[permission] as JsonMap;
+            const newKeys = Object.keys(newPermission);
+            const oldKeys = Object.keys(oldPermission);
+
+            return newKeys.length === oldKeys.length
+              && newKeys.every((ref) => oldPermission[ref] === newPermission[ref]);
+          });
+
+          if (!unchanged) {
+            state.setDirty();
+          }
+
+          if (options.persisting) {
+            persisted.acl = acl;
+          }
+
+          return acl;
         }
 
-        setJsonValue(state: Metadata, object: Managed, jsonValue: Json) {
-          state.acl.fromJSON(jsonValue as JsonMap || {});
+        setJsonValue(state: ManagedState, object: Managed, jsonValue: Json,
+          options: { onlyMetadata?: boolean; persisting: boolean }): void {
+          const acl = (jsonValue || {}) as JsonMap;
+
+          if (options.persisting) {
+            const persistedState: { acl?: JsonMap } = Attribute.attachState(object, {});
+            persistedState.acl = acl;
+          }
+
+          (state as Metadata).acl.fromJSON(acl);
         }
       }();
 
@@ -215,11 +247,11 @@ export class EntityType<T extends Entity> extends ManagedType<T> {
    * @param [options.onlyMetadata=false] Indicates if only the metadata should be updated
    * @return The merged entity instance
    */
-  fromJsonValue(state: Metadata, jsonObject: Json, currentObject: T | null,
+  fromJsonValue(state: ManagedState, jsonObject: Json, currentObject: T | null,
     options: { persisting?: boolean, onlyMetadata?: boolean }): T | null {
     // handle references
     if (typeof jsonObject === 'string') {
-      return state.db.getReference(jsonObject) as T;
+      return state.db?.getReference(jsonObject) as T || null;
     }
 
     if (!jsonObject || typeof jsonObject !== 'object') {
@@ -247,7 +279,11 @@ export class EntityType<T extends Entity> extends ManagedType<T> {
     }
 
     if (!obj) {
-      obj = state.db.getReference(this.typeConstructor, json.id as string);
+      obj = state.db?.getReference(this.typeConstructor, json.id as string);
+    }
+
+    if (!obj) {
+      return null;
     }
 
     const objectState = Metadata.get(obj);
@@ -276,7 +312,7 @@ export class EntityType<T extends Entity> extends ManagedType<T> {
    *  Used to update the internal change tracking state of collections and mark the object persistent if its true
    * @return JSON-Object
    */
-  toJsonValue(state: Metadata, object: T | null,
+  toJsonValue(state: ManagedState, object: T | null,
     options?: { excludeMetadata?: boolean, depth?: number | boolean, persisting?: boolean }): Json {
     const { depth = 0, persisting = false } = options || {};
     const isInDepth = depth === true || depth > -1;
@@ -296,7 +332,7 @@ export class EntityType<T extends Entity> extends ManagedType<T> {
       return json;
     }
 
-    if (object instanceof this.typeConstructor) {
+    if (state.db && object instanceof this.typeConstructor) {
       object.attach(state.db);
       return object.id;
     }

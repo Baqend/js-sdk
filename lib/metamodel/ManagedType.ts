@@ -9,7 +9,7 @@ import type { EntityType } from './EntityType';
 import type { PluralAttribute } from './PluralAttribute';
 import type { SingularAttribute } from './SingularAttribute';
 import type { EmbeddableType } from './index';
-import { Metadata, Permission } from '../intersection';
+import { Permission, ManagedState } from '../intersection';
 
 export abstract class ManagedType<T extends Managed> extends Type<T> {
   public enhancer: Enhancer | null = null;
@@ -223,7 +223,7 @@ export abstract class ManagedType<T extends Managed> extends Type<T> {
   /**
    * @inheritDoc
    */
-  fromJsonValue(state: Metadata, jsonObject: Json, currentObject: T | null,
+  fromJsonValue(state: ManagedState, jsonObject: Json, currentObject: T | null,
     options: { onlyMetadata?: boolean, persisting: boolean }) {
     if (!jsonObject || !currentObject) {
       return null;
@@ -243,7 +243,7 @@ export abstract class ManagedType<T extends Managed> extends Type<T> {
   /**
    * @inheritDoc
    */
-  toJsonValue(state: Metadata, object: T | null,
+  toJsonValue(state: ManagedState, object: T | null,
     options: { excludeMetadata?: boolean; depth?: number | boolean, persisting: boolean }): Json {
     if (!(object instanceof this.typeConstructor)) {
       return null;

@@ -1,6 +1,5 @@
-import type { Metadata } from './Metadata';
 import type * as model from '../model';
-import { Json, JsonMap } from '../util';
+import type { Json, JsonMap } from '../util';
 
 export type TrustedEntity = model.User | model.Role | string;
 export type BasePermission = ['load', 'update', 'delete', 'query', 'insert'];
@@ -12,16 +11,6 @@ export class Permission {
   static readonly BASE_PERMISSIONS: BasePermission = ['load', 'update', 'delete', 'query', 'insert'];
 
   public rules: {[ref: string]: string} = {};
-
-  private _metadata: Metadata | null;
-
-  /**
-   * Creates a new Permission object, with an empty rule set
-   * @param metadata The metadata of the object
-   */
-  constructor(metadata?: Metadata) {
-    this._metadata = metadata || null;
-  }
 
   /**
    * Returns a list of user and role references of all rules
@@ -36,10 +25,6 @@ export class Permission {
    * @return
    */
   clear(): void {
-    if (this._metadata) {
-      this._metadata.writeAccess();
-    }
-
     this.rules = {};
   }
 
@@ -49,10 +34,6 @@ export class Permission {
    * @return
    */
   copy(permission: Permission): Permission {
-    if (this._metadata) {
-      this._metadata.writeAccess();
-    }
-
     this.rules = { ...permission.rules };
     return this;
   }
@@ -77,10 +58,6 @@ export class Permission {
    * @return
    */
   setPublicAllowed(): void {
-    if (this._metadata) {
-      this._metadata.writeAccess();
-    }
-
     this.allRules().forEach((ref) => {
       if (this.rules[ref] === 'allow') {
         delete this.rules[ref];
@@ -123,10 +100,6 @@ export class Permission {
    * @return this permission object
    */
   allowAccess(...userOrRole: TrustedEntity[]): Permission {
-    if (this._metadata) {
-      this._metadata.writeAccess();
-    }
-
     for (let i = 0; i < userOrRole.length; i += 1) {
       this.rules[this.ref(userOrRole[i])] = 'allow';
     }
@@ -140,10 +113,6 @@ export class Permission {
    * @return this permission object
    */
   denyAccess(...userOrRole: TrustedEntity[]): Permission {
-    if (this._metadata) {
-      this._metadata.writeAccess();
-    }
-
     for (let i = 0; i < userOrRole.length; i += 1) {
       this.rules[this.ref(userOrRole[i])] = 'deny';
     }
@@ -157,10 +126,6 @@ export class Permission {
    * @return this permission object
    */
   deleteAccess(...userOrRole: TrustedEntity[]): Permission {
-    if (this._metadata) {
-      this._metadata.writeAccess();
-    }
-
     for (let i = 0; i < userOrRole.length; i += 1) {
       delete this.rules[this.ref(userOrRole[i])];
     }

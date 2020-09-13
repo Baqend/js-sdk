@@ -6,6 +6,7 @@ import { Filter } from '../query';
 import { Json, JsonMap } from '../util';
 import { Metadata, ValidationResult } from '../intersection';
 import type { EntityManager } from '../EntityManager';
+import { Enhancer } from './Enhancer';
 
 export interface Entity {
   /**
@@ -89,6 +90,7 @@ export class Entity extends Managed {
    */
   @enumerable(true)
   get acl() {
+    this._metadata.throwUnloadedPropertyAccess('acl');
     return this._metadata.acl;
   }
 
@@ -329,6 +331,16 @@ export class Entity extends Managed {
   }
 
   /**
+   * Returns this object identifier or the baqend type of this object
+   * @return the object id or type whatever is available
+   */
+  @enumerable(false)
+  toString(): string {
+    const type = Enhancer.getBaqendType(this.constructor);
+    return this.id || type!.ref;
+  }
+
+  /**
    * Converts the object to an JSON-Object
    * @param [options=false] to json options by default excludes the metadata
    * @param [options.excludeMetadata=false] Excludes the metadata form the serialized json
@@ -351,6 +363,7 @@ export class Entity extends Managed {
       opt = {};
     }
 
-    return this._metadata.getJson(opt);
+    const state = this._metadata;
+    return state.type.toJsonValue(state, this, opt);
   }
 }
