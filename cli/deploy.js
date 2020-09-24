@@ -6,6 +6,7 @@ const schema = require('./schema');
 const handlerTypes = ['update', 'insert', 'delete', 'validate'];
 const path = require('path');
 const readline = require('readline');
+const crypto = require('crypto');
 
 module.exports = function(args) {
   return account.login(args).then((db) => {
@@ -174,13 +175,28 @@ function uploadFiles(db, bucket, files, cwd) {
   }
 }
 
+const MAX_INCREMENTAL_UPLOAD_SIZE = 5242880;
+
 function uploadFile(db, bucket, filePath, cwd) {
   let fullFilePath = path.join(cwd, filePath);
+  
+  var existingFile = new db.File({path: `/${bucket}/${filePath}`})
+  
+  return existingFile.loadMetadata().catch(() => {
+    return false
+  }).then((exists) => {
+    let stat = fs.statSync(fullFilePath);
+    if (!exists || stat.size < MAX_INCREMENTAL_UPLOAD_SIZE && getFileHash(fullFilePath) !== existingFile.eTag){      
+      let file = new db.File({path: `/${bucket}/${filePath}`, data: fs.createReadStream(fullFilePath), size: stat.size, type: 'stream'});
+      return file.upload({ force: true }).catch(function(e) {
+        throw new Error(`Failed to upload file ${filePath}: ${e.message}`);
+      });  
+    } else {
+      return Promise.resolve();
+    }
+  })
+}
 
-  let stat = fs.statSync(fullFilePath);
-
-  let file = new db.File({path: `/${bucket}/${filePath}`, data: fs.createReadStream(fullFilePath), size: stat.size, type: 'stream'});
-  return file.upload({ force: true }).catch(function(e) {
-    throw new Error(`Failed to upload file ${filePath}: ${e.message}`);
-  });
+function getFileHash(filepath) {
+  return crypto.createHash('md5').update(fs.readFileSync(filepath)).digest("hex");
 }
