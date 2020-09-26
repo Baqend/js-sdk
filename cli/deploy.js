@@ -221,26 +221,19 @@ function upload (db, bucket, files, cwd) {
       console.log(`Uploading ${files.length} files.`)
     }
     const totalCount = files.length;
-    return runGenerator(Generator(files, function (filePath, progress){    
-          
+    return runGenerator(Generator(files, function (filePath, progress) {    
       if (progress > 0) {
         readline.clearLine(process.stdout, 0);
         readline.cursorTo(process.stdout, 0);
       }
-      // process.stdout.write(`Uploading files ${(Math.round(progress * 100))}%`);
       process.stdout.write(`Uploading file ${(Math.ceil(progress * totalCount))} of ${totalCount}`);
-
       if (IS_TTY && progress === 1) {
           console.log(''); //add a final linebreak
       }
-
       return uploadFile(db, bucket, filePath, cwd, existFileMapping).then(() => existFileMapping);
-
-
     })).then((result) => ({result, existFileMapping}))
   }
 }
-
 
 function cleanUp ({result, existFileMapping})  {
   const files = Array.from(existFileMapping.path.values());
@@ -249,12 +242,13 @@ function cleanUp ({result, existFileMapping})  {
     console.log(`Deleting ${files.length} files.`)
   }
 
-  return runGenerator(Generator(files, function (file, progress){    
+  const totalCount = files.length;
+  return runGenerator(Generator(files, function (file, progress) {    
     if (progress > 0) {
       readline.clearLine(process.stdout, 0);
       readline.cursorTo(process.stdout, 0);
     }
-    process.stdout.write(`Deleting files ${(Math.round(progress * 100))}%`);
+    process.stdout.write(`Deleting file ${(Math.ceil(progress * totalCount))} of ${totalCount}`);
     if (IS_TTY && progress === 1) {
         console.log(''); //add a final linebreak
     }
@@ -286,22 +280,6 @@ function uploadFile(db, bucket, filePath, cwd, existFileMapping) {
 function getFileHash(filepath) {
   return crypto.createHash('md5').update(fs.readFileSync(filepath)).digest("hex");
 }
-
-
-
-function runGenerator(generator, parallel = 2, totalResults = []){
-  return Promise.all(
-    Array(parallel).fill(() => Promise.resolve(generator.next().value || [])).map((next) => next())
-  ).then(results => {
-    results = [].concat.apply([],results);
-    totalResults.push(...results)  
-    if (results.length > 0){
-      return runGenerator(generator, parallel, totalResults)
-    }
-    return totalResults;
-  });
-}
-
 
 // Generator
 
