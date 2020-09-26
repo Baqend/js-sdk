@@ -55,6 +55,7 @@ if (!module.parent) {
   program
       .command('deploy [app]')
       .description('Deploys your Baqend code and files')
+      .option('-cu, --clean-up',                'Remove all unused files in bucket path')
       .option('-F, --files',                'deploy files')
       .option('-f, --file-dir <dir>',       'path to file directory [default: www]', 'www')
       .option('-g, --file-glob <pattern>',  'pattern to match files [default: **/*]', '**/*')
