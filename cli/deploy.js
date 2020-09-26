@@ -12,9 +12,6 @@ const crypto = require('crypto');
 let IS_TTY = process.stdout.isTTY;
 
 module.exports = function(args) {
-
-  console.log('?',args.cleanUp)
-
   return account.login(args).then((db) => {
     let promises = []
     if (!args.code && !args.files || args.code && args.files) {
@@ -171,6 +168,12 @@ function getFilesFromBucket(db, dir){
 
 function uploadFiles(db, bucket, files, cwd, cleanUpDist) {
 
+  if (!IS_TTY) {
+    console.log('Read Bucket...')
+  }
+
+  process.stdout.write(`Read Bucket...`);
+
   let resolve = getFilesFromBucket(db, bucket)
 
   resolve = resolve.then(files => runGenerator(Generator(files, function (file, progress){    
@@ -181,10 +184,6 @@ function uploadFiles(db, bucket, files, cwd, cleanUpDist) {
     }
     process.stdout.write(`Prepare Upload ${(Math.round(progress * 100))}%`);
     
-    if (IS_TTY && progress === 1) {
-        console.log(''); //add a final linebreak
-    }
-
     return file.loadMetadata().then(() => file);
   }), 4))
 
@@ -217,10 +216,12 @@ function uploadFiles(db, bucket, files, cwd, cleanUpDist) {
 
 function upload (db, bucket, files, cwd) {
   return (existFileMapping) => {
-    if (!IS_TTY) {
-      console.log(`Uploading ${files.length} files.`)
-    }
+
     const totalCount = files.length;
+
+    if (!IS_TTY) {
+      console.log(`Uploading ${totalCount} files.`)
+    }
     return runGenerator(Generator(files, function (filePath, progress) {    
       if (progress > 0) {
         readline.clearLine(process.stdout, 0);
@@ -237,12 +238,12 @@ function upload (db, bucket, files, cwd) {
 
 function cleanUp ({result, existFileMapping})  {
   const files = Array.from(existFileMapping.path.values());
+  const totalCount = files.length;
 
   if (!IS_TTY) {
-    console.log(`Deleting ${files.length} files.`)
+    console.log(`Deleting ${totalCount} files.`)
   }
 
-  const totalCount = files.length;
   return runGenerator(Generator(files, function (file, progress) {    
     if (progress > 0) {
       readline.clearLine(process.stdout, 0);
