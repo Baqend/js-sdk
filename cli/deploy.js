@@ -7,8 +7,6 @@ const handlerTypes = ['update', 'insert', 'delete', 'validate'];
 const path = require('path');
 const readline = require('readline');
 const crypto = require('crypto');
-const { default: db } = require('baqend');
-const { SlowBuffer } = require('buffer');
 
 let IS_TTY = process.stdout.isTTY;
 
@@ -163,13 +161,13 @@ function runGenerator(generator, parallel = 2, totalResults = []) {
   const run = function (){
       return Promise.resolve(generator.next().value).then(result => {
           if (result !== undefined) {                
-              totalResults.push(result)
-              return run()
+              totalResults.push(result);
+              return run();
           }
           return totalResults;
       })
   };
-  const resolves = []
+  const resolves = [];
   for (let i = 0; i < parallel; i++) {
       resolves.push(run());
   }
@@ -181,36 +179,29 @@ function runGenerator(generator, parallel = 2, totalResults = []) {
 function listAllFiles(db, dir, start = 0, offset = 1000){
   return db.File.listFiles(dir, start, offset).then(files => {
     if (files.length > 0){
-      return listAllFiles(db, dir, files[files.length - 1], offset).then(nextFiles => files.concat(nextFiles))
+      return listAllFiles(db, dir, files[files.length - 1], offset).then(nextFiles => files.concat(nextFiles));
     }
-    return []
+    return [];
   })
 }
 
 function getFilesFromBucket(db, dir){
-  return listAllFiles(db, dir).then(files => {
-    return Promise.all(files.map(file => {
+  return listAllFiles(db, dir).then(files => Promise.all(files.map(file => {
       if (file.isFolder){
-        return getFilesFromBucket(db, file)
+        return getFilesFromBucket(db, file);
       } else {
-        return Promise.resolve(file)
+        return Promise.resolve(file);
       }
-    })).then(files => [].concat.apply([],files))
-  })
+    })).then(files => [].concat.apply([],files)));
 }
 
 // ####
 
 function uploadFiles(db, bucket, files, cwd, cleanUp, uploadLimit) {
 
-
-  return Promise.all([
-    prepareUploadFiles(cwd, files),
-    readBucket(db,bucket)
-  ]).then(([
-    files,
-    bucketFiles
-  ])=> {
+  return readBucket(db,bucket)
+  .then(bucketFiles => prepareUploadFiles(cwd, files).then(files => ({files, bucketFiles})))
+  .then(({bucketFiles, files})=> {
 
     const MAX_INCREMENTAL_UPLOAD_SIZE = 5242880;
 
@@ -242,21 +233,34 @@ function uploadFiles(db, bucket, files, cwd, cleanUp, uploadLimit) {
 
 
 function prepareUploadFiles(cwd, files){
+  const totalCount = files.length;
 
-  console.log(`Prepare upload files...`)
-
-  return files.map(filePath => {
+  if (!IS_TTY) {
+    console.log(`Preparing ${totalCount} upload files.`);
+  }
+  
+  return runGenerator(Generator(files, function (filePath, progress) {     
+    if (progress > 0) {
+      readline.clearLine(process.stdout, 0);
+      readline.cursorTo(process.stdout, 0);
+    }
+    IS_TTY && process.stdout.write(`Preparing upload file ${(Math.ceil(progress * totalCount))} of ${totalCount}`);
+   
     return getFileHash(path.join(cwd, filePath)).then(hash => ({
       path: filePath,
       eTag: hash
-    }))
-  })
+    }));
+   }), 4);
 }
 
 function readBucket(db, bucket){
 
-  console.log(`Read Bucket...`)
+  if (!IS_TTY) {
+    console.log(`Read Bucket...`)
+  }
 
+  IS_TTY && process.stdout.write('Read Bucket...');
+ 
   return getFilesFromBucket(db, bucket)
 }
 
