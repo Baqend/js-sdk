@@ -10,7 +10,6 @@ const crypto = require('crypto');
 const { default: db } = require('baqend');
 const { SlowBuffer } = require('buffer');
 
-
 let IS_TTY = process.stdout.isTTY;
 
 module.exports = function(args) {
@@ -274,7 +273,7 @@ function upload (db, bucket, files, cwd, uploadLimit) {
         readline.clearLine(process.stdout, 0);
         readline.cursorTo(process.stdout, 0);
       }
-      process.stdout.write(`Uploading file ${(Math.ceil(progress * totalCount))} of ${totalCount}`);
+      IS_TTY && process.stdout.write(`Uploading file ${(Math.ceil(progress * totalCount))} of ${totalCount}`);
       if (IS_TTY && progress === 1) {
           console.log(''); //add a final linebreak
       }
@@ -296,7 +295,7 @@ function cleanUpBucket ({result, existFileMapping})  {
       readline.clearLine(process.stdout, 0);
       readline.cursorTo(process.stdout, 0);
     }
-    process.stdout.write(`Deleting file ${(Math.ceil(progress * totalCount))} of ${totalCount}`);
+    IS_TTY && process.stdout.write(`Deleting file ${(Math.ceil(progress * totalCount))} of ${totalCount}`);
     if (IS_TTY && progress === 1) {
         console.log(''); //add a final linebreak
     }
