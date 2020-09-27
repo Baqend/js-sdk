@@ -55,7 +55,6 @@ if (!module.parent) {
   program
       .command('deploy [app]')
       .description('Deploys your Baqend code and files')
-      .option('-cu, --clean-up',                'Remove all unused files in bucket path')
       .option('-F, --files',                'deploy files')
       .option('-f, --file-dir <dir>',       'path to file directory [default: www]', 'www')
       .option('-g, --file-glob <pattern>',  'pattern to match files [default: **/*]', '**/*')
@@ -63,6 +62,8 @@ if (!module.parent) {
       .option('-C, --code',                 'deploy code')
       .option('-c, --code-dir <dir>',       'path to code directory [default: baqend]', 'baqend')
       .option('-S, --schema',               'deploy schema')
+      .option('--upload-limit <count>',     'Set parallel file upload limit [default: 2]', '2')
+      .option('--clean-up',                 'Remove all unused files in bucket path')
       .action((app, options) => result = deploy(Object.assign({ app: app }, options)))
   ;
 
