@@ -201,24 +201,14 @@ function uploadFiles(db, bucket, files, cwd, cleanUp, uploadLimit) {
 
   return readBucket(db,bucket)
   .then(bucketFiles => prepareUploadFiles(cwd, files).then(files => ({files, bucketFiles})))
-  .then(({bucketFiles, files})=> {
+  .then(({bucketFiles, files}) => {
 
-    const MAX_INCREMENTAL_UPLOAD_SIZE = 5242880;
-
-    const existFileMapping = bucketFiles.reduce((result, file) => {
-      // exclude files over 5mb, for force upload
-      // TODO: get file hash for >5mb file
-      if (file.size < MAX_INCREMENTAL_UPLOAD_SIZE){
-        result.eTag.set(file.eTag, file)
-      }
-      result.path.set(file.path, file)
+    const existFilePathMap = bucketFiles.reduce((result, file) => {
+      result.set(file.path, file)
       return result;
-    }, {
-      eTag: new Map(),
-      path: new Map()
-    });
+    }, new Map());
 
-    let resolve = Promise.resolve(existFileMapping);
+    let resolve = Promise.resolve(existFilePathMap);
   
     resolve = resolve.then(upload(db, bucket, files, cwd, uploadLimit));
       
@@ -265,7 +255,7 @@ function readBucket(db, bucket){
 }
 
 function upload (db, bucket, files, cwd, uploadLimit) {
-  return (existFileMapping) => {
+  return (existFilePathMap) => {
 
     const totalCount = files.length;
 
@@ -281,13 +271,13 @@ function upload (db, bucket, files, cwd, uploadLimit) {
       if (IS_TTY && progress === 1) {
           console.log(''); //add a final linebreak
       }
-      return uploadFile(db, bucket, filePath, cwd, existFileMapping).then(() => existFileMapping);
-    }), uploadLimit || 2).then((result) => ({result, existFileMapping}));
+      return uploadFile(db, bucket, filePath, cwd, existFilePathMap).then(() => existFilePathMap);
+    }), uploadLimit || 2).then((result) => ({result, existFilePathMap}));
   }
 }
 
-function cleanUpBucket ({result, existFileMapping})  {
-  const files = Array.from(existFileMapping.path.values());
+function cleanUpBucket ({result, existFilePathMap})  {
+  const files = Array.from(existFilePathMap.values());
   const totalCount = files.length;
 
   if (!IS_TTY) {
@@ -308,16 +298,16 @@ function cleanUpBucket ({result, existFileMapping})  {
 }
   
 
-function uploadFile(db, bucket, file, cwd, existFileMapping) {
+function uploadFile(db, bucket, file, cwd, existFilePathMap) {
 
   const fullFilePath = path.join(cwd, file.path);
   const bucketFilePath = `/${bucket}/${file.path}`;
 
-  const existingFile = existFileMapping.path.get(bucketFilePath) 
+  const existingFile = existFilePathMap.get(bucketFilePath) 
 
   const stat = fs.statSync(fullFilePath);
 
-  existingFile && existFileMapping.path.delete(bucketFilePath);
+  existingFile && existFilePathMap.delete(bucketFilePath);
   // exists map has logic for large files (hash)
   
   if (!existingFile || file.eTag !== existingFile.eTag){       
@@ -331,11 +321,22 @@ function uploadFile(db, bucket, file, cwd, existFileMapping) {
   }
 }
 
+const MAX_INCREMENTAL_UPLOAD_SIZE = 5242880;
+
 function getFileHash(filepath) {
-  return new Promise(resolve => fs.readFile(filepath, (err, data) => {
-    if (err) {
-      throw err;
+  return new Promise(resolve => {
+    // exclude files over 5mb, for force upload
+    // TODO: get file hash for >5mb file
+    const stat = fs.statSync(filepath);
+    if (stat.size < MAX_INCREMENTAL_UPLOAD_SIZE){
+      fs.readFile(filepath, (err, data) => {
+        if (err) {
+          throw err;
+        }
+        resolve(crypto.createHash('md5').update(data).digest("hex"))
+      })
+    } else {
+      resolve(null);
     }
-    resolve(data)
-  })).then((data) => crypto.createHash('md5').update(data).digest("hex"))
+  })
 }
