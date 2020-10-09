@@ -157,21 +157,22 @@ function* Generator(entries, func) {
   }
 }
 
-function runGenerator(generator, parallel = 2, totalResults = []) {
+function runGenerator(generator, parallel, totalResults) {
+  const results = totalResults || [];
   const run = function (){
       return Promise.resolve(generator.next().value).then(result => {
           if (result !== undefined) {                
-              totalResults.push(result);
+            results.push(result);
               return run();
           }
-          return totalResults;
+          return results;
       })
   };
   const resolves = [];
-  for (let i = 0; i < parallel; i++) {
+  for (let i = 0; i < (parallel || 2); i++) {
       resolves.push(run());
   }
-  return Promise.all(resolves).then(() => totalResults);
+  return Promise.all(resolves).then(() => results);
 }
 
 // ####
@@ -198,13 +199,12 @@ function getFilesFromBucket(db, dir){
 // ####
 
 function uploadFiles(db, bucket, files, cwd, cleanUp, uploadLimit) {
-
   return readBucket(db,bucket)
   .then(bucketFiles => prepareUploadFiles(cwd, files).then(files => ({files, bucketFiles})))
   .then(({bucketFiles, files}) => {
 
     const existFilePathMap = bucketFiles.reduce((result, file) => {
-      result.set(file.path, file)
+      result.set(file.path, file);
       return result;
     }, new Map());
 
@@ -222,7 +222,7 @@ function uploadFiles(db, bucket, files, cwd, cleanUp, uploadLimit) {
 }
 
 
-function prepareUploadFiles(cwd, files){
+function prepareUploadFiles(cwd, files) {
   const totalCount = files.length;
 
   if (!IS_TTY) {
@@ -247,9 +247,9 @@ function readBucket(db, bucket){
 
   if (!IS_TTY) {
     console.log(`Read Bucket...`)
+  } else {
+    process.stdout.write('Read Bucket...')
   }
-
-  IS_TTY && process.stdout.write('Read Bucket...');
  
   return getFilesFromBucket(db, bucket)
 }
@@ -262,6 +262,7 @@ function upload (db, bucket, files, cwd, uploadLimit) {
     if (!IS_TTY) {
       console.log(`Uploading ${totalCount} files.`);
     }
+    
     return runGenerator(Generator(files, function (filePath, progress) {    
       if (progress > 0) {
         readline.clearLine(process.stdout, 0);
