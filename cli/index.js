@@ -62,6 +62,8 @@ if (!module.parent) {
       .option('-C, --code',                 'deploy code')
       .option('-c, --code-dir <dir>',       'path to code directory [default: baqend]', 'baqend')
       .option('-S, --schema',               'deploy schema')
+      .option('--upload-limit <count>',     'Set parallel file upload limit [default: 2]', '2')
+      .option('--clean-up',                 'Remove all unused files in bucket path')
       .action((app, options) => result = deploy(Object.assign({ app: app }, options)))
   ;
 

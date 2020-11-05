@@ -6,17 +6,20 @@ const schema = require('./schema');
 const handlerTypes = ['update', 'insert', 'delete', 'validate'];
 const path = require('path');
 const readline = require('readline');
+const crypto = require('crypto');
+
+let IS_TTY = process.stdout.isTTY;
 
 module.exports = function(args) {
   return account.login(args).then((db) => {
     let promises = []
     if (!args.code && !args.files || args.code && args.files) {
-      promises.push(deployFiles(db, args.bucketPath, args.fileDir, args.fileGlob))
+      promises.push(deployFiles(db, args.bucketPath, args.fileDir, args.fileGlob, args.cleanUp, args.uploadLimit))
       promises.push(deployCode(db, args.codeDir))
     } else if (args.code) {
       promises.push(deployCode(db, args.codeDir));
     } else if (args.files) {
-      promises.push(deployFiles(db, args.bucketPath, args.fileDir, args.fileGlob));
+      promises.push(deployFiles(db, args.bucketPath, args.fileDir, args.fileGlob, args.cleanUp, args.uploadLimit));
     }
     if (args.schema) {
       promises.push(schema.uploadSchema(db))
@@ -25,7 +28,7 @@ module.exports = function(args) {
   });
 };
 
-function deployFiles(db, path, cwd, pattern) {
+function deployFiles(db, path, cwd, pattern, cleanUp, uploadLimit) {
   while (path.length && path.charAt(0) === '/')
     path = path.substring(1);
 
@@ -42,7 +45,7 @@ function deployFiles(db, path, cwd, pattern) {
       if (er)
         reject(er);
       else
-        resolve(uploadFiles(db, path, files, cwd));
+        resolve(uploadFiles(db, path, files, cwd, cleanUp, uploadLimit));
     });
   }).then((result) => {
     if (result && result.length > 0) {
@@ -136,51 +139,210 @@ function uploadCode(db, name, codePath) {
   }).then(() => {
     console.log(`Module ${moduleName} deployed.`);
   });
+
 }
 
-function uploadFiles(db, bucket, files, cwd) {
-  let isTty = process.stdout.isTTY;
-  let index = 0;
+// ####
 
-  let uploads = [];
-  for (let i = 0; i < 10 && i < files.length; ++i) {
-    uploads.push(upload());
+// Generator
+
+function* Generator(entries, func) {
+  let count = 0;
+  const totalCount = entries.length;
+  while (entries.length > 0) {
+      yield Promise.resolve(entries.shift()).then((value) => {
+          count++
+          return func(value, count / totalCount);
+      })
   }
+}
 
-  if (!isTty) {
-    console.log(`Uploading ${files.length} files.`)
+function runGenerator(generator, parallel, totalResults) {
+  const results = totalResults || [];
+  const run = function (){
+      return Promise.resolve(generator.next().value).then(result => {
+          if (result !== undefined) {                
+            results.push(result);
+              return run();
+          }
+          return results;
+      })
+  };
+  const resolves = [];
+  for (let i = 0; i < (parallel || 2); i++) {
+      resolves.push(run());
   }
+  return Promise.all(resolves).then(() => results);
+}
 
-  return Promise.all(uploads);
+// ####
 
-  function upload() {
-    if (index < files.length) {
-      if (isTty) {
-        if (index > 0) {
-          readline.clearLine(process.stdout, 0);
-          readline.cursorTo(process.stdout, 0);
-        }
-        process.stdout.write(`Uploading file ${(index + 1)} of ${files.length}`);
-      }
-
-      var file = files[index++];
-
-      if (isTty && index == files.length) {
-        console.log(''); //add a final linebreak
-      }
-
-      return uploadFile(db, bucket, file, cwd).then(upload);
+function listAllFiles(db, dir, start = 0, offset = 1000){
+  return db.File.listFiles(dir, start, offset).then(files => {
+    if (files.length > 0){
+      return listAllFiles(db, dir, files[files.length - 1], offset).then(nextFiles => files.concat(nextFiles));
     }
+    return [];
+  })
+}
+
+function getFilesFromBucket(db, dir){
+  return listAllFiles(db, dir).then(files => Promise.all(files.map(file => {
+      if (file.isFolder){
+        return getFilesFromBucket(db, file);
+      } else {
+        return Promise.resolve(file);
+      }
+    })).then(files => [].concat.apply([],files)));
+}
+
+// ####
+
+function uploadFiles(db, bucket, files, cwd, cleanUp, uploadLimit) {
+  return readBucket(db,bucket)
+  .then(bucketFiles => prepareUploadFiles(cwd, files).then(files => ({files, bucketFiles})))
+  .then(({bucketFiles, files}) => {
+
+    const existFilePathMap = bucketFiles.reduce((result, file) => {
+      result.set(file.path, file);
+      return result;
+    }, new Map());
+
+    let resolve = Promise.resolve(existFilePathMap);
+  
+    resolve = resolve.then(upload(db, bucket, files, cwd, uploadLimit));
+      
+    if (cleanUp){
+      resolve = resolve.then(cleanUpBucket);
+    }
+    
+    return resolve;
+
+  })
+}
+
+
+function prepareUploadFiles(cwd, files) {
+  const totalCount = files.length;
+
+  if (!IS_TTY) {
+    console.log(`Preparing ${totalCount} upload files.`);
+  }
+  
+  return runGenerator(Generator(files, function (filePath, progress) {      
+    if (IS_TTY) { 
+        if (progress > 0) {
+            readline.clearLine(process.stdout, 0);
+            readline.cursorTo(process.stdout, 0);
+        }
+        process.stdout.write(`Preparing upload file ${(Math.ceil(progress * totalCount))} of ${totalCount}`);
+    }
+    return getFileHash(path.join(cwd, filePath)).then(hash => ({
+      path: filePath,
+      eTag: hash
+    }));
+   }), 10);
+}
+
+function readBucket(db, bucket){
+
+  if (!IS_TTY) {
+    console.log(`Read Bucket...`)
+  } else {
+    process.stdout.write('Read Bucket...')
+  }
+ 
+  return getFilesFromBucket(db, bucket)
+}
+
+function upload (db, bucket, files, cwd, uploadLimit) {
+  return (existFilePathMap) => {
+
+    const totalCount = files.length;
+
+    if (!IS_TTY) {
+      console.log(`Uploading ${totalCount} files.`);
+    }
+    
+    return runGenerator(Generator(files, function (filePath, progress) {    
+        if (IS_TTY){
+            if (progress > 0) {
+              readline.clearLine(process.stdout, 0);
+              readline.cursorTo(process.stdout, 0);
+            }
+            process.stdout.write(`Uploading file ${(Math.ceil(progress * totalCount))} of ${totalCount}`);
+            if (progress === 1) {
+                console.log(''); //add a final linebreak
+            }
+        }
+      return uploadFile(db, bucket, filePath, cwd, existFilePathMap).then(() => existFilePathMap);
+    }), uploadLimit || 2).then((result) => ({result, existFilePathMap}));
   }
 }
 
-function uploadFile(db, bucket, filePath, cwd) {
-  let fullFilePath = path.join(cwd, filePath);
+function cleanUpBucket ({result, existFilePathMap})  {
+  const files = Array.from(existFilePathMap.values());
+  const totalCount = files.length;
 
-  let stat = fs.statSync(fullFilePath);
+  if (!IS_TTY) {
+    console.log(`Deleting ${totalCount} files.`);
+  }
 
-  let file = new db.File({path: `/${bucket}/${filePath}`, data: fs.createReadStream(fullFilePath), size: stat.size, type: 'stream'});
-  return file.upload({ force: true }).catch(function(e) {
-    throw new Error(`Failed to upload file ${filePath}: ${e.message}`);
-  });
+  return runGenerator(Generator(files, function (file, progress) {   
+      if (IS_TTY){ 
+        if (progress > 0) {
+            readline.clearLine(process.stdout, 0);
+            readline.cursorTo(process.stdout, 0);
+        }
+        process.stdout.write(`Deleting file ${(Math.ceil(progress * totalCount))} of ${totalCount}`);
+        if ( progress === 1) {
+            console.log(''); //add a final linebreak
+        }
+    }
+    return file.delete({force: true});
+  }), 10).then(() => result);
+}
+  
+
+function uploadFile(db, bucket, file, cwd, existFilePathMap) {
+
+  const fullFilePath = path.join(cwd, file.path);
+  const bucketFilePath = `/${bucket}/${file.path}`;
+
+  const existingFile = existFilePathMap.get(bucketFilePath) 
+
+  const stat = fs.statSync(fullFilePath);
+
+  existingFile && existFilePathMap.delete(bucketFilePath);
+  // exists map has logic for large files (hash)
+  
+  if (!existingFile || file.eTag !== existingFile.eTag){       
+    const file = new db.File({path: bucketFilePath, data: fs.createReadStream(fullFilePath), size: stat.size, type: 'stream'});
+    return file.upload({ force: true }).catch(function(e) {
+      console.log(e)
+      throw new Error(`Failed to upload file ${file.path}: ${e.message}`);
+    });  
+  } else {
+    return Promise.resolve();
+  }
+}
+
+const MAX_INCREMENTAL_UPLOAD_SIZE = 5242880;
+
+function getFileHash(filepath) {
+  return new Promise(resolve => {
+    // exclude files over 5mb, for force upload
+    // TODO: get file hash for >5mb file
+    const stat = fs.statSync(filepath);
+    if (stat.size < MAX_INCREMENTAL_UPLOAD_SIZE){
+      fs.readFile(filepath, (err, data) => {
+        if (err) {
+          throw err;
+        }
+        resolve(crypto.createHash('md5').update(data).digest("hex"))
+      })
+    } else {
+      resolve(null);
+    }
+  })
 }
