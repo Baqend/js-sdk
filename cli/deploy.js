@@ -229,18 +229,19 @@ function prepareUploadFiles(cwd, files) {
     console.log(`Preparing ${totalCount} upload files.`);
   }
   
-  return runGenerator(Generator(files, function (filePath, progress) {     
-    if (progress > 0) {
-      readline.clearLine(process.stdout, 0);
-      readline.cursorTo(process.stdout, 0);
+  return runGenerator(Generator(files, function (filePath, progress) {      
+    if (IS_TTY) { 
+        if (progress > 0) {
+            readline.clearLine(process.stdout, 0);
+            readline.cursorTo(process.stdout, 0);
+        }
+        process.stdout.write(`Preparing upload file ${(Math.ceil(progress * totalCount))} of ${totalCount}`);
     }
-    IS_TTY && process.stdout.write(`Preparing upload file ${(Math.ceil(progress * totalCount))} of ${totalCount}`);
-   
     return getFileHash(path.join(cwd, filePath)).then(hash => ({
       path: filePath,
       eTag: hash
     }));
-   }), 4);
+   }), 10);
 }
 
 function readBucket(db, bucket){
@@ -264,14 +265,16 @@ function upload (db, bucket, files, cwd, uploadLimit) {
     }
     
     return runGenerator(Generator(files, function (filePath, progress) {    
-      if (progress > 0) {
-        readline.clearLine(process.stdout, 0);
-        readline.cursorTo(process.stdout, 0);
-      }
-      IS_TTY && process.stdout.write(`Uploading file ${(Math.ceil(progress * totalCount))} of ${totalCount}`);
-      if (IS_TTY && progress === 1) {
-          console.log(''); //add a final linebreak
-      }
+        if (IS_TTY){
+            if (progress > 0) {
+              readline.clearLine(process.stdout, 0);
+              readline.cursorTo(process.stdout, 0);
+            }
+            process.stdout.write(`Uploading file ${(Math.ceil(progress * totalCount))} of ${totalCount}`);
+            if (progress === 1) {
+                console.log(''); //add a final linebreak
+            }
+        }
       return uploadFile(db, bucket, filePath, cwd, existFilePathMap).then(() => existFilePathMap);
     }), uploadLimit || 2).then((result) => ({result, existFilePathMap}));
   }
@@ -285,17 +288,19 @@ function cleanUpBucket ({result, existFilePathMap})  {
     console.log(`Deleting ${totalCount} files.`);
   }
 
-  return runGenerator(Generator(files, function (file, progress) {    
-    if (progress > 0) {
-      readline.clearLine(process.stdout, 0);
-      readline.cursorTo(process.stdout, 0);
-    }
-    IS_TTY && process.stdout.write(`Deleting file ${(Math.ceil(progress * totalCount))} of ${totalCount}`);
-    if (IS_TTY && progress === 1) {
-        console.log(''); //add a final linebreak
+  return runGenerator(Generator(files, function (file, progress) {   
+      if (IS_TTY){ 
+        if (progress > 0) {
+            readline.clearLine(process.stdout, 0);
+            readline.cursorTo(process.stdout, 0);
+        }
+        process.stdout.write(`Deleting file ${(Math.ceil(progress * totalCount))} of ${totalCount}`);
+        if ( progress === 1) {
+            console.log(''); //add a final linebreak
+        }
     }
     return file.delete({force: true});
-  }), 4).then(() => result);
+  }), 10).then(() => result);
 }
   
 
