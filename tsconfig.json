@@ -12,12 +12,12 @@
     "experimentalDecorators": true,
     "typeRoots": [
       "./node_modules/@types"
-    ],
-    "exclude": [
-      "node_modules",
-      "commonjs",
-      "dist",
-      "esm"
     ]
-  }
+  },
+  "exclude": [
+    "node_modules",
+    "commonjs",
+    "dist",
+    "esm"
+  ]
 }
