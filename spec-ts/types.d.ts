@@ -1,21 +1,21 @@
-import {model, binding} from '../esm/lib/index.es2015';
+import { binding } from '../esm/lib';
 
-declare module "../esm/lib/index.es2015" {
-    interface baqend {
-        Test:binding.EntityFactory<model.Test>;
+declare module '../esm/lib' {
+  // eslint-disable-next-line @typescript-eslint/naming-convention
+  interface baqend {
+    Test:binding.EntityFactory<model.Test>;
+  }
+
+  // eslint-disable-next-line no-shadow
+  namespace model {
+    export interface User extends binding.Entity {
+      customUserProp: string;
     }
 
-    namespace model {
-        export interface User extends binding.Entity {
-            customUserProp: string;
-        }
-
-        export interface Test extends binding.Entity {
-            myProp: string;
-            file: binding.File;
-        }
+    export interface Test extends binding.Entity {
+      myProp: string;
+      file: binding.File;
     }
+  }
 
 }
-
-
