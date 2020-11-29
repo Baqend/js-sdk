@@ -1,5 +1,3 @@
-'use strict';
-
 if (typeof module !== 'undefined') {
   require('./node');
 }
@@ -43,7 +41,7 @@ describe('Test file', function () {
   });
 
   it('parses E-Tags correctly', function () {
-    var parseETag = DB.binding.File.parseETag;
+    var { parseETag } = DB.binding.File;
 
     expect(parseETag()).to.be.null;
     expect(parseETag(false)).to.be.null;
@@ -67,7 +65,7 @@ describe('Test file', function () {
   describe('object', function () {
     it('should initialize with default parameters', function () {
       var file = new rootDb.File();
-      expect(file.id).eql('/file/www/' + file.key);
+      expect(file.id).eql(`/file/www/${file.key}`);
       expect(file.key).is.not.undefined;
       expect(file.bucket).eql('www');
       expect(file.parent).eql('/www');
@@ -165,7 +163,7 @@ describe('Test file', function () {
         file = new rootDb.File({ name: 'test.png', data: flames });
       }
 
-      expect(file.id).eql('/file/www/' + file.key);
+      expect(file.id).eql(`/file/www/${file.key}`);
       expect(file.key).eql('test.png');
       expect(file.bucket).eql('www');
       expect(file.parent).eql('/www');
@@ -185,7 +183,7 @@ describe('Test file', function () {
           f.lastModifiedDate = new Date();
 
           var file = new rootDb.File({ data: f });
-          expect(file.id).eql('/file/www/' + file.key);
+          expect(file.id).eql(`/file/www/${file.key}`);
           expect(file.key).eql('file.png');
           expect(file.bucket).eql('www');
           expect(file.parent).eql('/www');
@@ -211,7 +209,7 @@ describe('Test file', function () {
           mimeType: 'image/png',
         });
 
-        expect(file.id).eql('/file/www/' + file.key);
+        expect(file.id).eql(`/file/www/${file.key}`);
         expect(file.key).eql('test.png');
         expect(file.bucket).eql('www');
         expect(file.parent).eql('/www');
@@ -227,7 +225,7 @@ describe('Test file', function () {
 
     it('should initialize with base64 parameter', function () {
       var file = new rootDb.File({ data: svgBase64, type: 'base64', mimeType: 'image/svg+xml' });
-      expect(file.id).eql('/file/www/' + file.key);
+      expect(file.id).eql(`/file/www/${file.key}`);
       expect(file.key).is.not.undefined;
       expect(file.bucket).eql('www');
       expect(file.parent).eql('/www');
@@ -242,7 +240,7 @@ describe('Test file', function () {
 
     it('should initialize with data-url base64 parameter', function () {
       var file = new rootDb.File({ data: dataBase64, type: 'data-url' });
-      expect(file.id).eql('/file/www/' + file.key);
+      expect(file.id).eql(`/file/www/${file.key}`);
       expect(file.key).is.not.undefined;
       expect(file.bucket).eql('www');
       expect(file.parent).eql('/www');
@@ -257,7 +255,7 @@ describe('Test file', function () {
 
     it('should initialize with data-url parameter', function () {
       var file = new rootDb.File({ data: dataSvg, type: 'data-url' });
-      expect(file.id).eql('/file/www/' + file.key);
+      expect(file.id).eql(`/file/www/${file.key}`);
       expect(file.key).is.not.undefined;
       expect(file.bucket).eql('www');
       expect(file.parent).eql('/www');
@@ -492,33 +490,33 @@ describe('Test file', function () {
 
     it('should not contains credentials for anonymous user', function () {
       var file = new anonymousDB.File({ name: 'public.png' });
-      return expect(file.createURL()).eventually.eql(env.TEST_SERVER + '/file/www/public.png');
+      return expect(file.createURL()).eventually.eql(`${env.TEST_SERVER}/file/www/public.png`);
     });
 
     it('should not contains credentials for anonymous user in none www bucket', function () {
       var file = new anonymousDB.File({ parent: '/testfolder/', name: 'private.png' });
-      return expect(file.createURL()).eventually.eql(env.TEST_SERVER + '/file/testfolder/private.png');
+      return expect(file.createURL()).eventually.eql(`${env.TEST_SERVER}/file/testfolder/private.png`);
     });
 
     it('should not contains credentials for the www bucket', function () {
       var file = new rootDb.File({ name: 'public.png' });
-      return expect(file.createURL()).eventually.eql(env.TEST_SERVER + '/file/www/public.png');
+      return expect(file.createURL()).eventually.eql(`${env.TEST_SERVER}/file/www/public.png`);
     });
 
     it('should contains credentials for none www bucket', function () {
       var file = new rootDb.File({ parent: '/testfolder/', name: 'private.png' });
-      return expect(file.createURL()).eventually.string(env.TEST_SERVER + '/file/testfolder/private.png?BAT=');
+      return expect(file.createURL()).eventually.string(`${env.TEST_SERVER}/file/testfolder/private.png?BAT=`);
     });
 
     it('should provide no access for none authorized user', function () {
       var file = new anonymousDB.File(uploadFile.id);
-      return expect(file.createURL().then(function(url) { return helper.req(url); })).be.rejectedWith({ status: 466 });
+      return expect(file.createURL().then(function (url) { return helper.req(url); })).be.rejectedWith({ status: 466 });
     });
 
     it('should provide access for authorized user', function () {
       var file = new rootDb.File(uploadFile.id);
       return file.createURL()
-        .then(function(url) {
+        .then(function (url) {
           return helper.req(url);
         }).then(function (data) {
           expect(data).be.eql(flames);
@@ -572,7 +570,7 @@ describe('Test file', function () {
       var file = new rootDb.File({ data: flames });
       return expect(file.upload().then(function () {
         return new rootDb.File(file.id).upload({ data: flames });
-      })).be.rejectedWith('exists already');
+      })).be.rejectedWith('already exists');
     });
 
     it('should reject stale update', function () {
@@ -792,12 +790,12 @@ describe('Test file', function () {
       return rootDb.File.saveMetadata('testfolder', {})
         .then(function () {
           var file = new rootDb.File({
-            name: ';,/?:@&=+$#' + rootDb.util.uuid() + '.png', data: flames, acl: acl, parent: '/testfolder',
+            name: `;,/?:@&=+$#${rootDb.util.uuid()}.png`, data: flames, acl: acl, parent: '/testfolder',
           });
           return file.upload();
         })
-        .then(function(file) { return file.createURL() })
-        .then(function(url) {
+        .then(function (file) { return file.createURL(); })
+        .then(function (url) {
           return helper.req(url);
         });
     });
@@ -810,11 +808,11 @@ describe('Test file', function () {
       return rootDb.File.saveMetadata('testfolder', {})
         .then(function () {
           var file = new rootDb.File({
-            name: '-_.!~*\'()' + rootDb.util.uuid() + '.png', data: flames, acl: acl, parent: '/testfolder',
+            name: `-_.!~*'()${rootDb.util.uuid()}.png`, data: flames, acl: acl, parent: '/testfolder',
           });
           return file.upload();
         })
-        .then(function(file) { return file.createURL() })
+        .then(function (file) { return file.createURL(); })
         .then(function (url) {
           return helper.req(url);
         });
@@ -828,16 +826,15 @@ describe('Test file', function () {
       return rootDb.File.saveMetadata('testfolder', {})
         .then(function () {
           var file = new rootDb.File({
-            name: 'ABC abc 123' + rootDb.util.uuid() + '.png', data: flames, acl: acl, parent: '/testfolder',
+            name: `ABC abc 123${rootDb.util.uuid()}.png`, data: flames, acl: acl, parent: '/testfolder',
           });
           return file.upload();
         })
-        .then(function(file) { return file.createURL() })
+        .then(function (file) { return file.createURL(); })
         .then(function (url) {
           return helper.req(url);
         });
     });
-
 
     if (helper.isNode) {
       it('should upload stream format', function () {
@@ -1010,13 +1007,12 @@ describe('Test file', function () {
     });
   });
 
-
   describe('delete', function () {
     var uploadFile;
     var fileName;
 
     before(function () {
-      fileName = 'test/' + rootDb.util.uuid();
+      fileName = `test/${rootDb.util.uuid()}`;
     });
 
     beforeEach(function () {
@@ -1034,7 +1030,7 @@ describe('Test file', function () {
     });
 
     it('should remove a removed file', function () {
-      var parent = new rootDb.File('/file' + uploadFile.parent + '/');
+      var parent = new rootDb.File(`/file${uploadFile.parent}/`);
       expect(parent.name).be.equal('test/');
 
       return parent.delete().then(function (files) {
@@ -1095,7 +1091,7 @@ describe('Test file', function () {
 
     describe('on bucket', function () {
       var uploadFile,
-        bucket = 'js_' + DB.util.uuid().replace(/-/g, '_');
+        bucket = `js_${DB.util.uuid().replace(/-/g, '_')}`;
       var bucketAcls;
 
       before(function () {
@@ -1225,7 +1221,7 @@ describe('Test file', function () {
 
     describe('on object', function () {
       var uploadFile,
-        bucket = 'js_' + DB.util.uuid().replace(/-/g, '_');
+        bucket = `js_${DB.util.uuid().replace(/-/g, '_')}`;
 
       before(function () {
         return rootDb.File.saveMetadata(bucket, {
@@ -1349,7 +1345,6 @@ describe('Test file', function () {
         });
     });
 
-
     it('should list buckets', function () {
       return rootDb.File.listBuckets().then(function () {
         return rootDb.File.saveMetadata('listBucketTest', {
@@ -1449,27 +1444,28 @@ describe('Test file', function () {
     if (!helper.isIE && !helper.isIEdge) {
       it('should cache the url', function () {
         var file = new db.File(uploadFile.id);
-        return file.createURL().then(function(url) {
+        return file.createURL().then(function (url) {
           return helper.req(url);
         }).then(function (data) {
           expect(data.type.toLowerCase()).eql('image/png');
           expect(data).eql(flames);
           return updateFile(file);
-        }).then(function() {
+        }).then(function () {
           return file.createURL();
-        }).then(function (url) {
-          return helper.req(url);
-        }).then(function (data) {
-          expect(data.type.toLowerCase()).eql('image/png');
-          expect(data).eql(flames);
-        });
+        })
+          .then(function (url) {
+            return helper.req(url);
+          })
+          .then(function (data) {
+            expect(data.type.toLowerCase()).eql('image/png');
+            expect(data).eql(flames);
+          });
       });
     }
 
-
     it('should revalidate the url', function () {
       var file = new db.File(uploadFile.id);
-      return file.createURL().then(function(url) {
+      return file.createURL().then(function (url) {
         return helper.req(url);
       }).then(function (data) {
         expect(data.type.toLowerCase()).eql('image/png');
@@ -1477,12 +1473,13 @@ describe('Test file', function () {
         return updateFile(file);
       }).then(function () {
         return db.refreshBloomFilter();
-      }).then(function () {
-        file = new db.File(uploadFile.id);
-        return file.createURL().then(function(url) {
-          return helper.req(url);
-        })
       })
+        .then(function () {
+          file = new db.File(uploadFile.id);
+          return file.createURL().then(function (url) {
+            return helper.req(url);
+          });
+        })
         .then(function (data) {
           expect(data.type.toLowerCase()).string('application/json');
           expect(data.size).eql(jsonBlob.size);
@@ -1491,7 +1488,7 @@ describe('Test file', function () {
 
     it('should force revalidate with cache buster', function () {
       var file = new db.File(uploadFile.id);
-      return file.createURL().then(function(url) {
+      return file.createURL().then(function (url) {
         return helper.req(url);
       }).then(function (data) {
         expect(data.type.toLowerCase()).eql('image/png');
@@ -1499,21 +1496,22 @@ describe('Test file', function () {
         return updateFile(file);
       }).then(function () {
         return db.refreshBloomFilter();
-      }).then(function () {
-        file = new db.File(uploadFile.id);
-        return file.createURL().then(function(url) {
-          return helper.req(url);
-        })
       })
+        .then(function () {
+          file = new db.File(uploadFile.id);
+          return file.createURL().then(function (url) {
+            return helper.req(url);
+          });
+        })
         .then(function (data) {
           expect(data.type.toLowerCase()).string('application/json');
           expect(data.size).eql(jsonBlob.size);
           return uploadFile.upload({ data: flames, force: true });
         })
         .then(function () {
-          return file.createURL().then(function(url) {
+          return file.createURL().then(function (url) {
             return helper.req(url);
-          })
+          });
         })
         .then(function (data) {
           expect(data.type.toLowerCase()).eql('image/png');
