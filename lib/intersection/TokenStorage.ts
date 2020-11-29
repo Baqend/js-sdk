@@ -24,6 +24,8 @@ export class TokenStorage {
 
   static WEB_STORAGE: typeof WebStorage;
 
+  static hmac = hmac;
+
   /**
    * The actual stored token
    */
@@ -136,7 +138,12 @@ export class TokenStorage {
       return result;
     }
 
-    return result.then((path) => hmac(path + tokenData.data, tokenData.sig)
-      .then((hash) => `${path}?BAT=${tokenData.data + hash}`));
+    return result.then((path) => TokenStorage.hmac(path + tokenData.data, tokenData.sig)
+      .then((hash) => `${path}?BAT=${tokenData.data + hash}`))
+      .catch((e) => {
+        // eslint-disable-next-line no-console
+        console.warn('Can\'t sign the resource, run the SDK on a secured origin, or provide an alternative hmac implementation on TokenStorage.hmac', e);
+        return result;
+      });
   }
 }

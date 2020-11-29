@@ -239,7 +239,7 @@ export abstract class Connector {
 
           if (message.cacheControl()) {
             // eslint-disable-next-line no-param-reassign
-            message.request.path += `${tokenStorage!.token ? '&' : '?'}BCB`;
+            message.request.path += `${message.request.path.indexOf('?') !== -1 ? '&' : '?'}BCB`;
           }
 
           return message;

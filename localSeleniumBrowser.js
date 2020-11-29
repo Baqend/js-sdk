@@ -1,6 +1,6 @@
 const webdriverConfig = {
   hostname: 'jenkins.baqend.com',
-  port: 4444
+  port: 4444,
 };
 
 module.exports = {
@@ -18,6 +18,11 @@ module.exports = {
       hostname: 'localhost',
       port: 4444,
     },
+    chromeOptions: {
+      args: [
+        `--unsafely-treat-insecure-origin-as-secure=http://${process.env.KARMA_HOST}:9876`,
+      ],
+    },
     browserName: 'chrome',
     platform: 'LINUX',
     version: '',
@@ -29,7 +34,7 @@ module.exports = {
     browserName: 'firefox',
     platform: 'LINUX',
     version: '59.0.2',
-    name: 'Karma'
+    name: 'Karma',
   },
   'Safari-Mac': {
     base: 'WebDriver',
@@ -82,7 +87,7 @@ module.exports = {
     showXcodeLog: true,
     deviceName: 'iPad Air 2',
     startIWDP: true,
-    udid: "auto",
+    udid: 'auto',
     automationName: 'XCUITest',
     fullReset: true,
   },
@@ -122,7 +127,7 @@ module.exports = {
     config: webdriverConfig,
     chromeOptions: {
       mobileEmulation: {
-        deviceName: "iPhone 6",
+        deviceName: 'iPhone 6',
       },
     },
     browserName: 'chrome',
