@@ -1,4 +1,5 @@
 /* eslint-disable no-console */
+const alreadyWarned: {[signature: string]: boolean} = {};
 export function deprecated(alternativeSignature: string) {
   return function decorateProperty(
     target: Object | string,
@@ -10,7 +11,13 @@ export function deprecated(alternativeSignature: string) {
     },
   ): PropertyDescriptor {
     const type = typeof target === 'string' ? target : target.constructor.name;
-    const logWarning = () => console.warn(`Usage of ${type}.${name} is deprecated, use ${alternativeSignature} instead.`);
+    const deprecatedSignature = `${type}.${name}`;
+    const logWarning = () => {
+      if (!alreadyWarned[deprecatedSignature]) {
+        alreadyWarned[deprecatedSignature] = true;
+        console.warn(`Usage of ${deprecatedSignature} is deprecated, use ${alternativeSignature} instead.`);
+      }
+    };
 
     const deprecatedDescriptor: PropertyDescriptor = {
       enumerable: descriptor.enumerable,
