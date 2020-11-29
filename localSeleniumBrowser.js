@@ -18,7 +18,7 @@ module.exports = {
       hostname: 'localhost',
       port: 4444,
     },
-    chromeOptions: {
+    'goog:chromeOptions': {
       args: [
         `--unsafely-treat-insecure-origin-as-secure=http://${process.env.KARMA_HOST}:9876`,
       ],
