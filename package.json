@@ -116,6 +116,7 @@
   },
   "scripts": {
     "test": "npm run test:node && npm run test:karma",
+    "test:build": "",
     "test:node": "mocha --config mocharc.json --exit",
     "test:karma": "karma start",
     "clean": "shx rm -rf dist commonjs esm doc",
