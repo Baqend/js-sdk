@@ -56,16 +56,7 @@ module.exports = {
       ignoreTemplateLiterals: true,
     }],
 
-    "import/extensions": [
-      "error",
-      "ignorePackages",
-      {
-        "js": "never",
-        "jsx": "never",
-        "ts": "never",
-        "tsx": "never",
-      },
-    ],
+    "import/extensions": ['error', 'never']
   },
 
   overrides: [
