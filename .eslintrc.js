@@ -55,8 +55,6 @@ module.exports = {
       ignoreStrings: true,
       ignoreTemplateLiterals: true,
     }],
-
-    "import/extensions": ['error', 'never']
   },
 
   overrides: [

@@ -5,7 +5,7 @@ export { Lockable } from './Lockable';
 export { uuid } from './uuid';
 export {
   JsonMap, Json, JsonLike, JsonArray, JsonSerializable,
-} from './json';
+} from './Json';
 export { Class } from './Class';
 export { deprecated } from './deprecated';
 export { trailingSlashIt } from './trailingSlashIt';
