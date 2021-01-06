@@ -57,7 +57,7 @@ import { db } from 'https://unpkg.com/baqend@3/dist/baqend.es2015.min.js';
 db.connect('example');
 
 // Or pass false as a second parameter for an unencrypted connection (not recommended)
-db.connect('example', true);
+db.connect('example', false);
 
 // For custom deployments i.e. the community edition use:
 db.connect('https://baqend.example.com/v1');
