@@ -74,16 +74,8 @@ db.User.find()
 Upgrading from 2.x
 -----
 
-If you have previously used our 2.x release you must basically expose the global DB variable manually.
-This will provide you with all the exports which was available in the 2.x release of the SDK:
-```js
-window.DB = Baqend.db;
-
-await DB.connect('<your-app>');
-const result = await DB.MyClass.find().resultList();
-...
-```
-
+There are may some steps required to upgrade to the v3 version if you have previously used our v2 release.
+ 
 We recommend changing your current imports to use the new 
 [ES2015 module](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/import) structure 
 of the SDK.
@@ -99,13 +91,46 @@ result.forEach(object => {
 })
 ```
 
-Accessing subpackages of the SDK:
+You may change some import path. With node 14+ you can't require any specific subpath directly anymore.
+Accessing subpackages of the SDK can now be made by importing the submodule and use the modules from it:
 ```js
-import { util, metamodel } from 'https://unpkg.com/baqend@3/dist/baqend.es2015.min.js';
+import { util, metamodel } from 'baqend';
 
 // generates a random uuid
 util.uuid()
 ```
+
+To enable better tree shaking support we have moved some classes from the util submodule to the new intersection 
+submodule. The classes can still be accessed through the util module, but a deprecation warning will be logged. 
+You should change the imports from util to intersection to fix the warning.
+
+```js
+import { util, intersection } from 'baqend';
+
+util.Permission() // access via util is deprecated
+intersection.Permission() // change it by improting from the new submodule
+```
+ 
+If you have previously relied on the global DB variable, you must expose the global DB variable manually now.
+This will provide you with all the exports which were available in the 2.x release of the SDK:
+```js
+window.DB = Baqend.db;
+
+await DB.connect('<your-app>');
+const result = await DB.MyClass.find().resultList();
+...
+```
+
+We have dropped the cryptojs dependency and have replaced it with a native implementation of node.js / browser APIs.
+As a direct result, we have to change the signature of `file.url -> string` to an asynchronous version of it by providing     
+`file.createURL() -> Promise<string>` as a new method. Accessing the old property `file.url` will throw an exception.
+
+All previously shipped shims are removed from our bundles to make the overall library size smaller. 
+If you still need to support old Browsers e.g. IE, ensure that you will bundle a `Promise` shim to let the SDK work 
+properly.   
+
+We have improved the typescript support by providing better typings. You may experience some new typescript 
+errors since the typings are more precise in many cases.
 
 Baqend Real-Time SDK
 --------------------
