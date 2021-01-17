@@ -2,10 +2,12 @@
 
 import { PersistentError } from '../error';
 import { Message } from './Message';
-import { Json, JsonMap, Class } from '../util';
+import {
+  Json, JsonMap, Class, JsonLike,
+} from '../util';
 
 export type Receiver = (response: Response) => void;
-export type RequestBody = string | Blob | Buffer | ArrayBuffer | FormData | Json;
+export type RequestBody = string | Blob | Buffer | ArrayBuffer | FormData | Json | JsonLike;
 export type RequestBodyType = 'json'|'text'|'blob'|'buffer'|'arraybuffer'|'data-url'|'base64'|'form'|'stream';
 export type ResponseBodyType = 'json'|'text'|'blob'|'arraybuffer'|'data-url'|'base64'|'stream';
 export type Request = {

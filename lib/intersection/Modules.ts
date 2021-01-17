@@ -31,7 +31,7 @@ export class Modules {
    * @param failCallback
    * @return
    */
-  get(bucket: string, query: {[param: string]: string} | string | Function,
+  get(bucket: string, query?: {[param: string]: string} | string | Function,
     options?: { responseType?: ResponseBodyType } | Function, doneCallback?: any, failCallback?: any): Promise<any> {
     if (query instanceof Function) {
       return this.get(bucket, {}, query, options, doneCallback);
@@ -44,7 +44,7 @@ export class Modules {
     const opt = options || {};
 
     const msg = new message.GetBaqendModule(bucket)
-      .addQueryString(query)
+      .addQueryString(query || '')
       .responseType(opt.responseType || null);
 
     return this.send(msg, doneCallback, failCallback);
