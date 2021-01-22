@@ -1,24 +1,25 @@
 window.addEventListener('message', send, false);
 var basePath = location.pathname.substring(0, location.pathname.lastIndexOf('/'));
 function send(event) {
+  if (!event.data) return;
+
   var msg = JSON.parse(event.data);
 
-  if (!msg.mid)
-    return;
+  if (!msg.mid) return;
 
   msg.origin = event.origin;
   msg.source = event.source;
 
-  if (msg.method == 'OAUTH') {
+  if (msg.method === 'OAUTH') {
     return handleOAuth(msg);
   }
 
-  var node = msg.method == 'GET' && document.getElementById(msg.path);
+  var node = msg.method === 'GET' && document.getElementById(msg.path);
   if(!node) {
     var xhr = new XMLHttpRequest();
 
     xhr.onreadystatechange = function() {
-      if (xhr.readyState == 4) {
+      if (xhr.readyState === 4) {
         var headers = {};
         msg.responseHeaders.forEach(function(name) {
           headers[name] = xhr.getResponseHeader(name);
@@ -46,7 +47,7 @@ function receive(message, status, headers, entity) {
     entity: entity
   };
 
-  if (message.origin == 'null' || message.origin == 'file:')
+  if (message.origin === 'null' || message.origin === 'file:')
     message.origin = '*';
 
   message.source.postMessage(JSON.stringify(response), message.origin);
@@ -75,7 +76,7 @@ function handleOAuth(msg) {
   localStorage.removeItem('oauth-response');
 
   var handler = function(event) {
-    if (event.key == 'oauth-response') {
+    if (event.key === 'oauth-response') {
       var response = JSON.parse(event.newValue);
       oAuthHandle(response.status, response.headers, response.entity);
     }
@@ -92,7 +93,7 @@ function handleOAuth(msg) {
   oAuthInterval = setInterval(function() {
     var item = localStorage.getItem('oauth-response');
     if (item) {
-      handler({key: 'oauth-response', newValue: item})
+      handler({key: 'oauth-response', newValue: item});
     }
   }, 500);
 }
