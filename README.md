@@ -2,7 +2,7 @@ Baqend JavaScript SDK
 =====================
 Baqend JavaScript SDK and CLI for High-Performance Websites
 
-* [Docs](https://www.baqend.com/guide/) and [API](https://www.baqend.com/js-sdk/latest/baqend.html)
+* [Docs](https://www.baqend.com/guide/) and [API](https://www.baqend.com/js-sdk/latest/index.html)
 * [CLI help](https://www.baqend.com/guide/topics/cli/)
 * [Dashboard](https://dashboard.baqend.com/register/)
 
