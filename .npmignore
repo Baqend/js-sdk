@@ -6,8 +6,12 @@
 /tpl
 *.iml
 .DS_Store
+.eslintrc.js
+.gitattributes
 browserstack.js
 localSeleniumBrowser.js
 webpack.config.js
 karma.conf.js
 tsconfig.json
+tsconfig.lib.json
+mocharc.json
