@@ -570,7 +570,7 @@ describe('Test file', function () {
       var file = new rootDb.File({ data: flames });
       return expect(file.upload().then(function () {
         return new rootDb.File(file.id).upload({ data: flames });
-      })).be.rejectedWith('already exists');
+      })).be.rejectedWith(`Unique index violation. Another object already exists with the same value of the newly created/modified object FileMetadata: ${file.id}`);
     });
 
     it('should reject stale update', function () {
