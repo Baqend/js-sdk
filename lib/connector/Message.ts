@@ -53,6 +53,26 @@ export const StatusCode = {
   SCRIPT_ABORTION: 475,
 };
 
+/**
+ * Appends the given query parameters to the url
+ * @param url - on which the parameters will be appended
+ * @param queryParams - The Query parameters which should be appended
+ * @return The URL with the appended parameters
+ */
+export function appendQueryParams(url: string, queryParams: string | {[key: string]: string | undefined}) {
+  const queryString = typeof queryParams === 'string' ? queryParams : Object.entries(queryParams)
+    .filter(([, value]) => value !== undefined)
+    .map(([key, value]) => `${key}=${encodeURIComponent(value as string)}`)
+    .join('&');
+
+  if (!queryString) {
+    return url;
+  }
+
+  const sep = url.indexOf('?') >= 0 ? '&' : '?';
+  return url + sep + queryString;
+}
+
 export abstract class Message {
   static readonly StatusCode = StatusCode;
 
@@ -111,35 +131,6 @@ export abstract class Message {
     } as any as T;
   }
 
-  /**
-   * Creates a new message class with the given message specification and a full path
-   * @param specification
-   * @param members additional members applied to the created message
-   * @return
-   */
-  static createExternal<M>(specification: RestSpecification & { query: string[] }, members: M): ExternalMessage<M> {
-    const { path, ...props } = specification;
-
-    const spec: MessageSpec = {
-      dynamic: false,
-      path: [path],
-      ...props,
-    };
-
-    /**
-     * @ignore
-     */
-    const cls = class extends Message {
-      get spec() {
-        return spec;
-      }
-    };
-
-    Object.assign(cls.prototype, members);
-
-    return cls as ExternalMessage<M>;
-  }
-
   get isBinary() {
     return (this.request.type && this.request.type in Message.BINARY) || this._responseType!! in Message.BINARY;
   }
@@ -160,19 +151,18 @@ export abstract class Message {
       index += 1;
     }
 
-    let query = '';
+    const queryParams: {[key: string]: string} = {};
     for (let i = 0; i < this.spec.query.length; i += 1) {
       const arg = args[index];
       index += 1;
       if (arg !== undefined && arg !== null) {
-        query += (query || path.indexOf('?') !== -1) ? '&' : '?';
-        query += `${this.spec.query[i]}=${encodeURIComponent(arg)}`;
+        queryParams[this.spec.query[i]] = arg;
       }
     }
 
     this.request = {
       method: this.spec.method,
-      path: path + query,
+      path: appendQueryParams(path, queryParams),
       entity: null,
       headers: {},
     };
@@ -518,19 +508,7 @@ export abstract class Message {
    * @return
    */
   addQueryString(query: string | {[key: string]: string}): this {
-    if (typeof query === 'string') {
-      this.request.path += query;
-      return this;
-    }
-
-    if (query) {
-      let sep = this.request.path.indexOf('?') >= 0 ? '&' : '?';
-      Object.keys(query).forEach((key) => {
-        this.request.path += `${sep + key}=${encodeURIComponent(query[key])}`;
-        sep = '&';
-      });
-    }
-
+    this.request.path = appendQueryParams(this.request.path, query);
     return this;
   }
 
@@ -558,83 +536,14 @@ export abstract class Message {
   }
 }
 
-export const OAuthMessages: {[OAuthProvider: string]: ExternalMessage<OAuthMessage> } = {
-  Google: Message.createExternal({
-    method: 'OAUTH',
-    path: 'https://accounts.google.com/o/oauth2/auth?response_type=code&access_type=online',
-    query: ['client_id', 'scope', 'state'],
-    status: [200],
-  }, {
-    addRedirectOrigin(this: Message, baseUri: string) {
-      this.addQueryString({
-        redirect_uri: `${baseUri}/db/User/OAuth/google`,
-      });
-    },
-  }),
-
-  Facebook: Message.createExternal({
-    method: 'OAUTH',
-    path: 'https://www.facebook.com/v7.0/dialog/oauth?response_type=code',
-    query: ['client_id', 'scope', 'state'],
-    status: [200],
-  }, {
-    addRedirectOrigin(this: Message, baseUri: string) {
-      this.addQueryString({
-        redirect_uri: `${baseUri}/db/User/OAuth/facebook`,
-      });
-    },
-  }),
-
-  GitHub: Message.createExternal({
-    method: 'OAUTH',
-    path: 'https://github.com/login/oauth/authorize?response_type=code&access_type=online',
-    query: ['client_id', 'scope', 'state'],
-    status: [200],
-  }, {
-    addRedirectOrigin(this: Message, baseUri: string) {
-      this.addQueryString({
-        redirect_uri: `${baseUri}/db/User/OAuth/github`,
-      });
-    },
-  }),
-
-  LinkedIn: Message.createExternal({
-    method: 'OAUTH',
-    path: 'https://www.linkedin.com/oauth/v2/authorization?response_type=code',
-    query: ['client_id', 'scope', 'state'],
-    status: [200],
-  }, {
-    addRedirectOrigin(this: Message, baseUri: string) {
-      this.addQueryString({
-        redirect_uri: `${baseUri}/db/User/OAuth/linkedin`,
-      });
-    },
-  }),
-
-  Twitter: Message.createExternal({
-    method: 'OAUTH',
-    path: '',
-    query: [],
-    status: [200],
-  }, {
-    addRedirectOrigin(this: Message, baseUri: string) {
-      this.request.path = `${baseUri}/db/User/OAuth1/twitter`;
-    },
-  }),
-
-  Salesforce: Message.createExternal({
-    method: 'OAUTH',
-    path: '',
-    query: ['client_id', 'scope', 'state'],
-    status: [200],
-  }, {
-    addRedirectOrigin(this: Message, baseUri: string) {
-      this.addQueryString({
-        redirect_uri: `${baseUri}/db/User/OAuth/salesforce`,
-      });
-    },
-  }),
-};
-
-export type ExternalMessage<T> = typeof Message & { new(...args: string[]): Message & T };
-export type OAuthMessage = Message & { addRedirectOrigin(baseUri: string): void };
+export class OAuthMessage extends Message {
+  get spec() {
+    return {
+      method: 'OAUTH',
+      dynamic: false,
+      path: [],
+      query: [],
+      status: [200],
+    };
+  }
+}
