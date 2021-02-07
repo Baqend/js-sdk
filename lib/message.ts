@@ -1482,4 +1482,3 @@ export const Beacon = Message.create<Beacon>({
   path: '/rum/pi',
   status: [200],
 });
-

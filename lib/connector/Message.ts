@@ -541,7 +541,7 @@ export class OAuthMessage extends Message {
     return {
       method: 'OAUTH',
       dynamic: false,
-      path: [],
+      path: [''],
       query: [],
       status: [200],
     };

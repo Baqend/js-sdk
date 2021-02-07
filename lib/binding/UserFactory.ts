@@ -1,6 +1,6 @@
 import { EntityFactory } from './EntityFactory';
 import type * as model from '../model';
-import { Json, JsonMap } from '../util';
+import { JsonMap } from '../util';
 
 export enum LoginOption {
   /**
