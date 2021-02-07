@@ -1,5 +1,6 @@
 const os = require('os');
 const fs = require('fs');
+const fetch = require('node-fetch');
 const baqend = require('..');
 
 const fileName = `${os.homedir()}/.baqend`;
@@ -297,7 +298,35 @@ function saveCredentials(appInfo, credentials) {
   });
 }
 
+async function sso(app, provider) {
+  console.log(app);
+  const appInfo = getAppInfo(app);
+
+  console.log(appInfo.host);
+
+  const db = await appConnect(appInfo);
+  const params = new URLSearchParams();
+  params.append('client_id', '176758262145-4ogucbu6ntbut1ifn3vtnv2biuuj9r0v.apps.googleusercontent.com');
+  params.append('scope', 'email');
+
+  const rsp = await fetch('https://oauth2.googleapis.com/device/code', {
+    method: 'post',
+    body: params,
+  });
+
+  const json = await rsp.json();
+
+  console.log(json);
+
+  await db.User.loginWithGoogle({
+    deviceCode: json.device_code,
+  });
+
+  console.log(db.User.me);
+}
+
 exports.login = login;
+exports.sso = sso;
 exports.register = register;
 exports.logout = logout;
 exports.openApp = openApp;

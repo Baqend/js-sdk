@@ -42,6 +42,7 @@
   "dependencies": {
     "commander": "^2.20.3",
     "glob": "^7.1.6",
+    "node-fetch": "^2.6.1",
     "opn": "^4.0.2",
     "rimraf": "^2.7.1",
     "rxjs": "^6.6.3",
