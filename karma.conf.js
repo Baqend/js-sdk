@@ -19,12 +19,18 @@ module.exports = function (config) {
 
     // list of files / patterns to load in the browser
     files: [
-      'build/baqend.js',
+      { pattern: 'node_modules/rxjs/bundles/rxjs.umd.js', included: true },
+      { pattern: 'node_modules/validator/validator.js', included: true },
+      { pattern: 'dist/baqend.es5.js', watched: true, included: true },
+      {
+        pattern: 'dist/baqend.es5.js.map', included: false, served: true, watched: true,
+      },
       'spec/env.js',
       'spec/helper.js',
       'spec/**/*.spec.js',
-      { pattern: 'build/*.html', included: false, watched: false },
-      { pattern: 'spec/assets/*', watched: false, included: false, served: true, nocache: false },
+      {
+        pattern: 'spec/assets/*', watched: false, included: false, served: true, nocache: false,
+      },
     ],
 
     proxies: {
@@ -44,7 +50,7 @@ module.exports = function (config) {
     },
 
     // web server hostname
-    hostname: process.env.KARMA_HOST || 'local.baqend.com',
+    hostname: process.env.KARMA_HOST || 'localhost',
 
     // web server port
     port: 9876,
@@ -70,9 +76,17 @@ module.exports = function (config) {
     // - Safari (only Mac; has to be installed with `npm install karma-safari-launcher`)
     // - PhantomJS
     // - IE (only Windows; has to be installed with `npm install karma-ie-launcher`)
-    browsers: ['Chrome'],
+    browsers: ['Chrome_without_security'],
 
-    customLaunchers: Object.assign({}, require('./localSeleniumBrowser'), require('./browserstack')),
+    customLaunchers: {
+      Chrome_without_security: {
+        base: 'Chrome',
+        // This option is needed to use the crypto module on http origins
+        flags: [`--unsafely-treat-insecure-origin-as-secure=http://${process.env.KARMA_HOST}:9876`],
+      },
+      ...require('./localSeleniumBrowser'),
+      ...require('./browserstack'),
+    },
 
     // config for browserstack
     browserStack: {

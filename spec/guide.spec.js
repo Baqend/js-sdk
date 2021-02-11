@@ -1,11 +1,8 @@
 'use strict';
 
-var DB;
 if (typeof module !== 'undefined') {
   require('./node');
-  DB = require('../realtime');
-  require('rxjs/add/operator/scan');
-  require('rxjs/add/operator/map');
+  require('rxjs/operators');
 }
 
 xdescribe('Guide Examples', function () {
@@ -45,19 +42,7 @@ xdescribe('Guide Examples', function () {
       return emf.createEntityManager().ready();
     }).then(function (em) {
       db = em;
-
-      if (!helper.isNode) {
-        return helper.load('Rx').then(function (Rx) {
-          DB.Observable = Rx.Observable;
-        });
-      }
     });
-  });
-
-  after(function () {
-    if (!helper.isNode) {
-      DB.Observable = _Observable;
-    }
   });
 
   afterEach(function () {

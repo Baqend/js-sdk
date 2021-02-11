@@ -1,0 +1,23 @@
+{
+  "compilerOptions": {
+    "strict": true,
+    "target": "es6",
+    "moduleResolution": "node",
+    "esModuleInterop": true,
+    "rootDir": "./",
+    "allowJs": false,
+    "checkJs": false,
+    "inlineSourceMap": true,
+    "noImplicitAny": true,
+    "experimentalDecorators": true,
+    "typeRoots": [
+      "./node_modules/@types"
+    ]
+  },
+  "exclude": [
+    "node_modules",
+    "commonjs",
+    "dist",
+    "esm"
+  ]
+}

@@ -1,12 +1,11 @@
 'use strict';
 
-var DB;
+var operators;
 if (typeof module !== 'undefined') {
   require('./node');
-  DB = require('../realtime');
-  require('rxjs/add/operator/first');
-  require('rxjs/add/operator/scan');
-  require('rxjs/add/operator/map');
+  operators = require('rxjs/operators');
+} else {
+  operators = rxjs.operators;
 }
 
 function getCountByEventMatchType(event) {
@@ -1097,22 +1096,6 @@ describe('Streaming Queries', function () {
     });
 
     describe('RxJS', function () {
-      var _Observable = DB.Observable;
-
-      before(function () {
-        if (!helper.isNode) {
-          return helper.load('Rx').then(function (Rx) {
-            DB.Observable = Rx.Observable;
-          });
-        }
-      });
-
-      after(function () {
-        if (!helper.isNode) {
-          DB.Observable = _Observable;
-        }
-      });
-
       it('should only be called once', function () {
         this.timeout(10000);
         sameForAll = helper.randomize(this.test.title);
@@ -1122,7 +1105,7 @@ describe('Streaming Queries', function () {
         var listener = function (e) {
           calls += 1;
         };
-        subscription = stream.first().subscribe(listener);
+        subscription = stream.pipe(operators.first()).subscribe(listener);
 
         // waiting for events does not work, because of interference between subscribing and unsubscribing
         var john = newPerson(49);
@@ -1162,9 +1145,12 @@ describe('Streaming Queries', function () {
         };
 
         var average;
-        subscription = stream.scan(maintain, initialAccumulator).map(function (accumulator) {
-          return accumulator.average;
-        }).subscribe(function (e) {
+        subscription = stream.pipe(
+          operators.scan(maintain, initialAccumulator),
+          operators.map(function (accumulator) {
+            return accumulator.average;
+          })
+        ).subscribe(function (e) {
           average = e;
           return e;
         });

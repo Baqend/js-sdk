@@ -1,0 +1,12 @@
+{
+  "reporter": "mocha-jenkins-reporter",
+  "quiet": true,
+  "package": "./package.json",
+  "reporterOptions": {
+    "junit_report_name": "Node Tests <%= process.version %>",
+    "junit_report_path": "build/test-results/node-<%= process.version %>.xml",
+    "junit_report_stack": 1
+  },
+  "timeout": 4000,
+  "spec": ["spec/**/*.js"]
+}

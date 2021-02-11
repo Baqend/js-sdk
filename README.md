@@ -2,7 +2,7 @@ Baqend JavaScript SDK
 =====================
 Baqend JavaScript SDK and CLI for High-Performance Websites
 
-* [Docs](https://www.baqend.com/guide/) and [API](https://www.baqend.com/js-sdk/latest/baqend.html)
+* [Docs](https://www.baqend.com/guide/) and [API](https://www.baqend.com/js-sdk/latest/index.html)
 * [CLI help](https://www.baqend.com/guide/topics/cli/)
 * [Dashboard](https://dashboard.baqend.com/register/)
 
@@ -17,77 +17,145 @@ Now you can open the dashboard of your app with `baqend dashboard`. To see all t
 Setup
 -----
 
-To use the Baqend SDK, just include the [baqend.js](//baqend.global.ssl.fastly.net/js-sdk/latest/baqend.js) or 
-[baqend.min.js](//baqend.global.ssl.fastly.net/js-sdk/latest/baqend.min.js) from the dist folder
+To use the Baqend SDK, just include the [baqend.js](//www.baqend.com/js-sdk/latest/baqend.es5.js) or 
+[baqend.min.js](//www.baqend.com/js-sdk/latest/baqend.es5.js) from the dist folder
 at the bottom of your body.<br>
-Alternatively you can install the Baqend SDK with npm. Just type `npm install --save-dev baqend`<br> 
-Or install with bower `bower install --save-dev baqend` <br>
+Alternatively you can install the Baqend SDK with npm. Just type `npm install baqend`<br> 
 Or [download the latest release](https://github.com/Baqend/js-sdk/releases/latest) directly from GitHub.
 
 ```html
-<!-- for development -->
-<script type="text/javascript" src="dist/baqend.js"></script>
-<!-- for production -->
-<script type="text/javascript" src="dist/baqend.min.js"></script>
+<!-- for legacy browsers -->
+<script nomodule type="text/javascript" src="dist/baqend.es5.min.js"></script>
+<!-- for browsers with module support -->
+<script type="module" src="dist/baqend.es2015.min.js"></script>
 ```
 
-You can also include it from our CDN-Provider `fastly`.
+You can use [unpkg.com](https://unpkg.com/) to directly load the dependency into your browser
 ```html
-<!-- for development -->
-<script type="text/javascript" src="//www.baqend.com/js-sdk/latest/baqend.js"></script>
-<!-- for production -->
-<script type="text/javascript" src="//www.baqend.com/js-sdk/latest/baqend.min.js"></script>
+<!-- for legacy browsers -->
+<script nomodule type="text/javascript" src="https://unpkg.com/baqend@3/dist/baqend.es5.min.js"></script>
+<!-- for browsers with module support -->
+<script type="module" src="https://unpkg.com/baqend@3/dist/baqend.es2015.min.js"></script>
 ```
 
-The Baqend SDK provides a global `DB` variable by default.
-
-
-Baqend Real-Time SDK
---------------------
-If you want to use real-time queries, you have to either use `baqend-realtime.js` or 
-`baqend-realtime.min.js` for production.
-In Addition, you can include [Rx.js](https://github.com/ReactiveX/rxjs) v5 into your project, for many advanced 
-Observable features.
-You can use the unpkg CDN:
-```html
-<script type="text/javascript" src="//unpkg.com/@reactivex/rxjs@5.2.0/dist/global/Rx.js"></script>
-<!-- include the SDK after rxjs -->
-<script type="text/javascript" src="//www.baqend.com/js-sdk/latest/baqend-realtime.js"></script>
-```
-The SDK is shipped with the core-js Observable shim per default. 
-If you include Rx.js globally, it will be detected and used by the SDK automatically.
-You can also set the Observable implementation which the SDK will use, 
-by setting the `require('baqend/realtime').Observable = Observable` afterwards.
+The Baqend SDK provides a global `Baqend` variable by default.
 
 Initialize
 ----------
 
 Before you can actually use the Baqend SDK, you must link the Baqend SDK to your Baqend Account.
-Just call `DB.connect(<your Baqend APP>)` after including the Baqend SDK.
+Just call `Baqend.db.connect(<your Baqend APP>)` after including the Baqend SDK.
 
 The Baqend SDK connects to your Baqend and initialize the SDK. If the connection was successfully established
-the ready callback will be called and the DB can be used to load, query and save objects.
+the ready callback will be called, and the `db` can be used to load, query and save objects.
 
 ```html
-<script type="text/javascript" src="baqend.js"></script>
-<script type="text/javascript">
+<script type="module">
+import { db } from 'https://unpkg.com/baqend@3/dist/baqend.es2015.min.js';
 
 // connects to your Baqend Accounts example app
-DB.connect('example');
+db.connect('example');
 
-// Or pass true as a second parameter for an encrypted connection
-DB.connect('example', true);
+// Or pass false as a second parameter for an unencrypted connection (not recommended)
+db.connect('example', false);
 
 // For custom deployments i.e. the community edition use:
-DB.connect('https://baqend.example.com/v1');
+db.connect('https://baqend.example.com/v1');
 
 // waits while the SDK connects to your Baqend
-DB.ready(function() {
-    // work with your Baqend
-    DB.User.find()
-        ...
-});
+await db.ready();
 
+// work with your Baqend instance
+db.User.find()
+
+</script>
+```
+
+Upgrading from 2.x
+-----
+
+There are may some steps required to upgrade to the v3 version if you have previously used our v2 release.
+ 
+We recommend changing your current imports to use the new 
+[ES2015 module](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/import) structure 
+of the SDK.
+Therefore, you should migrate your code to use the new ES2015 module imports: 
+```html
+<script type="module">
+import { db, util } from 'https://unpkg.com/baqend@3/dist/baqend.es2015.min.js';
+
+await db.connect('<your-app>');
+const result = await db.MyClass.find().resultList();
+result.forEach(object => {
+    ...
+})
+```
+
+You may change some import path. With node 14+ you can't require any specific subpath directly anymore.
+Accessing subpackages of the SDK can now be made by importing the submodule and use the modules from it:
+```js
+import { util, metamodel } from 'baqend';
+
+// generates a random uuid
+util.uuid()
+```
+
+To enable better tree shaking support we have moved some classes from the util submodule to the new intersection 
+submodule. The classes can still be accessed through the util module, but a deprecation warning will be logged. 
+You should change the imports from util to intersection to fix the warning.
+
+```js
+import { util, intersection } from 'baqend';
+
+util.Permission() // access via util is deprecated
+intersection.Permission() // change it by improting from the new submodule
+```
+ 
+If you have previously relied on the global DB variable, you must expose the global DB variable manually now.
+This will provide you with all the exports which were available in the 2.x release of the SDK:
+```js
+window.DB = Baqend.db;
+
+await DB.connect('<your-app>');
+const result = await DB.MyClass.find().resultList();
+...
+```
+
+We have dropped the cryptojs dependency and have replaced it with a native implementation of node.js / browser APIs.
+As a direct result, we have to change the signature of `file.url -> string` to an asynchronous version of it by providing     
+`file.createURL() -> Promise<string>` as a new method. Accessing the old property `file.url` will throw an exception.
+
+All previously shipped shims are removed from our bundles to make the overall library size smaller. 
+If you still need to support old Browsers e.g. IE, ensure that you will bundle a `Promise` shim to let the SDK work 
+properly.   
+
+We have improved the typescript support by providing better typings. You may experience some new typescript 
+errors since the typings are more precise in many cases.
+
+Baqend Real-Time SDK
+--------------------
+If you want to use real-time queries, you must include [Rx.js](https://github.com/ReactiveX/rxjs) in your project 
+as well. The realtime components are now core part of v3 release of the SDK and no alternative module must be 
+used. 
+
+The Rx.js module will be loaded as a optional peer dependency from the global Rx variable 
+or will be required via. `require('rxjs')` call.
+If rxjs can't be loaded the realtime components of the SDK will throw an exception.
+
+You can use the unpkg CDN to get all dependencies:
+```html
+<script type="text/javascript" src="https://unpkg.com/rxjs/bundles/rxjs.umd.min.js"></script>
+<!-- include the SDK after rxjs -->
+<script type="module">
+import { db } from 'https://unpkg.com/baqend@3/dist/baqend.es2015.js';
+
+await db.connect('<your-app>');
+const observable = db.MyClass.find().resultStream();
+observable.subscribe((result) => {
+    result.forEach(object => {
+        ...
+    })
+})
 </script>
 ```
 
@@ -95,74 +163,40 @@ DB.ready(function() {
 Usage in Node.js
 ----------------
 
-The Baqend SDK can also be used in Node.js. Just do an `npm install --save baqend` and use `require('baqend')` in your code.
+The Baqend SDK can also be used in Node.js. Just do an `npm install baqend` and use 
+`require('baqend')` for old node environments or `import { db } from 'baqend'` in your code.
+
+Up to Node.js v12
 
 ```javascript
-var DB = require('baqend');
+const { db } = require('baqend');
 
 // connects to your Baqend Accounts example app
-DB.connect('example');
+db.connect('example');
 
 // waits while the SDK connects to your Baqend
-DB.ready(function() {
+db.ready(function() {
     // work with your Baqend
-    DB.User.find()
+    db.User.find()
         ...
 });
 ```
 
-Note: The Baqend Real-Time SDK can be required with `var DB = require('baqend/realtime');`, ensure that you only 
-require either the Baqend SDK or the Baqend Real-Time SDK and not both.
-
-
-
-Building with [browserify](http://browserify.org/)
---------------------------------------------------
-
-Just install baqend with `npm install --save-dev baqend`, `require('baqend')` in your code
-and build the Baqend SDK + your code with browserify.
+Node.js v13+
 
 ```javascript
-var DB = require('baqend');
+import { db } from 'baqend';
 
-// connects to your Baqend Accounts example app
-DB.connect('example');
+// connects to your Baqend Accounts example app 
+// and waits while the SDK connects to your Baqend
+await db.connect('example');
 
-// waits while the SDK connects to your Baqend
-DB.ready(function() {
-    // work with your Baqend
-    DB.User.find()
-        ...
-});
+// work with your Baqend
+await db.User.find()
+   ...
 ```
 
-Note: The Baqend Streaming SDK can be required with `var DB = require('baqend/realtime');`, ensure that you only 
-require either the Baqend SDK or the Baqend Streaming SDK and not both.
-
-Type `browserify scripts/main.js > scripts/bundle.js` to build your main.js script.
-For more advanced building steps visit the [browserify Documentation](https://github.com/substack/node-browserify#usage).
-
-Building with [requirejs](http://requirejs.org/)
-------------------------------------------------
-
-Use the Baqend SDK from the /dist folder or install the SDK via npm `npm install --save-dev baqend`.
-Add the Baqend SDK as a dependency of your script and use the required Baqend SDK.
-
-```javascript
-require(["scripts/baqend.js"], function(DB) {
-    // connects to your Baqend Account
-    DB.connect('example');
-
-    // waits while the SDK connects to your Baqend
-    DB.ready(function() {
-        // work with your Baqend
-        DB.User.find()
-            ...
-    });
-});
-```
-
-For more advanced usage of requirejs visit the [requirejs Documentation](http://requirejs.org/docs/start.html).
+Note: The Baqend Real-Time SDK can be used by just installing Rx.js as well `npm install rxjs`
 
 License
 -------

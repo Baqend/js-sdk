@@ -1,8 +1,8 @@
-"use strict";
 const os = require('os');
 const fs = require('fs');
-const baqend = require('../lib/baqend');
-const CollectionType = require('../lib/metamodel/PluralAttribute').CollectionType;
+const baqend = require('..');
+
+const { CollectionType } = baqend.metamodel.PluralAttribute;
 
 const tsTypeMapping = {
   Boolean: 'boolean',
@@ -15,61 +15,59 @@ const tsTypeMapping = {
   GeoPoint: 'GeoPoint',
   JsonArray: '[]',
   JsonObject: '{}',
-  File: 'binding.File'
+  File: 'binding.File',
 };
 
 const nativeTypes = ['User', 'Role', 'Device'];
 const push = Function.prototype.apply.bind(Array.prototype.push);
 
-module.exports = function(args) {
+module.exports = function (args) {
   if (!args.app) {
     return false;
-  } else {
-    return createTypings(args.app, args.dest);
   }
+  return createTypings(args.app, args.dest);
 };
 
 function createTypings(app, dest) {
-  const factory = new baqend.EntityManagerFactory({host: app});
+  const factory = new baqend.EntityManagerFactory({ host: app });
 
   return factory.ready().then(() => {
-    let typings = typingsFromMetamodel(factory.metamodel);
+    const typings = typingsFromMetamodel(factory.metamodel);
 
-    if (!fs.existsSync(dest)){
+    if (!fs.existsSync(dest)) {
       fs.mkdirSync(dest);
     }
 
-    fs.writeFileSync(dest + '/baqend-model.d.ts', typings.join(os.EOL));
-    console.log("Typings successfully saved to: " + dest + '/baqend-model.d.ts')
+    fs.writeFileSync(`${dest}/baqend-model.d.ts`, typings.join(os.EOL));
+    console.log(`Typings successfully saved to: ${dest}/baqend-model.d.ts`);
   });
 }
 
 function typingsFromMetamodel(metamodel) {
-  let typings = [];
-  let namespaces = {};
-  //import all native types, so they can be easily used in definitions
-  typings.push(`import {binding, GeoPoint} from "baqend";`);
+  const typings = [];
+  const namespaces = {};
+  // import all native types, so they can be easily used in definitions
+  typings.push('import {binding, GeoPoint} from "baqend";');
   typings.push('');
 
-  let module = [];
+  const module = [];
   module.push('declare module "baqend" {');
   module.push('');
   module.push('  interface baqend {');
 
-  let model = [];
+  const model = [];
   model.push('  namespace model {');
 
-  for (let key of Object.keys(metamodel.entities)) {
-    let entity = metamodel.entities[key];
+  for (const key of Object.keys(metamodel.entities)) {
+    const entity = metamodel.entities[key];
 
-    if (entity.name === 'Object')
-      continue;
+    if (entity.name === 'Object') continue;
 
-    let isNative = nativeTypes.indexOf(entity.name) != -1;
-    //register only user defined types
-    if (!isNative)
+    const isNative = nativeTypes.indexOf(entity.name) != -1;
+    // register only user defined types
+    if (!isNative) {
       if (entity.name.indexOf('.') !== -1) {
-        const [namespace, entityName] = entity.name.split(".");
+        const [namespace, entityName] = entity.name.split('.');
         module.push(`    ["${entity.name}"]: binding.EntityFactory<model.${entity.name}>;`);
         entity.name = entityName;
         if (!namespaces[namespace]) namespaces[namespace] = [];
@@ -78,16 +76,16 @@ function typingsFromMetamodel(metamodel) {
         module.push(`    ${entity.name}: binding.EntityFactory<model.${entity.name}>;`);
         push(model, typingsFromSchema(entity, 'Entity'));
       }
+    }
     model.push('');
   }
 
-  for (let key of Object.keys(metamodel.embeddables)) {
-    let embeddable = metamodel.embeddables[key];
+  for (const key of Object.keys(metamodel.embeddables)) {
+    const embeddable = metamodel.embeddables[key];
 
-    if (embeddable.name.indexOf('.') !== -1)
-      continue;
+    if (embeddable.name.indexOf('.') !== -1) continue;
 
-    module.push(`    ${embeddable.name}: binding.ManagedFactory<model.${embeddable.name}>;`)
+    module.push(`    ${embeddable.name}: binding.ManagedFactory<model.${embeddable.name}>;`);
 
     push(model, typingsFromSchema(embeddable, 'Managed'));
     model.push('');
@@ -95,7 +93,7 @@ function typingsFromMetamodel(metamodel) {
 
   module.push('  }');
   module.push('');
-  for (let key in namespaces) {
+  for (const key in namespaces) {
     model.push(`  namespace ${key} {`);
     push(model, namespaces[key]);
     model.push('  }');
@@ -111,11 +109,11 @@ function typingsFromMetamodel(metamodel) {
 }
 
 function typingsFromSchema(entity, type) {
-  let typings = [];
+  const typings = [];
 
   typings.push(`    interface ${entity.name} extends binding.${type} {`);
 
-  for (let attribute of entity.declaredAttributes) {
+  for (const attribute of entity.declaredAttributes) {
     if (!attribute.isMetadata) {
       if (attribute.isCollection) {
         switch (attribute.collectionType) {
@@ -135,16 +133,15 @@ function typingsFromSchema(entity, type) {
     }
   }
 
-  typings.push(`    }`);
+  typings.push('    }');
   return typings;
 }
 
 function typingsFromType(type) {
   if (type.isBasic) {
     return tsTypeMapping[type.name];
-  } else {
-    return type.name;
   }
+  return type.name;
 }
 
 /**
@@ -166,4 +163,4 @@ function typingsFromType(type) {
   }
 
 }
-**/
+* */

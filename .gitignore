@@ -3,9 +3,10 @@
 /node_modules
 /build
 /dist
+/commonjs
+/esm
 /doc
 /spec-ts/*.js
-/index.d.ts
 .DS_Store
 *.iml
 

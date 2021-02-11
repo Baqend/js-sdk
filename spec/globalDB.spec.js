@@ -1,9 +1,7 @@
 'use strict';
 
-var DB;
 if (typeof module !== 'undefined') {
   require('./node');
-  DB = require('../lib');
 }
 
 describe('Test Global DB', function () {

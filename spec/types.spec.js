@@ -1,9 +1,7 @@
 'use strict';
 
-var DB;
 if (typeof module !== 'undefined') {
   require('./node');
-  DB = require('../lib');
 }
 
 describe('Test entity type', function () {
@@ -102,6 +100,7 @@ describe('Test entity type', function () {
 
   beforeEach(function () {
     obj = new EntityClass();
+    obj.attach(em);
     state = DB.util.Metadata.get(obj);
   });
 
@@ -165,12 +164,13 @@ describe('Test entity type', function () {
       var ref = new em.File('/file/test/myFile.png');
       obj.file = ref;
 
-      var json = state.getJson();
+      var json = obj.toJSON();
       expect(ref.id).contain('/file/');
       expect(json.file).be.ok;
       expect(json.file).equals(ref.id);
 
-      state.setJson(json);
+      var o2 = EntityClass.fromJSON(json);
+      expect(obj).equal(o2);
       expect(obj.file).equals(ref);
     });
 
@@ -185,7 +185,7 @@ describe('Test entity type', function () {
         expect(obj.file.id).equals(ref.id);
         expect(obj.file).not.equal(ref);
         expect(obj.file instanceof em.File).to.be.true;
-        expect(obj.file.url).contains('/file/test/myFile.png');
+        return expect(obj.file.createURL()).eventually.contains('/file/test/myFile.png');
       });
     });
   });
@@ -210,12 +210,13 @@ describe('Test entity type', function () {
 
       obj.ref = ref;
 
-      var json = state.getJson();
+      var json = obj.toJSON();
       expect(ref.id).contain('/db/');
       expect(json.ref).be.ok;
       expect(json.ref).equals(ref.id);
 
-      state.setJson(json);
+      var o2 = EntityClass.fromJSON(json);
+      expect(o2).equal(obj);
       expect(obj.ref).equals(ref);
     });
   });
@@ -524,10 +525,11 @@ describe('Test entity type', function () {
       var newList = DB.List.from(list);
       obj[name] = newList;
 
-      var json = state.getJson();
+      var json = obj.toJSON();
       json[name] = [];
-      state.setJson(json);
+      var o2 = EntityClass.fromJSON(json);
 
+      expect(o2).equal(obj);
       expect(newList.length).eq(0);
     });
 
@@ -663,10 +665,11 @@ describe('Test entity type', function () {
       var newSet = new DB.Set(set);
       obj[name] = newSet;
 
-      var json = state.getJson();
+      var json = obj.toJSON();
       json[name] = [];
-      state.setJson(json);
+      var o2 = EntityClass.fromJSON(json);
 
+      expect(o2).equal(obj);
       expect(newSet.size).eq(0);
     });
 
@@ -794,10 +797,11 @@ describe('Test entity type', function () {
       var newMap = new DB.Map(map);
       obj[name] = newMap;
 
-      var json = state.getJson();
+      var json = obj.toJSON();
       json[name] = {};
-      state.setJson(json);
+      var o2 = EntityClass.fromJSON(json);
 
+      expect(o2).equal(obj);
       expect(newMap.size).eq(0);
     });
 
