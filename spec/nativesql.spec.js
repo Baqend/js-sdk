@@ -21,8 +21,9 @@ describe('Test Query SQL', function () {
   describe('Builder', function () {
     it('should create simple query sql', function () {
       var q = new rootDb.NativeSQL(rootDb);
-      return q.execute('select * from QueryPerson').then(function () {
-        console.log('method executed');
+      return q.execute('select * from Testtable').then(function (data) {
+        console.log('method executed'+data[0].toString());
+        //console.log(data[0].createdAt);
       });
     });
   });
