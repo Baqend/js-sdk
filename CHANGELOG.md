@@ -1,3 +1,31 @@
+<a name="v3.0.0"></a>
+# v3.0.0 (2021-2-13)
+
+
+### Braking Changes
+
+* `File.url -> string` was removed and replaced with an asynchronous implementation `file.createURL() -> Promise<string>` This Change was necessary by migration from cryptojs dependency to the native implementation of Browser/Node APIs. 
+* To reduce the overall package size, all Shims are not bundled and shipped anymore. Adding a Promise shim on old Browsers must be done manually now
+* If you have previously relied on the global DB variable, you must expose the global DB variable manually now. Consult the README for required migration steps.
+
+### Bug Fixes
+
+* Fix a bug that misaligned messages send to the connect script causes exceptions. Those messages will be ignored now
+* Fix a bug where not all file metadata was correctly parsed
+
+### Features
+
+* Completely rewritten code of the core parts in TypeScript, which results in much better typings
+* Provide the SDK as a bundle ECMAScript Module and as a CommonJS Module
+* Use SSL connections per default, can be opted out by using `db.connect('<app>', false)`
+* A new Proxy implementation of the Object entities, which improve the compatibility with frontend storage frameworks like redux or vuex
+* Update validator and rxjs dependencies to the latest version and make them completely optional in the bundles
+* Splits the util package into util and intersection module to remove cycle dependencies
+* Replace Grunt with Webpack as the package bundler
+* Move the documentation from JSDoc to TSDoc
+* Move from TSLint to ESLint and fix all linting errors
+
+
 <a name="v2.14.1"></a>
 # v2.14.1 (2020-6-12)
 
