@@ -6,7 +6,7 @@ import {
   ManagedFactory,
   EntityFactory,
   DeviceFactory,
-  LoginOption, OAuthOptions,
+  LoginOption, OAuthOptions, NativeSQL
 } from './binding';
 import {
   atob,
@@ -21,6 +21,7 @@ import {
 } from './connector';
 import { BloomFilter } from './caching';
 import { GeoPoint } from './GeoPoint';
+
 import type { ConnectData, EntityManagerFactory } from './EntityManagerFactory';
 import * as model from './model';
 import type { Metamodel } from './metamodel';
@@ -224,6 +225,12 @@ export class EntityManager extends Lockable {
    * The created instances implements the {@link File} interface
    */
   public File: FileFactory = null as any; // is never null after the em is ready
+
+
+  /**
+   * Constructor for a new NativeSQL
+   */
+  public readonly NativeSQL = NativeSQL;
 
   /**
    * @param entityManagerFactory The factory which of this entityManager instance
