@@ -22,8 +22,10 @@ describe('Test Query SQL', function () {
     it('should create simple query sql', function () {
       var q = new rootDb.NativeSQL(rootDb);
       return q.execute('select * from Testtable').then(function (data) {
-        console.log('method executed'+data[0].toString());
-        //console.log(data[0].createdAt);
+        for(let i=0; i<data.length;i++)
+        {
+          console.log(data[i]);
+        }
       });
     });
   });

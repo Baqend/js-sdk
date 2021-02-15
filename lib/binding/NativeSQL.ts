@@ -42,7 +42,6 @@ export class NativeSQL {
     const sqlMessage = new message.SqlQuery(sql)
         .responseType('json');
     return this.db.send(sqlMessage).then((response) => {
-      //console.log(response.entity);
       return response.entity;
     }, (e) => {
       if (e.status === StatusCode.OBJECT_NOT_FOUND) {
