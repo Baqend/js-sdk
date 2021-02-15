@@ -10,7 +10,7 @@ import type { EntityManager } from '../EntityManager';
 
 
 /**
- * Creates a NativeSQL object, which represents one specific file reference.
+ * Creates a NativeSQL object, which executes native sql queries
  * This Query object can  be used to execute sql queries directly in the underlining database
  *
  * @alias binding.NativeSQL
