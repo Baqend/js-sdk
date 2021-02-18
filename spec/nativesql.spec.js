@@ -86,7 +86,7 @@ describe('Test Query SQL', function () {
   });
 
   describe('Builder', function () {
-    it('should create simple query sql with select zip,age where clause age', function () {
+    it('should create simple query sql with select zip,age where clause name', function () {
       var q = new rootDb.NativeSQL(rootDb);
       return q.execute('select zip,age from PersonTable where name = \'helloworld\' ').then(function (data) {
         expect(data[0].fields[0].value).eql(8123367);
