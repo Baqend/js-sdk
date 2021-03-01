@@ -6,12 +6,12 @@ import {
   ManagedFactory,
   EntityFactory,
   DeviceFactory,
-  LoginOption, OAuthOptions, NativeSQL
+  LoginOption, OAuthOptions
 } from './binding';
 import {
   atob,
   Class, deprecated,
-  isNode,
+  isNode, Json,
   JsonMap,
   Lockable,
   uuid,
@@ -22,9 +22,9 @@ import {
 import { BloomFilter } from './caching';
 import { GeoPoint } from './GeoPoint';
 
-import type { ConnectData, EntityManagerFactory } from './EntityManagerFactory';
+import  {ConnectData, EntityManagerFactory} from './EntityManagerFactory';
 import * as model from './model';
-import type { Metamodel } from './metamodel';
+import  { Metamodel } from './metamodel';
 
 import { Builder } from './query';
 import { EntityExistsError, IllegalEntityError, PersistentError } from './error';
@@ -42,10 +42,13 @@ import {
   ValidationResult,
   Validator,
 } from './intersection';
+import * as message from "./message";
 
 const DB_PREFIX = '/db/';
 
 type MessageFactory = (state: Metadata, json: JsonMap) => Message;
+
+import {NativeSQL} from "../nativesql/NativeSQL";
 
 export class EntityManager extends Lockable {
   /**
@@ -226,11 +229,11 @@ export class EntityManager extends Lockable {
    */
   public File: FileFactory = null as any; // is never null after the em is ready
 
-
   /**
    * Constructor for a new NativeSQL
    */
   public readonly NativeSQL = NativeSQL;
+
 
   /**
    * @param entityManagerFactory The factory which of this entityManager instance
@@ -1318,6 +1321,28 @@ export class EntityManager extends Lockable {
 
     return user;
   }
+
+  /**
+   * Execute a native sql
+   * @param  sql to be executed
+   * @param doneCallback The callback is invoked after the sql executed
+   * successfully
+   * @param  failCallback The callback is invoked if any error is occurred
+   * @return  A promise which will be fulfilled when sql is successfully executed
+   */
+  executeQuery(sql?: string, doneCallback?: any, failCallback?: any): Promise<Json> {
+
+    const sqlMessage = new message.SqlQuery(sql)
+      .responseType('json');
+    return this.send(sqlMessage, false).then((response) => {
+      return response.entity;
+    }, (e) => {
+      if (e.status === StatusCode.OBJECT_NOT_FOUND) {
+        return null;
+      }
+      throw e;
+    }).then(doneCallback, failCallback);
+  }
 }
 
 export interface EntityManager extends Lockable {
@@ -1344,6 +1369,9 @@ export interface EntityManager extends Lockable {
    * check registration status of devices.
    */
   readonly Device: DeviceFactory;
+
+
+
 
   /**
    * An Object factory for entity or embedded objects,

@@ -10,7 +10,6 @@ export { Managed } from './Managed';
 export { Entity } from './Entity';
 export { Role } from './Role';
 export { User } from './User';
-export { NativeSQL } from './NativeSQL';
 export {
   FileMetadata, File, FileOptions, FileData, FileIdentifiers,
 } from './File';

@@ -1,12 +1,12 @@
 import {
   Json
-} from '../util';
-import * as message from '../message';
+} from '../lib/util';
+import * as message from '../lib/message';
 import {
   StatusCode
-} from '../connector';
+} from '../lib/connector';
 
-import type { EntityManager } from '../EntityManager';
+import {EntityManager} from '../lib/EntityManager';
 
 
 /**
@@ -40,7 +40,7 @@ export class NativeSQL {
   execute(sql?: string, doneCallback?: any, failCallback?: any): Promise<Json>  {
 
     const sqlMessage = new message.SqlQuery(sql)
-        .responseType('json');
+      .responseType('json');
     return this.db.send(sqlMessage).then((response) => {
       return response.entity;
     }, (e) => {

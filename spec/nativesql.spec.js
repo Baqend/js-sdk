@@ -46,8 +46,8 @@ describe('Test Query SQL', function () {
 
   describe('Builder', function () {
     it('should create simple query sql with where clause name', function () {
-      var q = new rootDb.NativeSQL(rootDb);
-      return q.execute('select * from PersonTable where name = \'helloworld\' ').then(function (data) {
+      //var q = new rootDb.NativeSQL(rootDb);
+      return new rootDb.NativeSQL(rootDb).execute('select * from PersonTable where name = \'helloworld\' ').then(function (data) {
         expect(data[0].fields[5].value).eql('helloworld');
         expect(data[0].fields[6].value).eql(45);
         expect(data[0].fields[7].value).eql(8123367);
@@ -57,8 +57,8 @@ describe('Test Query SQL', function () {
 
   describe('Builder', function () {
     it('should create simple query sql with where clause age', function () {
-      var q = new rootDb.NativeSQL(rootDb);
-      return q.execute('select * from PersonTable where age = 45 ').then(function (data) {
+      //var q = new rootDb.NativeSQL(rootDb);
+      return new rootDb.NativeSQL(rootDb).execute('select * from PersonTable where age = 45 ').then(function (data) {
         expect(data[0].fields[5].value).eql('helloworld');
         expect(data[0].fields[6].value).eql(45);
         expect(data[0].fields[7].value).eql(8123367);
@@ -68,8 +68,8 @@ describe('Test Query SQL', function () {
 
   describe('Builder', function () {
     it('should create simple query sql with select name where clause age', function () {
-      var q = new rootDb.NativeSQL(rootDb);
-      return q.execute('select name from PersonTable where name = \'helloworld\' ').then(function (data) {
+      //var q = new rootDb.NativeSQL(rootDb);
+      return new rootDb.NativeSQL(rootDb).execute('select name from PersonTable where name = \'helloworld\' ').then(function (data) {
         expect(data[0].fields[0].value).eql('helloworld');
       });
     });
@@ -77,8 +77,8 @@ describe('Test Query SQL', function () {
 
   describe('Builder', function () {
     it('should create simple query sql with select name,age where clause age', function () {
-      var q = new rootDb.NativeSQL(rootDb);
-      return q.execute('select name,age from PersonTable where name = \'helloworld\' ').then(function (data) {
+      //var q = new rootDb.NativeSQL(rootDb);
+      return new rootDb.NativeSQL(rootDb).execute('select name,age from PersonTable where name = \'helloworld\' ').then(function (data) {
         expect(data[0].fields[0].value).eql('helloworld');
         expect(data[0].fields[1].value).eql(45);
       });
@@ -87,8 +87,8 @@ describe('Test Query SQL', function () {
 
   describe('Builder', function () {
     it('should create simple query sql with select zip,age where clause name', function () {
-      var q = new rootDb.NativeSQL(rootDb);
-      return q.execute('select zip,age from PersonTable where name = \'helloworld\' ').then(function (data) {
+      //var q = new rootDb.NativeSQL(rootDb);
+      return new rootDb.NativeSQL(rootDb).execute('select zip,age from PersonTable where name = \'helloworld\' ').then(function (data) {
         expect(data[0].fields[0].value).eql(8123367);
         expect(data[0].fields[1].value).eql(45);
       });
