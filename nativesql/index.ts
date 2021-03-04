@@ -1,1 +1,1 @@
-export { NativeSQL } from './NativeSQL';
+export { NativeQuery } from './NativeQuery';

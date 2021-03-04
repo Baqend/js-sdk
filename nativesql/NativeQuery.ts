@@ -10,22 +10,27 @@ import {
 import {EntityManager} from '../lib/EntityManager';
 
 
+
 /**
- * Creates a NativeSQL object, which executes native sql queries
+ * Creates a NativeQuery object, which executes native sql queries
  * This Query object can  be used to execute sql queries directly in the underlining database
  *
- * @alias binding.NativeSQL
+ * @alias binding.NativeQuery
  */
-export class NativeSQL {
+export class NativeQuery {
+
+  public db: EntityManager = null as any;
 
 
 
   /**
-   * @param entityManager - The owning EntityManager of this query
+   * Creates a Logger instance for the given EntityManager
+   * @param entityManager - Theo owning entityManager
+   * @return The created logger instance
    */
-  constructor(
-    public readonly db: EntityManager
-  ) {}
+  constructor(entityManager: EntityManager) {
+    this.db = entityManager;
+  }
 
 
   /**
