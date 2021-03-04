@@ -16,7 +16,7 @@ const tsTypeMapping = {
   JsonArray: '[]',
   JsonObject: '{}',
   File: 'binding.File',
-  NativeSQL: 'binding.NativeSQL',
+  NativeQuery: 'NativeQuery',
 };
 
 const nativeTypes = ['User', 'Role', 'Device'];
