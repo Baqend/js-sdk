@@ -1,1 +1,1 @@
-export { EntityManager } from './EntityManager';
+export { NativeSQL } from './NativeSQL';

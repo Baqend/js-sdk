@@ -1,4 +1,5 @@
 import {
+  Class,
   Json
 } from '../lib/util';
 import * as message from '../lib/message';
@@ -18,15 +19,13 @@ import {EntityManager} from '../lib/EntityManager';
 export class NativeSQL {
 
 
+
   /**
-   * The database connection to use
+   * @param entityManager - The owning EntityManager of this query
    */
-  public db: EntityManager = null as any; // is lazy initialized and never null
-
-
-  constructor(db: EntityManager) {
-    this.db = db;
-  }
+  constructor(
+    public readonly db: EntityManager
+  ) {}
 
 
   /**

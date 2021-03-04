@@ -11,7 +11,7 @@ import {
 import {
   atob,
   Class, deprecated,
-  isNode, Json,
+  isNode,
   JsonMap,
   Lockable,
   uuid,
@@ -42,7 +42,6 @@ import {
   ValidationResult,
   Validator,
 } from './intersection';
-import * as message from "./message";
 
 const DB_PREFIX = '/db/';
 
@@ -1322,27 +1321,6 @@ export class EntityManager extends Lockable {
     return user;
   }
 
-  /**
-   * Execute a native sql
-   * @param  sql to be executed
-   * @param doneCallback The callback is invoked after the sql executed
-   * successfully
-   * @param  failCallback The callback is invoked if any error is occurred
-   * @return  A promise which will be fulfilled when sql is successfully executed
-   */
-  executeQuery(sql?: string, doneCallback?: any, failCallback?: any): Promise<Json> {
-
-    const sqlMessage = new message.SqlQuery(sql)
-      .responseType('json');
-    return this.send(sqlMessage, false).then((response) => {
-      return response.entity;
-    }, (e) => {
-      if (e.status === StatusCode.OBJECT_NOT_FOUND) {
-        return null;
-      }
-      throw e;
-    }).then(doneCallback, failCallback);
-  }
 }
 
 export interface EntityManager extends Lockable {
