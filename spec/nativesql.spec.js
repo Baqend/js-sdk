@@ -22,24 +22,23 @@ describe('Test Query SQL', function () {
 
   before(function () {
     emf = new DB.EntityManagerFactory(env.TEST_SERVER);
-    return emf.createEntityManager().ready().then(function (em) {
-      return em.User.login('root', 'root').then(function () {
+    return emf.createEntityManager().ready().then( function (em) {
+      return em.User.login('root', 'root').then(async function () {
         rootDb = em;
-        rootDb.PersonTable.find().equal('name', 'helloworld').resultList((data) => {
-          data.forEach(function(tt) {
+        await rootDb.PersonTable.find().equal('name', 'helloworld').resultList(async (data) => {
+          for (const tt of data) {
             if (!tt) {
               console.log("Found nothing?!");
             } else {
-              tt.delete();
+              await tt.delete();
             }
-          });
+          }
         });
-
-        var tt = rootDb.PersonTable();
+        let tt = rootDb.PersonTable();
         tt.name = 'helloworld';
         tt.age = 45;
         tt.zip = 8123367;
-        tt.save()
+        await tt.save()
       });
     });
   });
