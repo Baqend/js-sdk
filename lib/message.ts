@@ -1496,12 +1496,12 @@ interface SqlQuery {
   /**
    * Provides Native Sql Query
    *
-   * @param ptq Native Sql Query
+   * @param nativequery Native Sql Query
    */
-  new(ptq?: string | null): Message;
+  new(nativequery?: string | null): Message;
 }
 export const SqlQuery = Message.create<SqlQuery>({
   method: 'GET',
-  path: '/db/query?ptq',
+  path: '/db/query?nativequery',
   status: [200,465,468],
 });
