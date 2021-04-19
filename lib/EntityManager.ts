@@ -6,7 +6,7 @@ import {
   ManagedFactory,
   EntityFactory,
   DeviceFactory,
-  LoginOption, OAuthOptions,
+  LoginOption, OAuthOptions
 } from './binding';
 import {
   atob,
@@ -45,6 +45,8 @@ import {
 const DB_PREFIX = '/db/';
 
 type MessageFactory = (state: Metadata, json: JsonMap) => Message;
+
+import {Transaction} from "../transaction";
 
 export class EntityManager extends Lockable {
   /**
@@ -224,6 +226,12 @@ export class EntityManager extends Lockable {
    * The created instances implements the {@link File} interface
    */
   public File: FileFactory = null as any; // is never null after the em is ready
+
+
+  /**
+   * Constructor for a new Transaction
+   */
+  public readonly transaction: Transaction = new Transaction(this);
 
   /**
    * @param entityManagerFactory The factory which of this entityManager instance
