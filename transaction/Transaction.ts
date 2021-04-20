@@ -44,7 +44,7 @@ export class Transaction {
     const txMessage = new message.NewTransaction()
       .responseType('json');
     return this.db.send(txMessage).then((response) => {
-      return response.entity;
+      return response.headers.location;
     }, (e) => {
       if (e.status === StatusCode.OBJECT_NOT_FOUND) {
         return null;
