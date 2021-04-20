@@ -20,6 +20,22 @@ export class Transaction {
 
   public db: EntityManager = null as any;
 
+  /**
+   * The transaction id
+   */
+  public tid? : string | null;
+
+  /**
+   * The name of the file
+   */
+  get txid(): string | null {
+
+    if (this.tid) {
+        return this.tid.substring(this.tid.lastIndexOf('/', this.tid.length - 2) + 1);
+    }
+    return null;
+  }
+
 
 
   /**
@@ -44,7 +60,7 @@ export class Transaction {
     const txMessage = new message.NewTransaction()
       .responseType('json');
     return this.db.send(txMessage).then((response) => {
-      return response.headers.location;
+      this.tid = response.headers.location;
     }, (e) => {
       if (e.status === StatusCode.OBJECT_NOT_FOUND) {
         return null;
