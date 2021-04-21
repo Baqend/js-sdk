@@ -46,9 +46,9 @@ describe('Test Transaction', function () {
   describe('Builder', function () {
     it('should set the transaction id', function () {
       //var q = new rootDb.NativeQuery(rootDb);
-      return rootDb.transaction.begin().then(function (data) {
-        console.log(rootDb.isTransactionSet);
+      return rootDb.transaction.begin().then(function () {
         console.log(rootDb.getTransactionId());
+        expect(rootDb.getTransactionId()).to.be.not.null;
       });
     });
   });
