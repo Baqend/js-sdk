@@ -50,7 +50,7 @@ describe('Test Transaction', function () {
         expect(rootDb.getTransactionId()).to.be.not.null;
       });
     });
-    it('throw exception transaction already exist', function () {
+    it('throw transaction already exist exception', function () {
         expect(rootDb.transaction.begin()).throw(Error);
     });
 
