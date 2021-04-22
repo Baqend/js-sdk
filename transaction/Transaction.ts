@@ -29,10 +29,8 @@ export class Transaction {
    * The name of the file
    */
   get txid(): string | null {
-
-    if (this.tid) {
-        return this.tid.substring(this.tid.lastIndexOf('/', this.tid.length - 2) + 1);
-    }
+    if (this.tid != null)
+      return this.tid;
     return null;
   }
 
@@ -57,10 +55,13 @@ export class Transaction {
    */
   begin(doneCallback?: any, failCallback?: any): Promise<Json>  {
 
+    if(this.tid)
+      throw new Error(`Transaction already exist.. Please commit existing transaction first`);
+
     const txMessage = new message.NewTransaction()
       .responseType('json');
     return this.db.send(txMessage).then((response) => {
-      this.tid = response.headers.location;
+      this.tid = response.headers.location.substring(response.headers.location.lastIndexOf('/', response.headers.location.length - 2) + 1);
     }, (e) => {
       if (e.status === StatusCode.OBJECT_NOT_FOUND) {
         return null;

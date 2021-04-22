@@ -45,14 +45,16 @@ describe('Test Transaction', function () {
 
   describe('Builder', function () {
     it('should set the transaction id', function () {
-      //var q = new rootDb.NativeQuery(rootDb);
       return rootDb.transaction.begin().then(function () {
         console.log(rootDb.getTransactionId());
         expect(rootDb.getTransactionId()).to.be.not.null;
       });
     });
-  });
+    it('throw exception transaction already exist', function () {
+        expect(rootDb.transaction.begin()).throw(Error);
+    });
 
+  });
 
 
 });
