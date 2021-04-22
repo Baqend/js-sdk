@@ -11,8 +11,7 @@ import {EntityManager} from '../lib';
 
 
 /**
- * Creates a NativeQuery object, which executes native sql queries
- * This Query object can  be used to execute sql queries directly in the underlining database
+ * Transaction object class
  *
  * @alias binding.Transaction
  */
@@ -26,7 +25,7 @@ export class Transaction {
   public tid? : string | null;
 
   /**
-   * The name of the file
+   * Get Transaction Id
    */
   get txid(): string | null {
     if (this.tid != null)
@@ -37,9 +36,8 @@ export class Transaction {
 
 
   /**
-   * Creates a Logger instance for the given EntityManager
-   * @param entityManager - Theo owning entityManager
-   * @return The created logger instance
+   * The default constructor for creating Transaction  instance for the given EntityManager
+   * @param entityManager - The owning entityManager
    */
   constructor(entityManager: EntityManager) {
     this.db = entityManager;
@@ -50,7 +48,7 @@ export class Transaction {
    * Begin a transaction by creating a transaction id
    * @param doneCallback The callback is invoked after the sql executed
    * successfully
-   * @param  failCallback The callback is invoked if any error is occurred
+   * @param  failCallback The callback is invoked if any error occurred
    * @return  A promise which will be fulfilled when sql is successfully executed
    */
   begin(doneCallback?: any, failCallback?: any): Promise<Json>  {
@@ -75,7 +73,7 @@ export class Transaction {
    * @param  tid Transaction id
    * @param doneCallback The callback is invoked after the sql executed
    * successfully
-   * @param  failCallback The callback is invoked if any error is occurred
+   * @param  failCallback The callback is invoked if any error occurred
    * @return  A promise which will be fulfilled when sql is successfully executed
    */
   commit(tid?: string, doneCallback?: any, failCallback?: any): Promise<Json>  {
@@ -83,6 +81,7 @@ export class Transaction {
     const sqlMessage = new message.CommitTransaction(tid)
       .responseType('json');
     return this.db.send(sqlMessage).then((response) => {
+      this.tid = null;
       return response.entity;
     }, (e) => {
       if (e.status === StatusCode.OBJECT_NOT_FOUND) {
