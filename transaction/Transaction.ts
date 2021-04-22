@@ -49,7 +49,7 @@ export class Transaction {
    * @param doneCallback The callback is invoked after the sql executed
    * successfully
    * @param  failCallback The callback is invoked if any error occurred
-   * @return  A promise which will be fulfilled when sql is successfully executed
+   * @return  A promise which will be fulfilled with a transaction id when successfully executed
    */
   begin(doneCallback?: any, failCallback?: any): Promise<Json>  {
 
@@ -74,7 +74,7 @@ export class Transaction {
    * @param doneCallback The callback is invoked after the sql executed
    * successfully
    * @param  failCallback The callback is invoked if any error occurred
-   * @return  A promise which will be fulfilled when sql is successfully executed
+   * @return  A promise which will be fulfilled when commit transaction is successfully executed
    */
   commit(tid?: string, doneCallback?: any, failCallback?: any): Promise<Json>  {
 
