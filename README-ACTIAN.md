@@ -1,6 +1,6 @@
-Actian Baqend JavaScript SDK
+Actian BaaS JavaScript SDK
 =====================
-Actian Baqend JavaScript SDK and CLI for High-Performance Websites
+Actian BaaS JavaScript SDK and CLI for High-Performance Websites
 
 * [Docs](https://www.baqend.com/guide/) and [API](https://www.baqend.com/js-sdk/latest/index.html)
 * [CLI help](https://www.baqend.com/guide/topics/cli/)
@@ -8,19 +8,16 @@ Actian Baqend JavaScript SDK and CLI for High-Performance Websites
 
 CLI
 -----
-Actian Baqend provides a CLI to easily manage your app. Install it by typing `npm install -g baqend`.
+Actian BaaS provides a CLI to easily manage your app. Install it by typing `npm install -g baqend`.
 Afterwards you can use the `baqend` command in your terminal.
-
-If you don't already have a Baqend account, type `baqend register` to create your first app.
-Now you can open the dashboard of your app with `baqend dashboard`. To see all the command use `baqend help`.
 
 Setup
 -----
 
-To use the Actian Baqend SDK, just include the [baqend.js](//www.baqend.com/js-sdk/latest/baqend.es5.js) or 
+To use the Actian BaaS SDK, just include the [baqend.js](//www.baqend.com/js-sdk/latest/baqend.es5.js) or 
 [baqend.min.js](//www.baqend.com/js-sdk/latest/baqend.es5.js) from the dist folder
 at the bottom of your body.<br>
-Alternatively you can install the Baqend SDK with npm. Just type `npm install baqend`<br> 
+Alternatively you can install the Actian BaaS SDK with npm. Just type `npm install baqend`<br> 
 Or [download the latest release](https://github.com/Baqend/js-sdk/releases/latest) directly from GitHub.
 
 ```html
@@ -38,15 +35,15 @@ You can use [unpkg.com](https://unpkg.com/) to directly load the dependency into
 <script type="module" src="https://unpkg.com/baqend@3/dist/baqend.es2015.min.js"></script>
 ```
 
-The Actian Baqend SDK provides a global `Baqend` variable by default.
+The Actian BaaS SDK provides a global `Baqend` variable by default.
 
 Initialize
 ----------
 
-Before you can actually use the Actian Baqend SDK, you must link the Actian Baqend SDK to your Baqend Account.
-Just call `Baqend.db.connect(<your Baqend APP>)` after including the Actian Baqend SDK.
+Before you can actually use the Actian BaaS SDK, you must link the Actian BaaS SDK to your Baqend Account.
+Just call `Baqend.db.connect(<your Baqend APP>)` after including the Actian BaaS SDK.
 
-The Actian Baqend SDK connects to your Baqend and initialize the SDK. If the connection was successfully established
+The Actian BaaS SDK connects to your Actian BaaS and initialize the SDK. If the connection was successfully established
 the ready callback will be called, and the `db` can be used to load, query and save objects.
 
 ```html
@@ -74,7 +71,7 @@ db.User.find()
 Upgrading from 2.x
 -----
 
-There are may some steps required to upgrade to the v3 version if you have previously used our v2 release.
+There are some steps required to upgrade to the v3 version if you have previously used our v2 release.
  
 We recommend changing your current imports to use the new 
 [ES2015 module](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/import) structure 
@@ -132,13 +129,13 @@ properly.
 We have improved the typescript support by providing better typings. You may experience some new typescript 
 errors since the typings are more precise in many cases.
 
-Actian Baqend Real-Time SDK
+Actian BaaS Real-Time SDK
 --------------------
 If you want to use real-time queries, you must include [Rx.js](https://github.com/ReactiveX/rxjs) in your project 
 as well. The realtime components are now core part of v3 release of the SDK and no alternative module must be 
 used. 
 
-The Rx.js module will be loaded as a optional peer dependency from the global Rx variable 
+The Rx.js module will be loaded as an optional peer dependency from the global Rx variable 
 or will be required via. `require('rxjs')` call.
 If rxjs can't be loaded the realtime components of the SDK will throw an exception.
 
@@ -163,7 +160,7 @@ observable.subscribe((result) => {
 Usage in Node.js
 ----------------
 
-The Actian Baqend SDK can also be used in Node.js. Just do an `npm install baqend` and use 
+The Actian BaaS SDK can also be used in Node.js. Just do an `npm install baqend` and use 
 `require('baqend')` for old node environments or `import { db } from 'baqend'` in your code.
 
 Up to Node.js v12
@@ -196,9 +193,9 @@ await db.User.find()
    ...
 ```
 
-Note: The Actian Baqend Real-Time SDK can be used by just installing Rx.js as well `npm install rxjs`
+Note: The Actian BaaS Real-Time SDK can be used by just installing Rx.js as well `npm install rxjs`
 
 License
 -------
 
-This Actian Baqend SDK is published under the very permissive [MIT license](LICENSE.md)
+This Actian BaaS SDK is published under the very permissive [MIT license](LICENSE.md)
