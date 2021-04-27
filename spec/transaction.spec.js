@@ -86,7 +86,6 @@ describe('Test Transaction', function() {
       });
     });
     it('throw transaction already exist exception', function() {
-      //expect(rootDb.transaction.begin());
       return rootDb.transaction.begin().then(function(txid) {
         expect(txid).to.be.not.null;
         rootDb.transaction.begin().then(function(txid) {
