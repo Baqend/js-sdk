@@ -87,7 +87,14 @@ describe('Test Transaction', function() {
     });
     it('throw transaction already exist exception', function() {
       //expect(rootDb.transaction.begin());
-      expect(rootDb.transaction.begin()).to.throw(Error('Transaction already exist.. Please commit existing transaction first'));
+      return rootDb.transaction.begin().then(function(txid) {
+        expect(txid).to.be.not.null;
+        rootDb.transaction.begin().then(function(txid) {
+          console.log(txid);
+        }).catch(function(error) {
+          expect(error).to.throw(Error('Transaction already exist.. Please commit existing transaction first'));
+        });
+      })
     });
   });
 });
