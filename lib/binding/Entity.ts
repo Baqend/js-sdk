@@ -143,8 +143,13 @@ export class Entity extends Managed {
     if (typeof options === 'function') {
       return this.save({}, options, doneCallback);
     }
-
-    return this._metadata.db.save(this, options).then(doneCallback, failCallback);
+    if(this._metadata.db.isTransactionSet())
+    {
+      return this._metadata.db.saveTransaction(this);
+    }
+    else{
+      return this._metadata.db.save(this, options).then(doneCallback, failCallback);
+    }
   }
 
   /**

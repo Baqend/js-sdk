@@ -1,5 +1,5 @@
 import {
-  Json
+  Json, JsonMap
 } from '../lib/util';
 import * as message from '../lib/message';
 import {
@@ -7,7 +7,7 @@ import {
 } from '../lib/connector';
 
 import {EntityManager} from '../lib';
-
+import {Metadata} from "../lib/intersection";
 
 
 /**
@@ -22,17 +22,16 @@ export class Transaction {
   /**
    * The transaction id
    */
-  public tid? : string | null;
+  public tid?: string | null;
 
   /**
    * Get Transaction Id
    */
   get txid(): string | null {
-    if (this.tid != null)
+    if (this.tid)
       return this.tid;
     return null;
   }
-
 
 
   /**
@@ -51,15 +50,15 @@ export class Transaction {
    * @param  failCallback The callback is invoked if any error occurred
    * @return  A promise which will be fulfilled with a transaction id when successfully executed
    */
-  begin(doneCallback?: any, failCallback?: any): Promise<Json>  {
+  begin(doneCallback?: any, failCallback?: any): Promise<string> {
 
-    if(this.tid)
-      throw new Error(`Transaction already exist.. Please commit existing transaction first`);
+    if (this.tid)
+      return Promise.reject(Error(`Transaction already exist.. Please commit existing transaction first`));
 
     const txMessage = new message.NewTransaction()
       .responseType('json');
     return this.db.send(txMessage).then((response) => {
-      this.tid = response.headers.location.substring(response.headers.location.lastIndexOf('/', response.headers.location.length - 2) + 1);
+      return this.tid = response.headers.location.substring(response.headers.location.lastIndexOf('/', response.headers.location.length - 2) + 1);
     }, (e) => {
       if (e.status === StatusCode.OBJECT_NOT_FOUND) {
         return null;
@@ -76,9 +75,32 @@ export class Transaction {
    * @param  failCallback The callback is invoked if any error occurred
    * @return  A promise which will be fulfilled when commit transaction is successfully executed
    */
-  commit(tid?: string, doneCallback?: any, failCallback?: any): Promise<Json>  {
+  commit(doneCallback?: any, failCallback?: any): Promise<Json> {
 
-    const sqlMessage = new message.CommitTransaction(tid)
+    if (!this.tid)
+      return Promise.reject(Error(`Transaction does not exist.. Please start a new transaction using transaction.begin`));
+    let list = this.db.transactionalEntities;
+    var jsonbody = "{\"writeSet\": [";
+    let array : string[] = [];
+    for (let key of Object.keys(list)){
+      const state = Metadata.get(list[key]);
+      let json: JsonMap;
+      if (state.isAvailable) {
+        // getting json will check all collections changes, therefore we must do it before proofing the dirty state
+        json = state.type.toJsonValue(state, list[key], {
+          persisting: true,
+        }) as JsonMap;
+        console.log("json -> "+ JSON.stringify(json));
+        jsonbody += JSON.stringify(json);
+        array.push(JSON.stringify(json));
+      }
+    }
+
+    jsonbody.concat(array.join(","));
+    jsonbody += "]";
+    console.log(jsonbody);
+
+    const sqlMessage = new message.CommitTransaction(this.tid,jsonbody)
       .responseType('json');
     return this.db.send(sqlMessage).then((response) => {
       this.tid = null;
@@ -90,6 +112,4 @@ export class Transaction {
       throw e;
     }).then(doneCallback, failCallback);
   }
-
-
 }

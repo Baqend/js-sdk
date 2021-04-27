@@ -185,6 +185,13 @@ export class EntityManager extends Lockable {
    */
   private entities: { [id: string]: Entity } = {};
 
+  /**
+   * All transactional entity instances
+   * @type Map<String,Entity>
+   * @private
+   */
+  public transactionalEntities: { [id: string]: Entity } = {};
+
   public readonly entityManagerFactory: EntityManagerFactory;
 
   public readonly metamodel: Metamodel;
@@ -631,6 +638,20 @@ export class EntityManager extends Lockable {
 
   /**
    * @param entity
+   * @return
+   */
+  saveTransaction<E extends Entity>(entity: E): Promise<E>{
+    const metadata = Metadata.get(entity);
+    if (metadata.id) {
+      this.transactionalEntities[metadata.id] = entity;
+    }
+    return Promise.resolve(entity);
+  }
+
+
+
+  /**
+   * @param entity
    * @param cb pre-safe callback
    * @return
    */
@@ -678,6 +699,70 @@ export class EntityManager extends Lockable {
    */
   private _locklessSave<T extends Entity>(entity: T, options: { depth?: number | boolean, refresh?: boolean },
     msgFactory: MessageFactory): Promise<T> {
+    this.attach(entity);
+    const state = Metadata.get(entity);
+    let refPromises;
+
+    let json: JsonMap;
+    if (state.isAvailable) {
+      // getting json will check all collections changes, therefore we must do it before proofing the dirty state
+      json = state.type.toJsonValue(state, entity, {
+        persisting: true,
+      }) as JsonMap;
+    }
+
+    if (state.isDirty) {
+      if (!options.refresh) {
+        state.setPersistent();
+      }
+
+      const sendPromise = this.send(msgFactory(state, json!!)).then((response) => {
+        if (state.id && state.id !== response.entity.id) {
+          this.removeReference(entity);
+          state.id = response.entity.id;
+          this._attach(entity);
+        }
+
+        state.type.fromJsonValue(state, response.entity, entity, {
+          persisting: options.refresh,
+          onlyMetadata: !options.refresh,
+        });
+        return entity;
+      }, (e) => {
+        if (e.status === StatusCode.OBJECT_NOT_FOUND) {
+          this.removeReference(entity);
+          state.setRemoved();
+          return null;
+        }
+
+        state.setDirty();
+        throw e;
+      });
+
+      refPromises = [sendPromise];
+    } else {
+      refPromises = [Promise.resolve(entity)];
+    }
+
+    const subOptions = { ...options };
+    subOptions.depth = 0;
+    this.getSubEntities(entity, options.depth).forEach((sub) => {
+      refPromises.push(this._save(sub, subOptions, msgFactory));
+    });
+
+    return Promise.all(refPromises).then(() => entity);
+  }
+
+  /**
+   * Save the object state without locking
+   * @param entity
+   * @param options
+   * @param msgFactory
+   * @return
+   * @private
+   */
+  private _locklessTransactionSave<T extends Entity>(entity: T, options: { depth?: number | boolean, refresh?: boolean },
+                                          msgFactory: MessageFactory): Promise<T> {
     this.attach(entity);
     const state = Metadata.get(entity);
     let refPromises;
