@@ -90,15 +90,13 @@ export class Transaction {
         json = state.type.toJsonValue(state, list[key], {
           persisting: true,
         }) as JsonMap;
-        console.log("json -> "+ JSON.stringify(json));
-        jsonbody += JSON.stringify(json);
         array.push(JSON.stringify(json));
       }
     }
-
-    jsonbody.concat(array.join(","));
-    jsonbody += "]";
-    console.log(jsonbody);
+    let body = array.join(",");
+    jsonbody += body;
+    jsonbody += "]}";
+    console.log("writeset --> " +jsonbody);
 
     const sqlMessage = new message.CommitTransaction(this.tid,jsonbody)
       .responseType('json');

@@ -76,7 +76,10 @@ describe('Test Transaction', function() {
         st.save();
         return Promise.resolve();
       }).then(function(txid) {
-        return rootDb.transaction.commit();
+        return rootDb.transaction.commit().then(function(response){
+          console.log(response);
+          expect(response).to.be.not.null;
+        });
       }).catch(function(error) {
         console.log('ERROR: ' + JSON.stringify(error));
         //rootDb.transaction.rollback(txnObj);
@@ -84,7 +87,7 @@ describe('Test Transaction', function() {
     });
     it('throw transaction already exist exception', function() {
       //expect(rootDb.transaction.begin());
-      expect(rootDb.transaction.begin().then()).to.throw(Error('Transaction already exist.. Please commit existing transaction first'));
+      expect(rootDb.transaction.begin()).to.throw(Error('Transaction already exist.. Please commit existing transaction first'));
     });
   });
 });
