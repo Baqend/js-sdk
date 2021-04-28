@@ -2,7 +2,7 @@ Actian BaaS JavaScript SDK
 =====================
 Actian BaaS JavaScript SDK and CLI for High-Performance Websites
 
-* [Docs](https://www.baqend.com/guide/) and [API](https://www.baqend.com/js-sdk/latest/index.html)
+* [Docs](https://www.baqend.com/guide/)
 * [CLI help](https://www.baqend.com/guide/topics/cli/)
 * [Dashboard](https://dashboard.baqend.com/register/)
 
