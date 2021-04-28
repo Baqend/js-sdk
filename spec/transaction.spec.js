@@ -82,14 +82,15 @@ describe('Test Transaction', function() {
         });
       }).catch(function(error) {
         console.log('ERROR: ' + JSON.stringify(error));
+        expect.fail("No Error should have been thrown");
         //rootDb.transaction.rollback(txnObj);
       });
     });
     it('throw transaction already exist exception', function() {
       return rootDb.transaction.begin().then(function(txid) {
         expect(txid).to.be.not.null;
-        rootDb.transaction.begin().then(function(txid) {
-          console.log(txid);
+        rootDb.transaction.begin().then(function() {
+          expect.fail("Transaction begin should have failed");
         }).catch(function(error) {
           expect(error).to.throw(Error('Transaction already exist.. Please commit existing transaction first'));
         });
