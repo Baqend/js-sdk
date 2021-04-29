@@ -188,7 +188,6 @@ export class EntityManager extends Lockable {
   /**
    * All transactional entity instances
    * @type Map<String,Entity>
-   * @private
    */
   public transactionalEntities: { [id: string]: Entity } = {};
 
