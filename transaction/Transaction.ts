@@ -69,7 +69,6 @@ export class Transaction {
 
   /**
    * Commits a transaction with a given transaction id
-   * @param  tid Transaction id
    * @param doneCallback The callback is invoked after the sql executed
    * successfully
    * @param  failCallback The callback is invoked if any error occurred
@@ -81,8 +80,8 @@ export class Transaction {
       return Promise.reject(Error(`Transaction does not exist.. Please start a new transaction using transaction.begin`));
     let list = this.db.transactionalEntities;
     var jsonbody = "{\"writeSet\": [";
-    let array : string[] = [];
-    for (let key of Object.keys(list)){
+    let array: string[] = [];
+    for (let key of Object.keys(list)) {
       const state = Metadata.get(list[key]);
       let json: JsonMap;
       if (state.isAvailable) {
@@ -96,12 +95,13 @@ export class Transaction {
     let body = array.join(",");
     jsonbody += body;
     jsonbody += "]}";
-    console.log("writeset --> " +jsonbody);
+    console.log("writeset --> " + jsonbody);
 
-    const sqlMessage = new message.CommitTransaction(this.tid,jsonbody)
+    this.db.transactionalEntities = {};
+    const sqlMessage = new message.CommitTransaction(this.tid, jsonbody)
       .responseType('json');
+    this.tid = null;
     return this.db.send(sqlMessage).then((response) => {
-      this.tid = null;
       return response.entity;
     }, (e) => {
       if (e.status === StatusCode.OBJECT_NOT_FOUND) {
