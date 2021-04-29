@@ -74,6 +74,7 @@ describe('Test Transaction', function() {
         return rootDb.transaction.commit().then(function(response){
           console.log(response);
           expect(response).to.be.not.null;
+          expect(Object.keys(response).length).equals(3);
         });
       }).catch(function(error) {
         console.log('ERROR: ' + JSON.stringify(error));
@@ -117,6 +118,7 @@ describe('Test Transaction', function() {
         return rootDb.transaction.commit().then(function(response){
           console.log(response);
           expect(response).to.be.not.null;
+          expect(Object.keys(response).length).equals(3);
         });
       }).catch(function(error) {
         console.log('ERROR: ' + JSON.stringify(error));
