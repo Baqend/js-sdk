@@ -91,7 +91,7 @@ describe('Test Transaction', function() {
             data.name = 'helloworld1';
             data.age = 33;
             data.zip = 5600091;
-             data.save();
+            data.save();
           }
         });
 
