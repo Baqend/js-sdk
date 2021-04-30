@@ -22,6 +22,9 @@ describe('Test Transaction', function() {
     metamodel.addType(studentType = new DB.metamodel.EntityType('Student', metamodel.entity(Object)));
     studentType.addAttribute(new DB.metamodel.SingularAttribute('name', metamodel.baseType(String)));
     studentType.addAttribute(new DB.metamodel.SingularAttribute('address', metamodel.baseType(String)));
+    studentType.addAttribute(new DB.metamodel.SingularAttribute('person', personType));
+    
+
     return metamodel.save();
   });
 
@@ -68,6 +71,7 @@ describe('Test Transaction', function() {
         st.id = '12121';
         st.name = 'Test Student';
         st.address = 'home';
+        st.person = tt1;
         st.save();
         return Promise.resolve();
       }).then(function() {
@@ -112,13 +116,20 @@ describe('Test Transaction', function() {
           }
         });
 
+        let tt = rootDb.PersonTable();
+        tt.id = '777';
+        tt.name = 'helloworld3';
+        tt.age = 54;
+        tt.zip = 82547;
+        tt.save();
+
         return Promise.resolve();
 
       }).then(function() {
         return rootDb.transaction.commit().then(function(response){
           console.log(response);
           expect(response).to.be.not.null;
-          expect(Object.keys(response).length).equals(3);
+          expect(Object.keys(response).length).equals(4);
         });
       }).catch(function(error) {
         console.log('ERROR: ' + JSON.stringify(error));
