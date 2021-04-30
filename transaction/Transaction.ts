@@ -82,11 +82,12 @@ export class Transaction {
     var jsonbody = "{\"writeSet\": [";
     let array: string[] = [];
     for (let key of Object.keys(list)) {
-      const state = Metadata.get(list[key]);
+      let val = list[key];
+      const state = Metadata.get(val);
       let json: JsonMap;
       if (state.isAvailable) {
         // getting json will check all collections changes, therefore we must do it before proofing the dirty state
-        json = state.type.toJsonValue(state, list[key], {
+        json = state.type.toJsonValue(state, val, {
           persisting: true,
         }) as JsonMap;
         array.push(JSON.stringify(json));
