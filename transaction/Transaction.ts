@@ -85,6 +85,7 @@ export class Transaction {
       let val = list[key];
       const state = Metadata.get(val);
       let json: JsonMap;
+      // right now we send all the values irrespective whether it changed values or not
       if (state.isAvailable) {
         // getting json will check all collections changes, therefore we must do it before proofing the dirty state
         json = state.type.toJsonValue(state, val, {
