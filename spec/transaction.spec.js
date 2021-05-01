@@ -41,6 +41,10 @@ describe('Test Transaction', function() {
           if(data)
              data.delete();
         });
+        rootDb.PersonTable.find().equal('name', 'helloworld3').singleResult( (data) => {
+          if(data)
+            data.delete();
+        });
          rootDb.Student.find().equal('name', 'Test Student').singleResult( (data) => {
           if(data)
              data.delete();
