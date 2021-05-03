@@ -132,6 +132,7 @@
     "typings": "npm run typings:test",
     "typings:test": "tsc --version && tsc -p spec-ts/tsconfig.json",
     "docs": "typedoc --out doc lib",
+	"docs-actian": "typedoc --readme README-ACTIAN.md --out doc lib",
     "baqend": "node cli/index.js",
     "lint": "eslint --ext .ts lib/",
     "prepare": ""
