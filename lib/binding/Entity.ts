@@ -143,13 +143,10 @@ export class Entity extends Managed {
     if (typeof options === 'function') {
       return this.save({}, options, doneCallback);
     }
-    if(this._metadata.db.isTransactionSet())
-    {
+    if (this._metadata.db.isTransactionSet()) {
       return this._metadata.db.saveTransaction(this);
     }
-    else{
-      return this._metadata.db.save(this, options).then(doneCallback, failCallback);
-    }
+    return this._metadata.db.save(this, options).then(doneCallback, failCallback);
   }
 
   /**
@@ -247,6 +244,9 @@ export class Entity extends Managed {
     failCallback?: any): Promise<this> {
     if (typeof options === 'function') {
       return this.delete({}, options, doneCallback);
+    }
+    if (this._metadata.db.isTransactionSet()) {
+      return this._metadata.db.deleteTransaction(this);
     }
 
     return this._metadata.db.delete(this, options).then(doneCallback, failCallback);

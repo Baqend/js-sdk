@@ -191,6 +191,12 @@ export class EntityManager extends Lockable {
    */
   public transactionalEntities: { [id: string]: Entity } = {};
 
+  /**
+   * All transactional entity instances
+   * @type Map<String,Entity>
+   */
+  public transactionalDeleteEntities: { [id: string]: Entity } = {};
+
   public readonly entityManagerFactory: EntityManagerFactory;
 
   public readonly metamodel: Metamodel;
@@ -639,7 +645,7 @@ export class EntityManager extends Lockable {
    * @param entity
    * @return
    */
-  saveTransaction<E extends Entity>(entity: E): Promise<E>{
+  saveTransaction<E extends Entity>(entity: E): Promise<E> {
     const metadata = Metadata.get(entity);
     if (metadata.id) {
       this.transactionalEntities[metadata.id] = entity;
@@ -880,6 +886,14 @@ export class EntityManager extends Lockable {
 
       return Promise.all(refPromises).then(() => entity);
     });
+  }
+
+  deleteTransaction<E extends Entity>(entity: E): Promise<E> {
+    const metadata = Metadata.get(entity);
+    if (metadata.id) {
+      this.transactionalDeleteEntities[metadata.id] = entity;
+    }
+    return Promise.resolve(entity);
   }
 
   /**
