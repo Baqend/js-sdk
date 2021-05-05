@@ -6,9 +6,8 @@ import {
   StatusCode
 } from '../lib/connector';
 
-import {EntityManager} from '../lib';
-import {Metadata} from "../lib/intersection";
-
+import { EntityManager } from '../lib';
+import { Metadata } from "../lib/intersection";
 
 /**
  * Transaction object class
@@ -16,7 +15,6 @@ import {Metadata} from "../lib/intersection";
  * @alias binding.Transaction
  */
 export class Transaction {
-
   public db: EntityManager = null as any;
 
   /**
@@ -28,11 +26,9 @@ export class Transaction {
    * Get Transaction Id
    */
   get txid(): string | null {
-    if (this.tid)
-      return this.tid;
+    if (this.tid) return this.tid;
     return null;
   }
-
 
   /**
    * The default constructor for creating Transaction  instance for the given EntityManager
@@ -42,7 +38,6 @@ export class Transaction {
     this.db = entityManager;
   }
 
-
   /**
    * Begin a transaction by creating a transaction id
    * @param doneCallback The callback is invoked after the sql executed
@@ -51,15 +46,11 @@ export class Transaction {
    * @return  A promise which will be fulfilled with a transaction id when successfully executed
    */
   begin(doneCallback?: any, failCallback?: any): Promise<string> {
-
-    if (this.tid)
-      return Promise.reject(Error(`Transaction already exist.. Please commit existing transaction first`));
+    if (this.tid) return Promise.reject(Error('Transaction already exist.. Please commit existing transaction first'));
 
     const txMessage = new message.NewTransaction()
       .responseType('json');
-    return this.db.send(txMessage).then((response) => {
-      return this.tid = response.headers.location.substring(response.headers.location.lastIndexOf('/', response.headers.location.length - 2) + 1);
-    }, (e) => {
+    return this.db.send(txMessage).then((response) => this.tid = response.headers.location.substring(response.headers.location.lastIndexOf('/', response.headers.location.length - 2) + 1), (e) => {
       if (e.status === StatusCode.OBJECT_NOT_FOUND) {
         return null;
       }
@@ -75,14 +66,18 @@ export class Transaction {
    * @return  A promise which will be fulfilled when commit transaction is successfully executed
    */
   commit(doneCallback?: any, failCallback?: any): Promise<Json> {
-
     if (!this.tid)
-      return Promise.reject(Error(`Transaction does not exist.. Please start a new transaction using transaction.begin`));
-    let list = this.db.transactionalEntities;
-    var jsonbody = "{\"writeSet\": [";
-    let array: string[] = [];
-    for (let key of Object.keys(list)) {
-      let val = list[key];
+    { return Promise.reject(Error('Transaction does not exist.. Please start a new transaction using transaction.begin')); }
+    const writeSetList = this.db.transactionalEntities;
+    const deleteSetList = this.db.transactionalDeleteEntities;
+    let jsonBody = '{';
+    let writeSetJson = '';
+    let deleteSetJson = '';
+    const writeArray = [];
+    const deleteArray = [];
+
+    for (const key of Object.keys(writeSetList)) {
+      const val = writeSetList[key];
       const state = Metadata.get(val);
       let json: JsonMap;
       // right now we send all the values irrespective whether it changed values or not
@@ -91,21 +86,48 @@ export class Transaction {
         json = state.type.toJsonValue(state, val, {
           persisting: true,
         }) as JsonMap;
-        array.push(JSON.stringify(json));
+        writeArray.push(JSON.stringify(json));
       }
     }
-    let body = array.join(",");
-    jsonbody += body;
-    jsonbody += "]}";
-    console.log("writeset --> " + jsonbody);
+
+    if (writeArray.length > 0) {
+      writeSetJson += '"writeSet": [';
+      const writeSetBody = writeArray.join(',');
+      writeSetJson += writeSetBody;
+      writeSetJson += ']';
+    }
+
+    for (const key of Object.keys(deleteSetList)) {
+      const state = Metadata.get(deleteSetList[key]);
+      let json;
+      if (state.isAvailable) {
+        // getting json will check all collections changes, therefore we must do it before proofing the dirty state
+        json = state.type.toJsonValue(state, deleteSetList[key], {
+          persisting: true,
+        });
+        deleteArray.push(JSON.stringify(json));
+      }
+    }
+
+    if (deleteArray.length > 0) {
+      writeSetJson += ',';
+      deleteSetJson += '"deleteSet": [';
+      const deleteSetBody = deleteArray.join(',');
+      deleteSetJson += deleteSetBody;
+      deleteSetJson += ']';
+    }
+
+    jsonBody += `${writeSetJson} ${deleteSetJson}}`;
+
+    console.log(`ResultSet --> ${jsonBody}`);
 
     this.db.transactionalEntities = {};
-    const sqlMessage = new message.CommitTransaction(this.tid, jsonbody)
+    this.db.transactionalDeleteEntities = {};
+
+    const sqlMessage = new message.CommitTransaction(this.tid, jsonBody)
       .responseType('json');
     this.tid = null;
-    return this.db.send(sqlMessage).then((response) => {
-      return response.entity;
-    }, (e) => {
+    return this.db.send(sqlMessage).then((response) => response.entity, (e) => {
       if (e.status === StatusCode.OBJECT_NOT_FOUND) {
         return null;
       }
