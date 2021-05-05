@@ -142,6 +142,51 @@ describe('Test Transaction', function() {
       });
     });
 
+    it('rollback updated records', function() {
+      return rootDb.transaction.begin().then( async function(txid) {
+        expect(txid).to.be.not.null;
+        await rootDb.PersonTable.find().equal('name', 'helloworld1').singleResult( (data) => {
+          if (data) {           
+            data.name = 'Umarou';
+            data.age = 40;
+            data.zip = 21147;
+            data.save();
+          } 
+          else {    
+            expect.fail("Expected to get a record but found none");
+          }    
+        });             
+    
+      }).then(function() {
+         //rollback with transaction ID: expected to succeed
+         rootDb.transaction.rollback().then(function(response) {
+           expect(response).to.be.empty;
+         },
+         function(failedResp) {
+           expect.fail("Wasn't expected to fail: "+failedResp);
+         });
+
+          //rollback with no transaction ID: expected to fail
+          rootDb.transaction.rollback().then(function(response) {
+              expect.fail("Wasn't expected to succeed");            
+          },
+            function(failedResp) {
+              expect(failedResp).to.be.eq("Nothing to do. Transaction does not exist");
+          });
+                     
+        //No record with name Umarou should be found in the db since update was rollbacked        
+        return rootDb.transaction.begin().then( async function(txid) {
+          expect(txid).to.be.not.null;
+          await rootDb.PersonTable.find().equal('name', 'Umarou').singleResult( (data) => {
+            if (data) {
+              expect.fail("Unexpected Data");
+            }
+          });            
+      
+        })
+      })
+    });
+
     it('No duplicate transaction check', function() {
       return rootDb.transaction.begin().then(function(txid) {
         expect(txid).to.be.not.null;

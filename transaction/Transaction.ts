@@ -112,4 +112,14 @@ export class Transaction {
       throw e;
     }).then(doneCallback, failCallback);
   }
+
+  rollback(doneCallback?: any, failCallback?: any): Promise<string> {
+    if (!this.tid)
+      return Promise.reject(Error("Nothing to do. Transaction does not exist"));
+    this.db.transactionalEntities = {};
+	  this.tid = null;
+ 
+    return Promise.resolve("");
+  }
+  
 }
