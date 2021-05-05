@@ -56,12 +56,6 @@ describe('Test Transaction', function () {
         rootDb.Student.find().equal('name', 'Test Student').singleResult((data) => {
           if (data) data.delete();
         });
-        rootDb.Address.find().equal('area', 'area_x').singleResult((data) => {
-          if (data) data.delete();
-        });
-        rootDb.Address.find().equal('area', 'area_y').singleResult((data) => {
-          if (data) data.delete();
-        });
       });
     });
   });
@@ -92,11 +86,11 @@ describe('Test Transaction', function () {
         tt2.save();
 
         let tt3 = rootDb.PersonTable();
-        tt2.id = '12345';
-        tt2.name = 'helloWorldDelete2';
-        tt2.age = 60;
-        tt2.zip = 5600089;
-        tt2.save();
+        tt3.id = '12345';
+        tt3.name = 'helloWorldDelete2';
+        tt3.age = 60;
+        tt3.zip = 5600089;
+        tt3.save();
 
         let st = rootDb.Student();
         st.id = '12121';
@@ -108,11 +102,11 @@ describe('Test Transaction', function () {
         return rootDb.transaction.commit().then(function (response) {
           console.log(response);
           expect(response).to.be.not.null;
-          expect(Object.keys(response).length).equals(4);
+          expect(Object.keys(response).length).equals(5);
         });
       }).catch(function(error) {
         console.log(`ERROR: ${JSON.stringify(error)}`);
-        expect.fail('No Error should have been thrown');
+        expect.fail('No Error should have been thrown' + error);
         //rootDb.transaction.rollback(txnObj);
       });
     });
@@ -193,7 +187,7 @@ describe('Test Transaction', function () {
         expect.fail('No Error should have been thrown here '+error);
         //rootDb.transaction.rollback(txnObj);
       });
-    });
+     });
     it('No duplicate transaction check', function () {
       return rootDb.transaction.begin().then(function (txid) {
         expect(txid).to.be.not.null;

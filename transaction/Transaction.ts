@@ -109,8 +109,9 @@ export class Transaction {
       }
     }
 
+    if (writeArray.length > 0 && deleteArray.length > 0) { writeSetJson += ','; }
+
     if (deleteArray.length > 0) {
-      writeSetJson += ',';
       deleteSetJson += '"deleteSet": [';
       const deleteSetBody = deleteArray.join(',');
       deleteSetJson += deleteSetBody;
