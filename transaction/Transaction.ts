@@ -102,7 +102,7 @@ export class Transaction {
       let json;
       if (state.isAvailable) {
         // getting json will check all collections changes, therefore we must do it before proofing the dirty state
-        json = state.type.toJsonValue(state, deleteSetList[key], {
+        json = state.type.toDeleteJsonValue(state, deleteSetList[key], {
           persisting: true,
         });
         deleteArray.push(JSON.stringify(json));

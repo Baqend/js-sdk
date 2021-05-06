@@ -340,6 +340,34 @@ export class EntityType<T extends Entity> extends ManagedType<T> {
     return null;
   }
 
+  toDeleteJsonValue(state: ManagedState, object: T | null,
+    options?: { excludeMetadata?: boolean, depth?: number | boolean, persisting?: boolean }): Json {
+    const { depth = 0, persisting = false } = options || {};
+    const isInDepth = depth === true || depth > -1;
+
+    // check if object is already loaded in state
+    const objectState = object && Metadata.get(object);
+    if (isInDepth && objectState && objectState.isAvailable) {
+      // serialize our properties
+      objectState.enable(false);
+      const json = super.toDeleteJsonValue(objectState, object, {
+        ...options,
+        persisting,
+        depth: typeof depth === 'boolean' ? depth : depth - 1,
+      });
+      objectState.enable(true);
+
+      return json;
+    }
+
+    if (state.db && object instanceof this.typeConstructor) {
+      object.attach(state.db);
+      return object.id;
+    }
+
+    return null;
+  }
+
   toString() {
     return `EntityType(${this.ref})`;
   }
