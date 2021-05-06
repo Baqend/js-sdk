@@ -140,6 +140,7 @@ export class Transaction {
     if (!this.tid)
       return Promise.reject(Error("Nothing to do. Transaction does not exist"));
     this.db.transactionalEntities = {};
+    this.db.transactionalDeleteEntities = {};
 	  this.tid = null;
  
     return Promise.resolve("");
