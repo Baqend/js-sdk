@@ -3,11 +3,11 @@ import {
 } from '../lib/util';
 import * as message from '../lib/message';
 import {
-  StatusCode
+  StatusCode, Message
 } from '../lib/connector';
 
-import { EntityManager } from '../lib';
-import { Metadata } from "../lib/intersection";
+import {EntityManager} from '../lib';
+import {Metadata} from "../lib/intersection";
 
 /**
  * Transaction object class
@@ -45,7 +45,7 @@ export class Transaction {
    * @param  failCallback The callback is invoked if any error occurred
    * @return  A promise which will be fulfilled with a transaction id when successfully executed
    */
-  begin(doneCallback?: any, failCallback?: any): Promise<string> {
+  async begin(doneCallback?: any, failCallback?: any): Promise<string> {
     if (this.tid) return Promise.reject(Error('Transaction already exist.. Please commit existing transaction first'));
 
     const txMessage = new message.NewTransaction()
@@ -60,14 +60,15 @@ export class Transaction {
 
   /**
    * Commits a transaction with a given transaction id
-   * @param doneCallback The callback is invoked after the sql executed
+   * @param doneCallback The callback is invoked after the transaction committed executed
    * successfully
    * @param  failCallback The callback is invoked if any error occurred
    * @return  A promise which will be fulfilled when commit transaction is successfully executed
    */
-  commit(doneCallback?: any, failCallback?: any): Promise<Json> {
-    if (!this.tid)
-    { return Promise.reject(Error('Transaction does not exist.. Please start a new transaction using transaction.begin')); }
+  async commit(doneCallback?: any, failCallback?: any): Promise<Json> {
+    if (!this.tid) {
+      return Promise.reject(Error('Transaction does not exist.. Please start a new transaction using transaction.begin'));
+    }
     const writeSetList = this.db.transactionalEntities;
     const deleteSetList = this.db.transactionalDeleteEntities;
     let jsonBody = '{';
@@ -109,7 +110,9 @@ export class Transaction {
       }
     }
 
-    if (writeArray.length > 0 && deleteArray.length > 0) { writeSetJson += ','; }
+    if (writeArray.length > 0 && deleteArray.length > 0) {
+      writeSetJson += ',';
+    }
 
     if (deleteArray.length > 0) {
       deleteSetJson += '"deleteSet": [';
@@ -121,19 +124,37 @@ export class Transaction {
     jsonBody += `${writeSetJson} ${deleteSetJson}}`;
 
     console.log(`ResultSet --> ${jsonBody}`);
-
-    this.db.transactionalEntities = {};
-    this.db.transactionalDeleteEntities = {};
-
     const sqlMessage = new message.CommitTransaction(this.tid, jsonBody)
       .responseType('json');
-    this.tid = null;
-    return this.db.send(sqlMessage).then((response) => response.entity, (e) => {
-      if (e.status === StatusCode.OBJECT_NOT_FOUND) {
-        return null;
-      }
-      throw e;
-    }).then(doneCallback, failCallback);
+
+
+    let data = await this.getResult(sqlMessage).catch(e => {
+      this.tid = null;
+      this.db.transactionalEntities = {};
+      this.db.transactionalDeleteEntities = {};
+    });
+
+    if (data){
+      this.tid = null;
+      this.db.transactionalEntities = {};
+      this.db.transactionalDeleteEntities = {};
+    }
+
+    return Promise.resolve(data).then(doneCallback,failCallback);
+
+ }
+
+  async getResult(sqlMessage: Message ) : Promise<Json>{
+    // Here’s the magic
+    let result = await this.db.send(sqlMessage).then((response) =>
+        response.entity
+      , (e) => {
+        if (e.status === StatusCode.OBJECT_NOT_FOUND) {
+          return null;
+        }
+        throw e;
+      });
+    return result;
   }
 
   rollback(doneCallback?: any, failCallback?: any): Promise<string> {
@@ -142,8 +163,8 @@ export class Transaction {
     this.db.transactionalEntities = {};
     this.db.transactionalDeleteEntities = {};
 	  this.tid = null;
- 
+
     return Promise.resolve("");
   }
-  
+
 }
