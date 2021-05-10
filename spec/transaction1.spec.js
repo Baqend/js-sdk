@@ -6,8 +6,9 @@ var emf, em;
 
 describe('More Transaction Tests', async function () {
     it('Updating a new object', async function () {
-        await connect();
-        produceMetaModel();
+        await connect(false);
+        await produceMetaModel();
+        await connect(true);
         await deleteStoreUpdate(false);
 
         // TODO: The following fails. Objects without IDs don't seem to be stored in transactions.
@@ -24,18 +25,25 @@ async function deleteStoreUpdate(transactional){
     await assertObjectExists("updated");
 }
 
-async function connect(){
-    emf = new DB.EntityManagerFactory(env.TEST_SERVER);
-    em = emf.createEntityManager();
+async function connect(withSchema){
+    if(withSchema){
+        emf = await new DB.EntityManagerFactory(env.TEST_SERVER);
+    } else {
+        emf = await new DB.EntityManagerFactory({ host: env.TEST_SERVER, schema: [], tokenStorage: helper.rootTokenStorage });
+    }
+    await emf.ready();
+    em = await emf.createEntityManager();
     await em.ready();
-    await login();
+    if(withSchema){
+        await login();
+    }
 }
 
 async function login(){
     await em.User.login('root', 'root');
 }
 
-function produceMetaModel(){
+async function produceMetaModel(){
     const metamodel = emf.metamodel;
     if(metamodel.entities["/db/Simple"] != null){
         return;
@@ -43,7 +51,7 @@ function produceMetaModel(){
     var simpletype = new DB.metamodel.EntityType('Simple', metamodel.entity(Object));
     metamodel.addType(simpletype );
     simpletype.addAttribute(new DB.metamodel.SingularAttribute('name', metamodel.baseType(String)));
-    metamodel.save();
+    await metamodel.save();
 }
 
 async function deleteAllObjects(){
