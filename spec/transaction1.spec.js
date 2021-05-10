@@ -28,16 +28,16 @@ async function connect(){
     emf = new DB.EntityManagerFactory(env.TEST_SERVER);
     em = emf.createEntityManager();
     await em.ready();
-    login();
+    await login();
 }
 
-function login(){
-    em.User.login('root', 'root');
+async function login(){
+    await em.User.login('root', 'root');
 }
 
 function produceMetaModel(){
     const metamodel = emf.metamodel;
-    if(metamodel.entities["Simple"] !== null){
+    if(metamodel.entities["/db/Simple"] != null){
         return;
     }
     var simpletype = new DB.metamodel.EntityType('Simple', metamodel.entity(Object));
