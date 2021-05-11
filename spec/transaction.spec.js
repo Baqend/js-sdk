@@ -174,17 +174,30 @@ describe('Test Transaction', function () {
       });
     });
 
-    it('rollback created records', function () {
-      return rootDb.transaction.begin().then(async function (txid) {
-        expect(txid).to.be.not.null;
+    async function createNewObject(withCommit, personName) {
+      return await rootDb.transaction.begin().then(function (txid) {
         const tt = rootDb.PersonTable();
-        tt.id = '890';
-        tt.name = 'Umarou';
-        tt.age = 32;
-        tt.zip = 5600081;
+        tt.id = '2911';
+        tt.name = personName;
+        tt.age = 45;
+        tt.zip = 21147;
         tt.save();
-        return Promise.resolve();
-      }).then(function () {
+      }).then(async function () {
+        if (!withCommit) {
+          return await rootDb.transaction.commit().then(function (response) {
+            console.log(response);
+            expect(response).to.be.not.null;
+            expect(Object.keys(response).length).equals(1);
+          });
+        }
+      }).catch(function (error) {
+		    expect.fail(`Failed to create object: ${error}`);
+      });
+    }
+
+    it('rollback created records', async function () {
+      const personName = "Umarou";
+      const constVoid = await createNewObject(true, personName); 
         // rollback with transaction ID: expected to succeed
         rootDb.transaction.rollback().then(function (response) {
           expect(response).to.be.empty;
@@ -204,13 +217,12 @@ describe('Test Transaction', function () {
         // No record with name Umarou should be found in the db since created record was rolled back
         return rootDb.transaction.begin().then(async function (txid) {
           expect(txid).to.be.not.null;
-          await rootDb.PersonTable.find().equal('name', 'Umarou').singleResult((data) => {
+          await rootDb.PersonTable.find().equal('name', personName).singleResult((data) => {
             if (data) {
               expect.fail('Unexpected Data');
             }
           });
           await rootDb.transaction.commit();
-        });
       });
     });
 
