@@ -12,7 +12,7 @@ describe('Still More Transaction Tests', async function () {
         await deleteStoreUpdate(false);
 
         // TODO: The following fails. Objects without IDs are not yet stored in transactions.
-        // await deleteStoreUpdate(true);
+        await deleteStoreUpdate(true);
 
     });
 });

@@ -32,31 +32,31 @@ describe('Test Transaction', function () {
     });
   });
 
-  beforeEach(function () {
+  beforeEach(async function () {
 
     const p1 = rootDb.PersonTable();
     p1.name = 'person1';
     p1.age = 30;
     p1.zip = 561030;
-    p1.save();
+    await p1.save();
 
     const p2 = rootDb.PersonTable();
     p2.name = 'person2';
     p2.age = 50;
     p2.zip = 561050;
-    p2.save();
+    await p2.save();
 
     const st1 = rootDb.Student();
     st1.name = 'student1';
     st1.address = 'home';
     st1.person = p1;
-    st1.save();
+    await st1.save();
 
     const st2 = rootDb.Student();
     st2.name = 'student2';
     st2.address = 'home';
     st2.person = p2;
-    st2.save();
+    await st2.save();
 
     console.log("calling before each ");
   })
