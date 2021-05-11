@@ -647,15 +647,10 @@ export class EntityManager extends Lockable {
    */
   saveTransaction<E extends Entity>(entity: E): Promise<E> {
     const metadata = Metadata.get(entity);
-    if (metadata.id) {
-      this.transactionalEntities[metadata.id] = entity;
+    if (! metadata.id) {
+      metadata.id = `${DB_PREFIX + metadata.type.name}/${uuid()}`;
     }
-    else
-    {
-      const randomid = Math.floor(Math.random()*1000000000);
-      entity.id = randomid.toString();
-      this.transactionalEntities[randomid.toString()] = entity;
-    }
+    this.transactionalEntities[metadata.id] = entity;
     return Promise.resolve(entity);
   }
 
