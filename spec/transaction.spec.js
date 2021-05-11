@@ -23,70 +23,66 @@ describe('Test Transaction', function () {
   });
 
   before(function () {
+    console.log("calling begin");
     emf = new DB.EntityManagerFactory(env.TEST_SERVER);
     return emf.createEntityManager().ready().then(function (em) {
       return em.User.login('root', 'root').then(function () {
         rootDb = em;
-        rootDb.PersonTable.find().equal('name', 'helloworld1').singleResult((data) => {
-          if (data) data.delete();
-        });
-        rootDb.PersonTable.find().equal('name', 'helloworld2').singleResult((data) => {
-          if (data) data.delete();
-        });
-        rootDb.PersonTable.find().equal('name', 'helloworld3').singleResult((data) => {
-          if (data) data.delete();
-        });
-        rootDb.Student.find().equal('name', 'Test Student').singleResult((data) => {
-          if (data) data.delete();
-        });
-        rootDb.Student.find().equal('name', 'Student_X').singleResult((data) => {
-          if (data) data.delete();
-        });
-        rootDb.Student.find().equal('name', 'person1').singleResult((data) => {
-          if (data) data.delete();
-        });
       });
     });
   });
+
+  beforeEach(function () {
+
+    const p1 = rootDb.PersonTable();
+    p1.name = 'person1';
+    p1.age = 30;
+    p1.zip = 561030;
+    p1.save();
+
+    const p2 = rootDb.PersonTable();
+    p2.name = 'person2';
+    p2.age = 50;
+    p2.zip = 561050;
+    p2.save();
+
+    const st1 = rootDb.Student();
+    st1.name = 'student1';
+    st1.address = 'home';
+    st1.person = p1;
+    st1.save();
+
+    const st2 = rootDb.Student();
+    st2.name = 'student2';
+    st2.address = 'home';
+    st2.person = p2;
+    st2.save();
+
+    console.log("calling before each ");
+  })
 
   describe('Transaction Begin and Commit', function () {
     it('Insert new records', function () {
       return rootDb.transaction.begin().then(function (txid) {
         expect(txid).to.be.not.null;
-        const tt = rootDb.PersonTable();
-        tt.id = '890';
-        tt.name = 'helloworld1';
-        tt.age = 32;
-        tt.zip = 5600081;
-        tt.save();
+        const p3 = rootDb.PersonTable();
+        p3.name = 'person3';
+        p3.age = 30;
+        p3.zip = 561093;
+        p3.save();
 
-        const tt1 = rootDb.PersonTable();
-        tt1.id = '123';
-        tt1.name = 'helloworld2';
-        tt1.age = 50;
-        tt1.zip = 5600082;
-        tt1.save();
-
-        const st = rootDb.Student();
-        st.id = '12121';
-        st.name = 'Test Student';
-        st.address = 'home';
-        st.person = tt1;
-        st.save();
-
-        const st1 = rootDb.Student();
-        st1.id = '111';
-        st1.name = 'Student_X';
-        st1.address = 'Area_X';
-        st1.person = tt;
-        st1.save();
+        const s3 = rootDb.Student();
+        s3.name = 'student3';
+        s3.address = 'area_z';
+        s3.person = p3;
+        s3.save();
 
         return Promise.resolve();
       }).then(function () {
         return rootDb.transaction.commit().then(function (response) {
           console.log(response);
           expect(response).to.be.not.null;
-          expect(Object.keys(response).length).equals(4);
+          expect(Object.keys(response).length).equals(2);
         });
       }).catch(function (error) {
         console.log(`ERROR: ${JSON.stringify(error)}`);
@@ -97,45 +93,32 @@ describe('Test Transaction', function () {
 
     it('Update existing records', function () {
       return rootDb.transaction.begin().then(async function (txid) {
-        await rootDb.PersonTable.find().equal('name', 'helloworld1').singleResult((data) => {
-          if (data) {
-            data.name = 'helloworld1';
+        await rootDb.PersonTable.find().equal('name', 'person1').singleResult((data) => {
+            data.name = 'person1';
             data.age = 33;
             data.zip = 5600091;
             data.save();
-          }
         });
 
-        await rootDb.PersonTable.find().equal('name', 'helloworld2').singleResult((data) => {
-          if (data) {
-            data.name = 'helloworld2';
+        await rootDb.PersonTable.find().equal('name', 'person2').singleResult((data) => {
+            data.name = 'person2';
             data.age = 51;
             data.zip = 5600092;
             data.save();
-          }
         });
 
-        await rootDb.Student.find().equal('name', 'Test Student').singleResult((data) => {
-          if (data) {
-            data.name = 'Test Student';
+        await rootDb.Student.find().equal('name', 'student1').singleResult((data) => {
+            data.name = 'student1';
             data.address = 'office';
             data.save();
-          }
         });
-
-        const tt = rootDb.PersonTable();
-        tt.id = '777';
-        tt.name = 'helloworld3';
-        tt.age = 54;
-        tt.zip = 82547;
-        tt.save();
 
         return Promise.resolve();
       }).then(function () {
         return rootDb.transaction.commit().then(function (response) {
           console.log(response);
           expect(response).to.be.not.null;
-          expect(Object.keys(response).length).equals(4);
+          expect(Object.keys(response).length).equals(3);
         });
       }).catch(function (error) {
         console.log(`ERROR: ${JSON.stringify(error)}`);
@@ -144,28 +127,22 @@ describe('Test Transaction', function () {
       });
     });
 
-    it('Create and Delete record', function () {
+    it('Delete records', function () {
       return rootDb.transaction.begin().then(async function (txid) {
         expect(txid).to.be.not.null;
 
-        const p1 = rootDb.PersonTable();
-        p1.id = '101';
-        p1.name = 'person1';
-        p1.age = 36;
-        p1.zip = 210103;
-        p1.save();
-
-        await rootDb.Student.find().equal('name', 'Student_X').singleResult((data) => {
-          if (data) {
+        await rootDb.PersonTable.find().equal('name', 'person1').singleResult((data) => {
             data.delete();
-          }
+        });
+        await rootDb.Student.find().equal('name', 'student1').singleResult((data) => {
+            data.delete();
         });
         return Promise.resolve();
       }).then(function () {
         return rootDb.transaction.commit().then(function (response) {
           console.log(response);
           expect(response).to.be.not.null;
-          expect(Object.keys(response).length).equals(1);
+          expect(Object.keys(response).length).equals(0);
         });
       }).catch(function (error) {
         console.log(`ERROR: ${JSON.stringify(error)}`);
@@ -187,19 +164,19 @@ describe('Test Transaction', function () {
       }).then(function () {
         // rollback with transaction ID: expected to succeed
         rootDb.transaction.rollback().then(function (response) {
-          expect(response).to.be.empty;
-        },
-        function (failedResp) {
-          expect.fail(`Wasn't expected to fail: ${failedResp}`);
-        });
+              expect(response).to.be.empty;
+            },
+            function (failedResp) {
+              expect.fail(`Wasn't expected to fail: ${failedResp}`);
+            });
 
         // rollback with no transaction ID: expected to fail
         rootDb.transaction.rollback().then(function (response) {
-          expect.fail("Wasn't expected to succeed");
-        },
-        function (failedResp) {
-          expect(failedResp).to.be.eq('Nothing to do. Transaction does not exist');
-        });
+              expect.fail("Wasn't expected to succeed");
+            },
+            function (failedResp) {
+              expect(failedResp).to.be.eq('Nothing to do. Transaction does not exist');
+            });
 
         // No record with name Umarou should be found in the db since created record was rolled back
         return rootDb.transaction.begin().then(async function (txid) {
@@ -228,5 +205,20 @@ describe('Test Transaction', function () {
         });
       });
     });
+  });
+  afterEach(async function () {
+
+    await rootDb.PersonTable.find().resultList((result) => {
+      result.forEach(async (c) => {
+        await c.delete();
+      });
+    });
+
+    await rootDb.Student.find().resultList((result) => {
+      result.forEach(async (c) => {
+        await c.delete();
+      });
+    });
+
   });
 });
