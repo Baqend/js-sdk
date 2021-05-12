@@ -23,7 +23,7 @@ describe('Test Transaction', function () {
   });
 
   before(function () {
-    console.log("calling begin");
+    console.log('calling begin');
     emf = new DB.EntityManagerFactory(env.TEST_SERVER);
     return emf.createEntityManager().ready().then(function (em) {
       return em.User.login('root', 'root').then(function () {
@@ -33,7 +33,6 @@ describe('Test Transaction', function () {
   });
 
   beforeEach(async function () {
-
     const p1 = rootDb.PersonTable();
     p1.name = 'person1';
     p1.age = 30;
@@ -58,8 +57,8 @@ describe('Test Transaction', function () {
     st2.person = p2;
     await st2.save();
 
-    console.log("calling before each ");
-  })
+    console.log('calling before each ');
+  });
 
   describe('Transaction Begin and Commit', function () {
     it('Insert new records without ID', function () {
@@ -138,23 +137,23 @@ describe('Test Transaction', function () {
     it('Update existing records', function () {
       return rootDb.transaction.begin().then(async function (txid) {
         await rootDb.PersonTable.find().equal('name', 'person1').singleResult((data) => {
-            data.name = 'person1';
-            data.age = 33;
-            data.zip = 5600091;
-            data.save();
+          data.name = 'person1';
+          data.age = 33;
+          data.zip = 5600091;
+          data.save();
         });
 
         await rootDb.PersonTable.find().equal('name', 'person2').singleResult((data) => {
-            data.name = 'person2';
-            data.age = 51;
-            data.zip = 5600092;
-            data.save();
+          data.name = 'person2';
+          data.age = 51;
+          data.zip = 5600092;
+          data.save();
         });
 
         await rootDb.Student.find().equal('name', 'student1').singleResult((data) => {
-            data.name = 'student1';
-            data.address = 'office';
-            data.save();
+          data.name = 'student1';
+          data.address = 'office';
+          data.save();
         });
 
         return Promise.resolve();
@@ -176,10 +175,10 @@ describe('Test Transaction', function () {
         expect(txid).to.be.not.null;
 
         await rootDb.PersonTable.find().equal('name', 'person1').singleResult((data) => {
-            data.delete();
+          data.delete();
         });
         await rootDb.Student.find().equal('name', 'student1').singleResult((data) => {
-            data.delete();
+          data.delete();
         });
         return Promise.resolve();
       }).then(function () {
@@ -208,19 +207,19 @@ describe('Test Transaction', function () {
       }).then(function () {
         // rollback with transaction ID: expected to succeed
         rootDb.transaction.rollback().then(function (response) {
-              expect(response).to.be.empty;
-            },
-            function (failedResp) {
-              expect.fail(`Wasn't expected to fail: ${failedResp}`);
-            });
+          expect(response).to.be.empty;
+        },
+        function (failedResp) {
+          expect.fail(`Wasn't expected to fail: ${failedResp}`);
+        });
 
         // rollback with no transaction ID: expected to fail
         rootDb.transaction.rollback().then(function (response) {
-              expect.fail("Wasn't expected to succeed");
-            },
-            function (failedResp) {
-              expect(failedResp).to.be.eq('Nothing to do. Transaction does not exist');
-            });
+          expect.fail("Wasn't expected to succeed");
+        },
+        function (failedResp) {
+          expect(failedResp).to.be.eq('Nothing to do. Transaction does not exist');
+        });
 
         // No record with name Umarou should be found in the db since created record was rolled back
         return rootDb.transaction.begin().then(async function (txid) {
@@ -241,17 +240,16 @@ describe('Test Transaction', function () {
         rootDb.transaction.begin().then(function () {
           expect.fail('Transaction begin should have failed');
         }).catch(function (error) {
-          expect(error).to.throw(Error('Transaction already exist.. Please commit existing transaction first'));
-          return rootDb.transaction.commit().then(function (response) {
+          rootDb.transaction.commit().then(function (response) {
             console.log(response);
             expect(response).to.be.not.null;
           });
+          expect(error).to.throw(Error('Transaction already exist.. Please commit existing transaction first'));
         });
       });
     });
   });
   afterEach(async function () {
-
     await rootDb.PersonTable.find().resultList((result) => {
       result.forEach(async (c) => {
         await c.delete();
@@ -263,6 +261,5 @@ describe('Test Transaction', function () {
         await c.delete();
       });
     });
-
   });
 });
