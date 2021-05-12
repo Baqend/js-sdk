@@ -48,7 +48,7 @@ describe('Test Transaction', function () {
       });
     });
   });
-
+/*
   describe('Transaction Begin and Commit', function () {
     it('Insert new records', function () {
       return rootDb.transaction.begin().then(function (txid) {
@@ -173,7 +173,7 @@ describe('Test Transaction', function () {
         // rootDb.transaction.rollback(txnObj);
       });
     });
-
+*/
     async function createNewObject(withCommit, personName) {
       return await rootDb.transaction.begin().then(function (txid) {
         const tt = rootDb.PersonTable();
@@ -183,10 +183,8 @@ describe('Test Transaction', function () {
         tt.zip = 21147;
         tt.save();
       }).then(async function () {
-        if (!withCommit) {
+        if (withCommit) {
           return await rootDb.transaction.commit().then(function (response) {
-            console.log(response);
-            expect(response).to.be.not.null;
             expect(Object.keys(response).length).equals(1);
           });
         }
@@ -198,7 +196,6 @@ describe('Test Transaction', function () {
     it('rollback created records', async function () {
       const personName = "Umarou";
       const constVoid = await createNewObject(true, personName); 
-        // rollback with transaction ID: expected to succeed
         rootDb.transaction.rollback().then(function (response) {
           expect(response).to.be.empty;
         },
@@ -214,19 +211,24 @@ describe('Test Transaction', function () {
           expect(failedResp).to.be.eq('Nothing to do. Transaction does not exist');
         });
 
-        // No record with name Umarou should be found in the db since created record was rolled back
+        // No record with name $personName should be found in the db since created record was rolled back
         return rootDb.transaction.begin().then(async function (txid) {
           expect(txid).to.be.not.null;
           await rootDb.PersonTable.find().equal('name', personName).singleResult((data) => {
             if (data) {
               expect.fail('Unexpected Data');
             }
-          });
-          await rootDb.transaction.commit();
+          });          
+      }).then(function () {
+          return rootDb.transaction.commit().then(function (response) {
+            expect(response.length).equals(0);
+        });
+      }).catch(function (error) {
+          expect.fail(`No exception expected ${error}`);
       });
     });
 
-    it('No duplicate transaction check', function () {
+/*    it('No duplicate transaction check', function () {
       return rootDb.transaction.begin().then(function (txid) {
         expect(txid).to.be.not.null;
         rootDb.transaction.begin().then(function () {
@@ -239,6 +241,6 @@ describe('Test Transaction', function () {
           });
         });
       });
-    });
+    }); */
   });
 });
