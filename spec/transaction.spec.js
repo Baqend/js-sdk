@@ -48,7 +48,7 @@ describe('Test Transaction', function () {
       });
     });
   });
-/*
+
   describe('Transaction Begin and Commit', function () {
     it('Insert new records', function () {
       return rootDb.transaction.begin().then(function (txid) {
@@ -173,7 +173,7 @@ describe('Test Transaction', function () {
         // rootDb.transaction.rollback(txnObj);
       });
     });
-*/
+
     async function createNewObject(withCommit, personName) {
       return await rootDb.transaction.begin().then(function (txid) {
         const tt = rootDb.PersonTable();
@@ -195,7 +195,7 @@ describe('Test Transaction', function () {
 
     it('rollback created records', async function () {
       const personName = "Umarou";
-      const constVoid = await createNewObject(true, personName); 
+      const constVoid = await createNewObject(false, personName); 
         rootDb.transaction.rollback().then(function (response) {
           expect(response).to.be.empty;
         },
