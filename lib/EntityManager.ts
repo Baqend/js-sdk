@@ -459,6 +459,15 @@ export class EntityManager extends Lockable {
   }
 
   /**
+   * returns an entity by id
+   * @param id - the id
+   * @returns Entity - the Entity or null
+   */
+  entityById(id: string): Entity {
+    return this.entities[id];
+  }
+
+  /**
    * Remove the given entity from the persistence context, causing a managed entity to become detached
    *
    * Unflushed changes made to the entity if any (including removal of the entity),
@@ -651,6 +660,7 @@ export class EntityManager extends Lockable {
       metadata.id = `${DB_PREFIX + metadata.type.name}/${uuid()}`;
     }
     this.transactionalEntities[metadata.id] = entity;
+    this._attach(entity);
     return Promise.resolve(entity);
   }
 
@@ -950,7 +960,7 @@ export class EntityManager extends Lockable {
     }
   }
 
-  private _attach(entity: Entity) {
+  _attach(entity: Entity) {
     const metadata = Metadata.get(entity);
     if (metadata.isAttached) {
       if (metadata.db !== this) {
