@@ -62,7 +62,7 @@ describe('Test Transaction', function () {
   })
 
   describe('Transaction Begin and Commit', function () {
-    it('Insert new records', function () {
+    it('Insert new records without ID', function () {
       return rootDb.transaction.begin().then(function (txid) {
         expect(txid).to.be.not.null;
         const p3 = rootDb.PersonTable();
@@ -70,6 +70,12 @@ describe('Test Transaction', function () {
         p3.age = 30;
         p3.zip = 561093;
         p3.save();
+
+        const p4 = rootDb.PersonTable();
+        p4.name = 'person4';
+        p4.age = 40;
+        p4.zip = 561040;
+        p4.save();
 
         const s3 = rootDb.Student();
         s3.name = 'student3';
@@ -82,7 +88,45 @@ describe('Test Transaction', function () {
         return rootDb.transaction.commit().then(function (response) {
           console.log(response);
           expect(response).to.be.not.null;
-          expect(Object.keys(response).length).equals(2);
+          expect(Object.keys(response).length).equals(3);
+        });
+      }).catch(function (error) {
+        console.log(`ERROR: ${JSON.stringify(error)}`);
+        expect.fail('No Error should have been thrown');
+        // rootDb.transaction.rollback(txnObj);
+      });
+    });
+
+    it('Insert new records with ID', function () {
+      return rootDb.transaction.begin().then(function (txid) {
+        expect(txid).to.be.not.null;
+        const p3 = rootDb.PersonTable();
+        p3.id = '600';
+        p3.name = 'person6';
+        p3.age = 30;
+        p3.zip = 561093;
+        p3.save();
+
+        const p4 = rootDb.PersonTable();
+        p4.id = '601';
+        p4.name = 'person7';
+        p4.age = 40;
+        p4.zip = 561040;
+        p4.save();
+
+        const s3 = rootDb.Student();
+        s3.id = '603';
+        s3.name = 'student6';
+        s3.address = 'area_z';
+        s3.person = p3;
+        s3.save();
+
+        return Promise.resolve();
+      }).then(function () {
+        return rootDb.transaction.commit().then(function (response) {
+          console.log(response);
+          expect(response).to.be.not.null;
+          expect(Object.keys(response).length).equals(3);
         });
       }).catch(function (error) {
         console.log(`ERROR: ${JSON.stringify(error)}`);
