@@ -10,10 +10,7 @@ describe('Still More Transaction Tests', async function () {
         await produceMetaModel();
         await connect(true);
         await deleteStoreUpdate(false);
-
-        // TODO: The following fails. Objects without IDs are not yet stored in transactions.
         await deleteStoreUpdate(true);
-
     });
 });
 
