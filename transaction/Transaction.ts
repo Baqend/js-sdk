@@ -173,6 +173,7 @@ export class Transaction {
               if (state.id && state.id !== mappedId) {
                 this.db.removeReference(entity);
                 state.id = mappedId;
+                state.decodedKey = null;
                 this.db._attach(entity);
               }
             }
