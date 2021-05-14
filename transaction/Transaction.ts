@@ -160,9 +160,9 @@ export class Transaction {
       const entries = Object.entries(data);
       for(let idx=0; idx < entries.length; idx ++){
         let str = JSON.stringify(entries[idx][1]);
-        let colonPos = str.indexOf(":");  // colon
+        let colonPos = str.indexOf("%3A");  // colon
         if(colonPos){
-          let oldId = str.substring(2, colonPos-1);
+          let oldId = str.substring(2, colonPos);
           let path = oldId.substring(0, oldId.lastIndexOf("/") + 1);
           let quotePos = str.indexOf('"', colonPos + 3);
           let mappedId = path + str.substring(colonPos + 3, quotePos);
