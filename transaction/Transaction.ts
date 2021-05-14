@@ -123,11 +123,16 @@ export class Transaction {
 
     jsonBody += `${writeSetJson} ${deleteSetJson}}`;
 
+    this.tid = null;
+    this.db.transactionalEntities = {};
+    this.db.transactionalDeleteEntities = {};
+
     console.log(`ResultSet --> ${jsonBody}`);
     const sqlMessage = new message.CommitTransaction(this.tid, jsonBody)
       .responseType('json');
 
-
+     let data = await this.getResult(sqlMessage);
+/*
     let data = await this.getResult(sqlMessage).catch(e => {
       this.tid = null;
       this.db.transactionalEntities = {};
@@ -139,7 +144,7 @@ export class Transaction {
       this.db.transactionalEntities = {};
       this.db.transactionalDeleteEntities = {};
     }
-
+*/
     return Promise.resolve(data).then(doneCallback,failCallback);
 
  }

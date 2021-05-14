@@ -38,7 +38,18 @@ describe('Test Transaction', function () {
   });
 
   async function createTestObjects() {
-   // return await rootDb.transaction.begin().then(async function (txid) {
+     await rootDb.PersonTable.find().resultList((result) => {
+       result.forEach(async (c) => {
+         await c.delete();
+       });
+     });
+
+     await rootDb.Student.find().resultList((result) => {
+       result.forEach(async (c) => {
+         await c.delete();
+       });
+     }); 
+
       const p1 = rootDb.PersonTable();
       p1.name = 'person1';
       p1.age = 30;
@@ -62,16 +73,6 @@ describe('Test Transaction', function () {
       st2.address = 'home';
       st2.person = p2;
       await st2.save();
-     // return Promise.resolve();
-   /* }).then(async function () {
-        return await rootDb.transaction.commit().then(function (response) {
-          if (Object.keys(response).length != 4)
-          expect(error).to.throw(Error('Unexpected number of objects created'));
-        });      
-    }).catch(function (error) {
-      expect(error).to.throw(Error('Exception in creating test objects'));
-    });
-    */
   }
 
   describe('Transaction Begin and Commit', function () {
@@ -98,10 +99,28 @@ describe('Test Transaction', function () {
 
         return Promise.resolve();
       }).then(function () {
-        return rootDb.transaction.commit().then(function (response) {
+        return rootDb.transaction.commit().then(async function (response) {
           console.log(response);
           expect(response).to.be.not.null;
           expect(Object.keys(response).length).equals(3);
+
+          await rootDb.PersonTable.find().equal('name', 'person3').singleResult((data) => {
+            if (!data) {
+              expect.fail("Failed to insert Person with name person3")
+            }
+          });
+
+          await rootDb.PersonTable.find().equal('name', 'person4').singleResult((data) => {
+            if (!data) {
+              expect.fail("Failed to insert Person with name person4")
+            }
+          });
+
+          await rootDb.Student.find().equal('name', 'student3').singleResult((data) => {
+            if (!data) {
+               expect.fail("Failed to insert Student with name student3")
+            }
+          });
         });
       }).catch(function (error) {
         console.log(`ERROR: ${JSON.stringify(error)}`);
@@ -133,6 +152,13 @@ describe('Test Transaction', function () {
         s3.address = 'area_z';
         s3.person = p3;
         s3.save();
+
+        const s4 = rootDb.Student();
+        s4.id = '603';
+        s4.name = 'student7';
+        s4.address = 'area_z';
+        s4.person = p3;
+        s4.save();
 
         return Promise.resolve();
       }).then(function () {
@@ -226,10 +252,21 @@ describe('Test Transaction', function () {
         });
         return Promise.resolve();
       }).then(function () {
-        return rootDb.transaction.commit().then(function (response) {
+        return rootDb.transaction.commit().then(async function (response) {
           console.log(response);
           expect(response).to.be.not.null;
           expect(Object.keys(response).length).equals(0);
+          await rootDb.PersonTable.find().equal('name', 'person1').singleResult((data) => {
+            if (data) {
+              expect.fail("Person1 is expected to have been deleted")
+            }
+          });
+
+          await rootDb.Student.find().equal('name', 'student1').singleResult((data) => {
+            if (data) {
+               expect.fail("Student1 is expected to have been deleted")
+            }
+          });
         });
       }).catch(function (error) {
         console.log(`ERROR: ${JSON.stringify(error)}`);
@@ -267,7 +304,7 @@ describe('Test Transaction', function () {
           expect.fail(`Wasn't expected to fail: ${failedResp}`);
         });
 
-        // rollback with no transaction ID: expected to fail
+        //rollback with no transaction ID: expected to fail
         rootDb.transaction.rollback().then(function (response) {
           expect.fail("Wasn't expected to succeed");
         },
@@ -306,18 +343,5 @@ describe('Test Transaction', function () {
         });
       });
     });
-  });
-  afterEach(async function () {
-    await rootDb.PersonTable.find().resultList((result) => {
-      result.forEach(async (c) => {
-        await c.delete();
-      });
-    });
-
-    await rootDb.Student.find().resultList((result) => {
-      result.forEach(async (c) => {
-        await c.delete();
-      });
-    }); 
   });
 });
