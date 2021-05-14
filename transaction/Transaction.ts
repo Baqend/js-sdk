@@ -84,10 +84,19 @@ export class Transaction {
       // right now we send all the values irrespective whether it changed values or not
       if (state.isAvailable) {
         // getting json will check all collections changes, therefore we must do it before proofing the dirty state
-        json = state.type.toJsonValue(state, val, {
-          persisting: true,
-        }) as JsonMap;
-        writeArray.push(JSON.stringify(json));
+        try {
+          json = state.type.toJsonValue(state, val, {
+            persisting: true,
+          }) as JsonMap;
+          writeArray.push(JSON.stringify(json));
+        }
+        catch (e)
+        {
+          this.tid = null;
+          this.db.transactionalEntities = {};
+          this.db.transactionalDeleteEntities = {};
+          throw e;
+        }
       }
     }
 
@@ -103,10 +112,19 @@ export class Transaction {
       let json;
       if (state.isAvailable) {
         // getting json will check all collections changes, therefore we must do it before proofing the dirty state
-        json = state.type.toDeleteJsonValue(state, deleteSetList[key], {
-          persisting: true,
-        });
-        deleteArray.push(JSON.stringify(json));
+        try {
+          json = state.type.toDeleteJsonValue(state, deleteSetList[key], {
+            persisting: true,
+          });
+          deleteArray.push(JSON.stringify(json));
+        }
+        catch (e)
+        {
+          this.tid = null;
+          this.db.transactionalEntities = {};
+          this.db.transactionalDeleteEntities = {};
+          throw e;
+        }
       }
     }
 
@@ -142,9 +160,9 @@ export class Transaction {
       const entries = Object.entries(data);
       for(let idx=0; idx < entries.length; idx ++){
         let str = JSON.stringify(entries[idx][1]);
-        let colonPos = str.indexOf("%3A");  // colon
+        let colonPos = str.indexOf(":");  // colon
         if(colonPos){
-          let oldId = str.substring(2, colonPos);
+          let oldId = str.substring(2, colonPos-1);
           let path = oldId.substring(0, oldId.lastIndexOf("/") + 1);
           let quotePos = str.indexOf('"', colonPos + 3);
           let mappedId = path + str.substring(colonPos + 3, quotePos);
