@@ -150,6 +150,7 @@ export class Transaction {
       .responseType('json');
 
      let data = await this.getResult(sqlMessage);
+     if (data) {
       const entries = Object.entries(data);
       for(let idx=0; idx < entries.length; idx ++){
         let str = JSON.stringify(entries[idx][1]);
@@ -176,7 +177,6 @@ export class Transaction {
     }
 
     return Promise.resolve(data).then(doneCallback,failCallback);
-
  }
 
   async getResult(sqlMessage: Message ) : Promise<Json>{
