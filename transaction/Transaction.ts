@@ -132,19 +132,7 @@ export class Transaction {
       .responseType('json');
 
      let data = await this.getResult(sqlMessage);
-/*
-    let data = await this.getResult(sqlMessage).catch(e => {
-      this.tid = null;
-      this.db.transactionalEntities = {};
-      this.db.transactionalDeleteEntities = {};
-    });
 
-    if (data){
-      this.tid = null;
-      this.db.transactionalEntities = {};
-      this.db.transactionalDeleteEntities = {};
-    }
-*/
     return Promise.resolve(data).then(doneCallback,failCallback);
 
  }

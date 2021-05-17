@@ -4,9 +4,9 @@ if (typeof module !== 'undefined') {
 
 describe('Test Transaction', function () {
   var emf, metamodel, rootDb;
-  before(function () {
-    var personType, studentType;
+  var personType, studentType;
 
+  before(function () {
     emf = new DB.EntityManagerFactory({ host: env.TEST_SERVER, schema: [], tokenStorage: helper.rootTokenStorage });
     metamodel = emf.metamodel;
     metamodel.addType(personType = new DB.metamodel.EntityType('PersonTable', metamodel.entity(Object)));
@@ -33,23 +33,23 @@ describe('Test Transaction', function () {
   });
 
   beforeEach(async function () {
+    await rootDb.PersonTable.find().resultList((result) => {
+      result.forEach(async (c) => {
+        await c.delete();
+      });
+    });
+
+    await rootDb.Student.find().resultList((result) => {
+      result.forEach(async (c) => {
+        await c.delete();
+      });
+    }); 
+
     await createTestObjects();
     console.log('calling before each ');
   });
 
-  async function createTestObjects() {
-     await rootDb.PersonTable.find().resultList((result) => {
-       result.forEach(async (c) => {
-         await c.delete();
-       });
-     });
-
-     await rootDb.Student.find().resultList((result) => {
-       result.forEach(async (c) => {
-         await c.delete();
-       });
-     }); 
-
+  async function createTestObjects() { 
       const p1 = rootDb.PersonTable();
       p1.name = 'person1';
       p1.age = 30;
@@ -152,14 +152,6 @@ describe('Test Transaction', function () {
         s3.address = 'area_z';
         s3.person = p3;
         s3.save();
-
-        const s4 = rootDb.Student();
-        s4.id = '603';
-        s4.name = 'student7';
-        s4.address = 'area_z';
-        s4.person = p3;
-        s4.save();
-
         return Promise.resolve();
       }).then(function () {
         return rootDb.transaction.commit().then(async function (response) {
@@ -182,10 +174,45 @@ describe('Test Transaction', function () {
       }).catch(function (error) {
         console.log(`ERROR: ${JSON.stringify(error)}`);
         expect.fail('No Error should have been thrown');
-        // rootDb.transaction.rollback(txnObj);
       });
     });
 
+    /*
+    it('Insert records with same ID', function () {
+      return rootDb.transaction.begin().then(function (txid) {
+        expect(txid).to.be.not.null;
+
+        const p = rootDb.PersonTable();
+        p.name = 'person10';
+        p.age = 44;
+        p.zip = 561077;
+        p.save();
+
+        const s = rootDb.Student();
+        s.id = '711';
+        s.name = 'student8';
+        s.address = 'Hamburg';
+        s.person = p;
+        s.save();
+
+        const s1 = rootDb.Student();
+        s1.id = '711';
+        s1.name = 'student9';
+        s1.address = 'New York';
+        s1.person = p;
+        s1.save();
+        
+        return Promise.resolve();
+      }).then(function () {
+        return rootDb.transaction.commit().then(async function (response) {
+          expect.fail('Expected to fail -> 2 objects created with same ID');
+        });
+      }).catch(function (error) {
+        expect(error).to.be.not.null;
+        //check the exact exception
+      });
+    });
+  */
     it('Update existing records', function () {
       return rootDb.transaction.begin().then(async function (txid) {
         await rootDb.PersonTable.find().equal('name', 'person1').singleResult((data) => {
@@ -240,6 +267,7 @@ describe('Test Transaction', function () {
       });
     });
 
+    
     it('Delete records', function () {
       return rootDb.transaction.begin().then(async function (txid) {
         expect(txid).to.be.not.null;
@@ -271,11 +299,10 @@ describe('Test Transaction', function () {
       }).catch(function (error) {
         console.log(`ERROR: ${JSON.stringify(error)}`);
         expect.fail(`No Error should have been thrown here ${error}`);
-        // rootDb.transaction.rollback(txnObj);
       });
     });
 
-    async function createNewObject(withCommit, personName) {
+    async function createNewPerson(withCommit, personName) {
       return await rootDb.transaction.begin().then(function (txid) {
         const tt = rootDb.PersonTable();
         tt.id = '2911';
@@ -283,6 +310,7 @@ describe('Test Transaction', function () {
         tt.age = 45;
         tt.zip = 21147;
         tt.save();
+        return Promise.resolve();
       }).then(async function () {
         if (withCommit) {
           return await rootDb.transaction.commit().then(function (response) {
@@ -296,7 +324,7 @@ describe('Test Transaction', function () {
 
     it('rollback created records', async function () {
       const personName = "Umarou";
-      const constVoid = await createNewObject(false, personName); 
+      const constVoid = await createNewPerson(false, personName); 
         rootDb.transaction.rollback().then(function (response) {
           expect(response).to.be.empty;
         },
@@ -321,11 +349,27 @@ describe('Test Transaction', function () {
             }
           });          
       }).then(function () {
-          return rootDb.transaction.commit().then(function (response) {
-            expect(response.length).equals(0);
+          return rootDb.transaction.rollback().then(function (response) {
+            //expect(response.length).equals(0);
         });
       }).catch(function (error) {
           expect.fail(`No exception expected ${error}`);
+      });
+    });
+
+    it('Unique index violation', async function () {
+      await createNewPerson(true, 'person1');
+      return rootDb.transaction.begin().then(async function (txid) {     
+        var index = new DB.metamodel.DbIndex('name', true); //second param 'true' for unique index
+        await metamodel.createIndex(personType.name, index);         
+        return Promise.resolve();
+      }).then(function () {
+        return rootDb.transaction.commit().then(async function (response) {
+          expect.fail('Expected to fail with unique index violation on student name.. student1');
+        });
+      }).catch(async function (error) {
+        expect(error.reason).equals("Unique Index Exception");  
+        await rootDb.transaction.rollback();    
       });
     });
 
