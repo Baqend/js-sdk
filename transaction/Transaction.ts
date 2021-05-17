@@ -141,22 +141,15 @@ export class Transaction {
 
     jsonBody += `${writeSetJson} ${deleteSetJson}}`;
 
+    this.tid = null;
+    this.db.transactionalEntities = {};
+    this.db.transactionalDeleteEntities = {};
+
     console.log(`ResultSet --> ${jsonBody}`);
     const sqlMessage = new message.CommitTransaction(this.tid, jsonBody)
       .responseType('json');
 
-
-    let data = await this.getResult(sqlMessage).catch(e => {
-      this.tid = null;
-      this.db.transactionalEntities = {};
-      this.db.transactionalDeleteEntities = {};
-    });
-
-    if (data){
-      this.tid = null;
-      this.db.transactionalEntities = {};
-      this.db.transactionalDeleteEntities = {};
-
+     let data = await this.getResult(sqlMessage);
       const entries = Object.entries(data);
       for(let idx=0; idx < entries.length; idx ++){
         let str = JSON.stringify(entries[idx][1]);
