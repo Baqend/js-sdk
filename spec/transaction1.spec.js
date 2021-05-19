@@ -20,6 +20,7 @@ async function deleteStoreUpdate(transactional){
     await assertObjectExists("stored");
     await updateObject(obj, transactional);
     await assertObjectExists("updated");
+    await assertNoObjectExists("stored");
 }
 
 async function connect(withSchema){
@@ -87,6 +88,14 @@ async function assertObjectExists(name){
     await em.Simple.find().equal('name', name).singleResult((obj) => {
         if (! obj) {
             expect.fail("Simple object with name '" + name + "' does not exist.");
+        }
+    });
+}
+
+async function assertNoObjectExists(name){
+    await em.Simple.find().equal('name', name).singleResult((obj) => {
+        if (obj) {
+            expect.fail("Simple object with name '" + name + "' exists but shouldn't.");
         }
     });
 }
