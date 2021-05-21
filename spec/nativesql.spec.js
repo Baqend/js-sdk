@@ -14,9 +14,9 @@ describe('Test Query SQL', function () {
     emf = new DB.EntityManagerFactory({ host: env.TEST_SERVER, schema: [], tokenStorage: helper.rootTokenStorage });
     metamodel = emf.metamodel;
     metamodel.addType(personType = new DB.metamodel.EntityType('PersonTable', metamodel.entity(Object)));
-    personType.addAttribute(new DB.metamodel.SingularAttribute('name', metamodel.baseType(String)));
-    personType.addAttribute(new DB.metamodel.SingularAttribute('age', metamodel.baseType(Number)));
-    personType.addAttribute(new DB.metamodel.SingularAttribute('zip', metamodel.baseType(Number)));
+    personType.addAttribute(new DB.metamodel.SingularAttribute('name', metamodel.baseType(String)),0);
+    personType.addAttribute(new DB.metamodel.SingularAttribute('age', metamodel.baseType(Number)),1);
+    personType.addAttribute(new DB.metamodel.SingularAttribute('zip', metamodel.baseType(Number)),2);
     return metamodel.save();
   });
 
@@ -45,31 +45,28 @@ describe('Test Query SQL', function () {
 
   describe('Builder', function () {
     it('should create simple query sql with where clause name', function () {
-      //var q = new rootDb.NativeQuery(rootDb);
       return rootDb.nativeQuery.execute('select * from PersonTable where name = \'helloworld\' ').then(function (data) {
-        expect(data[0].fields[5].value).eql('helloworld');
-        expect(data[0].fields[6].value).eql(45);
-        expect(data[0].fields[7].value).eql(8123367);
+        expect(data[1]["row"]["persontable:age"]).eql(45);
+        expect(data[1]["row"]["persontable:name"]).eql('helloworld');
+        expect(data[1]["row"]["persontable:zip"]).eql(8123367);
       });
     });
   });
 
   describe('Builder', function () {
     it('should create simple query sql with where clause age', function () {
-      //var q = new rootDb.NativeQuery(rootDb);
       return rootDb.nativeQuery.execute('select * from PersonTable where age = 45 ').then(function (data) {
-        expect(data[0].fields[5].value).eql('helloworld');
-        expect(data[0].fields[6].value).eql(45);
-        expect(data[0].fields[7].value).eql(8123367);
+        expect(data[1]["row"]["persontable:age"]).eql(45);
+        expect(data[1]["row"]["persontable:name"]).eql('helloworld');
+        expect(data[1]["row"]["persontable:zip"]).eql(8123367);
       });
     });
   });
 
   describe('Builder', function () {
     it('should create simple query sql with select name where clause age', function () {
-      //var q = new rootDb.NativeQuery(rootDb);
       return rootDb.nativeQuery.execute('select name from PersonTable where name = \'helloworld\' ').then(function (data) {
-        expect(data[0].fields[0].value).eql('helloworld');
+        expect(data[1]["row"]["persontable:name"]).eql('helloworld');
       });
     });
   });
@@ -78,18 +75,17 @@ describe('Test Query SQL', function () {
     it('should create simple query sql with select name,age where clause age', function () {
       //var q = new rootDb.NativeQuery(rootDb);
       return rootDb.nativeQuery.execute('select name,age from PersonTable where name = \'helloworld\' ').then(function (data) {
-        expect(data[0].fields[0].value).eql('helloworld');
-        expect(data[0].fields[1].value).eql(45);
+        expect(data[1]["row"]["persontable:name"]).eql('helloworld');
+        expect(data[1]["row"]["persontable:age"]).eql(45);
       });
     });
   });
 
   describe('Builder', function () {
     it('should create simple query sql with select zip,age where clause name', function () {
-      //var q = new rootDb.NativeQuery(rootDb);
       return rootDb.nativeQuery.execute('select zip,age from PersonTable where name = \'helloworld\' ').then(function (data) {
-        expect(data[0].fields[0].value).eql(8123367);
-        expect(data[0].fields[1].value).eql(45);
+        expect(data[1]["row"]["persontable:zip"]).eql(8123367);
+        expect(data[1]["row"]["persontable:age"]).eql(45);
       });
     });
   });
