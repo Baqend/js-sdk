@@ -36,8 +36,6 @@ describe('More NativeSQL Tests', async function () {
         await setup();
         await unknownField();
     });
-
-    
 });
 
 async function illegalSelect(){
