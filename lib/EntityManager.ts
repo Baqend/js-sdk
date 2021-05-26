@@ -47,7 +47,7 @@ const DB_PREFIX = '/db/';
 
 type MessageFactory = (state: Metadata, json: JsonMap) => Message;
 
-import {NativeQuery} from "../nativesql/NativeQuery";
+import {NativeQuery} from "../nativequery/NativeQuery";
 
 export class EntityManager extends Lockable {
   /**

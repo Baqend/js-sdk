@@ -1492,15 +1492,15 @@ export const Beacon = Message.create<Beacon>({
   status: [200],
 });
 
-interface SqlQuery {
+interface NativeQueryMsg {
   /**
-   * Provides Native Sql Query
+   * Native Query Functionality
    *
-   * @param nativeQuery Native Sql Query
+   * @param nativeQuery A query native to the backend.
    */
   new(nativeQuery?: string | null): Message;
 }
-export const SqlQuery = Message.create<SqlQuery>({
+export const NativeQueryMsg = Message.create<NativeQueryMsg>({
   method: 'GET',
   path: '/db/query?nativeQuery',
   status: [200,465,468],
