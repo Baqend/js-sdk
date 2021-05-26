@@ -55,13 +55,6 @@ async function selectNullColumns(){
 }
 
 async function selectGroupBy(){
-    const response = await em.nativeQuery.execute('select mstr from NQ1 group by mstr');
-    console.log(response);
-    expect(response[1]["row"]["nq1:mstr"]).eql("0");
-    expect(response[2]["row"]["nq1:mstr"]).eql("1");
-}
-
-async function selectGroupBy(){
     const response = await em.nativeQuery.execute('select max(NQ1.id), mstr from NQ1 group by mstr order by mstr');
     expect(response[1]["row"]["nq1:mstr"]).eql("0");
     expect(response[2]["row"]["nq1:mstr"]).eql("1");
