@@ -15,6 +15,11 @@ describe('Still more NativeSQL Tests', async function () {
         await storeOne();
         await selectColumns();
     });
+    it('Select columns with OR condition', async function () {
+        await setup();
+        await storeOne();
+        await selectColumnsOR();
+    });
     it('Null columns', async function () {
         await setup();
         await storeNullMembers();
@@ -46,6 +51,11 @@ async function selectOne(){
 async function selectColumns(){
     const response = await em.nativeQuery.execute('select mstr, mint from NQ1 where mstr = \'one\' and mint = 1 ');
     expect(response[1]["row"]["nq1:mstr"]).eql("one");
+}
+
+async function selectColumnsOR(){
+    const response = await em.nativeQuery.execute('select mstr, mint from NQ1 where mstr = \'two\' or mint = 1');
+    expect(response[1]["row"]["nq1:mint"]).eql(1);
 }
 
 async function selectNullColumns(){
