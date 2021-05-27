@@ -40,6 +40,11 @@ describe('Still more NativeSQL Tests', async function () {
         await prepareJoin();
         await selectJoin();
     });
+    it('Right join', async function () {
+        await setup();
+        await prepareJoin();
+        await selectRightJoin();
+    });
     it('Join of 3 tables', async function () {
         await setup();
         await prepareJoin();
@@ -91,6 +96,14 @@ async function selectJoin(){
     expect(response[2]["row"]["nq2:m2str"]).eql("2two");
     expect(response[3]["row"]["nq2:m2str"]).eql("2three");
     expect(response[4]["row"]["nq2:m2str"]).eql(null);
+}
+async function selectRightJoin(){
+    const response = await em.nativeQuery.execute('select * from NQ1 Right join NQ2 on NQ1.mint = NQ2.m2key');
+    expect(response[1]["row"]["nq1:mstr"]).eql("one");
+    expect(response[1]["row"]["nq2:m2str"]).eql("2one");
+    expect(response[2]["row"]["nq2:m2str"]).eql("2two");
+    expect(response[4]["row"]["nq1:mstr"]).eql(null);
+    expect(response[4]["row"]["nq2:m2str"]).eql("2five");
 }
 async function selectJoin2(){
     const response = await em.nativeQuery.execute('select * from NQ1 left join NQ2 on NQ1.mint = NQ2.m2key join NQ3 on NQ2.m2key=NQ3.m3key');
@@ -224,6 +237,10 @@ async function prepareJoin(){
     obj = new em.NQ2();
     obj.m2str = "2three"
     obj.m2key = 3;
+    await obj.save();
+    obj = new em.NQ2();
+    obj.m2str = "2five"
+    obj.m2key = 5;
     await obj.save();
     obj = new em.NQ3();
     obj.m3str = "3one"
