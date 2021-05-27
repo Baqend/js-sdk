@@ -20,6 +20,11 @@ describe('Still more NativeSQL Tests', async function () {
         await storeOne();
         await selectColumnsOR();
     });
+    it('countQuery', async function () {
+        await setup();
+        await storeMany();
+        await countQuery();
+    });
     it('Null columns', async function () {
         await setup();
         await storeNullMembers();
@@ -62,6 +67,10 @@ async function selectColumnsOR(){
     const response = await em.nativeQuery.execute('select mstr, mint from NQ1 where mstr = \'two\' or mint = 1');
     expect(response[1]["row"]["nq1:mint"]).eql(1);
 }
+async function countQuery(){
+    const response = await em.nativeQuery.execute('select count(*) from NQ1');
+    expect(response[1]["row"][":count"]).eql(10);
+}
 
 async function selectNullColumns(){
     const response = await em.nativeQuery.execute('select * from NQ1');
@@ -84,11 +93,10 @@ async function selectJoin(){
     expect(response[4]["row"]["nq2:m2str"]).eql(null);
 }
 async function selectJoin2(){
-    const response = await em.nativeQuery.execute('select * from NQ1 left join NQ2 on NQ1.mint = NQ2.m2key left join NQ3 on NQ2.m2key=NQ3.m3key');
+    const response = await em.nativeQuery.execute('select * from NQ1 left join NQ2 on NQ1.mint = NQ2.m2key join NQ3 on NQ2.m2key=NQ3.m3key');
     expect(response[1]["row"]["nq1:mstr"]).eql("one");
     expect(response[1]["row"]["nq2:m2str"]).eql("2one");
     expect(response[1]["row"]["nq3:m3str"]).eql("3one");
-    expect(response[2]["row"]["nq3:m3str"]).eql(null);
 }
 
 async function dropTable(){
