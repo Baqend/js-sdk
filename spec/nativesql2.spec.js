@@ -35,6 +35,11 @@ describe('Still more NativeSQL Tests', async function () {
         await prepareJoin();
         await selectJoin();
     });
+    it('Join of 3 tables', async function () {
+        await setup();
+        await prepareJoin();
+        await selectJoin2();
+    });
     it('Drop table', async function () {
         await setup();
         await dropTable();
@@ -74,7 +79,16 @@ async function selectJoin(){
     const response = await em.nativeQuery.execute('select * from NQ1 left join NQ2 on NQ1.mint = NQ2.m2key');
     expect(response[1]["row"]["nq1:mstr"]).eql("one");
     expect(response[1]["row"]["nq2:m2str"]).eql("2one");
-    expect(response[2]["row"]["nq2:m2str"]).eql(null);
+    expect(response[2]["row"]["nq2:m2str"]).eql("2two");
+    expect(response[3]["row"]["nq2:m2str"]).eql("2three");
+    expect(response[4]["row"]["nq2:m2str"]).eql(null);
+}
+async function selectJoin2(){
+    const response = await em.nativeQuery.execute('select * from NQ1 left join NQ2 on NQ1.mint = NQ2.m2key left join NQ3 on NQ2.m2key=NQ3.m3key');
+    expect(response[1]["row"]["nq1:mstr"]).eql("one");
+    expect(response[1]["row"]["nq2:m2str"]).eql("2one");
+    expect(response[1]["row"]["nq3:m3str"]).eql("3one");
+    expect(response[2]["row"]["nq3:m3str"]).eql(null);
 }
 
 async function dropTable(){
@@ -126,6 +140,12 @@ async function produceMetaModel(){
         nqtype.addAttribute(new DB.metamodel.SingularAttribute('m2str', metamodel.baseType(String)));
         nqtype.addAttribute(new DB.metamodel.SingularAttribute('m2key', metamodel.baseType('Integer')));
     }
+    if(metamodel.entities["/db/NQ3"] == null){
+        var nqtype = new DB.metamodel.EntityType('NQ3', metamodel.entity(Object));
+        metamodel.addType(nqtype);
+        nqtype.addAttribute(new DB.metamodel.SingularAttribute('m3str', metamodel.baseType(String)));
+        nqtype.addAttribute(new DB.metamodel.SingularAttribute('m3key', metamodel.baseType('Integer')));
+    }
 
     await metamodel.save();
 }
@@ -137,6 +157,11 @@ async function deleteAll(){
         });
     });
     await em.NQ2.find().resultList((result) => {
+        result.forEach((obj) => {
+            obj.delete();
+        });
+    });
+    await em.NQ3.find().resultList((result) => {
         result.forEach((obj) => {
             obj.delete();
         });
@@ -176,8 +201,24 @@ async function prepareJoin(){
     obj.mstr = "three"
     obj.mint = 3;
     await obj.save();
+    obj = new em.NQ1();
+    obj.mstr = "four"
+    obj.mint = 4;
+    await obj.save();
     obj = new em.NQ2();
     obj.m2str = "2one"
     obj.m2key = 1;
+    await obj.save();
+    obj = new em.NQ2();
+    obj.m2str = "2two"
+    obj.m2key = 2;
+    await obj.save();
+    obj = new em.NQ2();
+    obj.m2str = "2three"
+    obj.m2key = 3;
+    await obj.save();
+    obj = new em.NQ3();
+    obj.m3str = "3one"
+    obj.m3key = 1;
     await obj.save();
 }
