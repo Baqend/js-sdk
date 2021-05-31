@@ -60,56 +60,56 @@ describe('Still more NativeSQL Tests', async function () {
 
 async function selectOne(){
     const response = await em.nativeQuery.execute('select * from NQ1 where mstr = \'one\' ');
-    expect(response[1]["row"]["nq1:mstr"]).eql("one");
+    expect(response.data(0, "nq1:mstr")).eql("one");
 }
 
 async function selectColumns(){
     const response = await em.nativeQuery.execute('select mstr, mint from NQ1 where mstr = \'one\' and mint = 1 ');
-    expect(response[1]["row"]["nq1:mstr"]).eql("one");
+    expect(response.data(0, "nq1:mstr")).eql("one");
 }
 
 async function selectColumnsOR(){
     const response = await em.nativeQuery.execute('select mstr, mint from NQ1 where mstr = \'two\' or mint = 1');
-    expect(response[1]["row"]["nq1:mint"]).eql(1);
+    expect(response.data(0, "nq1:mint")).eql(1);
 }
 async function countQuery(){
     const response = await em.nativeQuery.execute('select count(*) from NQ1');
-    expect(response[1]["row"][":count"]).eql(10);
+    expect(response.data(0, ":count")).eql(10);
 }
 
 async function selectNullColumns(){
     const response = await em.nativeQuery.execute('select * from NQ1');
-    expect(response[1]["row"]["nq1:mstr"]).eql(null);
-    expect(response[1]["row"]["nq1:mint"]).eql(null);
+    expect(response.data(0, "nq1:mstr")).eql(null);
+    expect(response.data(0, "nq1:mint")).eql(null);
 }
 
 async function selectGroupBy(){
     const response = await em.nativeQuery.execute('select max(NQ1.id), mstr from NQ1 group by mstr order by mstr');
-    expect(response[1]["row"]["nq1:mstr"]).eql("0");
-    expect(response[2]["row"]["nq1:mstr"]).eql("1");
+    expect(response.data(0, "nq1:mstr")).eql("0");
+    expect(response.data(1, "nq1:mstr")).eql("1");
 }
 
 async function selectJoin(){
     const response = await em.nativeQuery.execute('select * from NQ1 left join NQ2 on NQ1.mint = NQ2.m2key');
-    expect(response[1]["row"]["nq1:mstr"]).eql("one");
-    expect(response[1]["row"]["nq2:m2str"]).eql("2one");
-    expect(response[2]["row"]["nq2:m2str"]).eql("2two");
-    expect(response[3]["row"]["nq2:m2str"]).eql("2three");
-    expect(response[4]["row"]["nq2:m2str"]).eql(null);
+    expect(response.data(0, "nq1:mstr")).eql("one");
+    expect(response.data(0, "nq2:m2str")).eql("2one");
+    expect(response.data(1, "nq2:m2str")).eql("2two");
+    expect(response.data(2, "nq2:m2str")).eql("2three");
+    expect(response.data(3, "nq2:m2str")).eql(null);
 }
 async function selectRightJoin(){
     const response = await em.nativeQuery.execute('select * from NQ1 Right join NQ2 on NQ1.mint = NQ2.m2key');
-    expect(response[1]["row"]["nq1:mstr"]).eql("one");
-    expect(response[1]["row"]["nq2:m2str"]).eql("2one");
-    expect(response[2]["row"]["nq2:m2str"]).eql("2two");
-    expect(response[4]["row"]["nq1:mstr"]).eql(null);
-    expect(response[4]["row"]["nq2:m2str"]).eql("2five");
+    expect(response.data(0, "nq1:mstr")).eql("one");
+    expect(response.data(0, "nq2:m2str")).eql("2one");
+    expect(response.data(1, "nq2:m2str")).eql("2two");
+    expect(response.data(3, "nq1:mstr")).eql(null);
+    expect(response.data(3, "nq2:m2str")).eql("2five");
 }
 async function selectJoin2(){
     const response = await em.nativeQuery.execute('select * from NQ1 left join NQ2 on NQ1.mint = NQ2.m2key join NQ3 on NQ2.m2key=NQ3.m3key');
-    expect(response[1]["row"]["nq1:mstr"]).eql("one");
-    expect(response[1]["row"]["nq2:m2str"]).eql("2one");
-    expect(response[1]["row"]["nq3:m3str"]).eql("3one");
+    expect(response.data(0, "nq1:mstr")).eql("one");
+    expect(response.data(0, "nq2:m2str")).eql("2one");
+    expect(response.data(0, "nq3:m3str")).eql("3one");
 }
 
 async function dropTable(){

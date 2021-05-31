@@ -40,37 +40,46 @@ describe('More NativeSQL Tests', async function () {
 
 async function illegalSelect(){
     const response = await em.nativeQuery.execute('select * from NQOne where name = "one" ');
-    // TODO: Information about the failed query should be in the response.
+    expect(response.ok()).eql(false);
+    expect(response.status()).eql(468);
 }
 
 async function selectOne(){
     const response = await em.nativeQuery.execute('select * from NQOne where name = \'one\' ');
-    expect(response[1]["row"]["nqone:name"]).eql("one");
+    expect(response.ok()).eql(true);
+    expect(response.size()).eql(1);
+    expect(response.data(0, "nqone:name")).eql("one");
 }
 
 async function selectThree(){
     const response = await em.nativeQuery.execute('select * from NQOne');
-    var name = response[1]["row"]["nqone:name"];
-    expect(name == "1" || name == "2" || name == "3");
-    name = response[2]["row"]["nqone:name"];
-    expect(name == "1" || name == "2" || name == "3");
-    name = response[3]["row"]["nqone:name"];
-    expect(name == "1" || name == "2" || name == "3");
+    expect(response.ok()).eql(true);
+    expect(1 == response.size());
+    var name = response.data(0, "nqone:name");
+    expect(name).that.is.oneOf([ "1", "2", "3" ]);
+    name = response.data(1, "nqone:name");
+    expect(name).that.is.oneOf([ "1", "2", "3" ]);
+    name = response.data(2, "nqone:name");
+    expect(name).that.is.oneOf([ "1", "2", "3" ]);
 }
 
 async function noRow(){
     const response = await em.nativeQuery.execute('select * from NQOne where name = \'notexists\' ');
-    expect(response.size === 1);
+    expect(response.ok()).eql(true);
+    expect(response.size()).eql(0);
 }
 
 async function selectColumn(){
     const response = await em.nativeQuery.execute('select name from NQOne where name = \'one\' ');
-    expect(response[1]["row"]["nqone:name"]).eql("one");
+    expect(response.ok()).eql(true);
+    expect(response.size()).eql(1);
+    expect(response.data(0, "nqone:name")).eql("one");
 }
 
 async function garbage(){
     const response = await em.nativeQuery.execute('gnuezelbruenft');
-    // TODO: Information about the failed query should be in the response.
+    expect(response.ok()).eql(false);
+    expect(response.status()).eql(468);
 }
 
 async function unknownField(){

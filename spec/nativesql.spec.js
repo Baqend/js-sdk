@@ -45,28 +45,28 @@ describe('Test Query SQL', function () {
 
   describe('Builder', function () {
     it('should create simple query sql with where clause name', function () {
-      return rootDb.nativeQuery.execute('select * from PersonTable where name = \'helloworld\' ').then(function (data) {
-        expect(data[1]["row"]["persontable:age"]).eql(45);
-        expect(data[1]["row"]["persontable:name"]).eql('helloworld');
-        expect(data[1]["row"]["persontable:zip"]).eql(8123367);
+      return rootDb.nativeQuery.execute('select * from PersonTable where name = \'helloworld\' ').then(function (response) {
+        expect(response.data(0, "persontable:age")).eql(45);
+        expect(response.data(0, "persontable:name")).eql('helloworld');
+        expect(response.data(0, "persontable:zip")).eql(8123367);
       });
     });
   });
 
   describe('Builder', function () {
     it('should create simple query sql with where clause age', function () {
-      return rootDb.nativeQuery.execute('select * from PersonTable where age = 45 ').then(function (data) {
-        expect(data[1]["row"]["persontable:age"]).eql(45);
-        expect(data[1]["row"]["persontable:name"]).eql('helloworld');
-        expect(data[1]["row"]["persontable:zip"]).eql(8123367);
+      return rootDb.nativeQuery.execute('select * from PersonTable where age = 45 ').then(function (response) {
+        expect(response.data(0, "persontable:age")).eql(45);
+        expect(response.data(0, "persontable:name")).eql('helloworld');
+        expect(response.data(0, "persontable:zip")).eql(8123367);
       });
     });
   });
 
   describe('Builder', function () {
     it('should create simple query sql with select name where clause age', function () {
-      return rootDb.nativeQuery.execute('select name from PersonTable where name = \'helloworld\' ').then(function (data) {
-        expect(data[1]["row"]["persontable:name"]).eql('helloworld');
+      return rootDb.nativeQuery.execute('select name from PersonTable where name = \'helloworld\' ').then(function (response) {
+        expect(response.data(0, "persontable:name")).eql('helloworld');
       });
     });
   });
@@ -74,18 +74,18 @@ describe('Test Query SQL', function () {
   describe('Builder', function () {
     it('should create simple query sql with select name,age where clause age', function () {
       //var q = new rootDb.NativeQuery(rootDb);
-      return rootDb.nativeQuery.execute('select name,age from PersonTable where name = \'helloworld\' ').then(function (data) {
-        expect(data[1]["row"]["persontable:name"]).eql('helloworld');
-        expect(data[1]["row"]["persontable:age"]).eql(45);
+      return rootDb.nativeQuery.execute('select name,age from PersonTable where name = \'helloworld\' ').then(function (response) {
+        expect(response.data(0, "persontable:name")).eql('helloworld');
+        expect(response.data(0, "persontable:age")).eql(45);
       });
     });
   });
 
   describe('Builder', function () {
     it('should create simple query sql with select zip,age where clause name', function () {
-      return rootDb.nativeQuery.execute('select zip,age from PersonTable where name = \'helloworld\' ').then(function (data) {
-        expect(data[1]["row"]["persontable:zip"]).eql(8123367);
-        expect(data[1]["row"]["persontable:age"]).eql(45);
+      return rootDb.nativeQuery.execute('select zip,age from PersonTable where name = \'helloworld\' ').then(function (response) {
+        expect(response.data(0, "persontable:zip")).eql(8123367);
+        expect(response.data(0, "persontable:age")).eql(45);
       });
     });
   });
