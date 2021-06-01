@@ -13,7 +13,7 @@ import {Response} from '../lib/connector';
 
 /**
  * A NativeQuery object, to execute queries that are native to the backend, like SQL.
- * See the documentation of the {@link NativeQuery.execute} method.
+ * For an example, see the documentation of the {@link NativeQuery.execute} method.
  *
  * @alias binding.NativeQuery
  */
@@ -77,7 +77,7 @@ export class NativeQueryResponse {
   }
 
   private checkOk(){
-    if(! this.ok){
+    if(! this.ok()){
       throw new Error("Response not ok. Status code: " + this.status());
     }
     if(this.response.entity == null){
@@ -140,8 +140,9 @@ export class NativeQueryResponse {
   }
 
   /**
-   * This method can be used to get the column names of the columns in the NativeQueryResponse.
-   * It only returns the information about the columns if at least one row was retrieved.
+   * This method can be used to get the column names and types of the columns in the 
+   * NativeQueryResponse. It only returns the information about the columns if at 
+   * least one row of data was retrieved.
    * @returns the header as a Json array.
    */
   header() : Json {

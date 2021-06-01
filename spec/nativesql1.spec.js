@@ -36,6 +36,21 @@ describe('More NativeSQL Tests', async function () {
         await setup();
         await unknownField();
     });
+    it('Unkown column in response', async function () {
+        await setup();
+        await storeOne();
+        await selectUnkownColumn();
+    });
+    it('Row exceeds size', async function () {
+        await setup();
+        await storeOne();
+        await rowExceedsSize();
+    });
+    it('Parse header', async function () {
+        await setup();
+        await storeOne();
+        await parseHeader();
+    });
 });
 
 async function illegalSelect(){
@@ -86,6 +101,42 @@ async function unknownField(){
     const response = await em.nativeQuery.execute('select notexists from NQOne');
     expect(response.ok()).eql(false);
     expect(response.status()).eql(468);
+}
+
+async function selectUnkownColumn(){
+    const response = await em.nativeQuery.execute('select * from NQOne where name = \'one\' ');
+    expect(response.ok()).eql(true);
+    expect(response.size()).eql(1);
+    expect(response.data(0, "nqone:unknown")).is.undefined;
+}
+
+async function rowExceedsSize(){
+    const response = await em.nativeQuery.execute('select * from NQOne where name = \'one\' ');
+    expect(response.ok()).eql(true);
+    expect(response.size()).eql(1);
+    var exceptionCaught = false;
+    try{
+        response.data(1, "nqone:name");
+    } catch (err){
+        exceptionCaught = true;
+        expect(err.toString()).eql('Error: Row must be between 0 and 0 but is: 1');    
+    }
+    expect(exceptionCaught).eql(true);
+}
+
+async function parseHeader(){
+    const response = await em.nativeQuery.execute('select name from NQOne where name = \'one\' ');
+    expect(response.ok()).eql(true);
+    expect(response.size()).eql(1);
+    console.log(response.header());
+    const header = response.header();
+    expect(header.length).eql(1);
+    const columnSpec = header[0];
+    const tableName = columnSpec["tableName"];
+    expect(tableName).eql("nqone");
+    const columnName = columnSpec["columnName"];
+    expect(columnName).eql("name");
+   
 }
 
 async function setup(){
