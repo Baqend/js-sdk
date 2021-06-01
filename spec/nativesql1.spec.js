@@ -84,7 +84,8 @@ async function garbage(){
 
 async function unknownField(){
     const response = await em.nativeQuery.execute('select notexists from NQOne');
-    // TODO: Information about the failed query should be in the response.
+    expect(response.ok()).eql(false);
+    expect(response.status()).eql(468);
 }
 
 async function setup(){

@@ -97,6 +97,7 @@ async function selectJoin(){
     expect(response.data(2, "nq2:m2str")).eql("2three");
     expect(response.data(3, "nq2:m2str")).eql(null);
 }
+
 async function selectRightJoin(){
     const response = await em.nativeQuery.execute('select * from NQ1 Right join NQ2 on NQ1.mint = NQ2.m2key');
     expect(response.data(0, "nq1:mstr")).eql("one");
