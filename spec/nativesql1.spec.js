@@ -46,10 +46,10 @@ describe('More NativeSQL Tests', async function () {
         await storeOne();
         await rowExceedsSize();
     });
-    it('Parse header', async function () {
+    it('Header info', async function () {
         await setup();
         await storeOne();
-        await parseHeader();
+        await headerInfo();
     });
 });
 
@@ -124,11 +124,10 @@ async function rowExceedsSize(){
     expect(exceptionCaught).eql(true);
 }
 
-async function parseHeader(){
+async function headerInfo(){
     const response = await em.nativeQuery.execute('select name from NQOne where name = \'one\' ');
     expect(response.ok()).eql(true);
     expect(response.size()).eql(1);
-    console.log(response.header());
     const header = response.header();
     expect(header.length).eql(1);
     const columnSpec = header[0];
@@ -136,7 +135,6 @@ async function parseHeader(){
     expect(tableName).eql("nqone");
     const columnName = columnSpec["columnName"];
     expect(columnName).eql("name");
-   
 }
 
 async function setup(){
