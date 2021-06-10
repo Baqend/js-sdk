@@ -12,20 +12,20 @@ describe(' NativeSQL Tests for Collection type attributes', async function () {
     await selectChildSetTable();
     await selectChildListTable();
   });
-  it('Map Join', async function () {
+  it('Map  Join', async function () {
     await setup();
     await storeOne();
-    await mapSelectRightJoin();
+    await mapSelectJoin();
   });
-  it('Set Join', async function () {
+  it('Set  Join', async function () {
     await setup();
     await storeOne();
-    await setSelectRightJoin();
+    await setSelectJoin();
   });
-  it('List Join', async function () {
+  it('List  Join', async function () {
     await setup();
     await storeOne();
-    await listSelectRightJoin();
+    await listSelectJoin();
   });
   it('Conditional select', async function () {
     await setup();
@@ -55,22 +55,22 @@ async function selectChildListTable() {
   expect(response.size()).eql(2);
 }
 
-async function mapSelectRightJoin() {
-  const response = await em.nativeQuery.execute('select * from NQStudent Right join Map_NQStudent_Marks on NQStudent.id = Map_NQStudent_Marks.parent');
+async function mapSelectJoin() {
+  const response = await em.nativeQuery.execute('select * from NQStudent  join Map_NQStudent_Marks on NQStudent.id = Map_NQStudent_Marks.parent');
   expect(response.data(0, 'nqstudent:name')).eql('James');
   expect(response.data(0, 'map_nqstudent_marks:key')).eql('Literature');
   expect(response.data(1, 'map_nqstudent_marks:key')).eql('Mathematics');
   expect(response.data(2, 'map_nqstudent_marks:key')).eql('Economics');
 }
-async function setSelectRightJoin() {
-  const response = await em.nativeQuery.execute('select * from NQStudent Right join Set_NQStudent_Courses on NQStudent.id = Set_NQStudent_Courses.parent');
+async function setSelectJoin() {
+  const response = await em.nativeQuery.execute('select * from NQStudent  join Set_NQStudent_Courses on NQStudent.id = Set_NQStudent_Courses.parent');
   expect(response.data(0, 'nqstudent:name')).eql('James');
   expect(response.data(0, 'set_nqstudent_courses:element')).eql('Literature');
   expect(response.data(1, 'set_nqstudent_courses:element')).eql('Mathematics');
   expect(response.data(2, 'set_nqstudent_courses:element')).eql('Economics');
 }
-async function listSelectRightJoin() {
-  const response = await em.nativeQuery.execute('select * from NQStudent Right join List_NQStudent_Extracurricular on NQStudent.id = List_NQStudent_Extracurricular.parent');
+async function listSelectJoin() {
+  const response = await em.nativeQuery.execute('select * from NQStudent  join List_NQStudent_Extracurricular on NQStudent.id = List_NQStudent_Extracurricular.parent');
   expect(response.data(0, 'nqstudent:name')).eql('James');
   expect(response.data(0, 'list_nqstudent_extracurricular:element')).eql('Photography');
   expect(response.data(1, 'list_nqstudent_extracurricular:element')).eql('Sports');
