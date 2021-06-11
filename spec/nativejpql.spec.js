@@ -5,6 +5,7 @@ if (typeof module !== 'undefined') {
 var emf, em;
 
 describe('NativeQuery Tests for NoSQL', async function () {
+    
     it('Plain select', async function () {
         await setup();
         await storeOne();
@@ -33,16 +34,6 @@ describe('NativeQuery Tests for NoSQL', async function () {
         await storeOne();
         await rowExceedsSize();
     });
-    /*
-    it('Select column', async function () {
-        await setup();
-        await storeOne();
-        await selectColumn();
-    });
-    it('Unknown field', async function () {
-        await setup();
-        await unknownField();
-    });
     it('Unkown column in response', async function () {
         await setup();
         await storeOne();
@@ -53,7 +44,6 @@ describe('NativeQuery Tests for NoSQL', async function () {
         await storeOne();
         await headerInfo();
     });
-    */
 });
 
 async function selectOne(){
@@ -67,11 +57,6 @@ async function tableDoesntExist(){
     const response = await em.nativeQuery.execute('select nqone from NotExist nqone where nqone.name = \'one\' ');
     expect(response.ok()).eql(false);
     expect(response.status()).eql(468);
-}
-
-async function jsQuery(){
-    var q = await em.NQOne.find().equal('name', 'one').resultList();;
-    console.log(q);
 }
 
 async function selectThree(){
@@ -112,38 +97,34 @@ async function rowExceedsSize(){
     expect(exceptionCaught).eql(true);
 }
 
-async function selectColumn(){
-    const response = await em.nativeQuery.execute('select name from NQOne where name = \'one\' ');
-    expect(response.ok()).eql(true);
-    expect(response.size()).eql(1);
-    expect(response.data(0, "nqone:name")).eql("one");
-}
-
-async function unknownField(){
-    const response = await em.nativeQuery.execute('select notexists from NQOne');
-    expect(response.ok()).eql(false);
-    expect(response.status()).eql(468);
-}
-
 async function selectUnkownColumn(){
-    const response = await em.nativeQuery.execute('select * from NQOne where name = \'one\' ');
+    const response = await em.nativeQuery.execute('select nqone from NQOne nqone where nqone.name = \'one\' ');
     expect(response.ok()).eql(true);
     expect(response.size()).eql(1);
-    expect(response.data(0, "nqone:unknown")).is.undefined;
+    expect(response.data(0, "NQOne:unknown")).is.undefined;
 }
+
 
 async function headerInfo(){
-    const response = await em.nativeQuery.execute('select name from NQOne where name = \'one\' ');
+    const response = await em.nativeQuery.execute('select nqone from NQOne nqone where nqone.name = \'one\' ');
     expect(response.ok()).eql(true);
     expect(response.size()).eql(1);
     const header = response.header();
-    expect(header.length).eql(1);
-    const columnSpec = header[0];
-    const tableName = columnSpec["tableName"];
-    expect(tableName).eql("nqone");
-    const columnName = columnSpec["columnName"];
+    expect(header.length).eql(2);
+
+    var columnSpec = header[0];
+    var tableName = columnSpec["tableName"];
+    expect(tableName).eql("NQOne");
+    var columnName = columnSpec["columnName"];
+    expect(columnName).eql("id");
+
+    var columnSpec = header[1];
+    var tableName = columnSpec["tableName"];
+    expect(tableName).eql("NQOne");
+    var columnName = columnSpec["columnName"];
     expect(columnName).eql("name");
 }
+
 
 async function setup(){
     await connect(false);
