@@ -132,7 +132,7 @@
     "typings": "npm run typings:test",
     "typings:test": "tsc --version && tsc -p spec-ts/tsconfig.json",
     "docs": "typedoc --out doc lib",
-    "baqend": "node cli/index.js",
+    "baqend": "node cli/index.ts",
     "lint": "eslint --ext .ts lib/",
     "prepare": ""
   },
@@ -140,6 +140,6 @@
     "node": ">=10.0.0"
   },
   "bin": {
-    "baqend": "./cli/index.js"
+    "baqend": "cli/index.ts"
   }
 }
