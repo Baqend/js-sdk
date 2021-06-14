@@ -1,3 +1,4 @@
+import type { ReadStream } from 'fs';
 import { PersistentError } from '../error';
 import { Acl } from '../Acl';
 import {
@@ -44,7 +45,7 @@ export interface FileData {
    * The initial file content, which will be uploaded by
    * invoking {@link #upload} later on.
    */
-  data?: string | Blob | ArrayBuffer | JsonArray | JsonMap,
+  data?: string | Blob | ArrayBuffer | JsonArray | JsonMap | ReadStream
   /**
    * A optional type hint used to correctly interpret the provided data
    */
@@ -395,7 +396,7 @@ export class File {
    * @return A promise which will be fulfilled with the downloaded file content
    */
   download(downloadOptions?: { type?: ResponseBodyType, refresh?: false }, doneCallback?: any,
-    failCallback?: any): Promise<string|Blob|File|ArrayBuffer|Json> {
+    failCallback?: any): Promise<string|Blob|File|ArrayBuffer|Json|ReadStream> {
     const opt = downloadOptions || {};
 
     if (this.isFolder) {

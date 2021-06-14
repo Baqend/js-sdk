@@ -1,10 +1,22 @@
-const os = require('os');
-const fs = require('fs');
-const baqend = require('..');
+/* eslint-disable @typescript-eslint/no-use-before-define,no-console,no-restricted-syntax,no-continue,guard-for-in */
+import fs from 'fs';
+import os from 'os';
+import { EntityManagerFactory } from '../lib';
+import {
+  EmbeddableType,
+  EntityType,
+  ListAttribute,
+  MapAttribute,
+  Metamodel,
+  PluralAttribute,
+  SetAttribute,
+  SingularAttribute,
+  Type,
+} from '../lib/metamodel';
 
-const { CollectionType } = baqend.metamodel.PluralAttribute;
+const { CollectionType } = PluralAttribute;
 
-const tsTypeMapping = {
+const tsTypeMapping: {[type: string]: string} = {
   Boolean: 'boolean',
   Double: 'number',
   Integer: 'number',
@@ -19,36 +31,42 @@ const tsTypeMapping = {
 };
 
 const nativeTypes = ['User', 'Role', 'Device'];
+const nativeNamespaces = ['logs', 'speedKit', 'rum', 'jobs'];
 const push = Function.prototype.apply.bind(Array.prototype.push);
 
-module.exports = function (args) {
-  if (!args.app) {
-    return false;
-  }
-  return createTypings(args.app, args.dest);
+export type TypingArgs = {
+  app: string,
+  dest: string,
 };
 
-function createTypings(app, dest) {
-  const factory = new baqend.EntityManagerFactory({ host: app });
+export function typings(args: TypingArgs) : Promise<any> {
+  if (!args.app) {
+    return Promise.reject(new Error('Please specify the app parameter.'));
+  }
+  return createTypings(args.app, args.dest);
+}
+
+function createTypings(app: string, dest: string) {
+  const factory = new EntityManagerFactory({ host: app });
 
   return factory.ready().then(() => {
-    const typings = typingsFromMetamodel(factory.metamodel);
+    const types = typingsFromMetamodel(factory.metamodel);
 
     if (!fs.existsSync(dest)) {
       fs.mkdirSync(dest);
     }
 
-    fs.writeFileSync(`${dest}/baqend-model.d.ts`, typings.join(os.EOL));
+    fs.writeFileSync(`${dest}/baqend-model.d.ts`, types.join(os.EOL));
     console.log(`Typings successfully saved to: ${dest}/baqend-model.d.ts`);
   });
 }
 
-function typingsFromMetamodel(metamodel) {
-  const typings = [];
-  const namespaces = {};
+function typingsFromMetamodel(metamodel: Metamodel) {
+  const typing = [];
+  const namespaces: {[namespace: string]: string[]} = {};
   // import all native types, so they can be easily used in definitions
-  typings.push('import {binding, GeoPoint} from "baqend";');
-  typings.push('');
+  typing.push('import {binding, GeoPoint} from "baqend";');
+  typing.push('');
 
   const module = [];
   module.push('declare module "baqend" {');
@@ -61,22 +79,29 @@ function typingsFromMetamodel(metamodel) {
   for (const key of Object.keys(metamodel.entities)) {
     const entity = metamodel.entities[key];
 
-    if (entity.name === 'Object') continue;
-
-    const isNative = nativeTypes.indexOf(entity.name) != -1;
-    // register only user defined types
-    if (!isNative) {
-      if (entity.name.indexOf('.') !== -1) {
-        const [namespace, entityName] = entity.name.split('.');
-        module.push(`    ["${entity.name}"]: binding.EntityFactory<model.${entity.name}>;`);
-        entity.name = entityName;
-        if (!namespaces[namespace]) namespaces[namespace] = [];
-        push(namespaces[namespace], typingsFromSchema(entity, 'Entity'));
-      } else {
-        module.push(`    ${entity.name}: binding.EntityFactory<model.${entity.name}>;`);
-        push(model, typingsFromSchema(entity, 'Entity'));
-      }
+    if (entity.name === 'Object') {
+      continue;
     }
+
+    if (nativeTypes.includes(entity.name)) {
+      continue;
+    }
+
+    // register only user defined types
+    if (entity.name.indexOf('.') !== -1) {
+      const [namespace, entityName] = entity.name.split('.');
+      if (nativeNamespaces.includes(namespace)) {
+        continue;
+      }
+
+      module.push(`    ["${entity.name}"]: binding.EntityFactory<model.${entity.name}>;`);
+      if (!namespaces[namespace]) namespaces[namespace] = [];
+      push(namespaces[namespace], typingsFromSchema(entityName, entity, 'Entity'));
+    } else {
+      module.push(`    ${entity.name}: binding.EntityFactory<model.${entity.name}>;`);
+      push(model, typingsFromSchema(entity.name, entity, 'Entity'));
+    }
+
     model.push('');
   }
 
@@ -87,7 +112,7 @@ function typingsFromMetamodel(metamodel) {
 
     module.push(`    ${embeddable.name}: binding.ManagedFactory<model.${embeddable.name}>;`);
 
-    push(model, typingsFromSchema(embeddable, 'Managed'));
+    push(model, typingsFromSchema(embeddable.name, embeddable, 'Managed'));
     model.push('');
   }
 
@@ -103,45 +128,49 @@ function typingsFromMetamodel(metamodel) {
   push(module, model);
   module.push('}');
 
-  push(typings, module);
+  push(typing, module);
 
-  return typings;
+  return typing;
 }
 
-function typingsFromSchema(entity, type) {
-  const typings = [];
+function typingsFromSchema(typeName: string, entity: EntityType<any> | EmbeddableType<any>, type: string) {
+  const typing: string[] = [];
 
-  typings.push(`    interface ${entity.name} extends binding.${type} {`);
+  typing.push(`    interface ${typeName} extends binding.${type} {`);
 
   for (const attribute of entity.declaredAttributes) {
     if (!attribute.isMetadata) {
       if (attribute.isCollection) {
-        switch (attribute.collectionType) {
+        switch ((attribute as PluralAttribute<any, any>).collectionType) {
           case CollectionType.LIST:
-            typings.push(`      ${attribute.name}: Array<${typingsFromType(attribute.elementType)}>;`);
+            typing.push(`      ${attribute.name}: Array<${typingsFromType((attribute as ListAttribute<any>).elementType)}>;`);
             break;
-          case CollectionType.MAP:
-            typings.push(`      ${attribute.name}: Map<${typingsFromType(attribute.keyType)}, ${typingsFromType(attribute.elementType)}>;`);
+          case CollectionType.MAP: {
+            const mapAttr = attribute as MapAttribute<any, any>;
+            typing.push(`      ${attribute.name}: Map<${typingsFromType(mapAttr.keyType)}, ${typingsFromType(mapAttr.elementType)}>;`);
             break;
+          }
           case CollectionType.SET:
-            typings.push(`      ${attribute.name}: Set<${typingsFromType(attribute.elementType)}>;`);
+            typing.push(`      ${attribute.name}: Set<${typingsFromType((attribute as SetAttribute<any>).elementType)}>;`);
+            break;
+          default:
             break;
         }
       } else {
-        typings.push(`      ${attribute.name}: ${typingsFromType(attribute.type)};`);
+        typing.push(`      ${attribute.name}: ${typingsFromType((attribute as SingularAttribute<any>).type)};`);
       }
     }
   }
 
-  typings.push('    }');
-  return typings;
+  typing.push('    }');
+  return typing;
 }
 
-function typingsFromType(type) {
+function typingsFromType(type: Type<any>): string {
   if (type.isBasic) {
     return tsTypeMapping[type.name];
   }
-  return type.name;
+  return type.name.split('.').pop()!;
 }
 
 /**

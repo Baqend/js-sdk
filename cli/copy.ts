@@ -1,17 +1,10 @@
-"use strict";
-const fs = require('fs');
-const glob = require("glob");
-const account = require('./account');
-const schema = require('./schema');
-const handlerTypes = ['update', 'insert', 'delete', 'validate'];
-const path = require('path');
-const readline = require('readline');
+import * as fs from 'fs';
+import { ReadStream } from 'fs';
+import * as account from './account';
+import { EntityManager } from '../lib';
+import { isDir } from './helper';
 
-/**
- * @param {string} arg
- * @return {[string, string]}
- */
-function splitArg(arg) {
+function splitArg(arg: string): [string | null, string] {
   const index = arg.lastIndexOf(':');
   // Has app and path part?
   if (index >= 0) {
@@ -31,34 +24,15 @@ function splitArg(arg) {
   return [null, arg];
 }
 
-/**
- * @param {EntityManager | null} db
- * @param {string} path
- * @return {Promise<boolean>}
- */
-function isDirectory(db, path) {
+function isDirectory(db: EntityManager | null, path: string): Promise<boolean> {
   if (db) {
     return Promise.resolve(path.endsWith('/'));
   }
 
-  return new Promise((resolve, reject) => {
-    fs.stat(path, (err, stat) => {
-      if (!err) {
-        resolve(stat.isDirectory());
-      } else if (err.code === 'ENOENT') {
-        resolve(false);
-      } else {
-        reject(err);
-      }
-    });
-  });
+  return isDir(path);
 }
 
-/**
- * @param {string} path
- * @return {string}
- */
-function extractFilename(path) {
+function extractFilename(path: string): string {
   const index = path.lastIndexOf('/');
   if (index >= 0) {
     return path.substring(index + 1);
@@ -67,11 +41,7 @@ function extractFilename(path) {
   return path;
 }
 
-/**
- * @param {string} path
- * @return {string}
- */
-function removeTrailingSlash(path) {
+function removeTrailingSlash(path: string): string {
   if (path.endsWith('/')) {
     return path.substring(0, path.length - 1);
   }
@@ -79,30 +49,21 @@ function removeTrailingSlash(path) {
   return path;
 }
 
-/**
- * @param {EntityManager | null} sourceDB
- * @param {string} sourcePath
- * @param {EntityManager | null} destDB
- * @param {string} destPath
- */
-function normalizeArgs(sourceDB, sourcePath, destDB, destPath) {
-  return isDirectory(destDB, destPath).then((isDirectory) => {
-    if (isDirectory) {
+function normalizeArgs(sourceDB: EntityManager | null, sourcePath: string,
+  destDB: EntityManager | null, destPath: string) {
+  return isDirectory(destDB, destPath).then((directory) => {
+    let destination = destPath;
+    if (directory) {
       const sourceFilename = extractFilename(sourcePath);
-      destPath = `${removeTrailingSlash(destPath)}/${sourceFilename}`;
+      destination = `${removeTrailingSlash(destPath)}/${sourceFilename}`;
     }
 
-    return [sourcePath, destPath];
+    return [sourcePath, destination];
   });
 }
 
-/**
- *
- * @param {string | null} sourceApp
- * @param {string | null} destApp
- * @return {Promise<[EntityManager | null, EntityManager | null]>}
- */
-function login(sourceApp, destApp) {
+function login(sourceApp: string | null, destApp: string | null):
+Promise<[EntityManager | null, EntityManager | null]> {
   if (sourceApp) {
     if (destApp) {
       return Promise.all([account.login({ app: sourceApp }), account.login({ app: destApp })]);
@@ -116,18 +77,11 @@ function login(sourceApp, destApp) {
   return Promise.resolve([null, null]);
 }
 
-/**
- * @param {EntityManager | null} db
- * @param {string} path
- * @return {Promise<[ReadableStream, number]>}
- */
-function streamFrom(db, path) {
+function streamFrom(db: EntityManager | null, path: string): Promise<[ReadStream, number]> {
   if (db) {
-    const file = new db.File({ path: path });
+    const file = new db.File({ path });
 
-    return file.loadMetadata().then(() => {
-      return Promise.all([file.download({ type: 'stream' }), file.size]);
-    });
+    return file.loadMetadata().then(() => Promise.all([file.download({ type: 'stream' }) as Promise<ReadStream>, file.size!]));
   }
 
   return new Promise((resolve, reject) => {
@@ -135,22 +89,17 @@ function streamFrom(db, path) {
       if (err) {
         reject(err);
       } else {
-        resolve([fs.createReadStream(path), stat.size])
+        resolve([fs.createReadStream(path), stat.size]);
       }
     });
   });
 }
 
-/**
- * @param {EntityManager | null} db
- * @param {string} path
- * @param {ReadableStream} rs
- * @param {number} size
- * @return {Promise}
- */
-function streamTo(db, path, rs, size) {
+function streamTo(db: EntityManager | null, path: string, rs: ReadStream, size: number): Promise<any> {
   if (db) {
-    const file = new db.File({ path: path, data: rs, size: size, type: 'stream' });
+    const file = new db.File({
+      path, data: rs, size, type: 'stream',
+    });
     return file.upload({ force: true });
   }
 
@@ -165,35 +114,14 @@ function streamTo(db, path, rs, size) {
 
 /**
  * Copies from arbitrary location to each other.
- *
- * @param {{ source: string, dest: string }} args
- * @return {Promise<any>}
  */
-function copy(args) {
+export function copy(args: { source: string, dest: string }): Promise<any> {
   // TODO: Split arguments with destructure in the future
-  const source = splitArg(args.source);
-  const sourceApp = source[0];
-  const sourcePath = source[1];
-  const dest = splitArg(args.dest);
-  const destApp = dest[0];
-  const destPath = dest[1];
+  const [sourceApp, sourcePath] = splitArg(args.source);
+  const [destApp, destPath] = splitArg(args.dest);
 
-  return login(sourceApp, destApp).then((dbs) => {
-    const sourceDB = dbs[0];
-    const destDB = dbs[1];
-
-    return normalizeArgs(sourceDB, sourcePath, destDB, destPath).then((paths) => {
-      const sourcePath = paths[0];
-      const destPath = paths[1];
-
-      return streamFrom(sourceDB, sourcePath).then((args) => {
-        const rs = args[0];
-        const size = args[1];
-
-        return streamTo(destDB, destPath, rs, size);
-      });
-    });
-  });
+  return login(sourceApp, destApp)
+    .then(([sourceDB, destDB]) => normalizeArgs(sourceDB, sourcePath, destDB, destPath)
+      .then(([nSourcePath, nDestPath]) => streamFrom(sourceDB, nSourcePath)
+        .then(([rs, size]) => streamTo(destDB, nDestPath, rs, size))));
 }
-
-module.exports = copy;

@@ -1,5 +1,6 @@
 /* eslint-disable no-restricted-globals */
 
+import type { ReadStream } from 'fs';
 import { PersistentError } from '../error';
 import { Message } from './Message';
 import {
@@ -7,7 +8,7 @@ import {
 } from '../util';
 
 export type Receiver = (response: Response) => void;
-export type RequestBody = string | Blob | Buffer | ArrayBuffer | FormData | Json | JsonLike;
+export type RequestBody = string | Blob | Buffer | ArrayBuffer | FormData | Json | JsonLike | ReadStream;
 export type RequestBodyType = 'json'|'text'|'blob'|'buffer'|'arraybuffer'|'data-url'|'base64'|'form'|'stream';
 export type ResponseBodyType = 'json'|'text'|'blob'|'arraybuffer'|'data-url'|'base64'|'stream';
 export type Request = {

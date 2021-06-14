@@ -42,7 +42,7 @@
   "dependencies": {
     "commander": "^2.20.3",
     "glob": "^7.1.6",
-    "opn": "^4.0.2",
+    "open": "^8.2.0",
     "rimraf": "^2.7.1",
     "rxjs": "^6.6.3",
     "simple-git": "^1.132.0",
@@ -106,7 +106,7 @@
     "source-map-support": "^0.5.19",
     "terser-webpack-plugin": "^3.1.0",
     "ts-loader": "^7.0.5",
-    "ts-node": "^8.10.2",
+    "ts-node": "^10.0.0",
     "typedoc": "^0.18.0",
     "typescript": "^3.9.7",
     "utils": "^0.3.1",
@@ -125,14 +125,15 @@
     "dev-browser": "webpack-dev-server --config webpack.config.js --open --project tsconfig.lib.json",
     "build-commonjs": "tsc -m commonjs --target es5 --outDir commonjs --project tsconfig.lib.json",
     "build-esm": "tsc -m es2015 --target es6 --outDir esm --declaration --project tsconfig.lib.json",
+    "build-cli": "tsc -m commonjs --target es6 --project tsconfig.cli.json",
     "build-dist": "webpack --config-name=es5 && webpack --config-name=es2015  --project tsconfig.lib.json",
-    "dist": "npm run build-commonjs && npm run build-esm && npm run build-dist && npm run docs",
+    "dist": "npm run build-commonjs && npm run build-esm && npm run build-dist && npm run build-cli && npm run docs",
     "prepack": "npm install && npm run dist",
     "release": "node scripts/release",
     "typings": "npm run typings:test",
     "typings:test": "tsc --version && tsc -p spec-ts/tsconfig.json",
     "docs": "typedoc --out doc lib",
-    "baqend": "node cli/index.ts",
+    "baqend": "node cli",
     "lint": "eslint --ext .ts lib/",
     "prepare": ""
   },
@@ -140,6 +141,6 @@
     "node": ">=10.0.0"
   },
   "bin": {
-    "baqend": "cli/index.ts"
+    "baqend": "cli"
   }
 }

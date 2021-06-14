@@ -1,22 +1,23 @@
-#!/usr/bin/env ts-node
+#! /usr/bin/env node
 
-const account = require('./account');
-const copy = require('./copy');
-const deploy = require('./deploy');
-const download = require('./download');
-const schema = require('./schema');
-const typings = require('./typings');
-const starter = require('./starter');
+/* eslint-disable no-console,no-return-assign */
+import program from 'commander';
+import * as account from './account';
+import { typings } from './typings';
+import { schema } from './schema';
+import { download } from './download';
+import { deploy } from './deploy';
+import { copy } from './copy';
 
-if (!module.parent) {
-  const program = require('commander');
-  const pjson = require('../package.json');
-  let result;
+export { deploy, typings, account };
 
-  // provide the cli command name
-  program._name = 'baqend';
+const pjson = require('../package.json');
+
+export function run() {
+  let result: Promise<any> | null = null;
 
   program
+    .name('baqend')
     .version(pjson.version);
   program
     .command('login [app]')
@@ -46,11 +47,11 @@ if (!module.parent) {
     .option('-f, --file-dir <dir>', 'path to file directory [default: www]', 'www')
     .option('-g, --file-glob <pattern>', 'pattern to match files [default: **/*]', '**/*')
     .option('-b, --bucket-path <path>', 'remote path where the files will be uploaded to.', 'www')
-    .option('-C, --code', 'deploy code')
+    .option('-C, --code', 'deploy baqend code')
     .option('-c, --code-dir <dir>', 'path to code directory [default: baqend]', 'baqend')
     .option('-S, --schema', 'deploy schema')
     .action((app, options) => result = deploy({ app, ...options }));
-  const copyCommand = program
+  program
     .command('copy <source> <dest>')
     .alias('cp')
     .description('Copies single files to and from Baqend')
@@ -108,10 +109,6 @@ if (!module.parent) {
         + '  http://my-baqend-domain:8080/v1.',
     );
   program
-    .command('start [name] [dir]')
-    .description('Clones the starter kit and install it in the given directory')
-    .action((name, dir) => result = starter(name, dir));
-  program
     .command('apps')
     .description('List all your apps')
     .action((options) => result = account.listApps(options));
@@ -119,16 +116,14 @@ if (!module.parent) {
 
   if (!result) {
     program.outputHelp();
-  } else if (result) {
-    if (result.catch) {
-      result.catch((e) => {
-        console.error(e.stack || e);
-        process.exit(1);
-      });
-    }
+  } else {
+    result!.catch((e) => {
+      console.error(e.stack || e);
+      process.exit(1);
+    });
   }
 }
 
-module.exports.deploy = deploy;
-module.exports.typings = typings;
-module.exports.account = account;
+if (!module.parent) {
+  run();
+}

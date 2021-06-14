@@ -1,29 +1,63 @@
-const os = require('os');
-const fs = require('fs');
-const baqend = require('..');
+/* eslint-disable no-console */
+/* eslint-disable @typescript-eslint/no-use-before-define */
+
+import open from 'open';
+import crypto from 'crypto';
+import fs from 'fs';
+import os from 'os';
+import * as helper from './helper';
+import { EntityManager, EntityManagerFactory } from '../lib';
+import { TokenStorage } from '../lib/intersection';
 
 const fileName = `${os.homedir()}/.baqend`;
-const crypto = require('crypto');
-const opn = require('opn');
-
 const algorithm = 'aes-256-ctr';
 const cipherKey = Buffer.from('08cb2e72b03e90df6b4a4112d2933056574748707276fbdc62d1096d16ca18b1', 'hex');
 const cipherIv = Buffer.from('fcc8e0479287f4809b77e1e23777e519', 'hex');
-const password = 'N2Ki=za[8iy4ff4jYn/3,y;';
+const PROFILE_DEFAULT_KEY = 'N2Ki=za[8iy4ff4jYn/3,y;';
 const bbqHost = 'bbq';
-const helper = require('./helper');
 
-function getAppInfo(args) {
+export type AccountArgs = {
+  app?: string,
+  username?: string,
+  password?: string,
+  token?: string,
+  skipInput?: boolean,
+};
+
+export type AppInfo = {
+  isCustomHost: boolean,
+  host: string,
+  app: string | null,
+};
+
+export type UsernamePasswordCredentials = {
+  username: string,
+  password: string,
+};
+
+export type TokenCredentials = {
+  token: string,
+};
+
+export type Credentials = UsernamePasswordCredentials | TokenCredentials;
+
+type ProfileJson = {
+  [host: string]: {
+    host: string,
+  } & Credentials,
+};
+
+function getAppInfo(args: AccountArgs): AppInfo {
   const isCustomHost = args.app && /^https?:\/\//.test(args.app);
 
   return {
     isCustomHost: !!isCustomHost,
-    host: isCustomHost ? args.app : bbqHost,
-    app: isCustomHost ? null : args.app,
+    host: isCustomHost ? args.app! : bbqHost,
+    app: isCustomHost ? null : args.app!,
   };
 }
 
-function getArgsCredentials(args) {
+function getArgsCredentials(args: AccountArgs): Credentials | null {
   if (args.username && args.password) {
     return {
       username: args.username,
@@ -38,7 +72,7 @@ function getArgsCredentials(args) {
   return null;
 }
 
-function getEnvCredentials() {
+function getEnvCredentials(): Credentials | null {
   const token = process.env.BAQEND_TOKEN || process.env.BAT;
   if (token) {
     return { token };
@@ -47,7 +81,7 @@ function getEnvCredentials() {
   return null;
 }
 
-function getProfileCredentials(appInfo) {
+function getProfileCredentials(appInfo: AppInfo): Promise<Credentials | null> {
   return readProfileFile().then((json) => {
     const credentials = json[appInfo.host];
 
@@ -55,7 +89,7 @@ function getProfileCredentials(appInfo) {
       return null;
     }
 
-    if (credentials.password) {
+    if ('password' in credentials) {
       credentials.password = decrypt(credentials.password);
     }
 
@@ -63,7 +97,7 @@ function getProfileCredentials(appInfo) {
   }).catch(() => null);
 }
 
-function getLocalCredentials(appInfo) {
+function getLocalCredentials(appInfo: AppInfo): Credentials | null {
   if (appInfo.isCustomHost) {
     return { username: 'root', password: 'root' };
   }
@@ -71,7 +105,7 @@ function getLocalCredentials(appInfo) {
   return null;
 }
 
-function getInputCredentials(appInfo, showLoginInfo) {
+function getInputCredentials(appInfo: AppInfo, showLoginInfo?: boolean): Promise<UsernamePasswordCredentials> {
   if (!process.stdout.isTTY) {
     return Promise.reject(new Error('Can\'t interactive login into baqend, no tty session was detected.'));
   }
@@ -91,7 +125,7 @@ function getInputCredentials(appInfo, showLoginInfo) {
   return readInputCredentials(appInfo);
 }
 
-function getCredentials(appInfo, args) {
+function getCredentials(appInfo: AppInfo, args: AccountArgs): Promise<Credentials | null> {
   let providers = Promise.resolve(null)
     .then((credentials) => credentials || getArgsCredentials(args))
     .then((credentials) => credentials || getEnvCredentials())
@@ -106,7 +140,7 @@ function getCredentials(appInfo, args) {
   return providers;
 }
 
-function register(args) {
+export function register(args: AccountArgs) {
   const appInfo = getAppInfo(args);
 
   return getInputCredentials(appInfo)
@@ -114,11 +148,11 @@ function register(args) {
       .then((db) => db.User.register(credentials.username, credentials.password).then(() => db))
       .then((db) => Promise.all([
         getDefaultApp(db).then((name) => console.log(`Your app name is ${name}`)),
-        saveCredentials(appInfo, credentials),
+        saveCredentials(appInfo, credentials!),
       ])));
 }
 
-function connect(args) {
+function connect(args: AccountArgs) {
   const appInfo = getAppInfo(args);
   return getCredentials(appInfo, args)
     .then((credentials) => {
@@ -128,13 +162,13 @@ function connect(args) {
     });
 }
 
-function appConnect(appInfo, credentials) {
+function appConnect(appInfo: AppInfo, credentials?: Credentials): Promise<EntityManager> {
   // do not use the global token storage here, to prevent login collisions on the bbq app
-  const factory = new baqend.EntityManagerFactory({ host: appInfo.host, secure: true, tokenStorageFactory: baqend.util.TokenStorage });
-  return factory.createEntityManager(true).ready().then((db) => {
+  const factory = new EntityManagerFactory({ host: appInfo.host, secure: true, tokenStorageFactory: TokenStorage });
+  return factory.createEntityManager(true).ready().then((db: EntityManager) => {
     if (!credentials) return db;
 
-    if (credentials.token) {
+    if ('token' in credentials) {
       return db.User.loginWithToken(credentials.token)
         .then((me) => {
           if (me) {
@@ -147,7 +181,7 @@ function appConnect(appInfo, credentials) {
   });
 }
 
-function login(args) {
+export function login(args: AccountArgs): Promise<EntityManager> {
   const appInfo = getAppInfo(args);
   return connect(args)
     .then((db) => {
@@ -169,69 +203,71 @@ function login(args) {
     });
 }
 
-function bbqAppLogin(db, appName) {
+function bbqAppLogin(db: EntityManager, appName: string) {
   return db.modules.get('apps', { app: appName }).then((result) => {
     if (!result) {
       throw new Error(`App (${appName}) not found.`);
     }
 
-    return appConnect({ host: result.name }, { token: result.token });
+    return appConnect({ host: result.name, isCustomHost: false, app: appName }, { token: result.token });
   });
 }
 
-function logout(args) {
+export function logout(args: AccountArgs) {
   const appInfo = getAppInfo(args);
   return readProfileFile().then((json) => {
+    // eslint-disable-next-line no-param-reassign
     delete json[appInfo.host];
     return writeProfileFile(json);
   });
 }
 
-function persistLogin(args) {
+export function persistLogin(args: AccountArgs) {
   const appInfo = getAppInfo(args);
-  let credentials = getArgsCredentials(args);
+  let credentials: Credentials | Promise<Credentials> | null = getArgsCredentials(args);
 
   if (!credentials) {
     credentials = getInputCredentials(appInfo, false);
   }
 
   return Promise.resolve(credentials)
-    .then((credentials) => appConnect(appInfo, credentials).then(() => saveCredentials(appInfo, credentials))).then(() => console.log('You have successfully been logged in.'));
+    .then((creds: Credentials) => appConnect(appInfo, creds).then(() => saveCredentials(appInfo, creds)))
+    .then(() => console.log('You have successfully been logged in.'));
 }
 
-function openApp(app) {
+export function openApp(app: string) {
   if (app) {
-    return opn(`https://${app}.app.baqend.com`);
+    return open(`https://${app}.app.baqend.com`);
   }
   return login({}).then((db) => {
-    opn(`https://${db.connection.host}`);
+    open(`https://${db.connection!.host}`);
   });
 }
 
-function openDashboard(args) {
+export function openDashboard(args: AccountArgs) {
   return connect(args).then((db) => {
-    opn(`https://dashboard.baqend.com/login?token=${db.token}`);
+    open(`https://dashboard.baqend.com/login?token=${db.token}`);
   }).catch(() => {
-    opn('https://dashboard.baqend.com');
+    open('https://dashboard.baqend.com');
   });
 }
 
-function listApps(args) {
+export function listApps(args: AccountArgs) {
   return connect(args)
     .then((db) => getApps(db))
     .then((apps) => apps.forEach((app) => console.log(app)));
 }
 
-function whoami(args) {
+export function whoami(args: AccountArgs) {
   return connect({ skipInput: true, ...args })
-    .then((db) => console.log(db.User.me.username), () => console.log('You are not logged in.'));
+    .then((db) => console.log(db.User.me!.username), () => console.log('You are not logged in.'));
 }
 
-function getApps(db) {
-  return db.modules.get('apps').then((apps) => apps.map((app) => app.name));
+function getApps(db: EntityManager): Promise<string[]> {
+  return db.modules.get('apps').then((apps: ({ name: string })[]) => apps.map((app) => app.name));
 }
 
-function getDefaultApp(db) {
+function getDefaultApp(db: EntityManager) {
   return getApps(db).then((apps) => {
     if (apps.length === 1) {
       return apps[0];
@@ -240,29 +276,31 @@ function getDefaultApp(db) {
   });
 }
 
-function readInputCredentials(appInfo) {
+function readInputCredentials(appInfo: AppInfo): Promise<UsernamePasswordCredentials> {
   return helper.readInput(appInfo.isCustomHost ? 'Username: ' : 'E-Mail: ')
-    .then((username) => helper.readInput('Password: ', true).then((password) => {
+    .then((username: string) => helper.readInput('Password: ', true).then((password) => {
       console.log();
       return { username, password };
     }));
 }
 
-function encrypt(input) {
+function encrypt(input: string) {
   const cipher = crypto.createCipheriv(algorithm, cipherKey, cipherIv);
   let encrypted = cipher.update(input, 'utf8', 'base64');
   encrypted += cipher.final('base64');
   return encrypted;
 }
 
-function decrypt(input) {
-  const decipher = crypto.createDecipher(algorithm, password);
+function decrypt(input: string) {
+  // TODO we need to handle that more properly
+  // eslint-disable-next-line node/no-deprecated-api
+  const decipher = crypto.createDecipher(algorithm, PROFILE_DEFAULT_KEY);
   let decrypted = decipher.update(input, 'base64', 'utf8');
   decrypted += decipher.final('utf8');
   return decrypted;
 }
 
-function writeProfileFile(json) {
+function writeProfileFile(json: ProfileJson) {
   return new Promise((resolve, reject) => {
     fs.writeFile(fileName, JSON.stringify(json), (err) => {
       if (err) {
@@ -274,8 +312,8 @@ function writeProfileFile(json) {
   });
 }
 
-function readProfileFile() {
-  return new Promise((resolve, reject) => {
+function readProfileFile(): Promise<ProfileJson> {
+  return new Promise((resolve) => {
     if (!fs.existsSync(fileName)) {
       resolve({});
       return;
@@ -290,18 +328,14 @@ function readProfileFile() {
   });
 }
 
-function saveCredentials(appInfo, credentials) {
+function saveCredentials(appInfo: AppInfo, credentials: Credentials) {
   return readProfileFile().then((json) => {
-    json[appInfo.host] = { ...json[appInfo.host], ...credentials, password: encrypt(credentials.password) };
+    let cred = credentials;
+    if ('password' in cred) {
+      cred = { ...cred, password: encrypt(cred.password) };
+    }
+    // eslint-disable-next-line no-param-reassign
+    json[appInfo.host] = { ...json[appInfo.host], ...cred };
     return writeProfileFile(json);
   });
 }
-
-exports.login = login;
-exports.register = register;
-exports.logout = logout;
-exports.openApp = openApp;
-exports.persistLogin = persistLogin;
-exports.whoami = whoami;
-exports.listApps = listApps;
-exports.openDashboard = openDashboard;
