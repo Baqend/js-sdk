@@ -1,4 +1,4 @@
-import { Factory } from './Factory';
+import { Factory, InstanceFactory } from './Factory';
 import type { EntityManager } from '../EntityManager';
 import type { ManagedType } from '../metamodel';
 import type { Managed } from './Managed';
@@ -26,7 +26,7 @@ export class ManagedFactory<T extends Managed> extends Factory<T> {
    * This property is an alias for this factory type prototype
    * @name methods
    */
-  public methods: {[methodName: string]: any} = null as any;
+  public methods: { [methodName: string]: any } = null as any;
 
   /**
    * The managed type of this factory
@@ -55,7 +55,7 @@ export class ManagedFactory<T extends Managed> extends Factory<T> {
    * @param methods The methods to add
    * @return
    */
-  addMethods(methods: {[name: string]: Function}): void {
+  addMethods(methods: { [name: string]: Function }): void {
     Object.assign(this.methods, methods);
   }
 

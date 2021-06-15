@@ -137,7 +137,7 @@ export abstract class Message {
 
     Object.assign(cls.prototype, members);
 
-    return cls as ExternalMessage<M>;
+    return cls as unknown as ExternalMessage<M>;
   }
 
   get isBinary() {
@@ -442,9 +442,9 @@ export abstract class Message {
    * @param customHeaders the file custom headers
    * @return This message object
    */
-  customHeaders(customHeaders: {[headers: string]: string}): this;
+  customHeaders(customHeaders: { [headers: string]: string }): this;
 
-  customHeaders(customHeaders?: {[headers: string]: string}): this | string {
+  customHeaders(customHeaders?: { [headers: string]: string }): this | string {
     return this.header('baqend-custom-headers', customHeaders && JSON.stringify(customHeaders));
   }
 
@@ -517,7 +517,7 @@ export abstract class Message {
    * @param query which will added to the request path
    * @return
    */
-  addQueryString(query: string | {[key: string]: string}): this {
+  addQueryString(query: string | { [key: string]: string }): this {
     if (typeof query === 'string') {
       this.request.path += query;
       return this;
@@ -558,7 +558,7 @@ export abstract class Message {
   }
 }
 
-export const OAuthMessages: {[OAuthProvider: string]: ExternalMessage<OAuthMessage> } = {
+export const OAuthMessages: { [OAuthProvider: string]: ExternalMessage<OAuthMessage> } = {
   Google: Message.createExternal({
     method: 'OAUTH',
     path: 'https://accounts.google.com/o/oauth2/auth?response_type=code&access_type=online',

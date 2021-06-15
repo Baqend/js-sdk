@@ -269,7 +269,7 @@ export class EntityManager extends Lockable {
    * @param types
    * @return    * @private
    */
-  private _createObjectFactory(types: {[type: string]: ManagedType<any>}): void {
+  private _createObjectFactory(types: { [type: string]: ManagedType<any> }): void {
     const values = Object.values(types);
     for (let i = 0; i < values.length; i += 1) {
       const type = values[i];
@@ -450,7 +450,7 @@ export class EntityManager extends Lockable {
    * @return
    */
   resolveDepth<T extends Entity>(entity: T, options?: { refresh?: boolean, local?: boolean, depth?: number | boolean,
-    resolved?: Entity[]}): Promise<T> {
+    resolved?: Entity[] }): Promise<T> {
     if (!options || !options.depth) {
       return Promise.resolve(entity);
     }
@@ -582,7 +582,7 @@ export class EntityManager extends Lockable {
    * @param withoutLock Set true to save the entity without locking
    * @return
    */
-  save<E extends Entity>(entity: E, options?: { force?: boolean, depth?: number | boolean, refresh?: boolean},
+  save<E extends Entity>(entity: E, options?: { force?: boolean, depth?: number | boolean, refresh?: boolean },
     withoutLock = false): Promise<E> {
     const opt = options || {};
 
@@ -972,6 +972,7 @@ export class EntityManager extends Lockable {
 
     let msg: OAuthMessage;
     if (OAuthMessages[provider]) {
+      // @ts-ignore
       msg = new OAuthMessages[provider](clientID, opt.scope as string, JSON.stringify(opt.state)) as OAuthMessage;
       msg.addRedirectOrigin(this.connection.origin + this.connection.basePath);
     } else {
@@ -1012,7 +1013,7 @@ export class EntityManager extends Lockable {
    * @param options Additional window options
    * @return
    */
-  openOAuthWindow(url: string, targetOrTitle: string, options: {[option: string]: string}): void {
+  openOAuthWindow(url: string, targetOrTitle: string, options: { [option: string]: string }): void {
     const str = Object.keys(options)
       .filter((key) => options[key] !== undefined)
       .map((key) => `${key}=${options[key]}`)
