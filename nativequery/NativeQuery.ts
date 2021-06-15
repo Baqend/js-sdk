@@ -152,5 +152,8 @@ export class NativeQueryResponse {
     }
     return this.response.entity[0]["header"]["columnDefinitions"];
   }
+  message() : string {
+    return this.response.entity[0].message;
+  }  
   
 }
