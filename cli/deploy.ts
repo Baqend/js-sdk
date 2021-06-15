@@ -1,13 +1,12 @@
-/* eslint-disable @typescript-eslint/no-use-before-define,no-console,no-param-reassign */
 import fs from 'fs';
 import glob from 'glob';
 import { promisify } from 'util';
 import { join as pathJoin } from 'path';
 import readline from 'readline';
+import { EntityManager } from 'baqend';
 import * as account from './account';
 import { uploadSchema } from './schema';
 import { AccountArgs } from './account';
-import { EntityManager } from '../lib';
 
 const handlerTypes = ['update', 'insert', 'delete', 'validate'];
 
@@ -44,12 +43,13 @@ export function deploy(args: SchemaArgs & AccountArgs) {
 }
 
 function deployFiles(db: EntityManager, path: string, cwd: string, pattern: string): Promise<any> {
-  while (path.length && path.charAt(0) === '/') path = path.substring(1);
+  let normalizedPath = path;
+  while (normalizedPath.length && normalizedPath.charAt(0) === '/') normalizedPath = normalizedPath.substring(1);
 
-  while (path.length && path.charAt(path.length - 1) === '/') path = path.substring(0, path.length - 1);
+  while (normalizedPath.length && normalizedPath.charAt(normalizedPath.length - 1) === '/') normalizedPath = normalizedPath.substring(0, normalizedPath.length - 1);
 
-  if (!path.length) {
-    console.error(`Invalid bucket-path ${path}`);
+  if (!normalizedPath.length) {
+    console.error(`Invalid bucket-path ${normalizedPath}`);
     return Promise.resolve();
   }
 
@@ -59,7 +59,7 @@ function deployFiles(db: EntityManager, path: string, cwd: string, pattern: stri
       else resolve(files as string[]);
     });
   }) as Promise<string[]>)
-    .then((files) => uploadFiles(db, path, files, cwd))
+    .then((files) => uploadFiles(db, normalizedPath, files, cwd))
     .then((result) => {
       if (result && result.length > 0) {
         console.log('File deployment completed.');

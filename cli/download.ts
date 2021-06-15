@@ -1,8 +1,8 @@
 /* eslint-disable no-console,@typescript-eslint/no-use-before-define */
 import path from 'path';
+import { EntityManager } from 'baqend';
 import * as account from './account';
 import { AccountArgs } from './account';
-import { EntityManager } from '../lib';
 import {
   ensureDir, writeFile,
 } from './helper';

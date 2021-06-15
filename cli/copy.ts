@@ -1,7 +1,7 @@
 import * as fs from 'fs';
 import { ReadStream } from 'fs';
+import { EntityManager } from 'baqend';
 import * as account from './account';
-import { EntityManager } from '../lib';
 import { isDir } from './helper';
 
 function splitArg(arg: string): [string | null, string] {

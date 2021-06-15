@@ -1,13 +1,13 @@
-/* eslint-disable no-console */
 import { join as pathJoin } from 'path';
+import { EntityManager, message, util } from 'baqend';
 import * as account from './account';
 import * as helper from './helper';
-import { EntityManager, message } from '../lib';
-import { JsonMap } from '../lib/util';
 import { AccountArgs } from './account';
 import {
   ensureDir, readDir, readFile, writeFile,
 } from './helper';
+
+type JsonMap = util.JsonMap;
 
 const SCHEMA_FILE_PATH = './baqend/schema/';
 

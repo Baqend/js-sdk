@@ -106,5 +106,21 @@ module.exports = {
         'vars-on-top': 'off',
       },
     },
+
+    {
+      files: ['cli/*.ts'],
+
+      env: {
+        node: true,
+      },
+
+      rules: {
+        'no-console': 'off',
+        '@typescript-eslint/no-use-before-define': 'off',
+        // we must require our self which isn't supported right now in ts
+        // https://github.com/microsoft/TypeScript/issues/38675
+        'import/no-extraneous-dependencies': 'off'
+      }
+    }
   ],
 };

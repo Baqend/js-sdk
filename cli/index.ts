@@ -1,6 +1,6 @@
 #! /usr/bin/env node
 
-/* eslint-disable no-console,no-return-assign */
+/* eslint-disable no-return-assign */
 import program from 'commander';
 import * as account from './account';
 import { typings } from './typings';

@@ -1,13 +1,11 @@
-/* eslint-disable no-console */
-/* eslint-disable @typescript-eslint/no-use-before-define */
-
 import open from 'open';
 import crypto from 'crypto';
 import fs from 'fs';
 import os from 'os';
+import { EntityManager, EntityManagerFactory, intersection } from 'baqend';
 import * as helper from './helper';
-import { EntityManager, EntityManagerFactory } from '../lib';
-import { TokenStorage } from '../lib/intersection';
+
+const { TokenStorage } = intersection;
 
 const fileName = `${os.homedir()}/.baqend`;
 const algorithm = 'aes-256-ctr';
@@ -301,7 +299,7 @@ function decrypt(input: string) {
 }
 
 function writeProfileFile(json: ProfileJson) {
-  return new Promise((resolve, reject) => {
+  return new Promise<void>((resolve, reject) => {
     fs.writeFile(fileName, JSON.stringify(json), (err) => {
       if (err) {
         console.warn('Baqend Profile file can\'t be written', err);

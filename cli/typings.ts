@@ -1,20 +1,9 @@
 /* eslint-disable @typescript-eslint/no-use-before-define,no-console,no-restricted-syntax,no-continue,guard-for-in */
 import fs from 'fs';
 import os from 'os';
-import { EntityManagerFactory } from '../lib';
-import {
-  EmbeddableType,
-  EntityType,
-  ListAttribute,
-  MapAttribute,
-  Metamodel,
-  PluralAttribute,
-  SetAttribute,
-  SingularAttribute,
-  Type,
-} from '../lib/metamodel';
+import { EntityManagerFactory, metamodel as meta } from 'baqend';
 
-const { CollectionType } = PluralAttribute;
+const { CollectionType } = meta.PluralAttribute;
 
 const tsTypeMapping: {[type: string]: string} = {
   Boolean: 'boolean',
@@ -61,7 +50,7 @@ function createTypings(app: string, dest: string) {
   });
 }
 
-function typingsFromMetamodel(metamodel: Metamodel) {
+function typingsFromMetamodel(metamodel: meta.Metamodel) {
   const typing = [];
   const namespaces: {[namespace: string]: string[]} = {};
   // import all native types, so they can be easily used in definitions
@@ -133,7 +122,7 @@ function typingsFromMetamodel(metamodel: Metamodel) {
   return typing;
 }
 
-function typingsFromSchema(typeName: string, entity: EntityType<any> | EmbeddableType<any>, type: string) {
+function typingsFromSchema(typeName: string, entity: meta.EntityType<any> | meta.EmbeddableType<any>, type: string) {
   const typing: string[] = [];
 
   typing.push(`    interface ${typeName} extends binding.${type} {`);
@@ -141,23 +130,23 @@ function typingsFromSchema(typeName: string, entity: EntityType<any> | Embeddabl
   for (const attribute of entity.declaredAttributes) {
     if (!attribute.isMetadata) {
       if (attribute.isCollection) {
-        switch ((attribute as PluralAttribute<any, any>).collectionType) {
+        switch ((attribute as meta.PluralAttribute<any, any>).collectionType) {
           case CollectionType.LIST:
-            typing.push(`      ${attribute.name}: Array<${typingsFromType((attribute as ListAttribute<any>).elementType)}>;`);
+            typing.push(`      ${attribute.name}: Array<${typingsFromType((attribute as meta.ListAttribute<any>).elementType)}>;`);
             break;
           case CollectionType.MAP: {
-            const mapAttr = attribute as MapAttribute<any, any>;
+            const mapAttr = attribute as meta.MapAttribute<any, any>;
             typing.push(`      ${attribute.name}: Map<${typingsFromType(mapAttr.keyType)}, ${typingsFromType(mapAttr.elementType)}>;`);
             break;
           }
           case CollectionType.SET:
-            typing.push(`      ${attribute.name}: Set<${typingsFromType((attribute as SetAttribute<any>).elementType)}>;`);
+            typing.push(`      ${attribute.name}: Set<${typingsFromType((attribute as meta.SetAttribute<any>).elementType)}>;`);
             break;
           default:
             break;
         }
       } else {
-        typing.push(`      ${attribute.name}: ${typingsFromType((attribute as SingularAttribute<any>).type)};`);
+        typing.push(`      ${attribute.name}: ${typingsFromType((attribute as meta.SingularAttribute<any>).type)};`);
       }
     }
   }
@@ -166,7 +155,7 @@ function typingsFromSchema(typeName: string, entity: EntityType<any> | Embeddabl
   return typing;
 }
 
-function typingsFromType(type: Type<any>): string {
+function typingsFromType(type: meta.Type<any>): string {
   if (type.isBasic) {
     return tsTypeMapping[type.name];
   }
