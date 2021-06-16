@@ -10,6 +10,14 @@ describe('More NativeSQL Tests', async function () {
     await storeOne();
     await simpleInsert();
   });
+  it('Just garbage', async function () {
+    await setup();
+    await garbage();
+  });
+  it('Null insert', async function () {
+    await setup();
+    await insertNull();
+  });
 });
 
 async function simpleInsert() {
@@ -18,6 +26,17 @@ async function simpleInsert() {
   expect(response.message()).eql('1 rows inserted');
 }
 
+async function insertNull() {
+  const response = await em.nativeQuery.execute('insert into NQOne (id, name) values (201,null)');
+  expect(response.ok()).eql(true);
+  expect(response.message()).eql('1 rows inserted');
+}
+
+async function garbage() {
+  const response = await em.nativeQuery.execute('hasgdhsadg');
+  expect(response.ok()).eql(false);
+  expect(response.status()).eql(468);
+}
 async function setup() {
   await connect(false);
   await produceMetaModel();
