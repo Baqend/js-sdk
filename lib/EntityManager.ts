@@ -17,7 +17,7 @@ import {
   uuid,
 } from './util';
 import {
-  Message, StatusCode, Connector, OAuthMessages, OAuthMessage,
+  Message, StatusCode, Connector, OAuthMessage,
 } from './connector';
 import { BloomFilter } from './caching';
 import { GeoPoint } from './GeoPoint';
@@ -41,6 +41,7 @@ import {
   ValidationResult,
   Validator,
 } from './intersection';
+import { appendQueryParams } from './connector/Message';
 
 const DB_PREFIX = '/db/';
 
@@ -949,7 +950,7 @@ export class EntityManager extends Lockable {
     return this.withLock(() => this.send(new messages.Logout()).then(this._logout.bind(this)));
   }
 
-  loginWithOAuth(provider: string, clientID: string, options: OAuthOptions): Promise<any> {
+  loginWithOAuth(provider: string, options: OAuthOptions): any | Promise<model.User | null> {
     if (!this.connection) {
       throw new Error('This EntityManager is not connected.');
     }
@@ -963,36 +964,43 @@ export class EntityManager extends Lockable {
       timeout: 5 * 60 * 1000,
       state: {},
       loginOption: true,
+      oAuthVersion: 2,
       ...options,
     };
+
+    if (opt.deviceCode) {
+      return this._loginOAuthDevice(provider.toLowerCase(), opt);
+    }
+
+    if (opt.oAuthVersion !== 1 && !opt.path && !opt.deviceCode) {
+      throw new Error('No OAuth path is provided to start the OAuth flow.');
+    }
 
     if (opt.redirect) {
       Object.assign(opt.state, { redirect: opt.redirect, loginOption: opt.loginOption });
     }
 
-    let msg: OAuthMessage;
-    if (OAuthMessages[provider]) {
-      // @ts-ignore
-      msg = new OAuthMessages[provider](clientID, opt.scope as string, JSON.stringify(opt.state)) as OAuthMessage;
-      msg.addRedirectOrigin(this.connection.origin + this.connection.basePath);
-    } else {
-      throw new Error(`OAuth provider ${provider} not supported.`);
-    }
+    const oAuthEndpoint = `${this.connection.origin}${this.connection.basePath}/db/User/OAuth/${provider.toLowerCase()}`;
 
-    if (opt.path) {
-      msg.path(opt.path);
-    }
+    const url = opt.oAuthVersion === 1 ? oAuthEndpoint : appendQueryParams(opt.path!, {
+      client_id: opt.clientId,
+      scope: opt.scope,
+      state: JSON.stringify(opt.state),
+      redirect_uri: oAuthEndpoint,
+    });
 
     const windowOptions = { width: `${opt.width}`, height: `${opt.height}` };
     if (opt.redirect) {
       // use oauth via redirect by opening the login in the same window
       // for app wrappers we need to open the system browser
       const isBrowser = typeof document !== 'undefined' && (document.URL.indexOf('http://') !== -1 || document.URL.indexOf('https://') !== -1);
-      return Promise.resolve(this.openOAuthWindow(msg.request.path, isBrowser ? '_self' : '_system', windowOptions));
+      return this.openOAuthWindow(url, isBrowser ? '_self' : '_system', windowOptions);
     }
 
-    const req = this._userRequest(msg, opt.loginOption);
-    this.openOAuthWindow(msg.request.path, opt.title, windowOptions);
+    const req = this._userRequest(new OAuthMessage(), opt.loginOption);
+    if (!this.openOAuthWindow(url, opt.title, windowOptions)) {
+      throw new Error('The OAuth flow with a Pop-Up can only be issued in browsers. Add a redirect URL to the options to return to your app via that redirect after the OAuth flow succeed.');
+    }
 
     return new Promise((resolve, reject) => {
       const timeout = setTimeout(() => {
@@ -1005,6 +1013,15 @@ export class EntityManager extends Lockable {
     });
   }
 
+  private async _loginOAuthDevice(provider: string, opt: OAuthOptions): Promise<model.User | null> {
+    try {
+      return await this._userRequest(new messages.OAuth2(provider, opt.deviceCode), opt.loginOption);
+    } catch (e) {
+      await new Promise((resolve) => setTimeout(resolve, 5000));
+      return this._loginOAuthDevice(provider, opt);
+    }
+  }
+
   /**
    * Opens a new window use for OAuth logins
    * @param url The url to open
@@ -1012,13 +1029,17 @@ export class EntityManager extends Lockable {
    * @param options Additional window options
    * @return returns the window object which was opened by the open call
    */
-  openOAuthWindow(url: string, targetOrTitle: string, options: { [option: string]: string }): any {
+  openOAuthWindow(url: string, targetOrTitle: string, options: {[option: string]: string}): any {
     const str = Object.keys(options)
       .filter((key) => options[key] !== undefined)
       .map((key) => `${key}=${options[key]}`)
       .join(',');
 
-    return open(url, targetOrTitle, str); // eslint-disable-line no-restricted-globals
+    if (typeof open !== 'undefined') { // eslint-disable-line no-restricted-globals
+      return open(url, targetOrTitle, str); // eslint-disable-line no-restricted-globals
+    }
+
+    return null;
   }
 
   renew(loginOption?: LoginOption | boolean) {

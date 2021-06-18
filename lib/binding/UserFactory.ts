@@ -1,5 +1,6 @@
 import { EntityFactory } from './EntityFactory';
 import type * as model from '../model';
+import { JsonMap } from '../util';
 
 export enum LoginOption {
   /**
@@ -38,18 +39,22 @@ export class UserFactory extends EntityFactory<model.User> {
       width: 585,
       height: 545,
       scope: 'email',
+      path: 'https://accounts.google.com/o/oauth2/auth?response_type=code&access_type=online',
     },
     facebook: {
       width: 1140,
       height: 640,
       scope: 'email',
+      path: 'https://www.facebook.com/v7.0/dialog/oauth?response_type=code',
     },
     github: {
       width: 1040,
       height: 580,
       scope: 'user:email',
+      path: 'https://github.com/login/oauth/authorize?response_type=code&access_type=online',
     },
     twitter: {
+      version: 1,
       width: 740,
       height: 730,
     },
@@ -57,6 +62,7 @@ export class UserFactory extends EntityFactory<model.User> {
       width: 630,
       height: 530,
       scope: 'r_liteprofile',
+      path: 'https://www.linkedin.com/oauth/v2/authorization?response_type=code',
     },
     salesforce: {
       width: 585,
@@ -259,13 +265,12 @@ export interface UserFactory extends EntityFactory<model.User> {
    * client id and the client secret to your Baqend dashboard settings. When the returned promise succeeds the user is
    * logged in.
    *
-   * @param clientID
    * @param options
    * @param doneCallback Called when the operation succeed.
    * @param failCallback Called when the operation failed.
    * @return
    */
-  loginWithGoogle(clientID: string, options: OAuthOptions, doneCallback?: any, failCallback?: any): Promise<model.User>;
+  loginWithGoogle(options: OAuthOptions, doneCallback?: any, failCallback?: any): Promise<model.User>;
 
   /**
    * Logs the user in with Facebook via OAuth
@@ -274,14 +279,12 @@ export interface UserFactory extends EntityFactory<model.User> {
    * on the provider website, add the redirect uri: https://example.net/db/User/OAuth/facebook and copy the client id
    * and the client secret to your Baqend dashboard settings. When the returned promise succeeds the user is logged in.
    *
-   * @param clientID
    * @param options
    * @param doneCallback Called when the operation succeed.
    * @param failCallback Called when the operation failed.
    * @return
    */
-  loginWithFacebook(clientID: string, options: OAuthOptions, doneCallback?: any,
-    failCallback?: any): Promise<model.User>;
+  loginWithFacebook(options: OAuthOptions, doneCallback?: any, failCallback?: any): Promise<model.User>;
 
   /**
    * Logs the user in with GitHub via OAuth
@@ -290,13 +293,12 @@ export interface UserFactory extends EntityFactory<model.User> {
    * on the provider website, add the redirect uri: https://example.net/db/User/OAuth/github and copy the client id
    * and the client secret to your Baqend dashboard settings. When the returned promise succeeds the user is logged in.
    *
-   * @param clientID
    * @param options
    * @param doneCallback Called when the operation succeed.
    * @param failCallback Called when the operation failed.
    * @return
    */
-  loginWithGitHub(clientID: string, options: OAuthOptions, doneCallback?: any, failCallback?: any): Promise<model.User>;
+  loginWithGitHub(options: OAuthOptions, doneCallback?: any, failCallback?: any): Promise<model.User>;
 
   /**
    * Logs the user in with Twitter via OAuth
@@ -305,14 +307,12 @@ export interface UserFactory extends EntityFactory<model.User> {
    * on the provider website, add the redirect uri: https://example.net/db/User/OAuth/twitter and copy the client id
    * and the client secret to your Baqend dashboard settings. When the returned promise succeeds the user is logged in.
    *
-   * @param clientID
    * @param options
    * @param doneCallback Called when the operation succeed.
    * @param failCallback Called when the operation failed.
    * @return
    */
-  loginWithTwitter(clientID: string, options: OAuthOptions, doneCallback?: any,
-    failCallback?: any): Promise<model.User>;
+  loginWithTwitter(options: OAuthOptions, doneCallback?: any, failCallback?: any): Promise<model.User>;
 
   /**
    * Logs the user in with LinkedIn via OAuth
@@ -321,14 +321,12 @@ export interface UserFactory extends EntityFactory<model.User> {
    * on the provider website, add the redirect uri: https://example.net/db/User/OAuth/linkedin and copy the client id
    * and the client secret to your Baqend dashboard settings. When the returned promise succeeds the user is logged in.
    *
-   * @param clientID
    * @param options
    * @param doneCallback Called when the operation succeed.
    * @param failCallback Called when the operation failed.
    * @return
    */
-  loginWithLinkedIn(clientID: string, options: OAuthOptions, doneCallback?: any,
-    failCallback?: any): Promise<model.User>;
+  loginWithLinkedIn(options: OAuthOptions, doneCallback?: any, failCallback?: any): Promise<model.User>;
 
   /**
    * Logs the user in with Salesforce via OAuth
@@ -338,14 +336,12 @@ export interface UserFactory extends EntityFactory<model.User> {
    * client id and the client secret to your Baqend dashboard settings. When the returned promise succeeds the user is
    * logged in.
    *
-   * @param clientID
    * @param options
    * @param doneCallback Called when the operation succeed.
    * @param failCallback Called when the operation failed.
    * @return
    */
-  loginWithSalesforce(clientID: string, options: OAuthOptions, doneCallback?: any,
-    failCallback?: any): Promise<model.User>;
+  loginWithSalesforce(options: OAuthOptions, doneCallback?: any, failCallback?: any): Promise<model.User>;
 
   /**
    * Creates a new user object
@@ -358,57 +354,84 @@ export interface UserFactory extends EntityFactory<model.User> {
 
 export interface OAuthOptions {
   /**
-   * UserFactory.LoginOption} [loginOption=true] The default keeps the user logged in over multiple sessions
+   * The default keeps the user logged in over multiple sessions
    */
-  loginOption?: boolean;
+  loginOption?: LoginOption | boolean;
+
   /**
-   *  [title="Login"] sets the title of the popup window
+   * Sets the title of the popup window
    */
   title?: string;
+
   /**
-   *  [width=585] defines the width of the popup window
+   * Defines the width of the popup window
    */
   width?: number;
+
   /**
-   *  [height=545] defines the height of the popup window
+   * Defines the height of the popup window
    */
   height?: number;
+
   /**
-   *  [scope="email"] the range of rights requested from the user
+   * The range of rights requested from the OAuth users profile
    */
   scope?: string;
+
   /**
-   *  [state=]
+   * The state which will be send as part of the OAuth flow
    */
-  state?: Object;
+  state?: JsonMap;
+
   /**
-   *  [timeout=5 * 60 * 1000]
+   * Timout after the OAuth flow will be aborted
    */
   timeout?: number;
+
   /**
-   * [redirect=""] if set this changes the oauth behaviour to redirect mode,
+   * if set this changes the oauth behaviour to redirect mode,
    * i.e. this site is closed to open the providers login page.
    * Once the login is finished this redirect url will be opened with the logged-in user's token attached.
    */
   redirect?: string;
 
   /**
-   * The OAuth login endpoint of the salesforce server
+   * The client id provided by the OAuth provider
+   */
+  clientId?: string;
+
+  /**
+   * The device code which was received from the OAuth provider, when the device OAuth flow is used
+   */
+  deviceCode?: string;
+
+  /**
+   * The OAuth login endpoint to start the login process.
+   * This option is not required on OAuth1 flow, or the OAuth2 device flow
    */
   path?: string;
+
+  /**
+   * The OAuth login flow version. Can be 1 or 2. Defaults to 2
+   */
+  oAuthVersion?: number,
 }
 
 ['Google', 'Facebook', 'GitHub', 'Twitter', 'LinkedIn', 'Salesforce'].forEach((name) => {
   const methodName = `loginWith${name}`;
   // do not use a lambda here since we will loose the this context
-  (UserFactory.prototype as any)[methodName] = function loginWithOAuth(clientID: string,
+  (UserFactory.prototype as any)[methodName] = function loginWithOAuth(clientID: string | OAuthOptions,
     options: OAuthOptions | Function, doneCallback?: any, failCallback?: any) {
     if (options instanceof Function) {
       return this[methodName](clientID, {}, options, doneCallback);
     }
 
-    const opt = { ...(UserFactory.DefaultOptions as any)[name.toLowerCase()], ...options || {} };
+    const opt: OAuthOptions = {
+      ...(UserFactory.DefaultOptions as any)[name.toLowerCase()],
+      ...(typeof clientID === 'string' ? { clientId: clientID } : clientID),
+      ...options || {},
+    };
 
-    return this.db.loginWithOAuth(name, clientID, opt).then(doneCallback, failCallback);
+    return this.db.loginWithOAuth(name, opt).then(doneCallback, failCallback);
   };
 });
