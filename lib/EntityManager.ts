@@ -949,7 +949,7 @@ export class EntityManager extends Lockable {
     return this.withLock(() => this.send(new messages.Logout()).then(this._logout.bind(this)));
   }
 
-  loginWithOAuth(provider: string, clientID: string, options: OAuthOptions) {
+  loginWithOAuth(provider: string, clientID: string, options: OAuthOptions): Promise<any> {
     if (!this.connection) {
       throw new Error('This EntityManager is not connected.');
     }
@@ -987,9 +987,8 @@ export class EntityManager extends Lockable {
     if (opt.redirect) {
       // use oauth via redirect by opening the login in the same window
       // for app wrappers we need to open the system browser
-      const isBrowser = document.URL.indexOf('http://') !== -1 || document.URL.indexOf('https://') !== -1;
-      this.openOAuthWindow(msg.request.path, isBrowser ? '_self' : '_system', windowOptions);
-      return new Promise(() => {});
+      const isBrowser = typeof document !== 'undefined' && (document.URL.indexOf('http://') !== -1 || document.URL.indexOf('https://') !== -1);
+      return Promise.resolve(this.openOAuthWindow(msg.request.path, isBrowser ? '_self' : '_system', windowOptions));
     }
 
     const req = this._userRequest(msg, opt.loginOption);
@@ -1011,15 +1010,15 @@ export class EntityManager extends Lockable {
    * @param url The url to open
    * @param targetOrTitle The target of the window, or the title of the popup
    * @param options Additional window options
-   * @return
+   * @return returns the window object which was opened by the open call
    */
-  openOAuthWindow(url: string, targetOrTitle: string, options: { [option: string]: string }): void {
+  openOAuthWindow(url: string, targetOrTitle: string, options: { [option: string]: string }): any {
     const str = Object.keys(options)
       .filter((key) => options[key] !== undefined)
       .map((key) => `${key}=${options[key]}`)
       .join(',');
 
-    open(url, targetOrTitle, str); // eslint-disable-line no-restricted-globals
+    return open(url, targetOrTitle, str); // eslint-disable-line no-restricted-globals
   }
 
   renew(loginOption?: LoginOption | boolean) {

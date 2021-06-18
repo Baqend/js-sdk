@@ -28,6 +28,10 @@ export function run() {
     .description('Registers an account and locally saves your credentials')
     .action((options) => result = account.register(options));
   program
+    .command('sso')
+    .description('Login via SSO')
+    .action((options) => result = account.sso(options));
+  program
     .command('whoami [app]')
     .alias('me')
     .description('Show your login status')
