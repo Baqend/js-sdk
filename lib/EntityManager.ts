@@ -497,7 +497,7 @@ export class EntityManager extends Lockable {
       return this.resolveDepth(entity, opt);
     }
 
-    const msg = new messages.GetObject(state.bucket, state.key);
+    const msg = new messages.GetObject(state.bucket, state.key!);
 
     this.ensureCacheHeader(entity.id, msg, opt.refresh);
 
@@ -568,11 +568,11 @@ export class EntityManager extends Lockable {
 
       if (opt.force) {
         const { version, ...jsonWithoutVersion } = json;
-        return new messages.ReplaceObject(state.bucket, state.key, jsonWithoutVersion)
+        return new messages.ReplaceObject(state.bucket, state.key!, jsonWithoutVersion)
           .ifMatch('*');
       }
 
-      return new messages.ReplaceObject(state.bucket, state.key, json)
+      return new messages.ReplaceObject(state.bucket, state.key!, json)
         .ifMatch(`${state.version}`);
     });
   }
@@ -594,11 +594,11 @@ export class EntityManager extends Lockable {
         }
 
         const { version, ...jsonWithoutVersion } = json;
-        return new messages.ReplaceObject(state.bucket, state.key, jsonWithoutVersion);
+        return new messages.ReplaceObject(state.bucket, state.key!, jsonWithoutVersion);
       }
 
       if (state.version) {
-        return new messages.ReplaceObject(state.bucket, state.key, json)
+        return new messages.ReplaceObject(state.bucket, state.key!, json)
           .ifMatch(state.version);
       }
 
@@ -816,7 +816,7 @@ export class EntityManager extends Lockable {
         throw new IllegalEntityError(entity);
       }
 
-      const msg = new messages.DeleteObject(state.bucket, state.key);
+      const msg = new messages.DeleteObject(state.bucket, state.key!);
 
       this.addToBlackList(entity.id);
 
@@ -1029,7 +1029,7 @@ export class EntityManager extends Lockable {
    * @param options Additional window options
    * @return returns the window object which was opened by the open call
    */
-  openOAuthWindow(url: string, targetOrTitle: string, options: {[option: string]: string}): any {
+  openOAuthWindow(url: string, targetOrTitle: string, options: { [option: string]: string }): any {
     const str = Object.keys(options)
       .filter((key) => options[key] !== undefined)
       .map((key) => `${key}=${options[key]}`)
@@ -1306,7 +1306,7 @@ export class EntityManager extends Lockable {
   requestAPIToken(entityClass: Class<model.User>, user: model.User | string): Promise<JsonMap> {
     const userObj = this._getUserReference(entityClass, user);
 
-    const msg = new messages.UserToken(userObj.key);
+    const msg = new messages.UserToken(userObj.key!);
     return this.send(msg).then((resp) => resp.entity);
   }
 
@@ -1321,7 +1321,7 @@ export class EntityManager extends Lockable {
   revokeAllTokens(entityClass: Class<model.User>, user: model.User | string): Promise<any> {
     const userObj = this._getUserReference(entityClass, user);
 
-    const msg = new messages.RevokeUserToken(userObj.key);
+    const msg = new messages.RevokeUserToken(userObj.key!);
     return this.send(msg);
   }
 

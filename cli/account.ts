@@ -1,11 +1,17 @@
 import open from 'open';
+import { ChildProcess } from 'child_process';
 import crypto from 'crypto';
+import { createServer } from 'http';
 import fs from 'fs';
 import os from 'os';
-import { EntityManager, EntityManagerFactory, intersection } from 'baqend';
+import {
+  EntityManager, EntityManagerFactory, intersection, binding,
+} from 'baqend';
 import * as helper from './helper';
+import { readInput } from './helper';
 
 const { TokenStorage } = intersection;
+const { UserFactory } = binding;
 
 const fileName = `${os.homedir()}/.baqend`;
 const algorithm = 'aes-256-ctr';
@@ -20,6 +26,7 @@ export type AccountArgs = {
   password?: string,
   token?: string,
   skipInput?: boolean,
+  provider?: string
 };
 
 export type AppInfo = {
@@ -103,24 +110,98 @@ function getLocalCredentials(appInfo: AppInfo): Credentials | null {
   return null;
 }
 
-function getInputCredentials(appInfo: AppInfo, showLoginInfo?: boolean): Promise<UsernamePasswordCredentials> {
+function getInputCredentials(appInfo: AppInfo, showLoginInfo?: boolean): Promise<Credentials> {
   if (!process.stdout.isTTY) {
     return Promise.reject(new Error('Can\'t interactive login into baqend, no tty session was detected.'));
   }
 
   if (showLoginInfo) {
-    console.log('Baqend Login is required. You can skip this step by saving the Login credentials with "baqend login"');
+    console.log('Baqend Login is required. You can skip this step by saving the Login credentials with "baqend login or baqend sso"');
   }
 
-  if (!appInfo.isCustomHost) {
-    console.log('If you have created your Baqend Account with OAuth:');
-    console.log(' 1. Login to the dashboard with OAuth.');
-    console.log(' 2. Go to your account settings (top right corner)');
-    console.log(' 3. Add a password to your account, which you can then use with the CLI.');
-    console.log('');
+  const options = ['google', 'facebook', 'github'];
+
+  let result = Promise.resolve('1');
+  if (!appInfo.isCustomHost && options.length > 0) {
+    console.log('Choose how you want to login:');
+    console.log('1. Login with username/password.');
+    options.forEach((provider, index) => {
+      console.log(`${index + 2}. Login with ${provider}`);
+    });
+    result = readInput(`Type 1-${options.length + 1}:`);
   }
 
-  return readInputCredentials(appInfo);
+  return result.then((option): Promise<Credentials> => {
+    if (option === '1') {
+      return readInputCredentials(appInfo);
+    }
+
+    const provider = options[Number(option) - 2];
+    if (!provider) {
+      throw new Error('No valid login option was choosed.');
+    }
+
+    return requestSSOCredentials(appInfo, provider);
+  });
+}
+
+function requestSSOCredentials(appInfo: AppInfo, oAuthProvider: string, oAuthOptions: binding.OAuthOptions = {}):
+Promise<TokenCredentials> {
+  // @ts-ignore
+  global.open = open;
+
+  // TODO: current workaround until our server pass this ids to the client dynamically
+  const clientIds: { [oAuthProvider: string]: string } = {
+    facebook: '976707865723719',
+    google: '586076830320-0el1jebupjvbcmqf95vfaqjq7gbs0bdh.apps.googleusercontent.com',
+    gitHub: '1311e3415ab415fda705',
+  };
+
+  return appConnect(appInfo)
+    .then((db) => {
+      const host = '127.0.0.1';
+      const port = 9876;
+
+      return Promise.all([
+        oAuthHandler(host, port),
+        db.loginWithOAuth(oAuthProvider, {
+          ...(UserFactory.DefaultOptions as any)[oAuthProvider.toLowerCase()] || {},
+          ...(clientIds[oAuthProvider.toLowerCase()] && { clientId: clientIds[oAuthProvider.toLowerCase()] }),
+          ...oAuthOptions,
+          redirect: `http://${host}:${port}`,
+        }) as Promise<ChildProcess>,
+      ]).then(([credentials, windowProcess]) => {
+        windowProcess.kill('SIGHUP'); // seems not working on every platform
+        return credentials;
+      });
+    });
+}
+
+function oAuthHandler(host: string, port: number): Promise<TokenCredentials> {
+  return new Promise((resolve, reject) => {
+    const server = createServer((req, res) => {
+      const url = new URL(req.url!, `http://${host}:${port}`);
+      let done = false;
+      if (url.searchParams.has('errorMessage')) {
+        reject(new Error(url.searchParams.get('errorMessage')!));
+        done = true;
+      } else if (url.searchParams.has('token')) {
+        resolve({ token: url.searchParams.get('token')! });
+        done = true;
+      }
+
+      res.writeHead(200, { 'Content-Type': 'text/html' });
+      res.end('<!DOCTYPE html><html><head></head><body>Continue within the CLI!</a></body></html>');
+
+      if (done) {
+        server.close();
+      }
+    });
+    server.on('error', (err) => {
+      reject(err);
+    });
+    server.listen(port, host);
+  });
 }
 
 function getCredentials(appInfo: AppInfo, args: AccountArgs): Promise<Credentials | null> {
@@ -143,10 +224,15 @@ export function register(args: AccountArgs) {
 
   return getInputCredentials(appInfo)
     .then((credentials) => appConnect(appInfo)
-      .then((db) => db.User.register(credentials.username, credentials.password).then(() => db))
+      .then((db) => {
+        if ('token' in credentials) {
+          return db.User.loginWithToken(credentials.token).then(() => db);
+        }
+        return db.User.register(credentials.username, credentials.password).then(() => db);
+      })
       .then((db) => Promise.all([
         getDefaultApp(db).then((name) => console.log(`Your app name is ${name}`)),
-        saveCredentials(appInfo, credentials!),
+        saveCredentials(appInfo, { token: db.token! }),
       ])));
 }
 
@@ -202,13 +288,22 @@ export function login(args: AccountArgs): Promise<EntityManager> {
 }
 
 function bbqAppLogin(db: EntityManager, appName: string) {
-  return db.modules.get('apps', { app: appName }).then((result) => {
+  return db.modules.get('apps', { app: appName }).then((result: { name: string, token: string }) => {
     if (!result) {
       throw new Error(`App (${appName}) not found.`);
     }
 
     return appConnect({ host: result.name, isCustomHost: false, app: appName }, { token: result.token });
   });
+}
+
+export function sso(args: AccountArgs) {
+  const appInfo = getAppInfo(args);
+  return requestSSOCredentials(appInfo, args.provider || 'Google')
+    .then((credentials) => saveCredentials(appInfo, credentials))
+    .then(() => {
+      console.log('You have successfully been logged in.');
+    });
 }
 
 export function logout(args: AccountArgs) {
@@ -229,7 +324,8 @@ export function persistLogin(args: AccountArgs) {
   }
 
   return Promise.resolve(credentials)
-    .then((creds: Credentials) => appConnect(appInfo, creds).then(() => saveCredentials(appInfo, creds)))
+    .then((creds: Credentials) => appConnect(appInfo, creds)
+      .then((db) => saveCredentials(appInfo, 'token' in creds ? creds : { token: db.token! })))
     .then(() => console.log('You have successfully been logged in.'));
 }
 
@@ -282,13 +378,6 @@ function readInputCredentials(appInfo: AppInfo): Promise<UsernamePasswordCredent
     }));
 }
 
-function encrypt(input: string) {
-  const cipher = crypto.createCipheriv(algorithm, cipherKey, cipherIv);
-  let encrypted = cipher.update(input, 'utf8', 'base64');
-  encrypted += cipher.final('base64');
-  return encrypted;
-}
-
 function decrypt(input: string) {
   // TODO we need to handle that more properly
   // eslint-disable-next-line node/no-deprecated-api
@@ -326,14 +415,10 @@ function readProfileFile(): Promise<ProfileJson> {
   });
 }
 
-function saveCredentials(appInfo: AppInfo, credentials: Credentials) {
+function saveCredentials(appInfo: AppInfo, credentials: TokenCredentials) {
   return readProfileFile().then((json) => {
-    let cred = credentials;
-    if ('password' in cred) {
-      cred = { ...cred, password: encrypt(cred.password) };
-    }
     // eslint-disable-next-line no-param-reassign
-    json[appInfo.host] = { ...json[appInfo.host], ...cred };
+    json[appInfo.host] = { ...json[appInfo.host], ...credentials };
     return writeProfileFile(json);
   });
 }

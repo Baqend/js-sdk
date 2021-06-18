@@ -18,7 +18,8 @@ export function run() {
 
   program
     .name('baqend')
-    .version(pjson.version);
+    .version(pjson.version)
+    .option('--token', 'Pass a Baqend Authorization Token to the command');
   program
     .command('login [app]')
     .description('Logs you in and locally saves your credentials')
@@ -29,6 +30,7 @@ export function run() {
     .action((options) => result = account.register(options));
   program
     .command('sso')
+    .option('--provider', 'The Provider to use for the SSO can be Google, Facebook or GitHub. [default: Google]', 'Google')
     .description('Login via SSO')
     .action((options) => result = account.sso(options));
   program
@@ -37,7 +39,7 @@ export function run() {
     .description('Show your login status')
     .action((app) => result = account.whoami({ app }));
   program
-    .command('open [app}')
+    .command('open [app]')
     .description('Opens the url to your app')
     .action((app) => result = account.openApp(app));
   program
