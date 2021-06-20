@@ -96,7 +96,7 @@ function uploadHandler(db: EntityManager, directoryName: string, codePath: strin
     fileNames
       .filter((fileName) => !fileName.startsWith('.'))
       .map((fileName) => {
-        const handlerType = fileName.replace(/.js$/, '');
+        const handlerType = fileName.replace(/\.(js|es\d*)$/, '');
 
         if (handlerTypes.indexOf(handlerType) === -1) return Promise.resolve();
 
@@ -110,7 +110,7 @@ function uploadHandler(db: EntityManager, directoryName: string, codePath: strin
 function uploadCode(db: EntityManager, name: string, codePath: string) {
   if (name.startsWith('.')) return Promise.resolve();
 
-  const moduleName = name.replace(/.js$/, '');
+  const moduleName = name.replace(/\.(js|es\d*)$/, '');
   return readFile(pathJoin(codePath, name), 'utf-8').then((file) => db.code.saveCode(moduleName, 'module', file)).then(() => {
     console.log(`Module ${moduleName} deployed.`);
   });
