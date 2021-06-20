@@ -12,12 +12,16 @@
     "experimentalDecorators": true,
     "typeRoots": [
       "./node_modules/@types"
-    ]
+    ],
+    "baseUrl": ".",
+    "paths": {
+      "baqend": ["."]
+    }
   },
   "exclude": [
     "node_modules",
     "commonjs",
     "dist",
     "esm"
-  ]
+  ],
 }

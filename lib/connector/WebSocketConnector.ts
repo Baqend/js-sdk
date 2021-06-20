@@ -123,9 +123,9 @@ export class WebSocketConnector {
         }
       };
 
-      socketPromise = new Promise<void>((resolve) => {
-        socket.onopen = resolve;
-      }).then(() => socket);
+      socketPromise = new Promise<WebSocket>((resolve) => {
+        socket.onopen = () => resolve(socket);
+      });
 
       this.socket = socketPromise;
     }
