@@ -4,7 +4,7 @@ import * as account from './account';
 import * as helper from './helper';
 import { AccountArgs } from './account';
 import {
-  ensureDir, readDir, readFile, writeFile,
+  ensureDir, isNativeClassNamespace, readDir, readFile, writeFile,
 } from './helper';
 
 type JsonMap = util.JsonMap;
@@ -46,7 +46,7 @@ export function downloadSchema(db: EntityManager) {
       const classname = (schemaDescriptor.class as string).replace('/db/', '');
       const filename = `baqend/schema/${classname}.json`;
 
-      if (!classname.match(/logs\./) && classname !== 'Object') {
+      if (!isNativeClassNamespace(classname) && classname !== 'Object') {
         return writeFile(filename, JSON.stringify(schemaDescriptor, null, 2), 'utf-8').then(() => {
           console.log(`Downloaded ${classname} Schema`);
         });

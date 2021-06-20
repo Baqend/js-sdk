@@ -1,7 +1,9 @@
 /* eslint-disable no-continue */
 import os from 'os';
 import { EntityManagerFactory, metamodel as meta } from 'baqend';
-import { ensureDir, writeFile } from './helper';
+import {
+  ensureDir, isNativeClassNamespace, nativeNamespaces, writeFile,
+} from './helper';
 
 const { CollectionType } = meta.PluralAttribute;
 
@@ -20,7 +22,6 @@ const tsTypeMapping: { [type: string]: string } = {
 };
 
 const nativeTypes = ['User', 'Role', 'Device'];
-const nativeNamespaces = ['logs', 'speedKit', 'rum', 'jobs'];
 const push = Function.prototype.apply.bind(Array.prototype.push);
 
 export type TypingArgs = {
@@ -73,13 +74,13 @@ function typingsFromMetamodel(metamodel: meta.Metamodel) {
       continue;
     }
 
+    if (isNativeClassNamespace(entity.name)) {
+      continue;
+    }
+
     // register only user defined types
     if (entity.name.indexOf('.') !== -1) {
       const [namespace, entityName] = entity.name.split('.');
-      if (nativeNamespaces.includes(namespace)) {
-        continue;
-      }
-
       module.push(`    ["${entity.name}"]: binding.EntityFactory<model.${entity.name}>;`);
       if (!namespaces[namespace]) namespaces[namespace] = [];
       push(namespaces[namespace], typingsFromSchema(entityName, entity, 'Entity'));

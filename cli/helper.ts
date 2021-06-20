@@ -8,6 +8,8 @@ export const writeFile = promisify(fs.writeFile);
 export const readFile = promisify(fs.readFile);
 export const mkdir = promisify(fs.mkdir);
 
+export const nativeNamespaces = ['logs', 'speedKit', 'rum', 'jobs'];
+
 /**
  * Returns the stats for the given path
  * @param path
@@ -51,7 +53,7 @@ export function isFile(path: string) : Promise<boolean> {
 export function ensureDir(dir: string): Promise<any> {
   return isDir(dir).then((directory) => {
     if (!directory) {
-      return mkdir(dir);
+      return mkdir(dir, { recursive: true });
     }
     return Promise.resolve();
   });
@@ -85,4 +87,9 @@ export function readInput(question: string, hidden = false): Promise<string> {
     });
     muted = hidden;
   });
+}
+
+export function isNativeClassNamespace(className: string): boolean {
+  const [namespace] = className.split('.');
+  return nativeNamespaces.includes(namespace);
 }
