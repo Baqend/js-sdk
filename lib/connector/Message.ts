@@ -59,7 +59,7 @@ export const StatusCode = {
  * @param queryParams - The Query parameters which should be appended
  * @return The URL with the appended parameters
  */
-export function appendQueryParams(url: string, queryParams: string | {[key: string]: string | undefined}) {
+export function appendQueryParams(url: string, queryParams: string | { [key: string]: string | undefined }) {
   const queryString = typeof queryParams === 'string' ? queryParams : Object.entries(queryParams)
     .filter(([, value]) => value !== undefined)
     .map(([key, value]) => `${key}=${encodeURIComponent(value as string)}`)
@@ -151,7 +151,7 @@ export abstract class Message {
       index += 1;
     }
 
-    const queryParams: {[key: string]: string} = {};
+    const queryParams: { [key: string]: string } = {};
     for (let i = 0; i < this.spec.query.length; i += 1) {
       const arg = args[index];
       index += 1;
@@ -507,7 +507,7 @@ export abstract class Message {
    * @param query which will added to the request path
    * @return
    */
-  addQueryString(query: string | { [key: string]: string}): this {
+  addQueryString(query: string | { [key: string]: string }): this {
     this.request.path = appendQueryParams(this.request.path, query);
     return this;
   }

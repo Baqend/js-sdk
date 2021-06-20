@@ -13,7 +13,7 @@ export interface baqend extends EntityManager {
    * @param [options.staleness=60] The maximum staleness of objects that are acceptable while reading cached
    * data, <code>0</code> to always bypass the browser cache
    */
-  configure(options: {tokenStorage?: TokenStorage, tokenStorageFactory?: TokenStorageFactory, staleness?: number}):
+  configure(options: { tokenStorage?: TokenStorage, tokenStorageFactory?: TokenStorageFactory, staleness?: number }):
   this;
 
   /**

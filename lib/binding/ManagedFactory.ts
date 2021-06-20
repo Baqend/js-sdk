@@ -1,4 +1,4 @@
-import { Factory, InstanceFactory } from './Factory';
+import { Factory } from './Factory';
 import type { EntityManager } from '../EntityManager';
 import type { ManagedType } from '../metamodel';
 import type { Managed } from './Managed';

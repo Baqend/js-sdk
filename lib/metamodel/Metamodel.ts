@@ -21,11 +21,11 @@ export class Metamodel extends Lockable {
 
   public entityManagerFactory: EntityManagerFactory;
 
-  public entities: {[name: string]: EntityType<any>} = {};
+  public entities: { [name: string]: EntityType<any> } = {};
 
-  public embeddables: {[name: string]: EmbeddableType<any>} = {};
+  public embeddables: { [name: string]: EmbeddableType<any> } = {};
 
-  public baseTypes: {[name: string]: BasicType<any>} = {};
+  public baseTypes: { [name: string]: BasicType<any> } = {};
 
   public enhancer: Enhancer = new Enhancer();
 
@@ -131,7 +131,7 @@ export class Metamodel extends Lockable {
    * @return the added type
    */
   addType(type: Type<any>): Type<any> {
-    let types: {[name: string]: Type<any>} = {};
+    let types: { [name: string]: Type<any> } = {};
 
     if (type.isBasic) {
       types = this.baseTypes;
@@ -293,7 +293,7 @@ export class Metamodel extends Lockable {
     const msg = new message.ListIndexes(bucket);
     return this.entityManagerFactory.send(msg)
       .then((response) => response.entity.map((el: JsonMap) => new DbIndex(
-        el.keys as {[prop: string]: string}, el.unique as boolean,
+        el.keys as { [prop: string]: string }, el.unique as boolean,
       )))
       .catch((e) => {
         if (e.status === StatusCode.BUCKET_NOT_FOUND || e.status === StatusCode.OBJECT_NOT_FOUND) {

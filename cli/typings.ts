@@ -2,7 +2,7 @@
 import os from 'os';
 import { EntityManagerFactory, metamodel as meta } from 'baqend';
 import {
-  ensureDir, isNativeClassNamespace, nativeNamespaces, writeFile,
+  ensureDir, isNativeClassNamespace, writeFile,
 } from './helper';
 
 const { CollectionType } = meta.PluralAttribute;

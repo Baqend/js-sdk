@@ -1,5 +1,5 @@
 /* DO NOT TOUCH THIS AUTO-GENERATED FILE */
-/* eslint-disable max-len */
+/* eslint-disable max-len,@typescript-eslint/no-redeclare */
 import { Message } from './connector';
 import { Json as json } from './util';
 

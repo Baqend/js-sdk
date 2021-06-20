@@ -22,6 +22,7 @@ type Observable<T> = ObservableType<T>;
 type Subscription = SubscriptionType;
 type Subscriber<R> = SubscriberType<R>;
 
+// eslint-disable-next-line @typescript-eslint/no-redeclare
 const { Observable, Subscription, Subscriber } = rxjs;
 
 export { Observable, Subscription, Subscriber };

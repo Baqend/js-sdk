@@ -235,7 +235,7 @@ export class Node<T extends Entity> extends Query<T> {
     return query;
   }
 
-  addOrder(fieldOrSort: string | {[field: string]: 1 | -1 }, order?: 1 | -1): this {
+  addOrder(fieldOrSort: string | { [field: string]: 1 | -1 }, order?: 1 | -1): this {
     if (typeof fieldOrSort === 'string') {
       this.order[fieldOrSort] = order!;
     } else {

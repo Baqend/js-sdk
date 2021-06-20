@@ -34,6 +34,7 @@ export interface PersistentError extends Error {
   cause?: Error;
 }
 
+// eslint-disable-next-line @typescript-eslint/no-redeclare
 export const PersistentError = (() => {
   function PersistentErrorConstructor(this: PersistentError, message: string | null, cause?: Error) {
     if (Object.prototype.hasOwnProperty.call(Error, 'captureStackTrace')) {

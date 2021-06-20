@@ -131,7 +131,7 @@
     "typings:test": "tsc --version && tsc -p spec-ts/tsconfig.json",
     "docs": "typedoc --out doc lib",
     "baqend": "npm run build-cli && node cli",
-    "lint": "eslint --ext .ts lib/",
+    "lint": "eslint --ext .ts lib/ cli/",
     "prepare": ""
   },
   "engines": {
