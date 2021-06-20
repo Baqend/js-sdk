@@ -40,16 +40,15 @@
   },
   "types": "./esm/lib/index.d.ts",
   "dependencies": {
-    "commander": "^2.20.3",
-    "glob": "^7.1.6",
+    "commander": "^7.2.0",
+    "glob": "^7.1.7",
     "open": "^8.2.0",
-    "rimraf": "^2.7.1",
+    "rimraf": "^3.0.2",
     "rxjs": "^6.6.3",
-    "simple-git": "^1.132.0",
-    "tslib": "^2.0.3",
-    "uuid": "^8.3.1",
-    "validator": "^13.1.17",
-    "websocket": "^1.0.32"
+    "tslib": "^2.3.0",
+    "uuid": "^8.3.2",
+    "validator": "^13.6.0",
+    "websocket": "^1.0.34"
   },
   "repository": {
     "type": "git",
@@ -76,7 +75,7 @@
     "@typescript-eslint/parser": "^4.27.0",
     "chai": "^4.2.0",
     "chai-as-promised": "^7.1.1",
-    "eslint": "^7.28.0",
+    "eslint": "^7.29.0",
     "eslint-config-airbnb-typescript": "^12.3.1",
     "eslint-plugin-import": "^2.23.4",
     "eslint-plugin-node": "^11.1.0",

@@ -1,6 +1,5 @@
 import fs from 'fs';
 import glob from 'glob';
-import { promisify } from 'util';
 import { join as pathJoin } from 'path';
 import readline from 'readline';
 import { EntityManager } from 'baqend';
@@ -68,6 +67,10 @@ function deployFiles(db: EntityManager, path: string, cwd: string, pattern: stri
 
 function deployCode(db: EntityManager, codePath: string) {
   return readDir(codePath)
+    .catch((e) => {
+      console.warn(`Your specified backend code folder ${codePath} is empty, no backend code was deployed.`);
+      throw e;
+    })
     .then((fileNames) => Promise.all(fileNames
       .map((fileName) => stat(pathJoin(codePath, fileName))
         .then((st) => {
@@ -81,10 +84,7 @@ function deployCode(db: EntityManager, codePath: string) {
       })
       .catch((e) => {
         throw new Error(`Failed to deploy code: ${e.message}`);
-      }))
-    .catch(() => {
-      console.warn('Your specified backend code folder is empty, no backend code was deployed.');
-    });
+      }));
 }
 
 function uploadHandler(db: EntityManager, directoryName: string, codePath: string): Promise<any> {
