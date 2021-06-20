@@ -15,6 +15,7 @@ import {
   JsonMap,
   Lockable,
   uuid,
+  openWindow,
 } from './util';
 import {
   Message, StatusCode, Connector, OAuthMessage,
@@ -950,7 +951,7 @@ export class EntityManager extends Lockable {
     return this.withLock(() => this.send(new messages.Logout()).then(this._logout.bind(this)));
   }
 
-  loginWithOAuth(provider: string, options: OAuthOptions): any | Promise<model.User | null> {
+  loginWithOAuth(provider: string, options: OAuthOptions): any | string | Promise<model.User | null> {
     if (!this.connection) {
       throw new Error('This EntityManager is not connected.');
     }
@@ -965,6 +966,7 @@ export class EntityManager extends Lockable {
       state: {},
       loginOption: true,
       oAuthVersion: 2,
+      open: openWindow,
       ...options,
     };
 
@@ -989,16 +991,19 @@ export class EntityManager extends Lockable {
       redirect_uri: oAuthEndpoint,
     });
 
-    const windowOptions = { width: `${opt.width}`, height: `${opt.height}` };
+    const windowOptions = {
+      title: opt.title,
+      width: opt.width,
+      height: opt.height,
+    };
+
     if (opt.redirect) {
       // use oauth via redirect by opening the login in the same window
-      // for app wrappers we need to open the system browser
-      const isBrowser = typeof document !== 'undefined' && (document.URL.indexOf('http://') !== -1 || document.URL.indexOf('https://') !== -1);
-      return this.openOAuthWindow(url, isBrowser ? '_self' : '_system', windowOptions);
+      return opt.open(url, { target: '_self', ...windowOptions }) || url;
     }
 
     const req = this._userRequest(new OAuthMessage(), opt.loginOption);
-    if (!this.openOAuthWindow(url, opt.title, windowOptions)) {
+    if (!opt.open(url, windowOptions)) {
       throw new Error('The OAuth flow with a Pop-Up can only be issued in browsers. Add a redirect URL to the options to return to your app via that redirect after the OAuth flow succeed.');
     }
 
@@ -1013,33 +1018,10 @@ export class EntityManager extends Lockable {
     });
   }
 
-  private async _loginOAuthDevice(provider: string, opt: OAuthOptions): Promise<model.User | null> {
-    try {
-      return await this._userRequest(new messages.OAuth2(provider, opt.deviceCode), opt.loginOption);
-    } catch (e) {
-      await new Promise((resolve) => setTimeout(resolve, 5000));
-      return this._loginOAuthDevice(provider, opt);
-    }
-  }
-
-  /**
-   * Opens a new window use for OAuth logins
-   * @param url The url to open
-   * @param targetOrTitle The target of the window, or the title of the popup
-   * @param options Additional window options
-   * @return returns the window object which was opened by the open call
-   */
-  openOAuthWindow(url: string, targetOrTitle: string, options: { [option: string]: string }): any {
-    const str = Object.keys(options)
-      .filter((key) => options[key] !== undefined)
-      .map((key) => `${key}=${options[key]}`)
-      .join(',');
-
-    if (typeof open !== 'undefined') { // eslint-disable-line no-restricted-globals
-      return open(url, targetOrTitle, str); // eslint-disable-line no-restricted-globals
-    }
-
-    return null;
+  private _loginOAuthDevice(provider: string, opt: OAuthOptions): Promise<model.User | null> {
+    return this._userRequest(new messages.OAuth2(provider, opt.deviceCode), opt.loginOption)
+      .catch(() => new Promise((resolve) => setTimeout(resolve, 5000))
+        .then(() => this._loginOAuthDevice(provider, opt)));
   }
 
   renew(loginOption?: LoginOption | boolean) {

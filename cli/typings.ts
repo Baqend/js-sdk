@@ -1,11 +1,11 @@
-/* eslint-disable @typescript-eslint/no-use-before-define,no-console,no-restricted-syntax,no-continue,guard-for-in */
-import fs from 'fs';
+/* eslint-disable no-continue */
 import os from 'os';
 import { EntityManagerFactory, metamodel as meta } from 'baqend';
+import { ensureDir, writeFile } from './helper';
 
 const { CollectionType } = meta.PluralAttribute;
 
-const tsTypeMapping: {[type: string]: string} = {
+const tsTypeMapping: { [type: string]: string } = {
   Boolean: 'boolean',
   Double: 'number',
   Integer: 'number',
@@ -41,18 +41,15 @@ function createTypings(app: string, dest: string) {
   return factory.ready().then(() => {
     const types = typingsFromMetamodel(factory.metamodel);
 
-    if (!fs.existsSync(dest)) {
-      fs.mkdirSync(dest);
-    }
-
-    fs.writeFileSync(`${dest}/baqend-model.d.ts`, types.join(os.EOL));
-    console.log(`Typings successfully saved to: ${dest}/baqend-model.d.ts`);
+    return ensureDir(dest)
+      .then(() => writeFile(`${dest}/baqend-model.d.ts`, types.join(os.EOL)))
+      .then(() => console.log(`Typings successfully saved to: ${dest}/baqend-model.d.ts`));
   });
 }
 
 function typingsFromMetamodel(metamodel: meta.Metamodel) {
   const typing = [];
-  const namespaces: {[namespace: string]: string[]} = {};
+  const namespaces: { [namespace: string]: string[] } = {};
   // import all native types, so they can be easily used in definitions
   typing.push('import {binding, GeoPoint} from "baqend";');
   typing.push('');
@@ -107,7 +104,7 @@ function typingsFromMetamodel(metamodel: meta.Metamodel) {
 
   module.push('  }');
   module.push('');
-  for (const key in namespaces) {
+  for (const key of Object.keys(namespaces)) {
     model.push(`  namespace ${key} {`);
     push(model, namespaces[key]);
     model.push('  }');

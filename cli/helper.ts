@@ -8,18 +8,38 @@ export const writeFile = promisify(fs.writeFile);
 export const readFile = promisify(fs.readFile);
 export const mkdir = promisify(fs.mkdir);
 
-export function isDir(path: string) : Promise<boolean> {
+/**
+ * Returns the stats for the given path
+ * @param path
+ */
+export function stat(path: string) : Promise<fs.Stats | null> {
   return new Promise((resolve, reject) => {
-    fs.stat(path, (err, stat) => {
+    fs.stat(path, (err, st) => {
       if (!err) {
-        resolve(stat.isDirectory());
+        resolve(st);
       } else if (err.code === 'ENOENT') {
-        resolve(false);
+        resolve(null);
       } else {
         reject(err);
       }
     });
   });
+}
+
+/**
+ * Indicates if the given path is a directory
+ * @param path
+ */
+export function isDir(path: string) : Promise<boolean> {
+  return stat(path).then((s) => !!s && s.isDirectory());
+}
+
+/**
+ * Indicates if the given path is a file
+ * @param path
+ */
+export function isFile(path: string) : Promise<boolean> {
+  return stat(path).then((s) => !!s && s.isFile());
 }
 
 /**

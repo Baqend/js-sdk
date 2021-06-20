@@ -7,12 +7,9 @@ import { EntityManager } from 'baqend';
 import * as account from './account';
 import { uploadSchema } from './schema';
 import { AccountArgs } from './account';
+import { readDir, readFile, stat } from './helper';
 
 const handlerTypes = ['update', 'insert', 'delete', 'validate'];
-
-const readDirectory = promisify(fs.readdir);
-const readStat = promisify(fs.stat);
-const readFile = promisify(fs.readFile);
 
 export type SchemaArgs = {
   files?: boolean,
@@ -70,11 +67,11 @@ function deployFiles(db: EntityManager, path: string, cwd: string, pattern: stri
 }
 
 function deployCode(db: EntityManager, codePath: string) {
-  return readDirectory(codePath)
+  return readDir(codePath)
     .then((fileNames) => Promise.all(fileNames
-      .map((fileName) => readStat(pathJoin(codePath, fileName))
-        .then((stat) => {
-          if (stat.isDirectory()) {
+      .map((fileName) => stat(pathJoin(codePath, fileName))
+        .then((st) => {
+          if (st!.isDirectory()) {
             return uploadHandler(db, fileName, codePath);
           }
           return uploadCode(db, fileName, codePath);
@@ -95,7 +92,7 @@ function uploadHandler(db: EntityManager, directoryName: string, codePath: strin
 
   if (!db[bucket]) return Promise.resolve();
 
-  return readDirectory(pathJoin(codePath, directoryName)).then((fileNames) => Promise.all(
+  return readDir(pathJoin(codePath, directoryName)).then((fileNames) => Promise.all(
     fileNames
       .filter((fileName) => !fileName.startsWith('.'))
       .map((fileName) => {
@@ -159,12 +156,14 @@ function uploadFiles(db: EntityManager, bucket: string, files: string | string[]
 function uploadFile(db: EntityManager, bucket: string, filePath: string, cwd: string) {
   const fullFilePath = pathJoin(cwd, filePath);
 
-  const stat = fs.statSync(fullFilePath);
+  return stat(fullFilePath).then((st) => {
+    if (!st || st.isDirectory()) return null;
 
-  const file = new db.File({
-    path: `/${bucket}/${filePath}`, data: fs.createReadStream(fullFilePath), size: stat.size, type: 'stream',
-  });
-  return file.upload({ force: true }).catch((e) => {
-    throw new Error(`Failed to upload file ${filePath}: ${e.message}`);
+    const file = new db.File({
+      path: `/${bucket}/${filePath}`, data: fs.createReadStream(fullFilePath), size: st.size, type: 'stream',
+    });
+    return file.upload({ force: true }).catch((e) => {
+      throw new Error(`Failed to upload file ${filePath}: ${e.message}`);
+    });
   });
 }

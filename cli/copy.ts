@@ -2,7 +2,7 @@ import * as fs from 'fs';
 import { ReadStream } from 'fs';
 import { EntityManager } from 'baqend';
 import * as account from './account';
-import { isDir } from './helper';
+import { isDir, stat } from './helper';
 
 function splitArg(arg: string): [string | null, string] {
   const index = arg.lastIndexOf(':');
@@ -84,14 +84,12 @@ function streamFrom(db: EntityManager | null, path: string): Promise<[ReadStream
     return file.loadMetadata().then(() => Promise.all([file.download({ type: 'stream' }) as Promise<ReadStream>, file.size!]));
   }
 
-  return new Promise((resolve, reject) => {
-    fs.stat(path, (err, stat) => {
-      if (err) {
-        reject(err);
-      } else {
-        resolve([fs.createReadStream(path), stat.size]);
-      }
-    });
+  return stat(path).then((st) => {
+    if (!st || !st.isFile()) {
+      throw new Error(`${path} is not a valid file.`);
+    }
+
+    return [fs.createReadStream(path), st.size];
   });
 }
 

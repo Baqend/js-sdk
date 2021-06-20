@@ -1,6 +1,6 @@
 import { EntityFactory } from './EntityFactory';
 import type * as model from '../model';
-import { JsonMap } from '../util';
+import { JsonMap, OpenWindowHandler } from '../util';
 
 export enum LoginOption {
   /**
@@ -349,7 +349,7 @@ export interface UserFactory extends EntityFactory<model.User> {
    * @param properties Additional properties which will be applied to the created instance
    * @return A new created user
    */
-  new(properties?: {[property: string]: any}): model.User;
+  new(properties?: { [property: string]: any }): model.User;
 }
 
 export interface OAuthOptions {
@@ -415,6 +415,11 @@ export interface OAuthOptions {
    * The OAuth login flow version. Can be 1 or 2. Defaults to 2
    */
   oAuthVersion?: number,
+
+  /**
+   * An optional open callback which will be used to open up the OAuth Pop-Up window
+   */
+  open?: OpenWindowHandler;
 }
 
 ['Google', 'Facebook', 'GitHub', 'Twitter', 'LinkedIn', 'Salesforce'].forEach((name) => {

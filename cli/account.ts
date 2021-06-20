@@ -2,21 +2,20 @@ import open from 'open';
 import { ChildProcess } from 'child_process';
 import crypto from 'crypto';
 import { createServer } from 'http';
-import fs from 'fs';
 import os from 'os';
 import {
   EntityManager, EntityManagerFactory, intersection, binding,
 } from 'baqend';
 import * as helper from './helper';
-import { readInput } from './helper';
+import {
+  isFile, readFile, readInput,
+} from './helper';
 
 const { TokenStorage } = intersection;
 const { UserFactory } = binding;
 
 const fileName = `${os.homedir()}/.baqend`;
 const algorithm = 'aes-256-ctr';
-const cipherKey = Buffer.from('08cb2e72b03e90df6b4a4112d2933056574748707276fbdc62d1096d16ca18b1', 'hex');
-const cipherIv = Buffer.from('fcc8e0479287f4809b77e1e23777e519', 'hex');
 const PROFILE_DEFAULT_KEY = 'N2Ki=za[8iy4ff4jYn/3,y;';
 const bbqHost = 'bbq';
 
@@ -95,6 +94,8 @@ function getProfileCredentials(appInfo: AppInfo): Promise<Credentials | null> {
     }
 
     if ('password' in credentials) {
+      console.log('Storing username/password in the baqend profile will not be supported in future version.');
+      console.log('Logout and login again to fix this issue.');
       credentials.password = decrypt(credentials.password);
     }
 
@@ -128,7 +129,7 @@ function getInputCredentials(appInfo: AppInfo, showLoginInfo?: boolean): Promise
     options.forEach((provider, index) => {
       console.log(`${index + 2}. Login with ${provider}`);
     });
-    result = readInput(`Type 1-${options.length + 1}:`);
+    result = readInput(`Type 1-${options.length + 1}: `);
   }
 
   return result.then((option): Promise<Credentials> => {
@@ -147,9 +148,6 @@ function getInputCredentials(appInfo: AppInfo, showLoginInfo?: boolean): Promise
 
 function requestSSOCredentials(appInfo: AppInfo, oAuthProvider: string, oAuthOptions: binding.OAuthOptions = {}):
 Promise<TokenCredentials> {
-  // @ts-ignore
-  global.open = open;
-
   // TODO: current workaround until our server pass this ids to the client dynamically
   const clientIds: { [oAuthProvider: string]: string } = {
     facebook: '976707865723719',
@@ -161,12 +159,14 @@ Promise<TokenCredentials> {
     .then((db) => {
       const host = '127.0.0.1';
       const port = 9876;
+      const provider = oAuthProvider.toLowerCase();
 
       return Promise.all([
         oAuthHandler(host, port),
         db.loginWithOAuth(oAuthProvider, {
-          ...(UserFactory.DefaultOptions as any)[oAuthProvider.toLowerCase()] || {},
-          ...(clientIds[oAuthProvider.toLowerCase()] && { clientId: clientIds[oAuthProvider.toLowerCase()] }),
+          ...(UserFactory.DefaultOptions as any)[provider] || {},
+          ...(clientIds[provider] && { clientId: clientIds[provider] }),
+          ...{ open },
           ...oAuthOptions,
           redirect: `http://${host}:${port}`,
         }) as Promise<ChildProcess>,
@@ -379,7 +379,7 @@ function readInputCredentials(appInfo: AppInfo): Promise<UsernamePasswordCredent
 }
 
 function decrypt(input: string) {
-  // TODO we need to handle that more properly
+  // This is legacy and we will remove support for the username / password storage in the profile file
   // eslint-disable-next-line node/no-deprecated-api
   const decipher = crypto.createDecipher(algorithm, PROFILE_DEFAULT_KEY);
   let decrypted = decipher.update(input, 'base64', 'utf8');
@@ -388,30 +388,19 @@ function decrypt(input: string) {
 }
 
 function writeProfileFile(json: ProfileJson) {
-  return new Promise<void>((resolve, reject) => {
-    fs.writeFile(fileName, JSON.stringify(json), (err) => {
-      if (err) {
-        console.warn('Baqend Profile file can\'t be written', err);
-        reject(err);
-      }
-      resolve();
-    });
+  return helper.writeFile(fileName, JSON.stringify(json)).catch((e) => {
+    console.warn('Baqend Profile file can\'t be written', e);
+    throw e;
   });
 }
 
 function readProfileFile(): Promise<ProfileJson> {
-  return new Promise((resolve) => {
-    if (!fs.existsSync(fileName)) {
-      resolve({});
-      return;
+  return isFile(fileName).then((exists) => {
+    if (!exists) {
+      return {};
     }
 
-    fs.readFile(fileName, (err, data) => {
-      if (err) {
-        console.warn('Baqend Profile file can\'t be read', err);
-      }
-      resolve(data ? JSON.parse(data.toString()) : {});
-    });
+    return readFile(fileName, 'utf-8').then((data) => (data ? JSON.parse(data) : {}));
   });
 }
 

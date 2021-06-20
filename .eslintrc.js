@@ -119,7 +119,8 @@ module.exports = {
         '@typescript-eslint/no-use-before-define': 'off',
         // we must require our self which isn't supported right now in ts
         // https://github.com/microsoft/TypeScript/issues/38675
-        'import/no-extraneous-dependencies': 'off'
+        'import/no-extraneous-dependencies': 'off',
+        'no-restricted-syntax': 'off',
       }
     }
   ],
