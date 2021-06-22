@@ -45,7 +45,7 @@ export interface Condition<T extends Entity> {
    *
    * @see http://docs.mongodb.org/manual/reference/operator/query/gt/
    */
-  greaterThan(field: string, value: number|string|Date|Entity): Filter<T>
+  greaterThan(field: string, value: number | string | Date | Entity): Filter<T>
 
   /**
    * Adds a greater than or equal to filter to the field
@@ -56,7 +56,7 @@ export interface Condition<T extends Entity> {
    *
    * @see http://docs.mongodb.org/manual/reference/operator/query/gte/
    */
-  greaterThanOrEqualTo(field: string, value: number|string|Date|Entity): Filter<T>
+  greaterThanOrEqualTo(field: string, value: number | string | Date | Entity): Filter<T>
 
   /**
    * Adds a less than filter to the field
@@ -67,7 +67,7 @@ export interface Condition<T extends Entity> {
    *
    * @see http://docs.mongodb.org/manual/reference/operator/query/lt/
    */
-  lessThan(field: string, value: number|string|Date|Entity): Filter<T>
+  lessThan(field: string, value: number | string | Date | Entity): Filter<T>
 
   /**
    * Adds a less than or equal to filter to the field
@@ -78,7 +78,7 @@ export interface Condition<T extends Entity> {
    *
    * @see http://docs.mongodb.org/manual/reference/operator/query/lte/
    */
-  lessThanOrEqualTo(field: string, value: number|string|Date|Entity): Filter<T>
+  lessThanOrEqualTo(field: string, value: number | string | Date | Entity): Filter<T>
 
   /**
    * Adds a between filter to the field. This is a shorthand for an less than and greater than filter.
@@ -87,7 +87,11 @@ export interface Condition<T extends Entity> {
    * @param lessValue The field value must be less than this value
    * @return The resulting Query
    */
-  between(field: string, greaterValue: number|string|Date|Entity, lessValue: number|string|Date|Entity): Filter<T>
+  between(
+    field: string,
+    greaterValue: number | string | Date | Entity,
+    lessValue: number | string | Date | Entity
+  ): Filter<T>
 
   /**
    * Adds a “in” filter to the field
@@ -264,7 +268,7 @@ export interface Condition<T extends Entity> {
    *
    * @see http://docs.mongodb.org/manual/reference/operator/query/lt/
    */
-  lt(field: string, value: number|string|Date|Entity): Filter<T>
+  lt(field: string, value: number | string | Date | Entity): Filter<T>
 
   /**
    * Adds a less than or equal to filter to the field
@@ -277,7 +281,7 @@ export interface Condition<T extends Entity> {
    *
    * @see http://docs.mongodb.org/manual/reference/operator/query/lte/
    */
-  le(field: string, value: number|string|Date|Entity): Filter<T>
+  le(field: string, value: number | string | Date | Entity): Filter<T>
 
   /**
    * Adds a greater than filter to the field
@@ -290,7 +294,7 @@ export interface Condition<T extends Entity> {
    *
    * @see http://docs.mongodb.org/manual/reference/operator/query/gt/
    */
-  gt(field: string, value: number|string|Date|Entity): Filter<T>
+  gt(field: string, value: number | string | Date | Entity): Filter<T>
 
   /**
    * Adds a greater than or equal to filter to the field
@@ -303,7 +307,7 @@ export interface Condition<T extends Entity> {
    *
    * @see http://docs.mongodb.org/manual/reference/operator/query/gte/
    */
-  ge(field: string, value: number|string|Date|Entity): Filter<T>
+  ge(field: string, value: number | string | Date | Entity): Filter<T>
 
   /**
    * The collection must contains one of the given values
@@ -330,6 +334,7 @@ export interface Condition<T extends Entity> {
   addFilter(field: string | null, filter: string | null, value: any): Filter<T>
 }
 
+// eslint-disable-next-line @typescript-eslint/no-redeclare
 export const Condition: Partial<Condition<any>> = {
   where(this: Condition<any>, conditions) {
     return this.addFilter(null, null, conditions);

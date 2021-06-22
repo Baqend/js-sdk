@@ -28,7 +28,7 @@ export class FetchConnector extends Connector {
       body: entity,
       credentials,
     }).then((res) => {
-      const responseHeaders: {[headerName: string]: string} = {};
+      const responseHeaders: { [headerName: string]: string } = {};
       Connector.RESPONSE_HEADERS.forEach((name) => {
         responseHeaders[name] = res.headers.get ? res.headers.get(name) : (res.headers as any)[name];
       });

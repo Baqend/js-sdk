@@ -112,6 +112,15 @@ export class EntityType<T extends Entity> extends ManagedType<T> {
       this.declaredAttributes = [this.declaredId, this.declaredVersion, this.declaredAcl];
     }
 
+    createProxyClass(): Class<any> {
+      return super.createProxyClass();
+    }
+
+    fromJsonValue(state: ManagedState, jsonObject: Json, currentObject: any | null, options: {
+      persisting?: boolean; onlyMetadata?: boolean }): any | null {
+      return super.fromJsonValue(state, jsonObject, currentObject, options);
+    }
+
     createObjectFactory(): EntityFactory<any> {
       throw new Error("Objects can't be directly created and persisted");
     }
@@ -194,7 +203,7 @@ export class EntityType<T extends Entity> extends ManagedType<T> {
    * @param [options.classes] An array of class names to filter for, null for no filter
    * @return A map from every referencing class to a set of its referencing attribute names
    */
-  getReferencing(db: EntityManager, options?: {classes?: string[]}): Map<ManagedType<any>, Set<string>> {
+  getReferencing(db: EntityManager, options?: { classes?: string[] }): Map<ManagedType<any>, Set<string>> {
     const opts = { ...options };
     const { entities } = db.metamodel;
     const referencing = new Map();

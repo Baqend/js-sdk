@@ -86,7 +86,7 @@ export class Stream {
     options?: EventStreamOptions): Observable<RealtimeEvent<T>> {
     const opt = options || {};
     opt.reconnects = 0;
-    return Stream.streamObservable<T, RealtimeEvent<T>>(entityManager, query, opt, (msg, next) => {
+    return Stream.streamObservable<RealtimeEvent<T>>(entityManager, query, opt, (msg, next) => {
       const { type, ...eventProps } = msg;
 
       if (msg.type === 'result') {
@@ -137,7 +137,7 @@ export class Stream {
 
     let result: T[];
     const ordered = !!query.sort;
-    return Stream.streamObservable<T, T[]>(entityManager, query, opt, (event: BaseEvent, next) => {
+    return Stream.streamObservable<T[]>(entityManager, query, opt, (event: BaseEvent, next) => {
       if (event.type === 'result') {
         result = event.data.map((obj) => Stream.resolveObject(entityManager, obj));
         next(result.slice());
@@ -170,7 +170,7 @@ export class Stream {
     });
   }
 
-  static streamObservable<T extends Entity, R>(entityManager: EntityManager, query: JsonMap,
+  static streamObservable<R>(entityManager: EntityManager, query: JsonMap,
     options: EventStreamOptions, mapper: (event: BaseEvent, next: (result: R) => any) => any): Observable<R> {
     const opt = Stream.parseOptions(options);
 
@@ -210,7 +210,7 @@ export class Stream {
       };
     });
 
-    return Stream.cachedObservable(observable, opt);
+    return Stream.cachedObservable<R>(observable, opt);
   }
 
   static cachedObservable<T>(observable: Observable<T>, options: JsonMap): Observable<T> {

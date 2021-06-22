@@ -140,7 +140,7 @@ export class FileFactory extends Factory<File> {
    * @param failCallback The callback is invoked if any error has occurred
    * @return The listed files/folders.
    */
-  listFiles(folderOrPath: File|string, start: File, count: number, doneCallback?: any,
+  listFiles(folderOrPath: File | string, start: File, count: number, doneCallback?: any,
     failCallback?: any): Promise<File[]> {
     let folder;
 

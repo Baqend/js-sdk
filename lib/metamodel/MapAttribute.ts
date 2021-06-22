@@ -45,8 +45,8 @@ export class MapAttribute<K, V> extends PluralAttribute<Map<K | null, V | null>,
       return null;
     }
 
-    const persisting: {[key: string]: [K | null, V | null]} = {};
-    const persistedState: {[key: string]: [K | null, V | null]} = Attribute.attachState(value) || {};
+    const persisting: { [key: string]: [K | null, V | null] } = {};
+    const persistedState: { [key: string]: [K | null, V | null] } = Attribute.attachState(value) || {};
     let changed = Attribute.attachSize(value) !== value.size;
 
     const json: JsonMap = {};
@@ -92,8 +92,8 @@ export class MapAttribute<K, V> extends PluralAttribute<Map<K | null, V | null>,
         value = new this.typeConstructor();
       }
 
-      const persisting: {[key: string]: [K | null, V | null]} = {};
-      const persistedState: {[key: string]: [K | null, V | null]} = Attribute.attachState(value) || {};
+      const persisting: { [key: string]: [K | null, V | null] } = {};
+      const persistedState: { [key: string]: [K | null, V | null] } = Attribute.attachState(value) || {};
 
       value.clear();
       const jsonKeys = Object.keys(json);

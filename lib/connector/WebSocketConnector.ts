@@ -35,7 +35,7 @@ export class WebSocketConnector {
    */
   private static websockets: { [origin: string]: WebSocketConnector } = {};
 
-  private observers: {[subscriberId: string]: Subscriber<ChannelMessage>} = {};
+  private observers: { [subscriberId: string]: Subscriber<ChannelMessage> } = {};
 
   private socket: Promise<WebSocket> | null = null;
 
@@ -123,9 +123,9 @@ export class WebSocketConnector {
         }
       };
 
-      socketPromise = new Promise((resolve) => {
-        socket.onopen = resolve;
-      }).then(() => socket);
+      socketPromise = new Promise<WebSocket>((resolve) => {
+        socket.onopen = () => resolve(socket);
+      });
 
       this.socket = socketPromise;
     }

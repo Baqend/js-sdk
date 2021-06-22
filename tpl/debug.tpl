@@ -36,7 +36,7 @@
     env.TEST_SERVER = server? decodeURIComponent(server[1]): env.TEST_SERVER;
   </script>
 
-  <script src="./spec/helper.js"></script>
+  <script src="./spec/helper.ts"></script>
 
   <% _.forEach(testScripts, function(src) { %><script type="text/javascript" src="./spec/<%- src %>"></script><% }); %>
 

@@ -35,7 +35,7 @@ export abstract class Attribute<T> {
 
   public declaringType: ManagedType<any> | null = null;
 
-  public metadata: {[name: string]: string} | null = null;
+  public metadata: { [name: string]: string } | null = null;
 
   /**
    * Attach and returns the attached state of the given object or collection
