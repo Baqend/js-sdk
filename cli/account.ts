@@ -25,7 +25,7 @@ export type AccountArgs = {
   password?: string,
   token?: string,
   skipInput?: boolean,
-  provider?: string
+  auth?: string
 };
 
 export type AppInfo = {
@@ -111,7 +111,7 @@ function getLocalCredentials(appInfo: AppInfo): Credentials | null {
   return null;
 }
 
-function getInputCredentials(appInfo: AppInfo, showLoginInfo?: boolean): Promise<Credentials> {
+function getInputCredentials(appInfo: AppInfo, authProvider?: string, showLoginInfo?: boolean): Promise<Credentials> {
   if (!process.stdout.isTTY) {
     return Promise.reject(new Error('Can\'t interactive login into baqend, no tty session was detected.'));
   }
@@ -120,16 +120,15 @@ function getInputCredentials(appInfo: AppInfo, showLoginInfo?: boolean): Promise
     console.log('Baqend Login is required. You can skip this step by saving the Login credentials with "baqend login or baqend sso"');
   }
 
-  const options = ['google', 'facebook', 'github'];
+  const options = ['password', 'google', 'facebook', 'github'];
 
-  let result = Promise.resolve('1');
-  if (!appInfo.isCustomHost && options.length > 0) {
+  let result = Promise.resolve(String(options.indexOf(authProvider || 'password') + 1));
+  if (!appInfo.isCustomHost && options.length > 1 && !authProvider) {
     console.log('Choose how you want to login:');
-    console.log('1. Login with username/password.');
     options.forEach((provider, index) => {
-      console.log(`${index + 2}. Login with ${provider}`);
+      console.log(`${index + 1}. Login with ${provider}`);
     });
-    result = readInput(`Type 1-${options.length + 1}: `);
+    result = readInput(`Type 1-${options.length}: `);
   }
 
   return result.then((option): Promise<Credentials> => {
@@ -137,9 +136,9 @@ function getInputCredentials(appInfo: AppInfo, showLoginInfo?: boolean): Promise
       return readInputCredentials(appInfo);
     }
 
-    const provider = options[Number(option) - 2];
+    const provider = options[Number(option) - 1];
     if (!provider) {
-      throw new Error('No valid login option was choosed.');
+      throw new Error('No valid login option was chosen.');
     }
 
     return requestSSOCredentials(appInfo, provider);
@@ -190,11 +189,13 @@ function oAuthHandler(host: string, port: number): Promise<TokenCredentials> {
         done = true;
       }
 
-      res.writeHead(200, { 'Content-Type': 'text/html' });
-      res.end('<!DOCTYPE html><html><head></head><body>Continue within the CLI!</a></body></html>');
-
       if (done) {
+        res.writeHead(200, { 'Content-Type': 'text/html' });
+        res.end('<!DOCTYPE html><html><head></head><body><h1>Continue within the CLI!</h1></a></body></html>');
         server.close();
+      } else {
+        res.writeHead(404);
+        res.end();
       }
     });
     server.on('error', (err) => {
@@ -213,7 +214,7 @@ function getCredentials(appInfo: AppInfo, args: AccountArgs): Promise<Credential
 
   if (!args.skipInput && process.stdout.isTTY) {
     providers = providers
-      .then((credentials) => credentials || getInputCredentials(appInfo, true));
+      .then((credentials) => credentials || getInputCredentials(appInfo, args.auth, true));
   }
 
   return providers;
@@ -222,7 +223,7 @@ function getCredentials(appInfo: AppInfo, args: AccountArgs): Promise<Credential
 export function register(args: AccountArgs) {
   const appInfo = getAppInfo(args);
 
-  return getInputCredentials(appInfo)
+  return getInputCredentials(appInfo, args.auth)
     .then((credentials) => appConnect(appInfo)
       .then((db) => {
         if ('token' in credentials) {
@@ -297,15 +298,6 @@ function bbqAppLogin(db: EntityManager, appName: string) {
   });
 }
 
-export function sso(args: AccountArgs) {
-  const appInfo = getAppInfo(args);
-  return requestSSOCredentials(appInfo, args.provider || 'Google')
-    .then((credentials) => saveCredentials(appInfo, credentials))
-    .then(() => {
-      console.log('You have successfully been logged in.');
-    });
-}
-
 export function logout(args: AccountArgs) {
   const appInfo = getAppInfo(args);
   return readProfileFile().then((json) => {
@@ -320,7 +312,7 @@ export function persistLogin(args: AccountArgs) {
   let credentials: Credentials | Promise<Credentials> | null = getArgsCredentials(args);
 
   if (!credentials) {
-    credentials = getInputCredentials(appInfo, false);
+    credentials = getInputCredentials(appInfo, args.auth, false);
   }
 
   return Promise.resolve(credentials)

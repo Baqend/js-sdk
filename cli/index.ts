@@ -19,17 +19,13 @@ export function run() {
     .option('--token <token>', 'Pass a Baqend Authorization Token to the command');
   program
     .command('login [app]')
+    .option('--auth <auth>', 'The authentication method to use for the login. Can be password, google, facebook or gitHub.')
     .description('Logs you in and locally saves your credentials')
-    .action((app) => account.persistLogin({ app, ...program.opts() }));
+    .action((app, options) => account.persistLogin({ app, ...options, ...program.opts() }));
   program
     .command('register')
     .description('Registers an account and locally saves your credentials')
     .action((options) => account.register({ ...options, ...program.opts() }).then(() => { }));
-  program
-    .command('sso')
-    .option('--provider', 'The Provider to use for the SSO can be Google, Facebook or GitHub.', 'google')
-    .description('Login via SSO')
-    .action((options) => account.sso({ ...options, ...program.opts() }));
   program
     .command('whoami [app]')
     .alias('me')
