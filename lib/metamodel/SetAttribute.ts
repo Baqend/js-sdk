@@ -40,7 +40,7 @@ export class SetAttribute<T> extends PluralAttribute<Set<T | null>, T> {
       return null;
     }
 
-    const persisting: {[key: string]: T | null} = {};
+    const persisting: { [key: string]: T | null } = {};
     const persistedState: JsonMap = Attribute.attachState(value) || {};
     let changed = Attribute.attachSize(value) !== value.size;
 

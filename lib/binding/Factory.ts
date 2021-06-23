@@ -14,8 +14,7 @@ export interface InstanceFactory<T> {
   new(...args: any[]): T
 }
 
-// @ts-ignore
-export class Factory<T> implements InstanceFactory<T> {
+export class Factory<T> {
   private static extend<T, P extends Factory<any>>(target: T, proto: P): T & P {
     if (proto !== Factory.prototype) {
       this.extend(target, Object.getPrototypeOf(proto));
@@ -35,7 +34,7 @@ export class Factory<T> implements InstanceFactory<T> {
    * @param type - the type constructor of T
    * @return A new object factory to created instances of T
    */
-  protected static createFactory<F extends Factory<T>, T>(this: Class<F>, type: Class<T>): F {
+  protected static createFactory<F extends Factory<T>, T>(this: Class<F>, type: Class<T>): F & InstanceFactory<T> {
     // We want te explicitly name the created factory and give the constructor a properly argument name
     const factory = Factory.extend((function FactoryConstructor(...args: any[]) {
       return factory.newInstance(args);

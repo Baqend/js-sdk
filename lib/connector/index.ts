@@ -1,6 +1,5 @@
 export {
-  Message, ProgressListener, ExternalMessage, MessageSpec, StatusCode,
-  RestSpecification, OAuthMessages, OAuthMessage,
+  Message, OAuthMessage, ProgressListener, MessageSpec, StatusCode, RestSpecification,
 } from './Message';
 export {
   ResponseBodyType, RequestBodyType, RequestBody, Response, Connector, Request, Receiver,

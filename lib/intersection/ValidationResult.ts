@@ -2,7 +2,7 @@ import { JsonMap } from '../util/Json';
 import { Validator } from './Validator';
 
 export class ValidationResult {
-  public fields: {[property: string]: Validator} = {};
+  public fields: { [property: string]: Validator } = {};
 
   /**
    * Indicates if all fields are valid

@@ -1,6 +1,6 @@
 import { JsonMap } from '../util';
 
-type IndexSpec = {[name: string]: string}[];
+type IndexSpec = { [name: string]: string }[];
 
 /**
  * Creates a new index instance which is needed to create an
@@ -36,9 +36,9 @@ export class DbIndex {
    * an array of objects to create an compound index
    * @param unique Indicates if the index will be unique
    */
-  constructor(keys: string | {[name: string]: string} | IndexSpec, unique?: boolean) {
+  constructor(keys: string | { [name: string]: string } | IndexSpec, unique?: boolean) {
     if (typeof keys === 'string') {
-      const key: {[p: string]: string} = {};
+      const key: { [p: string]: string } = {};
       key[keys] = DbIndex.ASC;
       this.keys = [key];
     } else if (Array.isArray(keys)) {

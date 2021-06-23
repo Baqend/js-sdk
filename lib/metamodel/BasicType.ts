@@ -41,7 +41,11 @@ export class BasicType<T> extends Type<T> {
     }
   }('Integer', Number);
 
-  public static readonly String = new class StringType extends BasicType<String> {}('String', String);
+  public static readonly String = new class StringType extends BasicType<String> {
+    fromJsonValue(state: ManagedState, json: Json, currentValue: String | null): String | null {
+      return super.fromJsonValue(state, json, currentValue);
+    }
+  }('String', String);
 
   public static readonly DateTime = new class DateTimeType extends BasicType<Date> {
     toJsonValue(state: ManagedState, value: Date | null) {
@@ -118,6 +122,10 @@ export class BasicType<T> extends Type<T> {
   }('JsonArray', Array);
 
   public static readonly JsonObject = new class JsonObjectType extends BasicType<JsonMap> {
+    fromJsonValue(state: ManagedState, json: Json, currentValue: JsonMap | null): JsonMap | null {
+      return super.fromJsonValue(state, json, currentValue);
+    }
+
     toJsonValue(state: ManagedState, value: JsonMap | null): JsonMap | null {
       if (value && value.constructor === Object) {
         return value;

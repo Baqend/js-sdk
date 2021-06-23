@@ -15,9 +15,10 @@ import {
   JsonMap,
   Lockable,
   uuid,
+  openWindow,
 } from './util';
 import {
-  Message, StatusCode, Connector, OAuthMessages, OAuthMessage,
+  Message, StatusCode, Connector, OAuthMessage,
 } from './connector';
 import { BloomFilter } from './caching';
 import { GeoPoint } from './GeoPoint';
@@ -41,6 +42,7 @@ import {
   ValidationResult,
   Validator,
 } from './intersection';
+import { appendQueryParams } from './connector/Message';
 
 const DB_PREFIX = '/db/';
 
@@ -303,7 +305,7 @@ export class EntityManager extends Lockable {
    * @param types
    * @return    * @private
    */
-  private _createObjectFactory(types: {[type: string]: ManagedType<any>}): void {
+  private _createObjectFactory(types: { [type: string]: ManagedType<any> }): void {
     const values = Object.values(types);
     for (let i = 0; i < values.length; i += 1) {
       const type = values[i];
@@ -493,7 +495,7 @@ export class EntityManager extends Lockable {
    * @return
    */
   resolveDepth<T extends Entity>(entity: T, options?: { refresh?: boolean, local?: boolean, depth?: number | boolean,
-    resolved?: Entity[]}): Promise<T> {
+    resolved?: Entity[] }): Promise<T> {
     if (!options || !options.depth) {
       return Promise.resolve(entity);
     }
@@ -539,7 +541,7 @@ export class EntityManager extends Lockable {
       return this.resolveDepth(entity, opt);
     }
 
-    const msg = new messages.GetObject(state.bucket, state.key);
+    const msg = new messages.GetObject(state.bucket, state.key!);
 
     this.ensureCacheHeader(entity.id, msg, opt.refresh);
 
@@ -610,11 +612,11 @@ export class EntityManager extends Lockable {
 
       if (opt.force) {
         const { version, ...jsonWithoutVersion } = json;
-        return new messages.ReplaceObject(state.bucket, state.key, jsonWithoutVersion)
+        return new messages.ReplaceObject(state.bucket, state.key!, jsonWithoutVersion)
           .ifMatch('*');
       }
 
-      return new messages.ReplaceObject(state.bucket, state.key, json)
+      return new messages.ReplaceObject(state.bucket, state.key!, json)
         .ifMatch(`${state.version}`);
     });
   }
@@ -625,7 +627,7 @@ export class EntityManager extends Lockable {
    * @param withoutLock Set true to save the entity without locking
    * @return
    */
-  save<E extends Entity>(entity: E, options?: { force?: boolean, depth?: number | boolean, refresh?: boolean},
+  save<E extends Entity>(entity: E, options?: { force?: boolean, depth?: number | boolean, refresh?: boolean },
     withoutLock = false): Promise<E> {
     const opt = options || {};
 
@@ -636,11 +638,11 @@ export class EntityManager extends Lockable {
         }
 
         const { version, ...jsonWithoutVersion } = json;
-        return new messages.ReplaceObject(state.bucket, state.key, jsonWithoutVersion);
+        return new messages.ReplaceObject(state.bucket, state.key!, jsonWithoutVersion);
       }
 
       if (state.version) {
-        return new messages.ReplaceObject(state.bucket, state.key, json)
+        return new messages.ReplaceObject(state.bucket, state.key!, json)
           .ifMatch(state.version);
       }
 
@@ -875,7 +877,7 @@ export class EntityManager extends Lockable {
         throw new IllegalEntityError(entity);
       }
 
-      const msg = new messages.DeleteObject(state.bucket, state.key);
+      const msg = new messages.DeleteObject(state.bucket, state.key!);
 
       this.addToBlackList(entity.id);
 
@@ -1017,7 +1019,7 @@ export class EntityManager extends Lockable {
     return this.withLock(() => this.send(new messages.Logout()).then(this._logout.bind(this)));
   }
 
-  loginWithOAuth(provider: string, clientID: string, options: OAuthOptions) {
+  loginWithOAuth(provider: string, options: OAuthOptions): any | string | Promise<model.User | null> {
     if (!this.connection) {
       throw new Error('This EntityManager is not connected.');
     }
@@ -1031,36 +1033,47 @@ export class EntityManager extends Lockable {
       timeout: 5 * 60 * 1000,
       state: {},
       loginOption: true,
+      oAuthVersion: 2,
+      open: openWindow,
       ...options,
     };
+
+    if (opt.deviceCode) {
+      return this._loginOAuthDevice(provider.toLowerCase(), opt);
+    }
+
+    if (opt.oAuthVersion !== 1 && !opt.path && !opt.deviceCode) {
+      throw new Error('No OAuth path is provided to start the OAuth flow.');
+    }
 
     if (opt.redirect) {
       Object.assign(opt.state, { redirect: opt.redirect, loginOption: opt.loginOption });
     }
 
-    let msg: OAuthMessage;
-    if (OAuthMessages[provider]) {
-      msg = new OAuthMessages[provider](clientID, opt.scope as string, JSON.stringify(opt.state)) as OAuthMessage;
-      msg.addRedirectOrigin(this.connection.origin + this.connection.basePath);
-    } else {
-      throw new Error(`OAuth provider ${provider} not supported.`);
-    }
+    const oAuthEndpoint = `${this.connection.origin}${this.connection.basePath}/db/User/OAuth/${provider.toLowerCase()}`;
 
-    if (opt.path) {
-      msg.path(opt.path);
-    }
+    const url = opt.oAuthVersion === 1 ? oAuthEndpoint : appendQueryParams(opt.path!, {
+      client_id: opt.clientId,
+      scope: opt.scope,
+      state: JSON.stringify(opt.state),
+      redirect_uri: oAuthEndpoint,
+    });
 
-    const windowOptions = { width: `${opt.width}`, height: `${opt.height}` };
+    const windowOptions = {
+      title: opt.title,
+      width: opt.width,
+      height: opt.height,
+    };
+
     if (opt.redirect) {
       // use oauth via redirect by opening the login in the same window
-      // for app wrappers we need to open the system browser
-      const isBrowser = document.URL.indexOf('http://') !== -1 || document.URL.indexOf('https://') !== -1;
-      this.openOAuthWindow(msg.request.path, isBrowser ? '_self' : '_system', windowOptions);
-      return new Promise(() => {});
+      return opt.open(url, { target: '_self', ...windowOptions }) || url;
     }
 
-    const req = this._userRequest(msg, opt.loginOption);
-    this.openOAuthWindow(msg.request.path, opt.title, windowOptions);
+    const req = this._userRequest(new OAuthMessage(), opt.loginOption);
+    if (!opt.open(url, windowOptions)) {
+      throw new Error('The OAuth flow with a Pop-Up can only be issued in browsers. Add a redirect URL to the options to return to your app via that redirect after the OAuth flow succeed.');
+    }
 
     return new Promise((resolve, reject) => {
       const timeout = setTimeout(() => {
@@ -1073,20 +1086,10 @@ export class EntityManager extends Lockable {
     });
   }
 
-  /**
-   * Opens a new window use for OAuth logins
-   * @param url The url to open
-   * @param targetOrTitle The target of the window, or the title of the popup
-   * @param options Additional window options
-   * @return
-   */
-  openOAuthWindow(url: string, targetOrTitle: string, options: {[option: string]: string}): void {
-    const str = Object.keys(options)
-      .filter((key) => options[key] !== undefined)
-      .map((key) => `${key}=${options[key]}`)
-      .join(',');
-
-    open(url, targetOrTitle, str); // eslint-disable-line no-restricted-globals
+  private _loginOAuthDevice(provider: string, opt: OAuthOptions): Promise<model.User | null> {
+    return this._userRequest(new messages.OAuth2(provider, opt.deviceCode), opt.loginOption)
+      .catch(() => new Promise((resolve) => setTimeout(resolve, 5000))
+        .then(() => this._loginOAuthDevice(provider, opt)));
   }
 
   renew(loginOption?: LoginOption | boolean) {
@@ -1353,7 +1356,7 @@ export class EntityManager extends Lockable {
   requestAPIToken(entityClass: Class<model.User>, user: model.User | string): Promise<JsonMap> {
     const userObj = this._getUserReference(entityClass, user);
 
-    const msg = new messages.UserToken(userObj.key);
+    const msg = new messages.UserToken(userObj.key!);
     return this.send(msg).then((resp) => resp.entity);
   }
 
@@ -1368,7 +1371,7 @@ export class EntityManager extends Lockable {
   revokeAllTokens(entityClass: Class<model.User>, user: model.User | string): Promise<any> {
     const userObj = this._getUserReference(entityClass, user);
 
-    const msg = new messages.RevokeUserToken(userObj.key);
+    const msg = new messages.RevokeUserToken(userObj.key!);
     return this.send(msg);
   }
 

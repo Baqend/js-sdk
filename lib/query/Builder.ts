@@ -107,7 +107,7 @@ export class Builder<T extends Entity> extends Query<T> {
     return new Operator(this.entityManager, this.resultClass, operator, args);
   }
 
-  addOrder(fieldOrSort: string | {[field: string]: 1 | -1}, order?: 1 | -1) {
+  addOrder(fieldOrSort: string | { [field: string]: 1 | -1 }, order?: 1 | -1) {
     return new Filter(this.entityManager, this.resultClass).addOrder(fieldOrSort, order);
   }
 

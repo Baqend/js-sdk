@@ -10,7 +10,7 @@ export type BasePermission = ['load', 'update', 'delete', 'query', 'insert'];
 export class Permission {
   static readonly BASE_PERMISSIONS: BasePermission = ['load', 'update', 'delete', 'query', 'insert'];
 
-  public rules: {[ref: string]: string} = {};
+  public rules: { [ref: string]: string } = {};
 
   /**
    * Returns a list of user and role references of all rules
@@ -147,7 +147,7 @@ export class Permission {
    * @return
    */
   fromJSON(json: Json) {
-    this.rules = json as {[ref: string]: string};
+    this.rules = json as { [ref: string]: string };
   }
 
   /**

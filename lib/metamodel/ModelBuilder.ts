@@ -13,9 +13,9 @@ import { Attribute } from './Attribute';
 import { Permission, Validator } from '../intersection';
 
 export class ModelBuilder {
-  private models: {[name: string]: Type<any>} = {};
+  private models: { [name: string]: Type<any> } = {};
 
-  private modelDescriptors: {[name: string]: JsonMap} | null = null;
+  private modelDescriptors: { [name: string]: JsonMap } | null = null;
 
   constructor() {
     (Object.keys(BasicType) as (keyof typeof BasicType)[]).forEach((typeName) => {
@@ -44,7 +44,7 @@ export class ModelBuilder {
    * @param modelDescriptors
    * @return
    */
-  buildModels(modelDescriptors: JsonMap[]): {[name: string]: Type<any>} {
+  buildModels(modelDescriptors: JsonMap[]): { [name: string]: Type<any> } {
     this.modelDescriptors = {};
 
     modelDescriptors.forEach((modelDescriptor: JsonMap) => {
@@ -89,7 +89,7 @@ export class ModelBuilder {
     type.metadata = {};
 
     if (modelDescriptor) {
-      type.metadata = modelDescriptor.metadata as {[key: string]: string} || {};
+      type.metadata = modelDescriptor.metadata as { [key: string]: string } || {};
       const permissions = modelDescriptor.acl || {};
       (Object.keys(permissions) as Array<keyof typeof permissions>).forEach((permission) => {
         const permissionProperty = `${permission}Permission`;
@@ -129,8 +129,8 @@ export class ModelBuilder {
    * @param field.metadata Additional metadata of the field
    * @return
    */
-  buildAttribute(field: {name: string, type: string, order: number, metadata: {[key: string]: string},
-    flags: string[]}): Attribute<any> {
+  buildAttribute(field: { name: string, type: string, order: number, metadata: { [key: string]: string },
+    flags: string[] }): Attribute<any> {
     // TODO: remove readonly if createdAt and updatedAt becomes real metadata fields in the schema
     const isMetadata = field.flags && (field.flags.indexOf('METADATA') !== -1 || field.flags.indexOf('READONLY') !== -1);
     const { name } = field;

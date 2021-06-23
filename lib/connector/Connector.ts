@@ -1,5 +1,6 @@
 /* eslint-disable no-restricted-globals */
 
+import type { ReadStream } from 'fs';
 import { PersistentError } from '../error';
 import { Message } from './Message';
 import {
@@ -7,13 +8,13 @@ import {
 } from '../util';
 
 export type Receiver = (response: Response) => void;
-export type RequestBody = string | Blob | Buffer | ArrayBuffer | FormData | Json | JsonLike;
-export type RequestBodyType = 'json'|'text'|'blob'|'buffer'|'arraybuffer'|'data-url'|'base64'|'form'|'stream';
-export type ResponseBodyType = 'json'|'text'|'blob'|'arraybuffer'|'data-url'|'base64'|'stream';
+export type RequestBody = string | Blob | Buffer | ArrayBuffer | FormData | Json | JsonLike | ReadStream;
+export type RequestBodyType = 'json' | 'text' | 'blob' | 'buffer' | 'arraybuffer' | 'data-url' | 'base64' | 'form' | 'stream';
+export type ResponseBodyType = 'json' | 'text' | 'blob' | 'arraybuffer' | 'data-url' | 'base64' | 'stream';
 export type Request = {
-  method: string, path: string, type?: RequestBodyType, entity?: any, headers: {[headerName: string]: string}
+  method: string, path: string, type?: RequestBodyType, entity?: any, headers: { [headerName: string]: string }
 };
-export type Response = { status: number, headers: {[headerName: string]: string}, entity?: any, error?: Error};
+export type Response = { status: number, headers: { [headerName: string]: string }, entity?: any, error?: Error };
 
 export abstract class Connector {
   static readonly DEFAULT_BASE_PATH = '/v1';
@@ -42,7 +43,7 @@ export abstract class Connector {
   /**
    * Array of all created connections
    */
-  static readonly connections: {[origin: string]: Connector} = {};
+  static readonly connections: { [origin: string]: Connector } = {};
 
   /**
    * Indicates id this connector is usable in the current runtime environment
@@ -115,6 +116,7 @@ export abstract class Connector {
       for (let i = this.connectors.length - 1; i >= 0; i -= 1) {
         const ConnectorConstructor = this.connectors[i];
         if (ConnectorConstructor.isUsable && ConnectorConstructor.isUsable(h, p, s, b)) {
+          // @ts-ignore
           connection = new ConnectorConstructor(h, p, s, b);
           break;
         }

@@ -20,7 +20,7 @@ export abstract class ManagedType<T extends Managed> extends Type<T> {
 
   public schemaReplacePermission: Permission = new Permission();
 
-  public metadata: {[key: string]: string} | null = null;
+  public metadata: { [key: string]: string } | null = null;
 
   public superType: EntityType<any> | null = null;
 
@@ -249,7 +249,7 @@ export abstract class ManagedType<T extends Managed> extends Type<T> {
       return null;
     }
 
-    const value: {[attr: string]: any} = {};
+    const value: { [attr: string]: any } = {};
     const iter = this.attributes();
     for (let el = iter.next(); !el.done; el = iter.next()) {
       const attribute = el.value;
@@ -287,7 +287,7 @@ export abstract class ManagedType<T extends Managed> extends Type<T> {
    * @return
    */
   toJSON(): JsonMap {
-    const fields: {[attr: string]: any} = {};
+    const fields: { [attr: string]: any } = {};
     this.declaredAttributes.forEach((attribute) => {
       if (!attribute.isMetadata) {
         fields[attribute.name] = attribute;

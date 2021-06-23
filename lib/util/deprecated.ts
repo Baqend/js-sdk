@@ -1,5 +1,5 @@
 /* eslint-disable no-console */
-const alreadyWarned: {[signature: string]: boolean} = {};
+const alreadyWarned: { [signature: string]: boolean } = {};
 export function deprecated(alternativeSignature: string) {
   return function decorateProperty(
     target: Object | string,

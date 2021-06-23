@@ -140,7 +140,7 @@ export class IFrameConnector extends XMLHttpConnector {
 
       receive({
         status: msg.status as number,
-        headers: msg.headers as {[headerNames: string]: string},
+        headers: msg.headers as { [headerNames: string]: string },
         entity: msg.entity as any,
       });
     }

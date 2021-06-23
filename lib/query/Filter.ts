@@ -3,8 +3,8 @@ import { Condition } from './Condition';
 import { Json } from '../util';
 import type { Entity } from '../binding';
 
-export type FilterObject = {[key: string]: NestedFilter | Json | Entity | Date };
-export type NestedFilter = {[filter: string]: Json | Entity | Date};
+export type FilterObject = { [key: string]: NestedFilter | Json | Entity | Date };
+export type NestedFilter = { [filter: string]: Json | Entity | Date };
 
 /**
  * A Filter saves the state for a filtered query

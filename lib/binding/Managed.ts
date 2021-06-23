@@ -22,7 +22,7 @@ export class Managed {
    * @param instance The managed instance to initialize
    * @param properties The optional properties to set on the instance
    */
-  static init(instance: Managed, properties?: {[property: string]: any}): void {
+  static init(instance: Managed, properties?: { [property: string]: any }): void {
     const type = Enhancer.getBaqendType(instance.constructor)!;
     if (type.isEntity) {
       Object.defineProperty(instance, '_metadata', {
@@ -59,7 +59,7 @@ export class Managed {
    * The default constructor, copy all given properties to this object
    * @param properties - The optional properties to copy
    */
-  constructor(properties?: {[property: string]: any}) {
+  constructor(properties?: { [property: string]: any }) {
     Managed.init(this, properties);
   }
 
