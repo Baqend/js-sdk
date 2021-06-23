@@ -141,12 +141,12 @@ export class Transaction {
 
     jsonBody += `${writeSetJson} ${deleteSetJson}}`;
 
+    const sqlMessage = new message.CommitTransaction(this.tid, jsonBody)
+      .responseType('json');
+
     this.tid = null;
     this.db.transactionalEntities = {};
     this.db.transactionalDeleteEntities = {};
-
-    const sqlMessage = new message.CommitTransaction(this.tid, jsonBody)
-      .responseType('json');
 
      let data = await this.getResult(sqlMessage);
      if (data) {
