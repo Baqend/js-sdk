@@ -20,6 +20,8 @@ async function deleteStoreUpdate(transactional){
     await assertObjectsExist("stored");
     await updateObjects(obj, transactional);
     await assertObjectsExist("updated");
+    await assertNoObjectsExist("stored");
+
 }
 
 async function connect(withSchema){
@@ -124,5 +126,21 @@ async function assertObjectsExist(name){
     if(persistentParent.child != persistentChild){
         expect.fail("Child of parent does not match.");
     }
+
+}
+
+async function assertNoObjectsExist(name){
+
+    await em.JSParent.find().equal('name', name).singleResult((parent) => {
+        if (parent) {
+            expect.fail("JSParent object with name '" + name + "' exists but it shouldn't.");
+        }
+    });
+
+    await em.JSChild.find().equal('name', name).singleResult((child) => {
+        if (child) {
+            expect.fail("JSChild object with name '" + name + "' exists but it shouldn't.");
+        } 
+    });
 
 }

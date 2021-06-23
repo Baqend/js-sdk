@@ -145,7 +145,6 @@ export class Transaction {
     this.db.transactionalEntities = {};
     this.db.transactionalDeleteEntities = {};
 
-    console.log(`ResultSet --> ${jsonBody}`);
     const sqlMessage = new message.CommitTransaction(this.tid, jsonBody)
       .responseType('json');
 
