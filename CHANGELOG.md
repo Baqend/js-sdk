@@ -1,3 +1,17 @@
+<a name="v3.1.0"></a>
+# v3.1.0 (2021-6-24)
+
+
+### Bug Fixes
+
+* Upgrade to Typescript 4.2 and fix some bugs in the Type definitions
+
+### Features
+
+* Integrate the new and simplified OAuth implementation which prepares the support for the device OAuth flow
+* Refactored the CLI to Typescript and simplified the implementation
+* Integrate the OAuth/SSO login flow in the baqend CLI
+
 <a name="v3.0.0"></a>
 # v3.0.0 (2021-2-13)
 
