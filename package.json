@@ -139,6 +139,6 @@
     "node": ">=10.0.0"
   },
   "bin": {
-    "baqend": "cli"
+    "baqend": "./cli/index.js"
   }
 }
