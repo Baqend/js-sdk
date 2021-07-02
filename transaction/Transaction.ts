@@ -152,26 +152,40 @@ export class Transaction {
      if (data) {
       const entries = Object.entries(data);
       for(let idx=0; idx < entries.length; idx ++){
+        var entity = null;
+        var mappedId = null;
         let str = JSON.stringify(entries[idx][1]);
         let colonPos = str.indexOf("%3A");  // colon
-        if(colonPos){
+        if(colonPos > 0){
           let oldId = str.substring(2, colonPos);
           let path = oldId.substring(0, oldId.lastIndexOf("/") + 1);
           let quotePos = str.indexOf('"', colonPos + 3);
-          let mappedId = path + str.substring(colonPos + 3, quotePos);
-          let entity = this.db.entityById(oldId);
-          if(entity){
-            const state = Metadata.get(entity);
-            if(state){
-              if (state.id && state.id !== mappedId) {
-                this.db.removeReference(entity);
-                state.id = mappedId;
-                state.decodedKey = null;
-                this.db._attach(entity);
-              }
+          mappedId = path + str.substring(colonPos + 3, quotePos);
+          entity = this.db.entityById(oldId);
+        } else {
+          let startPos = str.indexOf('/');
+          let quotePos = str.indexOf('"', startPos);
+          mappedId = str.substring(startPos, quotePos);
+          entity = this.db.entityById(mappedId);
+        }
+        if(entity){
+          let versionColonPos = str.lastIndexOf(':');
+          let closingBracketPos = str.lastIndexOf('}');
+          let newVersion = str.substring(versionColonPos + 2, closingBracketPos -1);
+          var newVersionAsNum: number = +newVersion;
+
+          const state = Metadata.get(entity);
+          if(state){
+            state.version = newVersionAsNum;
+            if (state.id && state.id !== mappedId) {
+              this.db.removeReference(entity);
+              state.id = mappedId;
+              state.decodedKey = null;
+              this.db._attach(entity);
             }
           }
         }
+
       }
     }
 

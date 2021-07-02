@@ -12,14 +12,31 @@ describe('More Transaction Tests', async function () {
         await deleteStoreUpdate(false);
         await deleteStoreUpdate(true);
    });
+   it('Updating an object twice', async function () {
+    await connect(false);
+    await produceMetaModel();
+    await connect(true);
+    await deleteStoreUpdateTwice(false);
+    await deleteStoreUpdateTwice(true);
+});
 });
 
 async function deleteStoreUpdate(transactional){
     await deleteAllObjects();
     const obj = await storeOneObject(transactional);
     await assertObjectExists("stored");
-    await updateObject(obj, transactional);
+    await updateObject(obj, transactional, "updated");
     await assertObjectExists("updated");
+    await assertNoObjectExists("stored");
+}
+
+async function deleteStoreUpdateTwice(transactional){
+    await deleteAllObjects();
+    const obj = await storeOneObject(transactional);
+    await updateObject(obj, transactional, "updated1");
+    await updateObject(obj, transactional, "updated2");
+    await assertObjectExists("updated2");
+    await assertNoObjectExists("updated1");
     await assertNoObjectExists("stored");
 }
 
@@ -73,11 +90,11 @@ async function storeOneObject(transactional){
     return obj;
 }
 
-async function updateObject(obj, transactional){
+async function updateObject(obj, transactional, newName){
     if(transactional){
         await em.transaction.begin();
     }
-    obj.name = "updated";
+    obj.name = newName;
     await obj.save();
     if(transactional){
         await em.transaction.commit();
