@@ -1,27 +1,22 @@
 if (typeof module !== 'undefined') {
     require('./node');
 }
-  
 var emf, em;
 
 describe('More Transaction Tests', async function () {
     it('Updating a new object', async function () {
-        await connect(false);
-        await produceMetaModel();
-        await connect(true);
-        await deleteStoreUpdate(false);
-        await deleteStoreUpdate(true);
-   });
-   it('Updating an object twice', async function () {
-    await connect(false);
-    await produceMetaModel();
-    await connect(true);
-    await deleteStoreUpdateTwice(false);
-    await deleteStoreUpdateTwice(true);
-});
+        await setup();
+        await storeUpdate(false);
+        await storeUpdate(true);
+    });
+    it('Updating an object twice', async function () {
+        await setup();
+        await storeUpdateTwice(false);
+        await storeUpdateTwice(true);
+    });
 });
 
-async function deleteStoreUpdate(transactional){
+async function storeUpdate(transactional){
     await deleteAllObjects();
     const obj = await storeOneObject(transactional);
     await assertObjectExists("stored");
@@ -30,7 +25,7 @@ async function deleteStoreUpdate(transactional){
     await assertNoObjectExists("stored");
 }
 
-async function deleteStoreUpdateTwice(transactional){
+async function storeUpdateTwice(transactional){
     await deleteAllObjects();
     const obj = await storeOneObject(transactional);
     await updateObject(obj, transactional, "updated1");
@@ -38,6 +33,12 @@ async function deleteStoreUpdateTwice(transactional){
     await assertObjectExists("updated2");
     await assertNoObjectExists("updated1");
     await assertNoObjectExists("stored");
+}
+
+async function setup(){
+    await connect(false);
+    await produceMetaModel();
+    await connect(true);
 }
 
 async function connect(withSchema){
