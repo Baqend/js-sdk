@@ -4,7 +4,6 @@
 /build
 /dist
 /commonjs
-/esm
 /doc
 /spec-ts/*.js
 /lib/*.js

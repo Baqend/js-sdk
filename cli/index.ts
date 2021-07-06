@@ -119,7 +119,7 @@ export function run() {
   return program.parseAsync(process.argv);
 }
 
-if (!module.parent) {
+if (require.main === module) {
   run().catch((e) => {
     console.error(e.stack || e);
     process.exit(1);

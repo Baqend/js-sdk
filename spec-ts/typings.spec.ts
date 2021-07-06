@@ -1,9 +1,8 @@
 /* eslint-disable no-param-reassign,@typescript-eslint/no-unused-expressions,@typescript-eslint/no-unused-vars,no-shadow,max-len */
-/// <reference path="./types.d.ts" />
 
 import {
   db, query, model, metamodel,
-} from '../esm/lib';
+} from 'baqend';
 
 db.connect('test', true).then(() => {
   // db.Test.load('test').then((entity) => {
