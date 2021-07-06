@@ -1,3 +1,11 @@
+<a name="v3.1.1"></a>
+# v3.1.1 (2021-7-2)
+
+
+### Bug Fixes
+
+* CLI: Fix entry point in the package.json to launch the CLI correctly again
+
 <a name="v3.1.0"></a>
 # v3.1.0 (2021-6-24)
 
