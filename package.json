@@ -29,13 +29,16 @@
     "./commonjs/lib/connector/IFrameConnector": false
   },
   "exports": {
-    "browser": {
-      "import": "./dist/baqend.es2015.js",
-      "require": "./dist/baqend.es5.js"
-    },
-    "default": {
-      "import": "./esm/lib/index.js",
-      "require": "./commonjs/lib/index.js"
+    "./cli": "./cli/index.js",
+    ".": {
+      "browser": {
+        "import": "./dist/baqend.es2015.js",
+        "require": "./dist/baqend.es5.js"
+      },
+      "default": {
+        "import": "./esm/lib/index.js",
+        "require": "./commonjs/lib/index.js"
+      }
     }
   },
   "types": "./esm/lib/index.d.ts",
