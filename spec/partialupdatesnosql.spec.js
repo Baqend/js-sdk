@@ -8,13 +8,9 @@ var emf, em, obj;
 
 describe('Partial Updates for NoSQL', async function () {
 
-    before(async function () {
+    it('increment long', async function () {
         await setup();
         obj = await storeObjects();    
-
-    });
-
-    it('increment long', async function () {
         expect(obj.mlong).to.equal(42);
         return obj.partialUpdate()
           .increment('mlong')
@@ -24,19 +20,71 @@ describe('Partial Updates for NoSQL', async function () {
             expect(obj.mlong).to.equal(43);
           });
       });
-
-      it('increment number', async function () {
-        expect(obj.mnumber).to.equal(44);
+  
+      it('decrement long', async function () {
+        await setup();
+        obj = await storeObjects();    
+        expect(obj.mlong).to.equal(42);
         return obj.partialUpdate()
-          .increment('mnumber')
+          .decrement('mlong', 2)
           .execute()
           .then(function (result) {
             expect(result).to.equal(obj);
-            expect(obj.mnumber).to.equal(45);
+            expect(obj.mlong).to.equal(40);
           });
       });
 
-  
+      it('min long', async function () {
+        await setup();
+        obj = await storeObjects();    
+        expect(obj.mlong).to.equal(42);
+        return obj.partialUpdate()
+          .min('mlong', 41)
+          .execute()
+          .then(function (result) {
+            expect(result).to.equal(obj);
+            expect(obj.mlong).to.equal(41);
+          });
+      });
+
+      it('min double', async function () {
+        await setup();
+        obj = await storeObjects();    
+        expect(obj.mdouble).to.equal(43);
+        return obj.partialUpdate()
+          .min('mdouble', 44)
+          .execute()
+          .then(function (result) {
+            expect(result).to.equal(obj);
+            expect(obj.mdouble).to.equal(43);
+          });
+      });
+
+      it('multiply long', async function () {
+        await setup();
+        obj = await storeObjects();    
+        expect(obj.mlong).to.equal(42);
+        return obj.partialUpdate()
+          .multiply('mlong', 5)
+          .execute()
+          .then(function (result) {
+            expect(result).to.equal(obj);
+            expect(obj.mlong).to.equal(210);
+          });
+      });
+
+      it('multiply double', async function () {
+        await setup();
+        obj = await storeObjects();    
+        expect(obj.mdouble).to.equal(43);
+        return obj.partialUpdate()
+          .multiply('mdouble', 10)
+          .execute()
+          .then(function (result) {
+            expect(result).to.equal(obj);
+            expect(obj.mdouble).to.equal(430);
+          });
+      });
   
 });
 
