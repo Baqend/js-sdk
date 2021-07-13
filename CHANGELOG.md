@@ -1,3 +1,12 @@
+<a name="v3.1.2"></a>
+# v3.1.2 (2021-7-7)
+
+
+### Bug Fixes
+
+* Make node happy again with the esm bundle
+* Add another package entry point to allow the baqend cli to be imported with baqend/cli as well
+
 <a name="v3.1.1"></a>
 # v3.1.1 (2021-7-2)
 
