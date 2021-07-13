@@ -85,7 +85,20 @@ describe('Partial Updates for NoSQL', async function () {
             expect(obj.mdouble).to.equal(430);
           });
       });
-  
+
+      it('set current date', async function () {
+        await setup();
+        obj = await storeObjects();    
+        expect(obj.mdate).to.equal(null);
+        return obj.partialUpdate()
+          .toNow('mdate')
+          .execute()
+          .then(function (result) {
+            expect(result).to.equal(obj);
+            expect(obj.mdate).to.not.equal(null);
+          });
+      });
+
 });
 
 
