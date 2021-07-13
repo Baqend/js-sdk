@@ -18,6 +18,9 @@ export type SchemaArgs = {
 
 export function uploadSchema(db: EntityManager, args: { force?: boolean } = {}): Promise<any> {
   return readDir(SCHEMA_FILE_PATH)
+    .catch(() => {
+      throw new Error('Your schema folder baqend is empty, no schema changes were deployed.');
+    })
     .then((fileNames) => Promise.all(
       fileNames.map((fileName) => readFile(pathJoin(SCHEMA_FILE_PATH, fileName), 'utf-8').then((file) => JSON.parse(file) as JsonMap)),
     ).then((schemas: JsonMap[]) => {

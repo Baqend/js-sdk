@@ -1,3 +1,4 @@
+/* eslint-disable no-await-in-loop */
 import fs from 'fs';
 import glob from 'glob';
 import { join as pathJoin } from 'path';
@@ -67,9 +68,8 @@ function deployFiles(db: EntityManager, path: string, cwd: string, pattern: stri
 
 function deployCode(db: EntityManager, codePath: string) {
   return readDir(codePath)
-    .catch((e) => {
-      console.warn(`Your specified backend code folder ${codePath} is empty, no backend code was deployed.`);
-      throw e;
+    .catch(() => {
+      throw new Error(`Your specified backend code folder ${codePath} is empty, no backend code was deployed.`);
     })
     .then((fileNames) => Promise.all(fileNames
       .map((fileName) => stat(pathJoin(codePath, fileName))
@@ -131,8 +131,8 @@ function uploadFiles(db: EntityManager, bucket: string, files: string | string[]
 
   return Promise.all(uploads);
 
-  function upload(): Promise<any> {
-    if (index < files.length) {
+  async function upload(): Promise<any> {
+    while (index < files.length) {
       if (isTty) {
         if (index > 0) {
           readline.clearLine(process.stdout, 0);
@@ -145,25 +145,34 @@ function uploadFiles(db: EntityManager, bucket: string, files: string | string[]
 
       if (isTty && index === files.length) {
         console.log(''); // add a final linebreak
+        return;
       }
 
-      return uploadFile(db, bucket, file, cwd).then(upload);
+      await uploadFile(db, bucket, file, cwd);
     }
-    return Promise.resolve();
   }
 }
 
-function uploadFile(db: EntityManager, bucket: string, filePath: string, cwd: string) {
+async function uploadFile(db: EntityManager, bucket: string, filePath: string, cwd: string): Promise<any> {
   const fullFilePath = pathJoin(cwd, filePath);
 
-  return stat(fullFilePath).then((st) => {
-    if (!st || st.isDirectory()) return null;
+  const st = await stat(fullFilePath);
+  if (!st || st.isDirectory()) {
+    return null;
+  }
 
-    const file = new db.File({
-      path: `/${bucket}/${filePath}`, data: fs.createReadStream(fullFilePath), size: st.size, type: 'stream',
-    });
-    return file.upload({ force: true }).catch((e) => {
-      throw new Error(`Failed to upload file ${filePath}: ${e.message}`);
-    });
-  });
+  for (let retires = 3; ; retires -= 1) {
+    try {
+      const file = new db.File({
+        path: `/${bucket}/${filePath}`, data: fs.createReadStream(fullFilePath), size: st.size, type: 'stream',
+      });
+
+      return await file.upload({ force: true });
+    } catch (e) {
+      if (retires <= 0) {
+        console.warn(`Failed to upload file ${filePath}. ${retires} retries left.`);
+        throw new Error(`Failed to upload file ${filePath}: ${e.message}`);
+      }
+    }
+  }
 }
