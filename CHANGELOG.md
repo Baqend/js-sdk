@@ -1,3 +1,12 @@
+<a name="v3.1.3"></a>
+# v3.1.3 (2021-7-14)
+
+
+### Bug Fixes
+
+* Improve several error messages in the CLI
+* Fix an issue that a successful deployment with the CLI ends with an error message
+
 <a name="v3.1.2"></a>
 # v3.1.2 (2021-7-7)
 
