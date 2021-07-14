@@ -1,4 +1,4 @@
-/* eslint-disable no-await-in-loop, no-return-await */
+/* eslint-disable no-await-in-loop, no-return-await, @typescript-eslint/return-await */
 import fs from 'fs';
 import glob from 'glob';
 import { join as pathJoin } from 'path';
