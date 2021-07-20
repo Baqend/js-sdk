@@ -88,7 +88,7 @@ describe('Partial Updates for NoSQL', async function () {
       .execute()
       .then(function (result) {
         expect(result).to.equal(obj);
-        expect(obj.mset.size).to.not.equal(4);
+        expect(obj.mset.size).eql(4);
       });
   });
   it('Set Remove', async function () {
@@ -99,7 +99,7 @@ describe('Partial Updates for NoSQL', async function () {
       .execute()
       .then(function (result) {
         expect(result).to.equal(obj);
-        expect(obj.mset[0]).to.equal('SetItem2');
+        expect(obj.mset.size).eql(2);
       });
   });
 
@@ -112,7 +112,7 @@ describe('Partial Updates for NoSQL', async function () {
       .execute()
       .then(function (result) {
         expect(result).to.equal(obj);
-        expect(obj.mmap.four).to.equal('MapItem4');
+        expect(obj.mmap.size).eql(4);
       });
   });
 
@@ -124,7 +124,7 @@ describe('Partial Updates for NoSQL', async function () {
       .execute()
       .then(function (result) {
         expect(result).to.equal(obj);
-        expect(obj.mmap[0]).to.equal('MapItem2');
+        expect(obj.mmap.size).eql(2);
       });
   });
 });
@@ -176,8 +176,8 @@ async function produceMetaModel() {
 
 async function storeObjects() {
   var obj = new em.PUNoSQL();
-  obj.mlist = new DB.List('ListItem', 'ListItem2', 'ListItem3');
-  obj.mset = new DB.Set('SetItem1', 'SetItem2', 'SetItem3');
+  obj.mlist = new DB.List('ListItem1', 'ListItem2', 'ListItem3');
+  obj.mset = new DB.Set(['SetItem1', 'SetItem2', 'SetItem3']);
   obj.mmap = new DB.Map([
     ['one', 'MapItem1'],
     ['two', 'MapItem2'],
