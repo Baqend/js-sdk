@@ -141,7 +141,8 @@ function uploadFiles(db: EntityManager, bucket: string, files: string | string[]
         process.stdout.write(`Uploading file ${(index + 1)} of ${files.length}`);
       }
 
-      const file = files[index += 1];
+      const file = files[index];
+      index += 1;
 
       if (isTty && index === files.length) {
         console.log(''); // add a final linebreak
