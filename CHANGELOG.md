@@ -1,3 +1,11 @@
+<a name="v3.1.4"></a>
+# v3.1.4 (2021-7-21)
+
+
+### Bug Fixes
+
+* Fix an issue in the CLI that the first file in the latest release is not deployed 
+
 <a name="v3.1.3"></a>
 # v3.1.3 (2021-7-14)
 
