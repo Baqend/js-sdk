@@ -20,6 +20,17 @@ describe('Partial Updates for NoSQL', async function () {
         expect(obj.mlist[3]).to.equal('ListItem4');
       });
   });
+  it('Push for Integer type', async function () {
+    await setup();
+    obj = await storeObjects();
+    return obj.partialUpdate()
+      .push('ilist', 400)
+      .execute()
+      .then(function (result) {
+        expect(result).to.equal(obj);
+        expect(obj.ilist[3]).to.equal(400);
+      });
+  });
 
   it('Pop', async function () {
     await setup();
@@ -30,6 +41,17 @@ describe('Partial Updates for NoSQL', async function () {
       .then(function (result) {
         expect(result).to.equal(obj);
         expect(obj.mlist[1]).to.equal('ListItem2');
+      });
+  });
+  it('Pop for integer type', async function () {
+    await setup();
+    obj = await storeObjects();
+    return obj.partialUpdate()
+      .pop('ilist')
+      .execute()
+      .then(function (result) {
+        expect(result).to.equal(obj);
+        expect(obj.ilist[1]).to.equal(200);
       });
   });
 
@@ -44,7 +66,17 @@ describe('Partial Updates for NoSQL', async function () {
         expect(obj.mlist[0]).to.equal('ListItem0');
       });
   });
-
+  it('Unshift for integer type', async function () {
+    await setup();
+    obj = await storeObjects();
+    return obj.partialUpdate()
+      .unshift('ilist', 0)
+      .execute()
+      .then(function (result) {
+        expect(result).to.equal(obj);
+        expect(obj.ilist[0]).to.equal(0);
+      });
+  });
   it('Shift', async function () {
     await setup();
     obj = await storeObjects();
@@ -56,16 +88,37 @@ describe('Partial Updates for NoSQL', async function () {
         expect(obj.mlist[0]).to.equal('ListItem2');
       });
   });
-
+  it('Shift for integer type', async function () {
+    await setup();
+    obj = await storeObjects();
+    return obj.partialUpdate()
+      .shift('ilist')
+      .execute()
+      .then(function (result) {
+        expect(result).to.equal(obj);
+        expect(obj.ilist[0]).to.equal(200);
+      });
+  });
   it('Replace', async function () {
     await setup();
     obj = await storeObjects();
     return obj.partialUpdate()
-      .replace('mlist', 0, 'ReplacedListItem')
+      .replace('mlist', 1, 'ReplacedListItem')
       .execute()
       .then(function (result) {
         expect(result).to.equal(obj);
-        expect(obj.mlist[0]).to.equal('ReplacedListItem');
+        expect(obj.mlist[1]).to.equal('ReplacedListItem');
+      });
+  });
+  it('Replace for integer type', async function () {
+    await setup();
+    obj = await storeObjects();
+    return obj.partialUpdate()
+      .replace('ilist', 1, 500)
+      .execute()
+      .then(function (result) {
+        expect(result).to.equal(obj);
+        expect(obj.ilist[1]).to.equal(500);
       });
   });
   it('List Remove', async function () {
@@ -77,6 +130,17 @@ describe('Partial Updates for NoSQL', async function () {
       .then(function (result) {
         expect(result).to.equal(obj);
         expect(obj.mlist[0]).to.equal('ListItem2');
+      });
+  });
+  it('List Remove for integer type', async function () {
+    await setup();
+    obj = await storeObjects();
+    return obj.partialUpdate()
+      .remove('ilist', 100)
+      .execute()
+      .then(function (result) {
+        expect(result).to.equal(obj);
+        expect(obj.ilist[0]).to.equal(200);
       });
   });
   // Set Operation
@@ -91,6 +155,17 @@ describe('Partial Updates for NoSQL', async function () {
         expect(obj.mset.size).eql(4);
       });
   });
+  it('Add for integer type', async function () {
+    await setup();
+    obj = await storeObjects();
+    return obj.partialUpdate()
+      .add('iset', 4)
+      .execute()
+      .then(function (result) {
+        expect(result).to.equal(obj);
+        expect(obj.iset.size).eql(4);
+      });
+  });
   it('Set Remove', async function () {
     await setup();
     obj = await storeObjects();
@@ -102,7 +177,17 @@ describe('Partial Updates for NoSQL', async function () {
         expect(obj.mset.size).eql(2);
       });
   });
-
+  it('Set Remove for integer type', async function () {
+    await setup();
+    obj = await storeObjects();
+    return obj.partialUpdate()
+      .remove('iset', 1)
+      .execute()
+      .then(function (result) {
+        expect(result).to.equal(obj);
+        expect(obj.iset.size).eql(2);
+      });
+  });
   // Map Operation
   it('Put', async function () {
     await setup();
@@ -115,6 +200,17 @@ describe('Partial Updates for NoSQL', async function () {
         expect(obj.mmap.size).eql(4);
       });
   });
+  it('Put operation for ineger value', async function () {
+    await setup();
+    obj = await storeObjects();
+    return obj.partialUpdate()
+      .put('imap', 4, 40)
+      .execute()
+      .then(function (result) {
+        expect(result).to.equal(obj);
+        expect(obj.imap.size).eql(4);
+      });
+  });
 
   it('Map Remove', async function () {
     await setup();
@@ -125,6 +221,17 @@ describe('Partial Updates for NoSQL', async function () {
       .then(function (result) {
         expect(result).to.equal(obj);
         expect(obj.mmap.size).eql(2);
+      });
+  });
+  it('Map Remove for integer value', async function () {
+    await setup();
+    obj = await storeObjects();
+    return obj.partialUpdate()
+      .remove('imap', 1)
+      .execute()
+      .then(function (result) {
+        expect(result).to.equal(obj);
+        expect(obj.imap.size).eql(2);
       });
   });
 });
@@ -162,14 +269,13 @@ async function produceMetaModel() {
 
   var putype = new DB.metamodel.EntityType('PUNoSQL', metamodel.entity(Object));
   metamodel.addType(putype);
-  // putype.addAttribute(new DB.metamodel.SingularAttribute('mstring', metamodel.baseType(String)));
-  // putype.addAttribute(new DB.metamodel.SingularAttribute('mlong', metamodel.baseType('Integer')));
-  // putype.addAttribute(new DB.metamodel.SingularAttribute('mdouble', metamodel.baseType('Double')));
-  // putype.addAttribute(new DB.metamodel.SingularAttribute('mdate', metamodel.baseType(Date)));
-  // putype.addAttribute(new DB.metamodel.SingularAttribute('mnumber', metamodel.baseType(Number)));
+
   putype.addAttribute(new DB.metamodel.ListAttribute('mlist', metamodel.baseType(String)));
   putype.addAttribute(new DB.metamodel.SetAttribute('mset', metamodel.baseType(String)));
   putype.addAttribute(new DB.metamodel.MapAttribute('mmap', metamodel.baseType(String), metamodel.baseType(String)));
+  putype.addAttribute(new DB.metamodel.ListAttribute('ilist', metamodel.baseType('Integer')));
+  putype.addAttribute(new DB.metamodel.SetAttribute('iset', metamodel.baseType('Integer')));
+  putype.addAttribute(new DB.metamodel.MapAttribute('imap', metamodel.baseType('Integer'), metamodel.baseType('Integer')));
 
   await metamodel.save();
 }
@@ -183,6 +289,10 @@ async function storeObjects() {
     ['two', 'MapItem2'],
     ['three', 'MapItem3'],
   ]);
+  obj.ilist = new DB.List(100, 200, 300);
+  obj.iset = new DB.Set([1, 2, 3]);
+  obj.imap = new Map([[1, 10], [2, 20], [3, 30]]);
+
   await obj.save();
   return obj;
 }
