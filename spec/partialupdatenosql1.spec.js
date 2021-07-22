@@ -223,17 +223,6 @@ describe('Partial Updates for NoSQL', async function () {
         expect(obj.mmap.size).eql(2);
       });
   });
-  it('Map Remove for integer value', async function () {
-    await setup();
-    obj = await storeObjects();
-    return obj.partialUpdate()
-      .remove('imap', 1)
-      .execute()
-      .then(function (result) {
-        expect(result).to.equal(obj);
-        expect(obj.imap.size).eql(2);
-      });
-  });
 });
 
 async function setup() {
