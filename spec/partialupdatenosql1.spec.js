@@ -275,7 +275,7 @@ async function produceMetaModel() {
   putype.addAttribute(new DB.metamodel.MapAttribute('mmap', metamodel.baseType(String), metamodel.baseType(String)));
   putype.addAttribute(new DB.metamodel.ListAttribute('ilist', metamodel.baseType('Integer')));
   putype.addAttribute(new DB.metamodel.SetAttribute('iset', metamodel.baseType('Integer')));
-  putype.addAttribute(new DB.metamodel.MapAttribute('imap', metamodel.baseType('Integer'), metamodel.baseType('Integer')));
+  // putype.addAttribute(new DB.metamodel.MapAttribute('imap', metamodel.baseType(String), metamodel.baseType('Integer')));
 
   await metamodel.save();
 }
@@ -291,7 +291,6 @@ async function storeObjects() {
   ]);
   obj.ilist = new DB.List(100, 200, 300);
   obj.iset = new DB.Set([1, 2, 3]);
-  obj.imap = new Map([[1, 10], [2, 20], [3, 30]]);
 
   await obj.save();
   return obj;
