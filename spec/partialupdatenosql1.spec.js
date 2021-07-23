@@ -200,18 +200,7 @@ describe('Partial Updates for NoSQL', async function () {
         expect(obj.mmap.size).eql(4);
       });
   });
-  it('Put operation for ineger value', async function () {
-    await setup();
-    obj = await storeObjects();
-    return obj.partialUpdate()
-      .put('imap', 4, 40)
-      .execute()
-      .then(function (result) {
-        expect(result).to.equal(obj);
-        expect(obj.imap.size).eql(4);
-      });
-  });
-
+  
   it('Map Remove', async function () {
     await setup();
     obj = await storeObjects();
