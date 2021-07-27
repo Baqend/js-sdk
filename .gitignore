@@ -10,5 +10,6 @@
 /cli/*.js
 .DS_Store
 *.iml
+esm
 
 .watchmanconfig
