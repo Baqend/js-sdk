@@ -48,6 +48,7 @@
     "open": "^8.2.0",
     "rimraf": "^3.0.2",
     "rxjs": "^6.6.3",
+    "simple-git": "^1.132.0",
     "tslib": "^2.3.0",
     "uuid": "^8.3.2",
     "validator": "^13.6.0",
@@ -144,5 +145,8 @@
   },
   "bin": {
     "baqend": "./cli/index.js"
+  },
+  "volta": {
+    "node": "16.5.0"
   }
 }
