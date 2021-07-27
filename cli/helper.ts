@@ -53,7 +53,7 @@ export function isFile(path: string) : Promise<boolean> {
 export function ensureDir(dir: string): Promise<any> {
   return isDir(dir).then((directory) => {
     if (!directory) {
-      return mkdir(dir, { recursive: true });
+      return mkdir(dir, { recursive: true }).then(Promise.resolve);
     }
     return Promise.resolve();
   });
