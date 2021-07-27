@@ -294,8 +294,9 @@ interface GetObject {
    *
    * @param bucket The bucket name
    * @param oid The unique object identifier
+   * @param depth The depth of the to be resolved objects
    */
-  new(bucket: string, oid: string): Message;
+  new(bucket: string, oid: string, depth?: number): Message;
 }
 export const GetObject = Message.create<GetObject>({
   method: 'GET',

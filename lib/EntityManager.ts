@@ -488,7 +488,7 @@ export class EntityManager extends Lockable {
   load<T extends Entity>(
     entityClass: Class<T> | string,
     oid?: string,
-    options?: { refresh?: boolean, local?: boolean, resolved?: Entity[] },
+    options?: { refresh?: boolean, local?: boolean, resolved?: Entity[], depth?: number | boolean },
   ) : Promise<T | null> {
     const opt = options || {};
     const entity = this.getReference(entityClass, oid);
@@ -498,8 +498,8 @@ export class EntityManager extends Lockable {
       return this.resolveDepth(entity, opt);
     }
 
-    const msg = new messages.GetObject(state.bucket, state.key!);
-
+    const depth = opt.depth ? (typeof opt.depth == 'boolean' ? 1 : opt.depth) : 0
+    const msg = new messages.GetObject(state.bucket, state.key!, depth);
     this.ensureCacheHeader(entity.id, msg, opt.refresh);
 
     return this.send(msg).then((response) => {
