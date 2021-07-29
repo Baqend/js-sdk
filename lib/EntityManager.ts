@@ -453,26 +453,24 @@ export class EntityManager extends Lockable {
    */
   resolveDepth<T extends Entity>(entity: T, options?: { refresh?: boolean, local?: boolean, depth?: number | boolean,
     resolved?: Entity[] }): Promise<T> {
-    if (!options || !options.depth) {
-      return Promise.resolve(entity);
-    }
+    return Promise.resolve(entity);
 
-    const resolved = options.resolved || [];
-    const promises: Promise<Entity | null>[] = [];
-    const subOptions = {
-      ...options,
-      resolved,
-      depth: options.depth === true ? true : options.depth - 1,
-    };
+    // const resolved = options.resolved || [];
+    // const promises: Promise<Entity | null>[] = [];
+    // const subOptions = {
+    //   ...options,
+    //   resolved,
+    //   depth: options.depth === true ? true : options.depth - 1,
+    // };
 
-    this.getSubEntities(entity, 1).forEach((subEntity: Entity) => {
-      if (subEntity !== null && resolved!.indexOf(subEntity) === -1 && subEntity.id) {
-        resolved!.push(subEntity);
-        promises.push(this.load(subEntity.id, undefined, subOptions));
-      }
-    });
+    // this.getSubEntities(entity, 1).forEach((subEntity: Entity) => {
+    //   if (subEntity !== null && resolved!.indexOf(subEntity) === -1 && subEntity.id) {
+    //     resolved!.push(subEntity);
+    //     promises.push(this.load(subEntity.id, undefined, subOptions));
+    //   }
+    // });
 
-    return Promise.all(promises).then(() => entity);
+    // return Promise.all(promises).then(() => entity);
   }
 
   /**
@@ -494,9 +492,9 @@ export class EntityManager extends Lockable {
     const entity = this.getReference(entityClass, oid);
     const state = Metadata.get(entity);
 
-    if (!opt.refresh && opt.local && state.isAvailable) {
-      return this.resolveDepth(entity, opt);
-    }
+    // if (!opt.refresh && opt.local && state.isAvailable) {
+    //   return this.resolveDepth(entity, opt);
+    // }
 
     const depth = opt.depth ? (typeof opt.depth == 'boolean' ? 1 : opt.depth) : 0
     const msg = new messages.GetObject(state.bucket, state.key!, depth);
@@ -505,10 +503,10 @@ export class EntityManager extends Lockable {
     return this.send(msg).then((response) => {
       // refresh object if loaded older version from cache
       // chrome doesn't using cache when ifNoneMatch is set
-      if (entity.version && entity.version > response.entity.version) {
-        opt.refresh = true;
-        return this.load(entityClass, oid, opt);
-      }
+      // if (entity.version && entity.version > response.entity.version) {
+      //   opt.refresh = true;
+      //   return this.load(entityClass, oid, opt);
+      // }
 
       this.addToWhiteList(response.entity.id);
 
@@ -741,26 +739,24 @@ export class EntityManager extends Lockable {
    * @return
    */
   getSubEntities(entity: Entity, depth?: boolean | number, resolved: Entity[] = [], initialEntity? : Entity): Entity[] {
-    if (!depth) {
-      return resolved;
-    }
-
-    const obj = initialEntity || entity;
-    const state = Metadata.get(entity);
-    const iter = state.type.references();
-    for (let item = iter.next(); !item.done; item = iter.next()) {
-      const { value } = item;
-      const subEntities = this.getSubEntitiesByPath(entity, value.path);
-      for (let i = 0, len = subEntities.length; i < len; i += 1) {
-        const subEntity = subEntities[i];
-        if (resolved.indexOf(subEntity) === -1 && subEntity !== obj) {
-          resolved.push(subEntity);
-          this.getSubEntities(subEntity, depth === true ? depth : depth - 1, resolved, obj);
-        }
-      }
-    }
-
     return resolved;
+
+    // const obj = initialEntity || entity;
+    // const state = Metadata.get(entity);
+    // const iter = state.type.references();
+    // for (let item = iter.next(); !item.done; item = iter.next()) {
+    //   const { value } = item;
+    //   const subEntities = this.getSubEntitiesByPath(entity, value.path);
+    //   for (let i = 0, len = subEntities.length; i < len; i += 1) {
+    //     const subEntity = subEntities[i];
+    //     if (resolved.indexOf(subEntity) === -1 && subEntity !== obj) {
+    //       resolved.push(subEntity);
+    //       this.getSubEntities(subEntity, depth === true ? depth : depth - 1, resolved, obj);
+    //     }
+    //   }
+    // }
+    //
+    // return resolved;
   }
 
   /**
