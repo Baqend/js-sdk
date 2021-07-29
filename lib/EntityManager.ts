@@ -199,6 +199,8 @@ export class EntityManager extends Lockable {
    */
   public transactionalDeleteEntities: { [id: string]: Entity } = {};
 
+  public transactionalPartialUpdates: any[] = [];
+
   public readonly entityManagerFactory: EntityManagerFactory;
 
   public readonly metamodel: Metamodel;

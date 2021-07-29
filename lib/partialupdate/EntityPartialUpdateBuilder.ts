@@ -17,6 +17,12 @@ export class EntityPartialUpdateBuilder<T extends Entity> extends PartialUpdateB
    * @inheritDoc
    */
   execute(): Promise<T> {
+    var em = this.entity._metadata.db;
+    if (em.isTransactionSet()) {
+      em.transactionalPartialUpdates.push(this);
+      return Promise.resolve(this.entity);
+    }
+
     const state = Metadata.get(this.entity);
     const body = JSON.stringify(this);
     const msg = new message.UpdatePartially(state.bucket, state.key!, body);
