@@ -74,8 +74,10 @@ export class Transaction {
     let jsonBody = '{';
     let writeSetJson = '';
     let deleteSetJson = '';
+    let partialUpdatesJson = '';
     const writeArray = [];
     const deleteArray = [];
+    const partialUpdateArray = this.db.transactionalPartialUpdates;
 
     for (const key of Object.keys(writeSetList)) {
       const val = writeSetList[key];
@@ -128,18 +130,34 @@ export class Transaction {
       }
     }
 
-    if (writeArray.length > 0 && deleteArray.length > 0) {
-      writeSetJson += ',';
-    }
-
     if (deleteArray.length > 0) {
+      if (writeArray.length > 0) {
+        deleteSetJson += ', ';
+      }
       deleteSetJson += '"deleteSet": [';
       const deleteSetBody = deleteArray.join(',');
       deleteSetJson += deleteSetBody;
       deleteSetJson += ']';
     }
 
-    jsonBody += `${writeSetJson} ${deleteSetJson}}`;
+    if(partialUpdateArray.length > 0){
+      if (writeArray.length > 0 || deleteArray.length > 0) {
+        partialUpdatesJson += ', ';
+      }
+      partialUpdatesJson += '"partialUpdates": [';
+      var first = true;
+      for (let partialUpdate of partialUpdateArray) {
+        if(! first){
+          partialUpdatesJson += ',';  
+        }
+        first = false;
+        partialUpdatesJson += partialUpdate.transactionalJSON();
+      }
+      partialUpdatesJson += ']';
+      console.log(partialUpdatesJson);
+    }
+
+    jsonBody += `${writeSetJson}${deleteSetJson}${partialUpdatesJson}}`;
 
     const sqlMessage = new message.CommitTransaction(this.tid, jsonBody)
       .responseType('json');
@@ -147,6 +165,7 @@ export class Transaction {
     this.tid = null;
     this.db.transactionalEntities = {};
     this.db.transactionalDeleteEntities = {};
+    this.db.transactionalPartialUpdates = [];
 
      let data = await this.getResult(sqlMessage);
      if (data) {

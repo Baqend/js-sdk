@@ -44,6 +44,10 @@ import {
 } from './intersection';
 import { appendQueryParams } from './connector/Message';
 
+import {
+  EntityPartialUpdateBuilder
+} from './partialupdate'
+
 const DB_PREFIX = '/db/';
 
 type MessageFactory = (state: Metadata, json: JsonMap) => Message;
@@ -199,7 +203,7 @@ export class EntityManager extends Lockable {
    */
   public transactionalDeleteEntities: { [id: string]: Entity } = {};
 
-  public transactionalPartialUpdates: any[] = [];
+  public transactionalPartialUpdates: EntityPartialUpdateBuilder<Entity>[] = [];
 
   public readonly entityManagerFactory: EntityManagerFactory;
 
