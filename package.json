@@ -143,9 +143,6 @@
   "engines": {
     "node": ">=12.0.0"
   },
-  "bin": {
-    "baqend": "./cli/index.js"
-  },
   "volta": {
     "node": "16.5.0"
   }
