@@ -47,7 +47,7 @@ export class ModelBuilder {
   buildModels(modelDescriptors: JsonMap[]): { [name: string]: Type<any> } {
     this.modelDescriptors = {};
 
-    modelDescriptors.forEach((modelDescriptor: JsonMap) => {
+    Array.from(modelDescriptors).forEach((modelDescriptor: JsonMap) => {
       this.modelDescriptors![modelDescriptor.class as string] = modelDescriptor;
     });
 
