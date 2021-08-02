@@ -108,7 +108,9 @@ export class EntityManagerFactory extends Lockable {
 
     if (opt.schema) {
       this.connectData = opt;
-      this.metamodel.init(opt.schema);
+      if (Object.keys(opt.schema).length > 0) {
+        this.metamodel.init(opt.schema);
+      }
     } else {
       isReady = false;
       ready = ready.then(() => {
