@@ -14,7 +14,7 @@ node {
             def tagExists = !sh(returnStdout: true, script: "docker images -q docker.baqend.com/baqend/orestes:${env.BRANCH_NAME}").trim().isEmpty()
             def tag = tagExists ? BRANCH_NAME : 'master'
 
-            currentBuild.displayName = "Git: ${benv.BRANCH_NAME}, Docker: $tag"
+            currentBuild.displayName = "Git: ${env.BRANCH_NAME}, Docker: $tag"
 
             def browsers = 'Chrome-Docker';
 
