@@ -42,9 +42,9 @@ export class EntityPartialUpdateBuilder<T extends Entity> extends PartialUpdateB
     result += state.bucket;
     result += '/';
     result += state.key;
-    result += '", "operations": {'
+    result += '", "operations": '
     result += JSON.stringify(this);
-    result += '}}'
+    result += '}'
     return result;
 
   }
