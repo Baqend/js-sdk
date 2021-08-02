@@ -59,8 +59,8 @@ node {
                     try {
                         mongo = sh(returnStdout: true, script: "docker run -d mongo:4.0.5 --storageEngine wiredTiger").trim()
                         redis = sh(returnStdout: true, script: "docker run -d redis:5.0.5").trim()
-                        orestes = sh(returnStdout: true, script: "docker run -d -v $workspace/conf:/opt/baqend/conf --link $mongo:mongo --link $redis:redis docker.baqend.com/baqend/orestes:$tag --config conf/config.json").trim()
-                        orestesPort = sh(script: "docker inspect --format='{{(index (index .NetworkSettings.Ports \"8080/tcp\") 0).HostPort}}' $orestes", returnStdout: true).trim()
+                        orestes = sh(returnStdout: true, script: "docker run -P -d -v $workspace/conf:/opt/baqend/conf --link $mongo:mongo --link $redis:redis docker.baqend.com/baqend/orestes:$tag --config conf/config.json").trim()
+                        orestesPort = sh(script: "docker inspect --format='{{(index (index .NetworkSettings.Ports \"8443/tcp\") 0).HostPort}}' $orestes", returnStdout: true).trim()
                         node = sh(returnStdout: true, script: "docker run -d --restart=always --link $orestes:orestes docker.baqend.com/baqend/node:$tag").trim()
 
                         env.TEST_SERVER = "https://bq3.baqend.com:${orestesPort}/v1"
@@ -73,10 +73,6 @@ node {
                             env.KARMA_HOST = 'bq3.baqend.com'
 
                             sh "npm run test:karma -- --single-run --browsers $browsers --reporters=junit || true"
-                        }
-
-                        nodejs(nodeJSInstallationName: '8.x') {
-                            sh "npm run test:node || true"
                         }
 
                         nodejs(nodeJSInstallationName: '10.x') {
