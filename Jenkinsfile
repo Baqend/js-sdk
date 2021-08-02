@@ -11,13 +11,10 @@ node {
     nodejs('node16') {
         try {
             //$BRANCH is taken from the gilab hook plugin
-            BRANCH = env.gitlabSourceBranch ? env.gitlabSourceBranch : BRANCH
-            def branchExists = !sh(returnStdout: true, script: "git ls-remote --heads git@vm.orestes.info:orestes/orestes-js.git $BRANCH").trim().isEmpty()
-            def tagExists = !sh(returnStdout: true, script: "docker images -q docker.baqend.com/baqend/orestes:$BRANCH").trim().isEmpty()
-            def branch = branchExists ? BRANCH : 'master'
-            def tag = tagExists ? BRANCH : 'master'
+            def tagExists = !sh(returnStdout: true, script: "docker images -q docker.baqend.com/baqend/orestes:${env.BRANCH_NAME}").trim().isEmpty()
+            def tag = tagExists ? BRANCH_NAME : 'master'
 
-            currentBuild.displayName = "Git: $branch, Docker: $tag"
+            currentBuild.displayName = "Git: ${benv.BRANCH_NAME}, Docker: $tag"
 
             def browsers = 'Chrome-Docker';
 
@@ -29,7 +26,7 @@ node {
             }
 
             stage('Checkout') {
-                git branch: branch, credentialsId: 'ece0cdc0-dd1a-4673-aeba-8ca23f57d725', url: 'git@vm.orestes.info:orestes/orestes-js.git'
+                checkout scm
                 sh "git clean -d -x -f"
             }
 
