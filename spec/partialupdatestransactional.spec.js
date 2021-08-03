@@ -8,9 +8,9 @@ var emf, em, obj;
 
 describe('Partial Updates for NoSQL Transactional', async function () {
 
-    it('increment long', async function () {
+    it('single partial update', async function () {
         await setup();
-        obj = await storeObjects();    
+        obj = await storeObject("stored");    
         expect(obj.mlong).to.equal(42);
         await em.transaction.begin()
         
@@ -21,87 +21,26 @@ describe('Partial Updates for NoSQL Transactional', async function () {
             expect(obj.mlong).to.equal(43);
           });
         });
-        
-        
-        
       });
-  
-      it('decrement long', async function () {
+
+      it('partial update and normal store', async function () {
         await setup();
-        obj = await storeObjects();    
+        obj = await storeObject('partialupdate');    
         expect(obj.mlong).to.equal(42);
-        return obj.partialUpdate()
-          .decrement('mlong', 2)
-          .execute()
-          .then(function (result) {
-            expect(result).to.equal(obj);
-            expect(obj.mlong).to.equal(40);
-          });
-      });
+        await em.transaction.begin();
 
-      it('min long', async function () {
-        await setup();
-        obj = await storeObjects();    
-        expect(obj.mlong).to.equal(42);
-        return obj.partialUpdate()
-          .min('mlong', 41)
-          .execute()
-          .then(function (result) {
-            expect(result).to.equal(obj);
-            expect(obj.mlong).to.equal(41);
-          });
-      });
+        await storeObject('normalstore');
 
-      it('min double', async function () {
-        await setup();
-        obj = await storeObjects();    
-        expect(obj.mdouble).to.equal(43);
-        return obj.partialUpdate()
-          .min('mdouble', 44)
-          .execute()
-          .then(function (result) {
-            expect(result).to.equal(obj);
-            expect(obj.mdouble).to.equal(43);
-          });
-      });
+        await obj.partialUpdate().increment('mlong').execute();
+        await em.transaction.commit();
 
-      it('multiply long', async function () {
-        await setup();
-        obj = await storeObjects();    
-        expect(obj.mlong).to.equal(42);
-        return obj.partialUpdate()
-          .multiply('mlong', 5)
-          .execute()
-          .then(function (result) {
-            expect(result).to.equal(obj);
-            expect(obj.mlong).to.equal(210);
-          });
-      });
+        await em.PUNoSQL.find().equal('mstring', 'partialupdate').singleResult((partialupdate) => {
+          if (! partialupdate) {
+              expect.fail("Simple object with name 'partialupdate' does not exist.");
+          }
+          expect(partialupdate.mlong).to.equal(43);
+        });
 
-      it('multiply double', async function () {
-        await setup();
-        obj = await storeObjects();    
-        expect(obj.mdouble).to.equal(43);
-        return obj.partialUpdate()
-          .multiply('mdouble', 10)
-          .execute()
-          .then(function (result) {
-            expect(result).to.equal(obj);
-            expect(obj.mdouble).to.equal(430);
-          });
-      });
-
-      it('set current date', async function () {
-        await setup();
-        obj = await storeObjects();    
-        expect(obj.mdate).to.equal(null);
-        return obj.partialUpdate()
-          .toNow('mdate')
-          .execute()
-          .then(function (result) {
-            expect(result).to.equal(obj);
-            expect(obj.mdate).to.not.equal(null);
-          });
       });
 
 });
@@ -149,9 +88,9 @@ async function produceMetaModel(){
     await metamodel.save();
 }
 
-async function storeObjects(){
+async function storeObject(str){
     var obj = new em.PUNoSQL();
-    obj.mstring = "stored";
+    obj.mstring = str;
     obj.mlong = 42;
     obj.mdouble = 43;
     obj.mnumber = 44;

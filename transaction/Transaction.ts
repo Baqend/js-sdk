@@ -154,7 +154,6 @@ export class Transaction {
         partialUpdatesJson += partialUpdate.transactionalJSON();
       }
       partialUpdatesJson += ']';
-      console.log(partialUpdatesJson);
     }
 
     jsonBody += `${writeSetJson}${deleteSetJson}${partialUpdatesJson}}`;
