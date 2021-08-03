@@ -13,7 +13,6 @@ describe('Partial Updates for NoSQL Transactional', async function () {
         obj = await storeObject("stored");    
         expect(obj.mlong).to.equal(42);
         await em.transaction.begin()
-        
         await obj.partialUpdate().increment('mlong').execute();
         await em.transaction.commit();
         await em.PUNoSQL.find().resultList((result) => {
@@ -28,20 +27,119 @@ describe('Partial Updates for NoSQL Transactional', async function () {
         obj = await storeObject('partialupdate');    
         expect(obj.mlong).to.equal(42);
         await em.transaction.begin();
-
         await storeObject('normalstore');
-
         await obj.partialUpdate().increment('mlong').execute();
         await em.transaction.commit();
-
         await em.PUNoSQL.find().equal('mstring', 'partialupdate').singleResult((partialupdate) => {
           if (! partialupdate) {
               expect.fail("Simple object with name 'partialupdate' does not exist.");
           }
           expect(partialupdate.mlong).to.equal(43);
         });
-
       });
+
+      it('partial update and delete', async function () {
+        await setup();
+        obj = await storeObject('partialupdate'); 
+        var toDelete = await storeObject('todelete');
+        expect(obj.mlong).to.equal(42);
+        await em.transaction.begin();
+        toDelete.delete();        
+        await obj.partialUpdate().increment('mlong').execute();
+        await em.transaction.commit();
+        await em.PUNoSQL.find().equal('mstring', 'partialupdate').singleResult((partialupdate) => {
+          if (! partialupdate) {
+              expect.fail("Simple object with name 'partialupdate' does not exist.");
+          }
+          expect(partialupdate.mlong).to.equal(43);
+        });
+        await em.PUNoSQL.find().equal('mstring', 'todelete').singleResult((res) => {
+          if (res) {
+              expect.fail("Simple object with name 'todelete' was not deleted.");
+          }
+        });
+      });
+
+      it('partial update store and delete', async function () {
+        await setup();
+        obj = await storeObject('partialupdate'); 
+        var toDelete = await storeObject('todelete');
+        expect(obj.mlong).to.equal(42);
+        await em.transaction.begin();
+        toDelete.delete();        
+        await storeObject('normalstore');
+        await obj.partialUpdate().increment('mlong').execute();
+        await em.transaction.commit();
+        await em.PUNoSQL.find().equal('mstring', 'partialupdate').singleResult((partialupdate) => {
+          if (! partialupdate) {
+              expect.fail("Simple object with name 'partialupdate' does not exist.");
+          }
+          expect(partialupdate.mlong).to.equal(43);
+        });
+        await em.PUNoSQL.find().equal('mstring', 'todelete').singleResult((res) => {
+          if (res) {
+              expect.fail("Simple object with name 'todelete' was not deleted.");
+          }
+        });
+      });
+
+      it('two partial updates executed on same object', async function () {
+        await setup();
+        obj = await storeObject('partialupdate');    
+        expect(obj.mlong).to.equal(42);
+        await em.transaction.begin();
+        await obj.partialUpdate().increment('mlong').execute();
+        await obj.partialUpdate().multiply('mdouble', 10).execute();
+        await em.transaction.commit();
+        await em.PUNoSQL.find().equal('mstring', 'partialupdate').singleResult((partialupdate) => {
+          if (! partialupdate) {
+              expect.fail("Simple object with name 'partialupdate' does not exist.");
+          }
+          expect(partialupdate.mlong).to.equal(43);
+          expect(partialupdate.mdouble).to.equal(430);
+        });
+      });
+
+      it('two partial updates chained on same object', async function () {
+        await setup();
+        obj = await storeObject('partialupdate');    
+        expect(obj.mlong).to.equal(42);
+        await em.transaction.begin();
+        await obj.partialUpdate().increment('mlong').multiply('mdouble', 10).execute();
+        await em.transaction.commit();
+        await em.PUNoSQL.find().equal('mstring', 'partialupdate').singleResult((partialupdate) => {
+          if (! partialupdate) {
+              expect.fail("Simple object with name 'partialupdate' does not exist.");
+          }
+          expect(partialupdate.mlong).to.equal(43);
+          expect(partialupdate.mdouble).to.equal(430);
+        });
+      });
+
+      it('partial updates on two objects', async function () {
+        await setup();
+        obj = await storeObject('pu1');
+        var obj2 = await storeObject('pu2');
+        expect(obj.mlong).to.equal(42);
+        await em.transaction.begin();
+        await storeObject('storingAnother');    
+        await obj.partialUpdate().increment('mlong').execute();
+        await obj2.partialUpdate().increment('mlong').execute();
+        await em.transaction.commit();
+        await em.PUNoSQL.find().equal('mstring', 'pu1').singleResult((partialupdate) => {
+          if (! partialupdate) {
+              expect.fail("Simple object with name 'pu1' does not exist.");
+          }
+          expect(partialupdate.mlong).to.equal(43);
+        });
+        await em.PUNoSQL.find().equal('mstring', 'pu2').singleResult((partialupdate) => {
+          if (! partialupdate) {
+              expect.fail("Simple object with name 'pu2' does not exist.");
+          }
+          expect(partialupdate.mlong).to.equal(43);
+        });
+      });
+
 
 });
 
