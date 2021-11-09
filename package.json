@@ -1,6 +1,6 @@
 {
   "name": "baqend",
-  "version": "3.0.1-0",
+  "version": "3.1.5-0",
   "description": "Baqend JavaScript SDK",
   "license": "MIT",
   "author": {
@@ -29,16 +29,19 @@
     "./commonjs/lib/connector/IFrameConnector": false
   },
   "exports": {
-    "browser": {
-      "import": "./dist/baqend.es2015.js",
-      "require": "./dist/baqend.es5.js"
-    },
-    "default": {
-      "import": "./esm/lib/index.js",
-      "require": "./commonjs/lib/index.js"
+    "./cli": "./cli/index.js",
+    ".": {
+      "browser": {
+        "import": "./dist/baqend.es2015.js",
+        "require": "./dist/baqend.es5.js"
+      },
+      "default": {
+        "import": "./esm/lib/index.js",
+        "require": "./commonjs/lib/index.js"
+      }
     }
   },
-  "types": "./esm/lib/index.d.ts",
+  "types": "./commonjs/lib/index.d.ts",
   "dependencies": {
     "commander": "^7.2.0",
     "glob": "^7.1.7",
@@ -104,6 +107,7 @@
     "source-map-support": "^0.5.19",
     "terser-webpack-plugin": "^3.1.0",
     "ts-loader": "^8.3.0",
+    "ts-node": "^10.1.0",
     "typedoc": "^0.20.36",
     "typescript": "^4.2.4",
     "utils": "^0.3.1",
@@ -116,21 +120,21 @@
     "test:build": "",
     "test:node": "mocha --config mocharc.json --exit",
     "test:karma": "karma start",
-    "clean": "shx rm -rf dist commonjs esm doc",
-    "dev-node-commonjs": "tsc --watch -m commonjs --target es5 --outDir commonjs --declaration --project tsconfig.lib.json",
-    "dev-node-esm": "tsc --watch -m es2015 --target es6 --outDir esm --declaration --project tsconfig.lib.json",
+    "clean": "shx rm -rf dist commonjs doc",
+    "dev-node-commonjs": "tsc --watch -m commonjs --target es5 --declaration --outDir commonjs --declaration --project tsconfig.lib.json",
+    "_dev-node-esm": "UNSUDED FOR NOW -> https://nodejs.org/api/packages.html#packages_dual_package_hazard tsc --watch -m es2015 --target es6 --outDir esm --project tsconfig.lib.json",
     "dev-browser": "webpack-dev-server --config webpack.config.js --open --project tsconfig.lib.json",
-    "build-commonjs": "tsc -m commonjs --target es5 --outDir commonjs --project tsconfig.lib.json",
-    "build-esm": "tsc -m es2015 --target es6 --outDir esm --declaration --project tsconfig.lib.json",
+    "build-commonjs": "tsc -m commonjs --target es5 --declaration --outDir commonjs --project tsconfig.lib.json",
+    "_build-esm": "UNSUDED FOR NOW -> https://nodejs.org/api/packages.html#packages_dual_package_hazard tsc -m es2015 --target es6 --outDir esm --project tsconfig.lib.json",
     "build-cli": "tsc -m commonjs --target es6 --project tsconfig.cli.json",
     "build-dist": "webpack --config-name=es5 && webpack --config-name=es2015",
-    "dist": "npm run build-commonjs && npm run build-esm && npm run build-dist && npm run build-cli && npm run docs",
+    "dist": "npm run build-commonjs && npm run build-dist && npm run build-cli && npm run docs",
     "prepack": "npm install && npm run dist",
     "release": "node scripts/release",
     "typings": "npm run typings:test",
-    "typings:test": "tsc --version && tsc -p spec-ts/tsconfig.json",
+    "typings:test": "tsc --version && tsc -p spec-ts/tsconfig.json --noEmit",
     "docs": "typedoc --out doc lib",
-	"docs-actian": "typedoc --readme README-ACTIAN.md --out doc lib",
+    "docs-actian": "typedoc --readme README-ACTIAN.md --out doc lib",
     "baqend": "npm run build-cli && node cli",
     "lint": "eslint --ext .ts lib/ cli/",
     "prepare": ""
@@ -139,6 +143,6 @@
     "node": ">=10.0.0"
   },
   "bin": {
-    "baqend": "cli"
+    "baqend": "./cli/index.js"
   }
 }
