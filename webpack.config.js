@@ -83,6 +83,8 @@ function bundleLib(target) {
           exclude: [/node_modules/],
           loader: 'ts-loader',
           options: {
+            onlyCompileBundledFiles: true,
+            configFile: 'tsconfig.lib.json',
             compilerOptions: tsOptions[target],
           },
         },

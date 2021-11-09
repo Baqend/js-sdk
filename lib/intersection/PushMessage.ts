@@ -100,8 +100,8 @@ export class PushMessage {
    * @param [badge] The badge for iOS or Web Push devices
    * @param [data] The data object which can contain additional information.
    */
-  constructor(devices: model.Device|Set<model.Device>|Iterable<model.Device>, message?: string, subject?: string,
-    options?: string | PushMessageOptions, badge?: string|number, data?: Json) {
+  constructor(devices: model.Device | Set<model.Device> | Iterable<model.Device>, message?: string, subject?: string,
+    options?: string | PushMessageOptions, badge?: string | number, data?: Json) {
     const opts = typeof options === 'string' ? { sound: options, badge, data } : (options || {});
 
     this.devices = PushMessage.initDevices(devices);
@@ -116,7 +116,7 @@ export class PushMessage {
    * @param devices
    * @return
    */
-  private static initDevices(devices?: model.Device|Set<model.Device>|Iterable<model.Device>): Set<model.Device> {
+  private static initDevices(devices?: model.Device | Set<model.Device> | Iterable<model.Device>): Set<model.Device> {
     if (devices instanceof Set) {
       return devices;
     }

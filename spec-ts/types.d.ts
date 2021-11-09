@@ -1,6 +1,6 @@
-import { binding } from '../esm/lib';
+import { binding } from 'baqend';
 
-declare module '../esm/lib' {
+declare module 'baqend' {
   // eslint-disable-next-line @typescript-eslint/naming-convention
   interface baqend {
     Test:binding.EntityFactory<model.Test>;

@@ -53,7 +53,7 @@ export class NodeConnector extends Connector {
       if (responseType === 'stream') {
         receive({
           status,
-          headers: res.headers as {[headerName: string]: string},
+          headers: res.headers as { [headerName: string]: string },
           entity: res,
         });
         return;
@@ -72,7 +72,7 @@ export class NodeConnector extends Connector {
       res.on('end', () => {
         receive({
           status,
-          headers: res.headers as {[headerName: string]: string},
+          headers: res.headers as { [headerName: string]: string },
           entity: binary ? Buffer.concat(chunks as Buffer[]) : chunks.join(''),
         });
       });

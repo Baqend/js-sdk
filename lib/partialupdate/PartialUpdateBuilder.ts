@@ -24,6 +24,7 @@ const ALLOWED_OPERATIONS = [
   '$xor',
 ];
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export interface PartialUpdateBuilder<T extends Entity> {
   /**
    * Increments a field by a given value
@@ -113,7 +114,7 @@ export class PartialUpdateBuilder<T extends Entity> {
     if (val instanceof Set) {
       val = Array.from(val);
     } else if (val instanceof Map) {
-      const newValue: {[key: string]: any} = {};
+      const newValue: { [key: string]: any } = {};
       val.forEach((v: any, k: string) => {
         newValue[k] = v;
       });
@@ -224,8 +225,8 @@ export class PartialUpdateBuilder<T extends Entity> {
    * @param [value] The value to put if a key was used
    * @return
    */
-  put(field: string, key: string | number | {[key: string]: any}, value?: any) : this {
-    const obj: {[key: string]: any} = {};
+  put(field: string, key: string | number | { [key: string]: any }, value?: any) : this {
+    const obj: { [key: string]: any } = {};
     if (typeof key === 'string' || typeof key === 'number') {
       obj[key] = value;
     } else if (typeof key === 'object') {
@@ -370,7 +371,7 @@ export class PartialUpdateBuilder<T extends Entity> {
         ...json[operation.name],
         [operation.path]: operation.value,
       },
-    }), {} as {[path: string]: any});
+    }), {} as { [path: string]: any });
   }
 
   /**

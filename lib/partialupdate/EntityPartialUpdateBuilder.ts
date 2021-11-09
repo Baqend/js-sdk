@@ -19,7 +19,7 @@ export class EntityPartialUpdateBuilder<T extends Entity> extends PartialUpdateB
   execute(): Promise<T> {
     const state = Metadata.get(this.entity);
     const body = JSON.stringify(this);
-    const msg = new message.UpdatePartially(state.bucket, state.key, body);
+    const msg = new message.UpdatePartially(state.bucket, state.key!, body);
 
     return state.withLock(() => (
       state.db.send(msg).then((response) => {

@@ -1,6 +1,6 @@
 {
   "name": "baqend",
-  "version": "3.0.1-0",
+  "version": "3.1.5-0",
   "description": "Baqend JavaScript SDK",
   "license": "MIT",
   "author": {
@@ -29,27 +29,29 @@
     "./commonjs/lib/connector/IFrameConnector": false
   },
   "exports": {
-    "browser": {
-      "import": "./dist/baqend.es2015.js",
-      "require": "./dist/baqend.es5.js"
-    },
-    "default": {
-      "import": "./esm/lib/index.js",
-      "require": "./commonjs/lib/index.js"
+    "./cli": "./cli/index.js",
+    ".": {
+      "browser": {
+        "import": "./dist/baqend.es2015.js",
+        "require": "./dist/baqend.es5.js"
+      },
+      "default": {
+        "import": "./esm/lib/index.js",
+        "require": "./commonjs/lib/index.js"
+      }
     }
   },
-  "types": "./esm/lib/index.d.ts",
+  "types": "./commonjs/lib/index.d.ts",
   "dependencies": {
-    "commander": "^2.20.3",
-    "glob": "^7.1.6",
-    "opn": "^4.0.2",
-    "rimraf": "^2.7.1",
+    "commander": "^7.2.0",
+    "glob": "^7.1.7",
+    "open": "^8.2.0",
+    "rimraf": "^3.0.2",
     "rxjs": "^6.6.3",
-    "simple-git": "^1.132.0",
-    "tslib": "^2.1.0",
+    "tslib": "^2.3.0",
     "uuid": "^8.3.2",
-    "validator": "^13.5.2",
-    "websocket": "^1.0.33"
+    "validator": "^13.6.0",
+    "websocket": "^1.0.34"
   },
   "repository": {
     "type": "git",
@@ -67,22 +69,21 @@
   ],
   "devDependencies": {
     "@purtuga/esm-webpack-plugin": "^1.5.0",
-    "@types/node": "^10.17.51",
+    "@types/node": "^10.17.60",
     "@types/uuid": "^8.3.0",
-    "@types/validator": "^13.1.3",
-    "@types/webpack": "^4.41.26",
+    "@types/validator": "^13.1.4",
+    "@types/webpack": "^4.41.25",
     "@types/websocket": "^1.0.1",
-    "@typescript-eslint/eslint-plugin": "^3.10.1",
-    "@typescript-eslint/parser": "^3.10.1",
-    "baqend-coding-standard": "^1.1.2",
-    "chai": "^4.3.0",
+    "@typescript-eslint/eslint-plugin": "^4.27.0",
+    "@typescript-eslint/parser": "^4.27.0",
+    "chai": "^4.2.0",
     "chai-as-promised": "^7.1.1",
-    "eslint": "^7.19.0",
-    "eslint-config-airbnb-typescript": "^9.0.0",
-    "eslint-plugin-import": "^2.22.1",
+    "eslint": "^7.29.0",
+    "eslint-config-airbnb-typescript": "^12.3.1",
+    "eslint-plugin-import": "^2.23.4",
     "eslint-plugin-node": "^11.1.0",
-    "events": "^3.2.0",
-    "html-webpack-plugin": "^4.5.1",
+    "events": "^3.3.0",
+    "html-webpack-plugin": "^4.5.0",
     "jquery": "^3.5.1",
     "karma": "^5.2.3",
     "karma-browserstack-launcher": "^1.6.0",
@@ -105,10 +106,10 @@
     "shx": "^0.3.3",
     "source-map-support": "^0.5.19",
     "terser-webpack-plugin": "^3.1.0",
-    "ts-loader": "^7.0.5",
-    "ts-node": "^8.10.2",
-    "typedoc": "^0.18.0",
-    "typescript": "^3.9.9",
+    "ts-loader": "^8.3.0",
+    "ts-node": "^10.1.0",
+    "typedoc": "^0.20.36",
+    "typescript": "^4.2.4",
     "utils": "^0.3.1",
     "webpack": "^4.46.0",
     "webpack-cli": "^3.3.12",
@@ -119,22 +120,23 @@
     "test:build": "",
     "test:node": "mocha --config mocharc.json --exit",
     "test:karma": "karma start",
-    "clean": "shx rm -rf dist commonjs esm doc",
-    "dev-node-commonjs": "tsc --watch -m commonjs --target es5 --outDir commonjs --declaration --project tsconfig.lib.json",
-    "dev-node-esm": "tsc --watch -m es2015 --target es6 --outDir esm --declaration --project tsconfig.lib.json",
+    "clean": "shx rm -rf dist commonjs doc",
+    "dev-node-commonjs": "tsc --watch -m commonjs --target es5 --declaration --outDir commonjs --declaration --project tsconfig.lib.json",
+    "_dev-node-esm": "UNSUDED FOR NOW -> https://nodejs.org/api/packages.html#packages_dual_package_hazard tsc --watch -m es2015 --target es6 --outDir esm --project tsconfig.lib.json",
     "dev-browser": "webpack-dev-server --config webpack.config.js --open --project tsconfig.lib.json",
-    "build-commonjs": "tsc -m commonjs --target es5 --outDir commonjs --project tsconfig.lib.json",
-    "build-esm": "tsc -m es2015 --target es6 --outDir esm --declaration --project tsconfig.lib.json",
-    "build-dist": "webpack --config-name=es5 && webpack --config-name=es2015  --project tsconfig.lib.json",
-    "dist": "npm run build-commonjs && npm run build-esm && npm run build-dist && npm run docs",
+    "build-commonjs": "tsc -m commonjs --target es5 --declaration --outDir commonjs --project tsconfig.lib.json",
+    "_build-esm": "UNSUDED FOR NOW -> https://nodejs.org/api/packages.html#packages_dual_package_hazard tsc -m es2015 --target es6 --outDir esm --project tsconfig.lib.json",
+    "build-cli": "tsc -m commonjs --target es6 --project tsconfig.cli.json",
+    "build-dist": "webpack --config-name=es5 && webpack --config-name=es2015",
+    "dist": "npm run build-commonjs && npm run build-dist && npm run build-cli && npm run docs",
     "prepack": "npm install && npm run dist",
     "release": "node scripts/release",
     "typings": "npm run typings:test",
-    "typings:test": "tsc --version && tsc -p spec-ts/tsconfig.json",
+    "typings:test": "tsc --version && tsc -p spec-ts/tsconfig.json --noEmit",
     "docs": "typedoc --out doc lib",
-	"docs-actian": "typedoc --readme README-ACTIAN.md --out doc lib",
-    "baqend": "node cli/index.js",
-    "lint": "eslint --ext .ts lib/",
+    "docs-actian": "typedoc --readme README-ACTIAN.md --out doc lib",
+    "baqend": "npm run build-cli && node cli",
+    "lint": "eslint --ext .ts lib/ cli/",
     "prepare": ""
   },
   "engines": {

@@ -12,6 +12,5 @@ browserstack.js
 localSeleniumBrowser.js
 webpack.config.js
 karma.conf.js
-tsconfig.json
-tsconfig.lib.json
+tsconfig.*
 mocharc.json

@@ -4,7 +4,7 @@
 import { Observable, Subscription } from 'rxjs';
 import {
   query, model, db,
-} from '../esm/lib';
+} from 'baqend';
 
 db.connect('test', true).then(() => {
   // db.Test.load('test').then((entity) => {

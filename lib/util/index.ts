@@ -9,3 +9,4 @@ export {
 export { Class } from './Class';
 export { deprecated } from './deprecated';
 export { trailingSlashIt } from './trailingSlashIt';
+export { openWindow, OpenWindowHandler } from './openWindow';

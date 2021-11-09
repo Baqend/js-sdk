@@ -4,9 +4,10 @@
 /build
 /dist
 /commonjs
-/esm
 /doc
 /spec-ts/*.js
+/lib/*.js
+/cli/*.js
 .DS_Store
 *.iml
 

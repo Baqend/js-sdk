@@ -1,3 +1,4 @@
+import type { ReadStream } from 'fs';
 import { PersistentError } from '../error';
 import { Acl } from '../Acl';
 import {
@@ -44,7 +45,7 @@ export interface FileData {
    * The initial file content, which will be uploaded by
    * invoking {@link #upload} later on.
    */
-  data?: string | Blob | ArrayBuffer | JsonArray | JsonMap,
+  data?: string | Blob | ArrayBuffer | JsonArray | JsonMap | ReadStream
   /**
    * A optional type hint used to correctly interpret the provided data
    */
@@ -228,7 +229,7 @@ export class File {
    * The custom headers of the file, only accessible after fetching the metadata or downloading/uploading/providing
    * the file
    */
-  get headers(): {[name: string]: string} {
+  get headers(): { [name: string]: string } {
     if (this.isFolder) {
       throw new Error('A folder has no custom headers');
     }
@@ -395,7 +396,7 @@ export class File {
    * @return A promise which will be fulfilled with the downloaded file content
    */
   download(downloadOptions?: { type?: ResponseBodyType, refresh?: false }, doneCallback?: any,
-    failCallback?: any): Promise<string|Blob|File|ArrayBuffer|Json> {
+    failCallback?: any): Promise<string | Blob | File | ArrayBuffer | Json | ReadStream> {
     const opt = downloadOptions || {};
 
     if (this.isFolder) {
@@ -600,7 +601,7 @@ export class File {
   /**
    * @param headers
    */
-  private fromHeaders(headers: {[header: string]: string}): void {
+  private fromHeaders(headers: { [header: string]: string }): void {
     this.fromJSON({
       eTag: File.parseETag(headers.etag),
       lastModified: headers['last-modified'],
@@ -646,7 +647,7 @@ export class File {
       eTag: json.eTag as string || meta.eTag,
       acl,
       size: typeof json.size === 'number' ? json.size : (json as JsonMap).contentLength as number,
-      headers: json.headers as {[header: string]: string} || meta.headers || {},
+      headers: json.headers as { [header: string]: string } || meta.headers || {},
     };
   }
 

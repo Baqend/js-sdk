@@ -47,7 +47,7 @@ export abstract class Query<T extends Entity> {
    *
    * @see http://docs.mongodb.org/manual/reference/method/cursor.sort/
    */
-  sort(sort: {[field: string]: 1 | -1}): Node<T> {
+  sort(sort: { [field: string]: 1 | -1 }): Node<T> {
     if (typeof sort !== 'object' || Object.getPrototypeOf(sort) !== Object.prototype) {
       throw new Error('sort must be an object.');
     }
@@ -270,7 +270,7 @@ export abstract class Query<T extends Entity> {
 
   abstract addOrder(field: string, order: 1 | -1): Node<T>;
 
-  abstract addOrder(order: {[field: string]: 1 | -1}): Node<T>;
+  abstract addOrder(order: { [field: string]: 1 | -1 }): Node<T>;
 
   abstract addOffset(offset: number): Node<T>;
 
@@ -281,7 +281,7 @@ export function flatArgs(args: any[]) {
   return Array.prototype.concat.apply([], args);
 }
 
-export type ResultOptions = {depth?: number | boolean};
+export type ResultOptions = { depth?: number | boolean };
 /**
  * @param initial Indicates whether or not the initial result set should be delivered on creating the subscription.
  * @param matchTypes A list of match types.

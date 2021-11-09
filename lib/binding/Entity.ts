@@ -138,7 +138,7 @@ export class Entity extends Managed {
    * @return A Promise that will be fulfilled when the asynchronous operation completes.
    */
   @enumerable(false)
-  save(options?: { force?: boolean, depth?: number | boolean, refresh?: boolean}, doneCallback?: any,
+  save(options?: { force?: boolean, depth?: number | boolean, refresh?: boolean }, doneCallback?: any,
     failCallback?: any): Promise<this> {
     if (typeof options === 'function') {
       return this.save({}, options, doneCallback);

@@ -1,3 +1,51 @@
+<a name="v3.1.4"></a>
+# v3.1.4 (2021-7-21)
+
+
+### Bug Fixes
+
+* Fix an issue in the CLI that the first file in the latest release is not deployed 
+
+<a name="v3.1.3"></a>
+# v3.1.3 (2021-7-14)
+
+
+### Bug Fixes
+
+* Improve several error messages in the CLI
+* Fix an issue that a successful deployment with the CLI ends with an error message
+
+<a name="v3.1.2"></a>
+# v3.1.2 (2021-7-7)
+
+
+### Bug Fixes
+
+* Make node happy again with the esm bundle
+* Add another package entry point to allow the baqend cli to be imported with baqend/cli as well
+
+<a name="v3.1.1"></a>
+# v3.1.1 (2021-7-2)
+
+
+### Bug Fixes
+
+* CLI: Fix entry point in the package.json to launch the CLI correctly again
+
+<a name="v3.1.0"></a>
+# v3.1.0 (2021-6-24)
+
+
+### Bug Fixes
+
+* Upgrade to Typescript 4.2 and fix some bugs in the Type definitions
+
+### Features
+
+* Integrate the new and simplified OAuth implementation which prepares the support for the device OAuth flow
+* Refactored the CLI to Typescript and simplified the implementation
+* Integrate the OAuth/SSO login flow in the baqend CLI
+
 <a name="v3.0.0"></a>
 # v3.0.0 (2021-2-13)
 

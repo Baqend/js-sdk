@@ -36,7 +36,7 @@ export class Validator {
 
     // eslint-disable-next-line @typescript-eslint/no-implied-eval,no-new-func
     const fn = new Function(...keys, validationCode);
-    return function onValidate(argObj: {[arg: string]: Validator}) {
+    return function onValidate(argObj: { [arg: string]: Validator }) {
       if (valLib === FallBachValLib) {
         throw new Error('Validation code will not be executed. Make sure that the validator package is correctly provided as an external dependency.');
       }
