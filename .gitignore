@@ -12,3 +12,4 @@
 *.iml
 
 .watchmanconfig
+.vscode

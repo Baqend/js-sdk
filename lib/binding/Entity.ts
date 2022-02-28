@@ -187,6 +187,7 @@ export class Entity extends Managed {
   @enumerable(false)
   update(options?: { force?: boolean, depth?: number | boolean, refresh?: boolean }, doneCallback?: any,
     failCallback?: any): Promise<this> {
+    console.log('test');
     if (typeof options === 'function') {
       return this.update({}, options, doneCallback);
     }

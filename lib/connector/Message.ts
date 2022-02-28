@@ -375,6 +375,23 @@ export abstract class Message {
   }
 
   /**
+   * Gets the A-IM header
+   * @return This message object
+   */
+  acceptDeltaEncoding(): string;
+
+  /**
+    * Sets the A-IM header
+    * @param accepted encoding - default is vcdiff
+    * @return This message object
+    */
+  acceptDeltaEncoding(encoding: string): this;
+
+  acceptDeltaEncoding(encoding?: string): this | string {
+    return this.header('A-IM', encoding);
+  }
+
+  /**
    * Indicates that the request should not be served by a local cache
    * @return
    */
