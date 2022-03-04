@@ -227,7 +227,6 @@ export abstract class Connector {
       message.accept(accept);
     }
 
-    console.log('been here', message.request.method);
     if (message.request.method === 'PUT' || message.request.method === 'POST') {
       message.acceptDeltaEncoding('vcdiff');
     }
