@@ -59,11 +59,13 @@ function bundleLib(target) {
       validator: 'validator',
     },
     resolve: {
-      extensions: ['.ts'],
+      extensions: ['.ts', '.js'],
       aliasFields: ['browser'],
     },
     devtool: 'source-map',
-    node: false,
+    node: {
+      fs: 'empty',
+    },
     optimization: {
       minimize: true,
       minimizer: [

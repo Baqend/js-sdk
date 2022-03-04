@@ -1,6 +1,7 @@
 /* eslint-disable no-restricted-globals */
 
 import type { ReadStream } from 'fs';
+import { ab2str } from 'string-arraybuffer';
 import { PersistentError } from '../error';
 import { Message } from './Message';
 import {
@@ -33,6 +34,7 @@ export abstract class Connector {
     'last-modified',
     'baqend-created-at',
     'baqend-custom-headers',
+    'IM',
   ];
 
   /**
@@ -44,6 +46,10 @@ export abstract class Connector {
    * Array of all created connections
    */
   static readonly connections: { [origin: string]: Connector } = {};
+
+  private readonly accceptedDeltaEncoding = 'vcdiff';
+
+  protected readonly statusDeltaEncodingUsed = 226;
 
   /**
    * Indicates id this connector is usable in the current runtime environment
@@ -150,6 +156,12 @@ export abstract class Connector {
    */
   public gzip: boolean = false;
 
+  private decode = async (delta: string, source: string): Promise<string> => {
+    // eslint-disable-next-line global-require
+    const decoder = await require('vcdiff-wasm/decoder')();
+    return ab2str(decoder(Buffer.from(source), Buffer.from(delta)));
+  };
+
   /**
    * @param host - the host to connect to
    * @param port - the port to connect to
@@ -228,7 +240,8 @@ export abstract class Connector {
     }
 
     if (message.request.method === 'PUT' || message.request.method === 'POST') {
-      message.acceptDeltaEncoding('vcdiff');
+      message.acceptDeltaEncoding(this.accceptedDeltaEncoding);
+      message.accept(`${message.accept()},application/octet-stream`);
     }
 
     if (this.gzip) {
@@ -307,9 +320,18 @@ export abstract class Connector {
       }
     }
 
-    return new Promise((resolve) => {
-      resolve(entity && this.fromFormat(response, entity, type));
-    }).then((resultEntity) => {
+    let resolveEntity:Promise<any>;
+    if (entity && headers.IM && headers.IM === this.accceptedDeltaEncoding
+      && response.status === this.statusDeltaEncodingUsed) {
+      resolveEntity = this.decode(entity, message.request.entity)
+        .then((decoded) => this.fromFormat(response, decoded, type));
+    } else {
+      resolveEntity = new Promise((resolve) => {
+        resolve(entity && this.fromFormat(response, entity, type));
+      });
+    }
+
+    return resolveEntity.then((resultEntity) => {
       response.entity = resultEntity;
 
       if (message.request.path.indexOf('/connect') !== -1 && resultEntity) {

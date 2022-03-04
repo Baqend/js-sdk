@@ -48,9 +48,11 @@
     "open": "^8.2.0",
     "rimraf": "^3.0.2",
     "rxjs": "^6.6.3",
+    "string-arraybuffer": "^1.0.4",
     "tslib": "^2.3.0",
     "uuid": "^8.3.2",
     "validator": "^13.6.0",
+    "vcdiff-wasm": "^1.0.9",
     "websocket": "^1.0.34"
   },
   "repository": {
@@ -127,7 +129,7 @@
     "build-commonjs": "tsc -m commonjs --target es5 --declaration --outDir commonjs --project tsconfig.lib.json",
     "_build-esm": "UNSUDED FOR NOW -> https://nodejs.org/api/packages.html#packages_dual_package_hazard tsc -m es2015 --target es6 --outDir esm --project tsconfig.lib.json",
     "build-cli": "tsc -m commonjs --target es6 --project tsconfig.cli.json",
-    "build-dist": "webpack --config-name=es5 && webpack --config-name=es2015",
+    "build-dist": "webpack --config-name=es5 --display-error-details && webpack --display-error-details --config-name=es2015",
     "dist": "npm run build-commonjs && npm run build-dist && npm run build-cli && npm run docs",
     "prepack": "npm install && npm run dist",
     "release": "node scripts/release",
