@@ -156,10 +156,12 @@ export abstract class Connector {
    */
   public gzip: boolean = false;
 
-  private decode = async (delta: string, source: string): Promise<string> => {
+  private decode = async (delta: ArrayBuffer, source: string): Promise<string> => {
     // eslint-disable-next-line global-require
     const decoder = await require('vcdiff-wasm/decoder')();
-    return ab2str(decoder(Buffer.from(source), Buffer.from(delta)));
+    const decoded = decoder(Buffer.from(source), new Uint8Array(Buffer.from(delta)));
+    const result = ab2str(decoded);
+    return result;
   };
 
   /**
@@ -221,6 +223,12 @@ export abstract class Connector {
       }
     }
 
+    if (message.request.method === 'POST') {
+      message.acceptDeltaEncoding(this.accceptedDeltaEncoding);
+      message.responseType('arraybuffer');
+      message.accept(`${message.accept()},application/octet-stream`);
+    }
+
     this.toFormat(message);
 
     let accept;
@@ -237,11 +245,6 @@ export abstract class Connector {
 
     if (!message.accept()) {
       message.accept(accept);
-    }
-
-    if (message.request.method === 'PUT' || message.request.method === 'POST') {
-      message.acceptDeltaEncoding(this.accceptedDeltaEncoding);
-      message.accept(`${message.accept()},application/octet-stream`);
     }
 
     if (this.gzip) {
@@ -324,7 +327,11 @@ export abstract class Connector {
     if (entity && headers.IM && headers.IM === this.accceptedDeltaEncoding
       && response.status === this.statusDeltaEncodingUsed) {
       resolveEntity = this.decode(entity, message.request.entity)
-        .then((decoded) => this.fromFormat(response, decoded, type));
+        .then((decoded) => {
+          const decodedEntity = this.fromFormat(response, `${decoded}"}`, 'json');
+          console.log(decoded, decodedEntity);
+          return decodedEntity;
+        });
     } else {
       resolveEntity = new Promise((resolve) => {
         resolve(entity && this.fromFormat(response, entity, type));
@@ -337,7 +344,7 @@ export abstract class Connector {
       if (message.request.path.indexOf('/connect') !== -1 && resultEntity) {
         this.gzip = !!(resultEntity as JsonMap).gzip;
       }
-    }, (e) => {
+    }).catch((e) => {
       throw new Error(`Response was not valid ${type}: ${e.message}`);
     });
   }

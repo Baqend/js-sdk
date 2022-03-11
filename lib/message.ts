@@ -284,7 +284,7 @@ interface CreateObject {
 export const CreateObject = Message.create<CreateObject>({
   method: 'POST',
   path: '/db/:bucket',
-  status: [201, 202],
+  status: [201, 202, 226],
 });
 
 interface GetObject {

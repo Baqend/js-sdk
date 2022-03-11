@@ -62,7 +62,7 @@ export class XMLHttpConnector extends Connector {
         };
 
         Connector.RESPONSE_HEADERS.forEach((name) => {
-          response.headers[name] = xhr.getResponseHeader(name) || '';
+          response.headers[name] = xhr.getResponseHeader(name.toLowerCase()) || '';
         });
 
         receive(response);
