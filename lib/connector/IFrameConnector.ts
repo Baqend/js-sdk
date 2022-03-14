@@ -78,7 +78,7 @@ export class IFrameConnector extends XMLHttpConnector {
    */
   doSend(message: Message, request: Request, receive: Receiver) {
     // binary data will be send and received directly
-    if (message.isBinary) {
+    if (message.isBinary || message.acceptDeltaEncoding() === 'vcdiff') {
       super.doSend(message, request, receive);
       return;
     }

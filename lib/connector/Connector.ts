@@ -223,12 +223,6 @@ export abstract class Connector {
       }
     }
 
-    if (message.request.method === 'POST') {
-      message.acceptDeltaEncoding(this.accceptedDeltaEncoding);
-      message.responseType('arraybuffer');
-      message.accept(`${message.accept()},application/octet-stream`);
-    }
-
     this.toFormat(message);
 
     let accept;
@@ -245,6 +239,11 @@ export abstract class Connector {
 
     if (!message.accept()) {
       message.accept(accept);
+    }
+
+    if (message.request.method === 'POST') {
+      message.acceptDeltaEncoding(this.accceptedDeltaEncoding);
+      message.accept(`${message.accept()},application/octet-stream`);
     }
 
     if (this.gzip) {

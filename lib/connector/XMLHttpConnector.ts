@@ -47,11 +47,16 @@ export class XMLHttpConnector extends Connector {
 
     const xhr = new XMLHttpRequest();
     const url = this.origin + this.basePath + request.path;
-
     xhr.onreadystatechange = () => {
       // if we receive an error switch the response type to json
-      if (xhr.responseType && xhr.readyState === 2 && xhr.status >= 400) {
-        xhr.responseType = 'text';
+      if (xhr.readyState === 2) {
+        if (xhr.responseType && xhr.status >= 400) {
+          xhr.responseType = 'text';
+        }
+
+        if (xhr.status === 226) {
+          xhr.responseType = 'arraybuffer';
+        }
       }
 
       if (xhr.readyState === 4) {
