@@ -328,7 +328,6 @@ export abstract class Connector {
       resolveEntity = this.decode(entity, message.request.entity)
         .then((decoded) => {
           const decodedEntity = this.fromFormat(response, `${decoded}"}`, 'json');
-          console.log(decoded, decodedEntity);
           return decodedEntity;
         });
     } else {
