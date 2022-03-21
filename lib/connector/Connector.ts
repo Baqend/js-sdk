@@ -235,20 +235,6 @@ export abstract class Connector {
     }
 
     const tokenStorage = message.tokenStorage();
-    if (message.request.path === '/connect') {
-      return tokenStorage!.signPath(this.basePath + message.request.path)
-        .then((signedPath) => {
-          // eslint-disable-next-line no-param-reassign
-          message.request.path = signedPath.substring(this.basePath.length);
-
-          if (message.cacheControl()) {
-            // eslint-disable-next-line no-param-reassign
-            message.request.path += `${message.request.path.indexOf('?') !== -1 ? '&' : '?'}BCB`;
-          }
-
-          return message;
-        });
-    }
 
     if (tokenStorage) {
       const { token } = tokenStorage;
