@@ -51,6 +51,8 @@ export abstract class Connector {
 
   protected readonly statusDeltaEncodingUsed = 226;
 
+  decoder: any;
+
   /**
    * Indicates id this connector is usable in the current runtime environment
    * This method must be overwritten in subclass implementations
@@ -157,9 +159,11 @@ export abstract class Connector {
   public gzip: boolean = false;
 
   private decode = async (delta: ArrayBuffer, source: string): Promise<string> => {
-    // eslint-disable-next-line global-require
-    const decoder = await require('vcdiff-wasm/decoder')();
-    const decoded = decoder(Buffer.from(source), new Uint8Array(Buffer.from(delta)));
+    if (!this.decoder) {
+      // eslint-disable-next-line global-require
+      this.decoder = await require('vcdiff-wasm/decoder')();
+    }
+    const decoded = this.decoder(Buffer.from(source), new Uint8Array(Buffer.from(delta)));
     const result = ab2str(decoded);
     return result;
   };
@@ -327,18 +331,8 @@ export abstract class Connector {
       && response.status === this.statusDeltaEncodingUsed) {
       resolveEntity = this.decode(entity, message.request.entity)
         .then((decoded) => {
-          let decodedEntity;
-          try {
-            decodedEntity = this.fromFormat(response, `${decoded}"}`, 'json');
-          } catch (error1) {
-            const repaired = decoded.substring(0, decoded.lastIndexOf(','));
-            try {
-              decodedEntity = this.fromFormat(response, `${repaired}}`, 'json');
-            } catch (error2) {
-              console.error(decoded, error1, error2);
-            }
-          }
-          return decodedEntity;
+          console.info('decoded:', decoded);
+          return this.fromFormat(response, message.request.entity, 'json');
         });
     } else {
       resolveEntity = new Promise((resolve) => {
