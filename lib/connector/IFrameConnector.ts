@@ -68,7 +68,6 @@ export class IFrameConnector extends XMLHttpConnector {
       const input = document.createElement('input');
       input.type = 'hidden';
       input.name = 'BAT';
-      message.tokenStorage()!.signPath(this.basePath + message.path());
       input.value = token;
       form.appendChild(input);
     }
