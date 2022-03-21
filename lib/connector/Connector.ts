@@ -163,7 +163,7 @@ export abstract class Connector {
       // eslint-disable-next-line global-require
       this.decoder = await require('vcdiff-wasm/decoder')();
     }
-    const decoded = this.decoder(Buffer.from(source), new Uint8Array(Buffer.from(delta)));
+    const decoded = this.decoder(Buffer.from(source), new Uint8Array(delta));
     const result = ab2str(decoded);
     return result;
   };
