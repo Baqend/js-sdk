@@ -74,7 +74,7 @@ async function selectColumnsOR(){
 }
 async function countQuery(){
     const response = await em.nativeQuery.execute('select count(*) from NQ1');
-    expect(response.data(0, ":count")).eql(10);
+    expect(response.data(0, "N/A:count")).eql(10);
 }
 
 async function selectNullColumns(){
