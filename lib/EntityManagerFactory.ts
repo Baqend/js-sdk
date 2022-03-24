@@ -121,6 +121,11 @@ export class EntityManagerFactory extends Lockable {
           msg.noCache();
         }
 
+        if (this.tokenStorage?.token) {
+          // disable client cache on the connect resource if we are authenticated
+          msg.addQueryString('BCB');
+        }
+
         return this.send(msg);
       }).then((response: Response) => {
         this.connectData = response.entity as JsonMap;
