@@ -62,6 +62,7 @@ export class IFrameConnector extends XMLHttpConnector {
     form.target = name;
     form.method = 'post';
     form.action = url;
+    form.setAttribute('style', IFrameConnector.style);
 
     const token = message.tokenStorage()?.token;
     if (token) {
