@@ -146,8 +146,8 @@ export class Permission {
    * @param json The permission json representation
    * @return
    */
-  fromJSON(json: Json) {
-    this.rules = json as { [ref: string]: string };
+  fromJSON(json: JsonMap) {
+    this.rules = { ...json } as { [ref: string]: string };
   }
 
   /**
