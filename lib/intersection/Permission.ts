@@ -1,5 +1,5 @@
 import type * as model from '../model';
-import type { Json, JsonMap } from '../util';
+import type { JsonMap } from '../util';
 
 export type TrustedEntity = model.User | model.Role | string;
 export type BasePermission = ['load', 'update', 'delete', 'query', 'insert'];
@@ -146,8 +146,8 @@ export class Permission {
    * @param json The permission json representation
    * @return
    */
-  fromJSON(json: Json) {
-    this.rules = json as { [ref: string]: string };
+  fromJSON(json: JsonMap) {
+    this.rules = { ...json } as { [ref: string]: string };
   }
 
   /**
