@@ -1,5 +1,5 @@
 import type * as model from '../model';
-import type { Json, JsonMap } from '../util';
+import type { JsonMap } from '../util';
 
 export type TrustedEntity = model.User | model.Role | string;
 export type BasePermission = ['load', 'update', 'delete', 'query', 'insert'];
