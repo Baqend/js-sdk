@@ -49,14 +49,35 @@ export class IFrameConnector extends XMLHttpConnector {
     addEventListener('message', this.doReceive, false);
   }
 
-  load(path: string) {
+  load(message: Message) {
+    const url = this.origin + this.basePath + message.path();
+    const name = `baqend-sdk-connect-${Math.floor(Math.random() * 100000)}`;
+
     this.iframe = document.createElement('iframe');
-    this.iframe.src = this.origin + this.basePath + path;
+    this.iframe.name = name;
     this.iframe.setAttribute('style', IFrameConnector.style);
     document.body.appendChild(this.iframe);
 
+    const form = document.createElement('form');
+    form.target = name;
+    form.method = 'post';
+    form.action = url;
+    form.setAttribute('style', IFrameConnector.style);
+
+    const token = message.tokenStorage()?.token;
+    if (token) {
+      const input = document.createElement('input');
+      input.type = 'hidden';
+      input.name = 'BAT';
+      input.value = token;
+      form.appendChild(input);
+    }
+    document.body.appendChild(form);
+
     this.queue = [];
     this.iframe.addEventListener('load', this.onLoad.bind(this), false);
+
+    form.submit();
   }
 
   onLoad() {
@@ -84,10 +105,7 @@ export class IFrameConnector extends XMLHttpConnector {
     }
 
     if (!this.iframe) {
-      this.load(message.request.path);
-      // ensure that we get a local resource cache hit
-      // eslint-disable-next-line no-param-reassign
-      message.request.path = '/connect';
+      this.load(message);
     }
 
     const msg = {
