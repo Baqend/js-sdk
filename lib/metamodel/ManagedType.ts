@@ -261,27 +261,6 @@ export abstract class ManagedType<T extends Managed> extends Type<T> {
     return value;
   }
 
-  toDeleteJsonValue(state: ManagedState, object: T | null,
-    options: { excludeMetadata?: boolean; depth?: number | boolean, persisting: boolean }): Json {
-    if (!(object instanceof this.typeConstructor)) {
-      return null;
-    }
-
-    const value: {[attr: string]: any} = {};
-    const json: {[attr: string]: any} = {};
-    const iter = this.attributes();
-    let count: number = 0;
-    for (let el = iter.next(); count < 2; el = iter.next()) {
-      const attribute = el.value;
-      if (!options.excludeMetadata || !attribute.isMetadata) {
-        value[attribute.name] = attribute.getJsonValue(state, object, options);
-        count++;
-      }
-    }
-    json[value.id] = `${value.version}`;
-    return json;
-  }
-
   /**
    * Converts ths type schema to json
    * @return
