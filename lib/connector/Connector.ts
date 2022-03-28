@@ -145,12 +145,6 @@ export abstract class Connector {
   public readonly origin: string = Connector.toUri(this.host, this.port, this.secure, '');
 
   /**
-   * The connector will detect if gzip is supported.
-   * Returns true if supported otherwise false.
-   */
-  public gzip: boolean = false;
-
-  /**
    * @param host - the host to connect to
    * @param port - the port to connect to
    * @param secure - <code>true</code> for an secure connection
@@ -227,13 +221,6 @@ export abstract class Connector {
       message.accept(accept);
     }
 
-    if (this.gzip) {
-      const ifNoneMatch = message.ifNoneMatch();
-      if (ifNoneMatch && ifNoneMatch !== '""' && ifNoneMatch !== '*') {
-        message.ifNoneMatch(`${ifNoneMatch.slice(0, -1)}--gzip"`);
-      }
-    }
-
     const tokenStorage = message.tokenStorage();
 
     if (tokenStorage) {
@@ -278,7 +265,8 @@ export abstract class Connector {
     }
 
     if (headers.etag) {
-      headers.etag = headers.etag.replace('--gzip', '');
+      // remove gzip brotli extensions etc
+      headers.etag = headers.etag.replace(/--\w+/, '');
     }
 
     const tokenStorage = message.tokenStorage();
@@ -293,10 +281,6 @@ export abstract class Connector {
       resolve(entity && this.fromFormat(response, entity, type));
     }).then((resultEntity) => {
       response.entity = resultEntity;
-
-      if (message.request.path.indexOf('/connect') !== -1 && resultEntity) {
-        this.gzip = !!(resultEntity as JsonMap).gzip;
-      }
     }, (e) => {
       throw new Error(`Response was not valid ${type}: ${e.message}`);
     });
