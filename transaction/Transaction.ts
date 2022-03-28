@@ -8,6 +8,7 @@ import {
 
 import {EntityManager} from '../lib';
 import {Metadata} from "../lib/intersection";
+import { ManagedType } from "../lib/metamodel";
 
 /**
  * Transaction object class
@@ -40,7 +41,7 @@ export class Transaction {
 
   /**
    * Begin a transaction by creating a transaction id
-   * @param doneCallback The callback is invoked after the sql executed
+   * @param doneCallback The callback is invoked after the transaction was completed
    * successfully
    * @param  failCallback The callback is invoked if any error occurred
    * @return  A promise which will be fulfilled with a transaction id when successfully executed
@@ -110,15 +111,24 @@ export class Transaction {
     }
 
     for (const key of Object.keys(deleteSetList)) {
-      const state = Metadata.get(deleteSetList[key]);
-      let json;
+      const object = deleteSetList[key];
+      const state = Metadata.get(object);
+      const type = state.type;
       if (state.isAvailable) {
-        // getting json will check all collections changes, therefore we must do it before proofing the dirty state
         try {
-          json = state.type.toDeleteJsonValue(state, deleteSetList[key], {
-            persisting: true,
-          });
-          deleteArray.push(JSON.stringify(json));
+          if (type instanceof ManagedType) {
+            const value: {[attr: string]: any} = {};
+            const json: {[attr: string]: any} = {};
+            let iter = type.attributes();
+            let count: number = 0;
+            for (let el = iter.next(); count < 2; el = iter.next()) {
+              const attribute = el.value;
+              value[attribute.name] = attribute.getJsonValue(state, object, {persisting: true});
+              count++;
+            }
+            json[value.id] = `${value.version}`;
+            deleteArray.push(JSON.stringify(json));  
+          }
         }
         catch (e)
         {
@@ -129,7 +139,7 @@ export class Transaction {
         }
       }
     }
-
+  
     if (deleteArray.length > 0) {
       if (writeArray.length > 0) {
         deleteSetJson += ', ';
