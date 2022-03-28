@@ -1,11 +1,13 @@
-module.exports = {
+const config = {
   reporter: 'mocha-junit-reporter',
-  quiet: true,
+  quiet: false,
   package: './package.json',
-  reporterOptions: {
+  reporterOption: {
     mochaFile: `./build/test-results/node-${process.version}.xml`,
     jenkinsMode: true,
   },
   timeout: 4000,
   spec: ['spec/**/*.js'],
-};
+}
+
+module.exports = config;
