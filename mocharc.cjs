@@ -2,10 +2,10 @@ const config = {
   reporter: 'mocha-junit-reporter',
   quiet: false,
   package: './package.json',
-  reporterOption: {
-    mochaFile: `./build/test-results/node-${process.version}.xml`,
-    jenkinsMode: true,
-  },
+  reporterOption: [
+    `mochaFile=./build/test-results/node-${process.version}.xml`,
+    'jenkinsMode=true'
+  ],
   timeout: 4000,
   spec: ['spec/**/*.js'],
 }
