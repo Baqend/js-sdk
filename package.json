@@ -99,7 +99,7 @@
     "karma-safari-launcher": "^1.0.0",
     "karma-webdriver-launcher": "^1.0.8",
     "mocha": "^9.2.2",
-    "mocha-jenkins-reporter": "^0.4.5",
+    "mocha-junit-reporter": "^2.0.2",
     "puppeteer": "^4.0.1",
     "shelljs": "^0.8.4",
     "shx": "^0.3.3",
