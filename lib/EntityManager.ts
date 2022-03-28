@@ -6,7 +6,8 @@ import {
   ManagedFactory,
   EntityFactory,
   DeviceFactory,
-  LoginOption, OAuthOptions
+  LoginOption, 
+  OAuthOptions,
 } from './binding';
 import {
   atob,
@@ -124,7 +125,7 @@ export class EntityManager extends Lockable {
   /**
    * Whether transaction set
    */
-  isTransactionSet(): boolean {
+  isTransactionActive(): boolean {
     return !!this.transaction.tid;
   }
 
