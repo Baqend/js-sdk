@@ -3,7 +3,7 @@
   "quiet": true,
   "package": "./package.json",
   "reporterOptions": {
-    "mochaFile": "build/test-results/node-<%= process.version %>.xml",
+    "mochaFile": "build/test-results/node.xml",
     "jenkinsMode": true
   },
   "timeout": 4000,
