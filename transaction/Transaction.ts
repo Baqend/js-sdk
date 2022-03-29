@@ -47,7 +47,7 @@ export class Transaction {
    * @return  A promise which will be fulfilled with a transaction id when successfully executed
    */
   async begin(doneCallback?: any, failCallback?: any): Promise<string> {
-    if (this.tid) return Promise.reject(Error('Transaction already exist.. Please commit existing transaction first'));
+    if (this.tid) return Promise.reject(new Error('Transaction already exist.. Please commit existing transaction first'));
 
     const txMessage = new message.NewTransaction()
       .responseType('json');
@@ -68,7 +68,7 @@ export class Transaction {
    */
   async commit(doneCallback?: any, failCallback?: any): Promise<Json> {
     if (!this.tid) {
-      return Promise.reject(Error('Transaction does not exist.. Please start a new transaction using transaction.begin'));
+      return Promise.reject(new Error('Transaction does not exist.. Please start a new transaction using transaction.begin'));
     }
     const writeSetList = this.db.transactionalEntities;
     const deleteSetList = this.db.transactionalDeleteEntities;
@@ -235,7 +235,7 @@ export class Transaction {
 
   rollback(doneCallback?: any, failCallback?: any): Promise<string> {
     if (!this.tid)
-      return Promise.reject(Error("Nothing to do. Transaction does not exist"));
+      return Promise.reject(new Error("Nothing to do. Transaction does not exist"));
     this.db.transactionalEntities = {};
     this.db.transactionalDeleteEntities = {};
 	  this.tid = null;

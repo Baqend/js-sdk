@@ -1,4 +1,5 @@
 import * as messages from './message';
+import {Transaction} from "../transaction";
 import {
   FileFactory,
   UserFactory,
@@ -52,8 +53,6 @@ import {
 const DB_PREFIX = '/db/';
 
 type MessageFactory = (state: Metadata, json: JsonMap) => Message;
-
-import {Transaction} from "../transaction";
 
 export class EntityManager extends Lockable {
   /**
