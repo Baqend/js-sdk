@@ -1,4 +1,5 @@
 import * as messages from './message';
+import {Transaction} from "../transaction";
 import {
   FileFactory,
   UserFactory,
@@ -6,7 +7,8 @@ import {
   ManagedFactory,
   EntityFactory,
   DeviceFactory,
-  LoginOption, OAuthOptions
+  LoginOption, 
+  OAuthOptions,
 } from './binding';
 import {
   atob,
@@ -51,8 +53,6 @@ import {
 const DB_PREFIX = '/db/';
 
 type MessageFactory = (state: Metadata, json: JsonMap) => Message;
-
-import {Transaction} from "../transaction";
 
 export class EntityManager extends Lockable {
   /**
@@ -124,7 +124,7 @@ export class EntityManager extends Lockable {
   /**
    * Whether transaction set
    */
-  isTransactionSet(): boolean {
+  isTransactionActive(): boolean {
     return !!this.transaction.tid;
   }
 
