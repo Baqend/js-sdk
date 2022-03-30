@@ -1,5 +1,3 @@
-'use strict';
-
 if (typeof module !== 'undefined') {
   require('./node');
 }
@@ -441,7 +439,7 @@ describe('Test Query', function () {
       var qb = db.QueryPerson.find();
       var q = qb.and(
         qb.equal('name', 'Test QueryPerson'),
-        qb.between('age', 3, 20)
+        qb.between('age', 3, 20),
       );
 
       expect(JSON.parse(JSON.stringify(q))).eql({
@@ -457,7 +455,7 @@ describe('Test Query', function () {
       var qb = db.QueryPerson.find();
       var q = qb.or(
         qb.equal('name', 'Test QueryPerson1'),
-        qb.between('age', 3, 20)
+        qb.between('age', 3, 20),
       );
 
       expect(JSON.parse(JSON.stringify(q))).eql({
@@ -473,7 +471,7 @@ describe('Test Query', function () {
       var qb = db.QueryPerson.find();
       var q = qb.nor(
         qb.equal('name', 'Test QueryPerson1'),
-        qb.between('age', 3, 20)
+        qb.between('age', 3, 20),
       );
 
       expect(JSON.parse(JSON.stringify(q))).eql({
@@ -489,7 +487,7 @@ describe('Test Query', function () {
       var qb = db.QueryPerson.find();
       var q = qb.and(
         qb.or(qb.between('age', 40, 65), qb.between('age', 3, 20)),
-        qb.or(qb.equal('name', 'Test QueryPerson1'), qb.equal('name', 'Test QueryPerson2'))
+        qb.or(qb.equal('name', 'Test QueryPerson1'), qb.equal('name', 'Test QueryPerson2')),
       );
 
       expect(JSON.parse(JSON.stringify(q))).eql({
@@ -515,7 +513,7 @@ describe('Test Query', function () {
       var q = qb.or(
         qb.equal('name', 'Test QueryPerson1'),
         qb.equal('name', 'Test QueryPerson2'),
-        qb.equal('name', 'Test QueryPerson3')
+        qb.equal('name', 'Test QueryPerson3'),
       );
 
       expect(JSON.parse(JSON.stringify(q))).eql({
@@ -758,7 +756,7 @@ describe('Test Query', function () {
           'birthplace',
           new DB.GeoPoint(30, 110), new DB.GeoPoint(30, 115),
           new DB.GeoPoint(40, 115), new DB.GeoPoint(40, 110),
-          new DB.GeoPoint(30, 110)
+          new DB.GeoPoint(30, 110),
         )
         .resultList()
         .then(function (list) {
@@ -770,7 +768,7 @@ describe('Test Query', function () {
       var qb = db.QueryPerson.find();
       return qb.and(
         qb.or(qb.between('age', 20, 35), qb.between('age', 40, 55)),
-        qb.or(qb.equal('name', 'QueryPerson 1'), qb.equal('name', 'QueryPerson 3'))
+        qb.or(qb.equal('name', 'QueryPerson 1'), qb.equal('name', 'QueryPerson 3')),
       ).resultList()
         .then(function (list) {
           expectResult([p1, p3], list);
@@ -852,7 +850,7 @@ describe('Test Query', function () {
     it('should allow large query', function () {
       var inQuery = [];
       for (var i = 0; i < 5000; i += 1) {
-        inQuery.push('QueryPerson ' + i);
+        inQuery.push(`QueryPerson ${i}`);
       }
 
       return db.QueryPerson.find()
@@ -863,6 +861,57 @@ describe('Test Query', function () {
         });
     });
 
+    it('should load depth objects', function () {
+      const newDb = emf.createEntityManager();
+
+      return newDb.QueryPerson.find()
+        .in('age', 33)
+        .resultList({ depth: 1 })
+        .then(function (list) {
+          expect(list).lengthOf(1);
+          var person = list[0];
+          expect(person.age).eql(33);
+          expect(person.person).be.not.null;
+          expect(person.person.version).be.not.null;
+          expect(person.person.age).eql(45);
+          expect(person.person.person).be.not.null;
+          expect(person.person.person.version).be.null;
+        });
+    });
+
+    it('should load infinite depth objects', function () {
+      const newDb = emf.createEntityManager();
+
+      return newDb.QueryPerson.find()
+        .in('age', 33)
+        .resultList({ depth: true })
+        .then(function (list) {
+          expect(list).lengthOf(1);
+          var person = list[0];
+          expect(person.age).eql(33);
+          expect(person.person).be.not.null;
+          expect(person.person.version).be.not.null;
+          expect(person.person.age).eql(45);
+          expect(person.person.person).be.not.null;
+          expect(person.person.person.version).be.not.null;
+        });
+    });
+
+    it('should load single-result depth objects', function () {
+      const newDb = emf.createEntityManager();
+
+      return newDb.QueryPerson.find()
+        .in('age', 33)
+        .singleResult({ depth: 1 })
+        .then(function (person) {
+          expect(person.age).eql(33);
+          expect(person.person).be.not.null;
+          expect(person.person.version).be.not.null;
+          expect(person.person.age).eql(45);
+          expect(person.person.person).be.not.null;
+          expect(person.person.person.version).be.null;
+        });
+    });
 
     function expectResult(expectedResult, actualResult) {
       expect(actualResult.length).equals(expectedResult.length);
