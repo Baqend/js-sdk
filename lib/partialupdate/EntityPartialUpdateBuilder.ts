@@ -19,7 +19,7 @@ export class EntityPartialUpdateBuilder<T extends Entity> extends PartialUpdateB
   execute(): Promise<T> {
     var em = this.entity._metadata.db;
     if (em.isTransactionActive()) {
-      em.transactionalPartialUpdates.push(this);
+      em.transaction.partialUpdates.push(this);
       return Promise.resolve(this.entity);
     }
 

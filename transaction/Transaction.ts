@@ -9,6 +9,8 @@ import {
 import {EntityManager} from '../lib';
 import {Metadata} from "../lib/intersection";
 import { ManagedType } from "../lib/metamodel";
+import {Entity} from '../lib/binding';
+import { EntityPartialUpdateBuilder} from '../lib/partialupdate'
 
 /**
  * Transaction object class
@@ -16,12 +18,31 @@ import { ManagedType } from "../lib/metamodel";
  * @alias binding.Transaction
  */
 export class Transaction {
+
   public db: EntityManager = null as any;
 
   /**
    * The transaction id
    */
   public tid?: string | null;
+
+  /**
+ * All entity instances that participate in this transaction
+ * @type Map<String,Entity>
+ */
+  public entities: { [id: string]: Entity } = {};
+
+  /**
+  * All entity instances that are to be deleted by this transaction
+  * @type Map<String,Entity>
+  */
+  public deleteEntities: { [id: string]: Entity } = {};
+
+  /**
+   * All partial updates that are to be performec by this transaction
+   */
+  public partialUpdates: EntityPartialUpdateBuilder<Entity>[] = [];
+ 
 
   /**
    * Get Transaction Id
@@ -70,15 +91,15 @@ export class Transaction {
     if (!this.tid) {
       return Promise.reject(new Error('Transaction does not exist.. Please start a new transaction using transaction.begin'));
     }
-    const writeSetList = this.db.transactionalEntities;
-    const deleteSetList = this.db.transactionalDeleteEntities;
+    const writeSetList = this.entities;
+    const deleteSetList = this.deleteEntities;
     let jsonBody = '{';
     let writeSetJson = '';
     let deleteSetJson = '';
     let partialUpdatesJson = '';
     const writeArray = [];
     const deleteArray = [];
-    const partialUpdateArray = this.db.transactionalPartialUpdates;
+    const partialUpdateArray = this.partialUpdates;
 
     for (const key of Object.keys(writeSetList)) {
       const val = writeSetList[key];
@@ -95,9 +116,7 @@ export class Transaction {
         }
         catch (e)
         {
-          this.tid = null;
-          this.db.transactionalEntities = {};
-          this.db.transactionalDeleteEntities = {};
+          this.clear();
           throw e;
         }
       }
@@ -132,9 +151,7 @@ export class Transaction {
         }
         catch (e)
         {
-          this.tid = null;
-          this.db.transactionalEntities = {};
-          this.db.transactionalDeleteEntities = {};
+          this.clear();
           throw e;
         }
       }
@@ -162,11 +179,9 @@ export class Transaction {
         }
         first = false;
 
-        var json = '{ "ref": "/db/';
+        var json = '{ "ref": "';
         const state = Metadata.get(partialUpdate.entity);
-        json += state.bucket;
-        json += '/';
-        json += state.key;
+        json += state.id;
         json += '", "operations": '
         json += JSON.stringify(partialUpdate);
         json += '}'
@@ -181,10 +196,7 @@ export class Transaction {
     const sqlMessage = new message.CommitTransaction(this.tid, jsonBody)
       .responseType('json');
 
-    this.tid = null;
-    this.db.transactionalEntities = {};
-    this.db.transactionalDeleteEntities = {};
-    this.db.transactionalPartialUpdates = [];
+    this.clear();
 
      let data = await this.getResult(sqlMessage);
      if (data) {
@@ -246,11 +258,16 @@ export class Transaction {
   rollback(doneCallback?: any, failCallback?: any): Promise<string> {
     if (!this.tid)
       return Promise.reject(new Error("Nothing to do. Transaction does not exist"));
-    this.db.transactionalEntities = {};
-    this.db.transactionalDeleteEntities = {};
-	  this.tid = null;
+      this.clear();
 
     return Promise.resolve("");
+  }
+
+  clear(){
+    this.tid = null;
+    this.entities = {};
+    this.deleteEntities = {};
+    this.partialUpdates = [];
   }
 
 }
