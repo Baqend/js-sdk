@@ -161,7 +161,17 @@ export class Transaction {
           partialUpdatesJson += ',';  
         }
         first = false;
-        partialUpdatesJson += partialUpdate.transactionalJSON();
+
+        var json = '{ "ref": "/db/';
+        const state = Metadata.get(partialUpdate.entity);
+        json += state.bucket;
+        json += '/';
+        json += state.key;
+        json += '", "operations": '
+        json += JSON.stringify(partialUpdate);
+        json += '}'
+
+        partialUpdatesJson += json;
       }
       partialUpdatesJson += ']';
     }

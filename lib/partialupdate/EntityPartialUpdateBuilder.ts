@@ -36,17 +36,4 @@ export class EntityPartialUpdateBuilder<T extends Entity> extends PartialUpdateB
     ));
   }
 
-  transactionalJSON() : string {
-    var result = '{ "ref": "/db/';
-    const state = Metadata.get(this.entity);
-    result += state.bucket;
-    result += '/';
-    result += state.key;
-    result += '", "operations": '
-    result += JSON.stringify(this);
-    result += '}'
-    return result;
-
-  }
-
 }
