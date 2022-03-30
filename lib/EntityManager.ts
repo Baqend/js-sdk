@@ -649,16 +649,13 @@ export class EntityManager extends Lockable {
    * @return
    */
   saveTransaction<E extends Entity>(entity: E): Promise<E> {
-    const metadata = Metadata.get(entity);
-    if (! metadata.id) {
-      metadata.id = `${DB_PREFIX + metadata.type.name}/${uuid()}`;
-    }
-    this.transaction.entities[metadata.id] = entity;
     this._attach(entity);
+    const metadata = Metadata.get(entity);
+    if (metadata.id) {
+      this.transaction.entities[metadata.id] = entity;
+    }
     return Promise.resolve(entity);
   }
-
-
 
   /**
    * @param entity
