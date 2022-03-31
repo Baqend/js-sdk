@@ -157,8 +157,7 @@ async function connect(withSchema){
     } else {
         emf = await new DB.EntityManagerFactory({ host: env.TEST_SERVER, schema: [], tokenStorage: helper.rootTokenStorage });
     }
-    await emf.ready();
-    em = await emf.createEntityManager();
+    em = emf.createEntityManager();
     await em.ready();
     if(withSchema){
         await login();
