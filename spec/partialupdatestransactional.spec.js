@@ -6,10 +6,16 @@ if (typeof module !== 'undefined') {
   
 var emf, em, obj;
 
+beforeEach(async function () {
+  await connect(false);
+  await produceMetaModel();
+  await connect(true);
+  await deleteAllObjects();
+})
+
 describe('Partial Updates for NoSQL Transactional', async function () {
 
     it('single partial update', async function () {
-        await setup();
         obj = await storeObject("stored");    
         expect(obj.mlong).to.equal(42);
         await em.transaction.begin()
@@ -23,7 +29,6 @@ describe('Partial Updates for NoSQL Transactional', async function () {
       });
 
       it('partial update and normal store', async function () {
-        await setup();
         obj = await storeObject('partialupdate');    
         expect(obj.mlong).to.equal(42);
         await em.transaction.begin();
@@ -39,7 +44,6 @@ describe('Partial Updates for NoSQL Transactional', async function () {
       });
 
       it('partial update and delete', async function () {
-        await setup();
         obj = await storeObject('partialupdate'); 
         var toDelete = await storeObject('todelete');
         expect(obj.mlong).to.equal(42);
@@ -61,7 +65,6 @@ describe('Partial Updates for NoSQL Transactional', async function () {
       });
 
       it('partial update store and delete', async function () {
-        await setup();
         obj = await storeObject('partialupdate'); 
         var toDelete = await storeObject('todelete');
         expect(obj.mlong).to.equal(42);
@@ -84,7 +87,6 @@ describe('Partial Updates for NoSQL Transactional', async function () {
       });
 
       it('two partial updates executed on same object', async function () {
-        await setup();
         obj = await storeObject('partialupdate');    
         expect(obj.mlong).to.equal(42);
         await em.transaction.begin();
@@ -101,7 +103,6 @@ describe('Partial Updates for NoSQL Transactional', async function () {
       });
 
       it('two partial updates chained on same object', async function () {
-        await setup();
         obj = await storeObject('partialupdate');    
         expect(obj.mlong).to.equal(42);
         await em.transaction.begin();
@@ -117,7 +118,6 @@ describe('Partial Updates for NoSQL Transactional', async function () {
       });
 
       it('partial updates on two objects', async function () {
-        await setup();
         obj = await storeObject('pu1');
         var obj2 = await storeObject('pu2');
         expect(obj.mlong).to.equal(42);
@@ -142,14 +142,6 @@ describe('Partial Updates for NoSQL Transactional', async function () {
 
 
 });
-
-
-async function setup(){
-    await connect(false);
-    await produceMetaModel();
-    await connect(true);
-    await deleteAllObjects();
-}
 
 async function connect(withSchema){
     if(withSchema){

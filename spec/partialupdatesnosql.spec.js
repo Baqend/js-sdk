@@ -6,10 +6,16 @@ if (typeof module !== 'undefined') {
   
 var emf, em, obj;
 
+beforeEach(async function () {
+  await connect(false);
+  await produceMetaModel();
+  await connect(true);
+  await deleteAllObjects();
+})
+
 describe('Partial Updates for NoSQL', async function () {
 
     it('increment long', async function () {
-        await setup();
         obj = await storeObjects();    
         expect(obj.mlong).to.equal(42);
         return obj.partialUpdate()
@@ -22,7 +28,6 @@ describe('Partial Updates for NoSQL', async function () {
       });
   
       it('decrement long', async function () {
-        await setup();
         obj = await storeObjects();    
         expect(obj.mlong).to.equal(42);
         return obj.partialUpdate()
@@ -35,7 +40,6 @@ describe('Partial Updates for NoSQL', async function () {
       });
 
       it('min long', async function () {
-        await setup();
         obj = await storeObjects();    
         expect(obj.mlong).to.equal(42);
         return obj.partialUpdate()
@@ -48,7 +52,6 @@ describe('Partial Updates for NoSQL', async function () {
       });
 
       it('min double', async function () {
-        await setup();
         obj = await storeObjects();    
         expect(obj.mdouble).to.equal(43);
         return obj.partialUpdate()
@@ -61,7 +64,6 @@ describe('Partial Updates for NoSQL', async function () {
       });
 
       it('multiply long', async function () {
-        await setup();
         obj = await storeObjects();    
         expect(obj.mlong).to.equal(42);
         return obj.partialUpdate()
@@ -74,7 +76,6 @@ describe('Partial Updates for NoSQL', async function () {
       });
 
       it('multiply double', async function () {
-        await setup();
         obj = await storeObjects();    
         expect(obj.mdouble).to.equal(43);
         return obj.partialUpdate()
@@ -87,7 +88,6 @@ describe('Partial Updates for NoSQL', async function () {
       });
 
       it('set current date', async function () {
-        await setup();
         obj = await storeObjects();    
         expect(obj.mdate).to.equal(null);
         return obj.partialUpdate()
@@ -100,14 +100,6 @@ describe('Partial Updates for NoSQL', async function () {
       });
 
 });
-
-
-async function setup(){
-    await connect(false);
-    await produceMetaModel();
-    await connect(true);
-    await deleteAllObjects();
-}
 
 async function connect(withSchema){
     if(withSchema){

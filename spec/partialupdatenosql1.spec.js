@@ -6,11 +6,17 @@ if (typeof module !== 'undefined') {
 
 var emf, em, obj;
 
+beforeEach(async function () {
+  await connect(false);
+  await produceMetaModel();
+  await connect(true);
+  await deleteAllObjects();
+})
+
 describe('Partial Updates for NoSQL', async function () {
   // List Operations
 
   it('Push', async function () {
-    await setup();
     obj = await storeObjects();
     return obj.partialUpdate()
       .push('mlist', 'ListItem4')
@@ -21,7 +27,6 @@ describe('Partial Updates for NoSQL', async function () {
       });
   });
   it('Push for Integer type', async function () {
-    await setup();
     obj = await storeObjects();
     return obj.partialUpdate()
       .push('ilist', 400)
@@ -33,7 +38,6 @@ describe('Partial Updates for NoSQL', async function () {
   });
 
   it('Pop', async function () {
-    await setup();
     obj = await storeObjects();
     return obj.partialUpdate()
       .pop('mlist')
@@ -43,8 +47,8 @@ describe('Partial Updates for NoSQL', async function () {
         expect(obj.mlist[1]).to.equal('ListItem2');
       });
   });
+
   it('Pop for integer type', async function () {
-    await setup();
     obj = await storeObjects();
     return obj.partialUpdate()
       .pop('ilist')
@@ -56,7 +60,6 @@ describe('Partial Updates for NoSQL', async function () {
   });
 
   it('Unshift', async function () {
-    await setup();
     obj = await storeObjects();
     return obj.partialUpdate()
       .unshift('mlist', 'ListItem0')
@@ -66,8 +69,8 @@ describe('Partial Updates for NoSQL', async function () {
         expect(obj.mlist[0]).to.equal('ListItem0');
       });
   });
+
   it('Unshift for integer type', async function () {
-    await setup();
     obj = await storeObjects();
     return obj.partialUpdate()
       .unshift('ilist', 0)
@@ -77,8 +80,8 @@ describe('Partial Updates for NoSQL', async function () {
         expect(obj.ilist[0]).to.equal(0);
       });
   });
+
   it('Shift', async function () {
-    await setup();
     obj = await storeObjects();
     return obj.partialUpdate()
       .shift('mlist')
@@ -88,8 +91,8 @@ describe('Partial Updates for NoSQL', async function () {
         expect(obj.mlist[0]).to.equal('ListItem2');
       });
   });
+
   it('Shift for integer type', async function () {
-    await setup();
     obj = await storeObjects();
     return obj.partialUpdate()
       .shift('ilist')
@@ -99,8 +102,8 @@ describe('Partial Updates for NoSQL', async function () {
         expect(obj.ilist[0]).to.equal(200);
       });
   });
+
   it('Replace', async function () {
-    await setup();
     obj = await storeObjects();
     return obj.partialUpdate()
       .replace('mlist', 1, 'ReplacedListItem')
@@ -110,8 +113,8 @@ describe('Partial Updates for NoSQL', async function () {
         expect(obj.mlist[1]).to.equal('ReplacedListItem');
       });
   });
+
   it('Replace for integer type', async function () {
-    await setup();
     obj = await storeObjects();
     return obj.partialUpdate()
       .replace('ilist', 1, 500)
@@ -121,8 +124,8 @@ describe('Partial Updates for NoSQL', async function () {
         expect(obj.ilist[1]).to.equal(500);
       });
   });
+
   it('List Remove', async function () {
-    await setup();
     obj = await storeObjects();
     return obj.partialUpdate()
       .remove('mlist', 'ListItem1')
@@ -132,8 +135,8 @@ describe('Partial Updates for NoSQL', async function () {
         expect(obj.mlist[0]).to.equal('ListItem2');
       });
   });
+
   it('List Remove for integer type', async function () {
-    await setup();
     obj = await storeObjects();
     return obj.partialUpdate()
       .remove('ilist', 100)
@@ -143,9 +146,8 @@ describe('Partial Updates for NoSQL', async function () {
         expect(obj.ilist[0]).to.equal(200);
       });
   });
-  // Set Operation
+
   it('Add', async function () {
-    await setup();
     obj = await storeObjects();
     return obj.partialUpdate()
       .add('mset', 'SetItem4')
@@ -155,8 +157,8 @@ describe('Partial Updates for NoSQL', async function () {
         expect(obj.mset.size).eql(4);
       });
   });
+
   it('Add for integer type', async function () {
-    await setup();
     obj = await storeObjects();
     return obj.partialUpdate()
       .add('iset', 4)
@@ -166,8 +168,8 @@ describe('Partial Updates for NoSQL', async function () {
         expect(obj.iset.size).eql(4);
       });
   });
+
   it('Set Remove', async function () {
-    await setup();
     obj = await storeObjects();
     return obj.partialUpdate()
       .remove('mset', 'SetItem1')
@@ -177,8 +179,8 @@ describe('Partial Updates for NoSQL', async function () {
         expect(obj.mset.size).eql(2);
       });
   });
+
   it('Set Remove for integer type', async function () {
-    await setup();
     obj = await storeObjects();
     return obj.partialUpdate()
       .remove('iset', 1)
@@ -188,9 +190,8 @@ describe('Partial Updates for NoSQL', async function () {
         expect(obj.iset.size).eql(2);
       });
   });
-  // Map Operation
+
   it('Put', async function () {
-    await setup();
     obj = await storeObjects();
     return obj.partialUpdate()
       .put('mmap', 'four', 'MapItem4')
@@ -202,7 +203,6 @@ describe('Partial Updates for NoSQL', async function () {
   });
   
   it('Map Remove', async function () {
-    await setup();
     obj = await storeObjects();
     return obj.partialUpdate()
       .remove('mmap', 'one')
@@ -213,13 +213,6 @@ describe('Partial Updates for NoSQL', async function () {
       });
   });
 });
-
-async function setup() {
-  await connect(false);
-  await produceMetaModel();
-  await connect(true);
-  await deleteAllObjects();
-}
 
 async function connect(withSchema) {
   if (withSchema) {
