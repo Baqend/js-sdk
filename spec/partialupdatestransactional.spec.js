@@ -1,5 +1,3 @@
-const { set } = require('shelljs');
-
 if (typeof module !== 'undefined') {
     require('./node');
 }
