@@ -623,6 +623,15 @@ export class EntityManager extends Lockable {
     withoutLock = false): Promise<E> {
     const opt = options || {};
 
+    if(this.isTransactionActive()){
+      this._attach(entity);
+      const metadata = Metadata.get(entity);
+      if (metadata.id) {
+        this.transaction.entities[metadata.id] = entity;
+      }
+      return Promise.resolve(entity);
+    }
+
     const msgFactory = (state: Metadata, json: JsonMap) => {
       if (opt.force) {
         if (!state.id) {
@@ -642,19 +651,6 @@ export class EntityManager extends Lockable {
     };
 
     return withoutLock ? this._locklessSave(entity, opt, msgFactory) : this._save(entity, opt, msgFactory);
-  }
-
-  /**
-   * @param entity
-   * @return
-   */
-  saveTransaction<E extends Entity>(entity: E): Promise<E> {
-    this._attach(entity);
-    const metadata = Metadata.get(entity);
-    if (metadata.id) {
-      this.transaction.entities[metadata.id] = entity;
-    }
-    return Promise.resolve(entity);
   }
 
   /**

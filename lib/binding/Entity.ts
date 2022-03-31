@@ -143,9 +143,6 @@ export class Entity extends Managed {
     if (typeof options === 'function') {
       return this.save({}, options, doneCallback);
     }
-    if (this._metadata.db.isTransactionActive()) {
-      return this._metadata.db.saveTransaction(this);
-    }
     return this._metadata.db.save(this, options).then(doneCallback, failCallback);
   }
 
