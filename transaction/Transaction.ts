@@ -63,15 +63,16 @@ export class Transaction {
 
     const txMessage = new message.NewTransaction()
       .responseType('json');
-    return this.db.send(txMessage).then((response) =>
-        this.tid = response.headers.location.substring(
-            response.headers.location.lastIndexOf('/', response.headers.location.length - 2) + 1), (e) =>
+    return this.db.send(txMessage).then((response) => {
+        const loc = response.headers.location;
+        const pos = loc.lastIndexOf('/', loc.length - 2) + 1;
+        this.tid = loc.substring(pos), (e: { status: number; }) =>
             {
               if (e.status === StatusCode.OBJECT_NOT_FOUND) {
                 return null;
               }
               throw e;
-            }).then(doneCallback, failCallback);
+            }}).then(doneCallback, failCallback);
   }
 
   /**
