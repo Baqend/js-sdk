@@ -129,13 +129,6 @@ export class EntityManager extends Lockable {
   }
 
   /**
-   * get transaction id
-   */
-  getTransactionId(): string | null {
-    return this.transaction.txid;
-  }
-
-  /**
    * Log messages can created by calling log directly as function, with a specific log level or with the helper
    * methods, which a members of the log method.
    *

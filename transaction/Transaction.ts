@@ -43,15 +43,6 @@ export class Transaction {
    */
   public partialUpdates: EntityPartialUpdateBuilder<Entity>[] = [];
  
-
-  /**
-   * Get Transaction Id
-   */
-  get txid(): string | null {
-    if (this.tid) return this.tid;
-    return null;
-  }
-
   /**
    * The default constructor for creating Transaction  instance for the given EntityManager
    * @param entityManager - The owning entityManager
