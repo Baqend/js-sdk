@@ -242,10 +242,6 @@ export class Entity extends Managed {
     if (typeof options === 'function') {
       return this.delete({}, options, doneCallback);
     }
-    if (this._metadata.db.isTransactionActive()) {
-      return this._metadata.db.deleteTransaction(this);
-    }
-
     return this._metadata.db.delete(this, options).then(doneCallback, failCallback);
   }
 

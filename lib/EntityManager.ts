@@ -857,6 +857,13 @@ export class EntityManager extends Lockable {
     this.attach(entity);
     const state = Metadata.get(entity);
 
+    if (this.isTransactionActive()) {
+      if (state.id) {
+        this.transaction.deleteEntities[state.id] = entity;
+      }
+      return Promise.resolve(entity);
+    }
+
     return state.withLock(() => {
       if (!state.version && !opt.force) {
         throw new IllegalEntityError(entity);
@@ -884,14 +891,6 @@ export class EntityManager extends Lockable {
 
       return Promise.all(refPromises).then(() => entity);
     });
-  }
-
-  deleteTransaction<E extends Entity>(entity: E): Promise<E> {
-    const metadata = Metadata.get(entity);
-    if (metadata.id) {
-      this.transaction.deleteEntities[metadata.id] = entity;
-    }
-    return Promise.resolve(entity);
   }
 
   /**
