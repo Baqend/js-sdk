@@ -3,14 +3,18 @@ if (typeof module !== 'undefined') {
 }
 var emf, em;
 
+beforeEach(async function () {
+    await connect(false);
+    await produceMetaModel();
+    await connect(true);
+})
+
 describe('More Transaction Tests', async function () {
     it('Updating a new object', async function () {
-        await setup();
         await storeUpdate(false);
         await storeUpdate(true);
     });
     it('Updating an object twice', async function () {
-        await setup();
         await storeUpdateTwice(false);
         await storeUpdateTwice(true);
     });
@@ -33,12 +37,6 @@ async function storeUpdateTwice(transactional){
     await assertObjectExists("updated2");
     await assertNoObjectExists("updated1");
     await assertNoObjectExists("stored");
-}
-
-async function setup(){
-    await connect(false);
-    await produceMetaModel();
-    await connect(true);
 }
 
 async function connect(withSchema){
