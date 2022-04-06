@@ -90,7 +90,7 @@ export class Transaction {
     const writeSetArray = [];
     const deleteSetArray = [];
     const partialUpdateArray = [];
-    
+
     for (const key of Object.keys(this.entities)) {
       const val = this.entities[key];
       const state = Metadata.get(val);
@@ -117,25 +117,18 @@ export class Transaction {
       const state = Metadata.get(object);
       const type = state.type;
       if (state.isAvailable) {
-        try {
-          if (type instanceof ManagedType) {
-            const value: {[attr: string]: any} = {};
-            const json: {[attr: string]: any} = {};
-            let iter = type.attributes();
-            let count: number = 0;
-            for (let el = iter.next(); count < 2; el = iter.next()) {
-              const attribute = el.value;
-              value[attribute.name] = attribute.getJsonValue(state, object, {persisting: true});
-              count++;
-            }
-            json[value.id] = `${value.version}`;
-            deleteSetArray.push(json);
+        if (type instanceof ManagedType) {
+          const value: {[attr: string]: any} = {};
+          const json: {[attr: string]: any} = {};
+          let iter = type.attributes();
+          let count: number = 0;
+          for (let el = iter.next(); count < 2; el = iter.next()) {
+            const attribute = el.value;
+            value[attribute.name] = attribute.getJsonValue(state, object, {persisting: true});
+            count++;
           }
-        }
-        catch (e)
-        {
-          this.clear();
-          throw e;
+          json[value.id] = `${value.version}`;
+          deleteSetArray.push(json);
         }
       }
     }
