@@ -86,18 +86,13 @@ export class Transaction {
     if (!this.tid) {
       return Promise.reject(new Error('Transaction does not exist.. Please start a new transaction using transaction.begin'));
     }
-    const writeSetList = this.entities;
-    const deleteSetList = this.deleteEntities;
-    let jsonBody = '{';
-    let writeSetJson = '';
-    let deleteSetJson = '';
-    let partialUpdatesJson = '';
-    const writeArray = [];
-    const deleteArray = [];
-    const partialUpdateArray = this.partialUpdates;
 
-    for (const key of Object.keys(writeSetList)) {
-      const val = writeSetList[key];
+    const writeSetArray = [];
+    const deleteSetArray = [];
+    const partialUpdateArray = [];
+    
+    for (const key of Object.keys(this.entities)) {
+      const val = this.entities[key];
       const state = Metadata.get(val);
       let json: JsonMap;
       // right now we send all the values irrespective whether it changed values or not
@@ -107,7 +102,7 @@ export class Transaction {
           json = state.type.toJsonValue(state, val, {
             persisting: true,
           }) as JsonMap;
-          writeArray.push(JSON.stringify(json));
+          writeSetArray.push(json);
         }
         catch (e)
         {
@@ -117,15 +112,8 @@ export class Transaction {
       }
     }
 
-    if (writeArray.length > 0) {
-      writeSetJson += '"writeSet": [';
-      const writeSetBody = writeArray.join(',');
-      writeSetJson += writeSetBody;
-      writeSetJson += ']';
-    }
-
-    for (const key of Object.keys(deleteSetList)) {
-      const object = deleteSetList[key];
+    for (const key of Object.keys(this.deleteEntities)) {
+      const object = this.deleteEntities[key];
       const state = Metadata.get(object);
       const type = state.type;
       if (state.isAvailable) {
@@ -141,7 +129,7 @@ export class Transaction {
               count++;
             }
             json[value.id] = `${value.version}`;
-            deleteArray.push(JSON.stringify(json));  
+            deleteSetArray.push(json);
           }
         }
         catch (e)
@@ -151,50 +139,31 @@ export class Transaction {
         }
       }
     }
-  
-    if (deleteArray.length > 0) {
-      if (writeArray.length > 0) {
-        deleteSetJson += ', ';
+
+    for (let partialUpdate of this.partialUpdates) {
+      const state = Metadata.get(partialUpdate.entity);
+      var partialUpdateObject = {
+        ref: state.id,
+        operations: partialUpdate
       }
-      deleteSetJson += '"deleteSet": [';
-      const deleteSetBody = deleteArray.join(',');
-      deleteSetJson += deleteSetBody;
-      deleteSetJson += ']';
+      partialUpdateArray.push(partialUpdateObject);
     }
 
-    if(partialUpdateArray.length > 0){
-      if (writeArray.length > 0 || deleteArray.length > 0) {
-        partialUpdatesJson += ', ';
-      }
-      partialUpdatesJson += '"partialUpdates": [';
-      var first = true;
-      for (let partialUpdate of partialUpdateArray) {
-        if(! first){
-          partialUpdatesJson += ',';  
-        }
-        first = false;
-
-        var json = '{ "ref": "';
-        const state = Metadata.get(partialUpdate.entity);
-        json += state.id;
-        json += '", "operations": '
-        json += JSON.stringify(partialUpdate);
-        json += '}'
-
-        partialUpdatesJson += json;
-      }
-      partialUpdatesJson += ']';
+    var jsonObj = {
+      writeSet: writeSetArray,
+      deleteSet: deleteSetArray,
+      partialUpdates: partialUpdateArray
     }
 
-    jsonBody += `${writeSetJson}${deleteSetJson}${partialUpdatesJson}}`;
+    var jsonBody = JSON.stringify(jsonObj);
 
     const sqlMessage = new message.CommitTransaction(this.tid, jsonBody)
       .responseType('json');
 
     this.clear();
 
-     let data = await this.getResult(sqlMessage);
-     if (data) {
+    let data = await this.getResult(sqlMessage);
+      if (data) {
       const entries = Object.entries(data);
       for(let idx=0; idx < entries.length; idx ++){
         var entity = null;
@@ -230,12 +199,11 @@ export class Transaction {
             }
           }
         }
-
       }
     }
-
     return Promise.resolve(data).then(doneCallback,failCallback);
  }
+
 
   async getResult(sqlMessage: Message ) : Promise<Json>{
     // Here’s the magic
