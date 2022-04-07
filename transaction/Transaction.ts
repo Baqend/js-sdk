@@ -206,12 +206,8 @@ export class Transaction {
     return result;
   }
 
-  rollback(doneCallback?: any, failCallback?: any): Promise<string> {
-    if (!this.tid)
-      return Promise.reject(new Error("Nothing to do. Transaction does not exist"));
-      this.clear();
-
-    return Promise.resolve("");
+  rollback() {
+    this.clear();
   }
 
   clear(){
