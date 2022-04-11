@@ -330,10 +330,7 @@ export abstract class Connector {
     if (entity && headers.IM && headers.IM === this.accceptedDeltaEncoding
       && response.status === this.statusDeltaEncodingUsed) {
       resolveEntity = this.decode(entity, message.request.entity)
-        .then((decoded) => {
-          console.info('decoded:', decoded);
-          return this.fromFormat(response, message.request.entity, 'json');
-        });
+        .then((decoded) => this.fromFormat(response, decoded, 'json'));
     } else {
       resolveEntity = new Promise((resolve) => {
         resolve(entity && this.fromFormat(response, entity, type));
