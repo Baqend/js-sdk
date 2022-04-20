@@ -99,7 +99,7 @@
     "karma-safari-launcher": "^1.0.0",
     "karma-webdriver-launcher": "^1.0.8",
     "mocha": "^9.2.2",
-    "mocha-jenkins-reporter": "^0.4.5",
+    "mocha-junit-reporter": "^2.0.2",
     "puppeteer": "^4.0.1",
     "shelljs": "^0.8.4",
     "shx": "^0.3.3",
@@ -117,7 +117,7 @@
   "scripts": {
     "test": "npm run test:node && npm run test:karma",
     "test:build": "",
-    "test:node": "mocha --config mocharc.json --exit",
+    "test:node": "mocha --config mocharc.cjs --exit",
     "test:karma": "karma start",
     "clean": "shx rm -rf dist commonjs doc",
     "dev-node-commonjs": "tsc --watch -m commonjs --target es5 --declaration --outDir commonjs --declaration --project tsconfig.lib.json",
