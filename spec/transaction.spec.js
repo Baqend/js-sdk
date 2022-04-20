@@ -285,74 +285,53 @@ describe('Test Transaction', function () {
     });
 
     async function createNewPerson(withCommit, personName) {
-      return await rootDb.transaction.begin().then(function (txid) {
-        const tt = rootDb.PersonTable();
-        tt.id = '2911';
-        tt.name = personName;
-        tt.age = 45;
-        tt.zip = 21147;
-        tt.save();
-        return Promise.resolve();
-      }).then(async function () {
-        if (withCommit) {
-          return await rootDb.transaction.commit().then(function (response) {
-            expect(Object.keys(response).length).equals(1);
-          });
-        }
-      }).catch(function (error) {
-		    expect.fail(`Failed to create object: ${error}`);
-      });
+      await rootDb.transaction.begin()
+      const tt = rootDb.PersonTable();
+      tt.id = '2911';
+      tt.name = personName;
+      tt.age = 45;
+      tt.zip = 21147;
+      tt.save();
+      if (withCommit) {
+        response = await rootDb.transaction.commit();
+        expect(Object.keys(response).length).equals(1);
+      }
     }
 
     it('rollback created records', async function () {
       const personName = "Umarou";
-      const constVoid = await createNewPerson(false, personName); 
-        rootDb.transaction.rollback().then(function (response) {
-          expect(response).to.be.empty;
-        },
-        function (failedResp) {
-          expect.fail(`Wasn't expected to fail: ${failedResp}`);
-        });
+      await createNewPerson(false, personName); 
+      rootDb.transaction.rollback();
 
-        //rollback with no transaction ID: expected to fail
-        rootDb.transaction.rollback().then(function (response) {
-          expect.fail("Wasn't expected to succeed");
-        },
-        function (failedResp) {
-          expect(failedResp.toString()).to.be.eq('Error: Nothing to do. Transaction does not exist');
-        });
+      // No record with name $personName should be found in the db since created record was rolled back
+      rootDb.transaction.begin();
+      
+      expect(rootDb.transaction.txid).to.be.not.null;
+      await rootDb.PersonTable.find().equal('name', personName).singleResult((data) => {
+        if (data) {
+          expect.fail('Unexpected Data');
+        }
+      });          
 
-        // No record with name $personName should be found in the db since created record was rolled back
-        return rootDb.transaction.begin().then(async function (txid) {
-          expect(txid).to.be.not.null;
-          await rootDb.PersonTable.find().equal('name', personName).singleResult((data) => {
-            if (data) {
-              expect.fail('Unexpected Data');
-            }
-          });          
-      }).then(function () {
-          return rootDb.transaction.rollback().then(function (response) {
-            //expect(response.length).equals(0);
-        });
-      }).catch(function (error) {
-          expect.fail(`No exception expected ${error}`);
-      });
+      rootDb.transaction.rollback();
+
     });
 
     it('Unique index violation', async function () {
       await createNewPerson(true, 'person1');
-      return rootDb.transaction.begin().then(async function (txid) {     
-        var index = new DB.metamodel.DbIndex('name', true); //second param 'true' for unique index
+      await rootDb.transaction.begin();
+      var index = new DB.metamodel.DbIndex('name', true); //second param 'true' for unique index
+      var exceptionCaught = false;
+      try{
         await metamodel.createIndex(personType.name, index);         
-        return Promise.resolve();
-      }).then(function () {
-        return rootDb.transaction.commit().then(async function (response) {
-          expect.fail('Expected to fail with unique index violation on student name.. student1');
-        });
-      }).catch(async function (error) {
+      } catch(error) {
         expect(error.reason).equals("Unique Index Exception");  
-        await rootDb.transaction.rollback();    
-      });
+        await rootDb.transaction.rollback();
+        exceptionCaught = true;
+      }
+      if(! exceptionCaught){
+        expect.fail("Exception expected");
+      }
     });
 
     it('No duplicate transaction check', function () {

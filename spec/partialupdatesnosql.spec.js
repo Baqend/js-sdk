@@ -16,31 +16,23 @@ describe('Partial Updates for NoSQL', async function () {
     it('increment long', async function () {
         obj = await storeObjects();    
         expect(obj.mlong).to.equal(42);
-        return obj.partialUpdate()
-          .increment('mlong')
-          .execute()
-          .then(function (result) {
-            expect(result).to.equal(obj);
-            expect(obj.mlong).to.equal(43);
-          });
+        result = await obj.partialUpdate().increment('mlong').execute();
+          expect(result).to.equal(obj);
+          expect(obj.mlong).to.equal(43);
       });
   
       it('decrement long', async function () {
         obj = await storeObjects();    
         expect(obj.mlong).to.equal(42);
-        return obj.partialUpdate()
-          .decrement('mlong', 2)
-          .execute()
-          .then(function (result) {
-            expect(result).to.equal(obj);
-            expect(obj.mlong).to.equal(40);
-          });
+        result = await obj.partialUpdate().decrement('mlong', 2).execute();
+        expect(result).to.equal(obj);
+        expect(obj.mlong).to.equal(40);
       });
 
       it('min long', async function () {
         obj = await storeObjects();    
         expect(obj.mlong).to.equal(42);
-        return obj.partialUpdate()
+        result = await obj.partialUpdate()
           .min('mlong', 41)
           .execute()
           .then(function (result) {
@@ -52,49 +44,33 @@ describe('Partial Updates for NoSQL', async function () {
       it('min double', async function () {
         obj = await storeObjects();    
         expect(obj.mdouble).to.equal(43);
-        return obj.partialUpdate()
-          .min('mdouble', 44)
-          .execute()
-          .then(function (result) {
-            expect(result).to.equal(obj);
-            expect(obj.mdouble).to.equal(43);
-          });
+        result = await obj.partialUpdate().min('mdouble', 44).execute();
+        expect(result).to.equal(obj);
+        expect(obj.mdouble).to.equal(43);
       });
 
       it('multiply long', async function () {
         obj = await storeObjects();    
         expect(obj.mlong).to.equal(42);
-        return obj.partialUpdate()
-          .multiply('mlong', 5)
-          .execute()
-          .then(function (result) {
-            expect(result).to.equal(obj);
-            expect(obj.mlong).to.equal(210);
-          });
+        result = await obj.partialUpdate().multiply('mlong', 5).execute();
+        expect(result).to.equal(obj);
+        expect(obj.mlong).to.equal(210);
       });
 
       it('multiply double', async function () {
         obj = await storeObjects();    
         expect(obj.mdouble).to.equal(43);
-        return obj.partialUpdate()
-          .multiply('mdouble', 10)
-          .execute()
-          .then(function (result) {
-            expect(result).to.equal(obj);
-            expect(obj.mdouble).to.equal(430);
-          });
+        result = await obj.partialUpdate().multiply('mdouble', 10).execute();
+        expect(result).to.equal(obj);
+        expect(obj.mdouble).to.equal(430);
       });
 
       it('set current date', async function () {
         obj = await storeObjects();    
         expect(obj.mdate).to.equal(null);
-        return obj.partialUpdate()
-          .toNow('mdate')
-          .execute()
-          .then(function (result) {
-            expect(result).to.equal(obj);
-            expect(obj.mdate).to.not.equal(null);
-          });
+        result = await obj.partialUpdate().toNow('mdate').execute();
+        expect(result).to.equal(obj);
+        expect(obj.mdate).to.not.equal(null);
       });
 
 });

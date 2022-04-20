@@ -16,199 +16,125 @@ describe('Partial Updates for NoSQL', async function () {
 
   it('Push', async function () {
     obj = await storeObjects();
-    return obj.partialUpdate()
-      .push('mlist', 'ListItem4')
-      .execute()
-      .then(function (result) {
-        expect(result).to.equal(obj);
-        expect(obj.mlist[3]).to.equal('ListItem4');
-      });
+    result = await obj.partialUpdate().push('mlist', 'ListItem4').execute();
+    expect(result).to.equal(obj);
+    expect(obj.mlist[3]).to.equal('ListItem4');
   });
   it('Push for Integer type', async function () {
     obj = await storeObjects();
-    return obj.partialUpdate()
-      .push('ilist', 400)
-      .execute()
-      .then(function (result) {
-        expect(result).to.equal(obj);
-        expect(obj.ilist[3]).to.equal(400);
-      });
+    result = await obj.partialUpdate().push('ilist', 400).execute();
+    expect(result).to.equal(obj);
+    expect(obj.ilist[3]).to.equal(400);
   });
-
   it('Pop', async function () {
     obj = await storeObjects();
-    return obj.partialUpdate()
-      .pop('mlist')
-      .execute()
-      .then(function (result) {
-        expect(result).to.equal(obj);
-        expect(obj.mlist[1]).to.equal('ListItem2');
-      });
+    result = await obj.partialUpdate().pop('mlist').execute();
+    expect(result).to.equal(obj);
+    expect(obj.mlist[1]).to.equal('ListItem2');
   });
-
   it('Pop for integer type', async function () {
     obj = await storeObjects();
-    return obj.partialUpdate()
-      .pop('ilist')
-      .execute()
-      .then(function (result) {
-        expect(result).to.equal(obj);
-        expect(obj.ilist[1]).to.equal(200);
-      });
+    result = await obj.partialUpdate().pop('ilist').execute();
+    expect(result).to.equal(obj);
+    expect(obj.ilist[1]).to.equal(200);
   });
 
   it('Unshift', async function () {
     obj = await storeObjects();
-    return obj.partialUpdate()
-      .unshift('mlist', 'ListItem0')
-      .execute()
-      .then(function (result) {
-        expect(result).to.equal(obj);
-        expect(obj.mlist[0]).to.equal('ListItem0');
-      });
+    result = await obj.partialUpdate().unshift('mlist', 'ListItem0').execute();
+    expect(result).to.equal(obj);
+    expect(obj.mlist[0]).to.equal('ListItem0');
   });
 
   it('Unshift for integer type', async function () {
     obj = await storeObjects();
-    return obj.partialUpdate()
-      .unshift('ilist', 0)
-      .execute()
-      .then(function (result) {
-        expect(result).to.equal(obj);
-        expect(obj.ilist[0]).to.equal(0);
-      });
+    result = await obj.partialUpdate().unshift('ilist', 0).execute();
+    expect(result).to.equal(obj);
+    expect(obj.ilist[0]).to.equal(0);
   });
 
   it('Shift', async function () {
     obj = await storeObjects();
-    return obj.partialUpdate()
-      .shift('mlist')
-      .execute()
-      .then(function (result) {
-        expect(result).to.equal(obj);
-        expect(obj.mlist[0]).to.equal('ListItem2');
-      });
+    result = await obj.partialUpdate().shift('mlist').execute();
+    expect(result).to.equal(obj);
+    expect(obj.mlist[0]).to.equal('ListItem2');
   });
 
   it('Shift for integer type', async function () {
     obj = await storeObjects();
-    return obj.partialUpdate()
-      .shift('ilist')
-      .execute()
-      .then(function (result) {
-        expect(result).to.equal(obj);
-        expect(obj.ilist[0]).to.equal(200);
-      });
+    result = await obj.partialUpdate().shift('ilist').execute();
+    expect(result).to.equal(obj);
+    expect(obj.ilist[0]).to.equal(200);
   });
 
   it('Replace', async function () {
     obj = await storeObjects();
-    return obj.partialUpdate()
-      .replace('mlist', 1, 'ReplacedListItem')
-      .execute()
-      .then(function (result) {
-        expect(result).to.equal(obj);
-        expect(obj.mlist[1]).to.equal('ReplacedListItem');
-      });
+    result = await obj.partialUpdate().replace('mlist', 1, 'ReplacedListItem').execute();
+    expect(result).to.equal(obj);
+    expect(obj.mlist[1]).to.equal('ReplacedListItem');
   });
 
   it('Replace for integer type', async function () {
     obj = await storeObjects();
-    return obj.partialUpdate()
-      .replace('ilist', 1, 500)
-      .execute()
-      .then(function (result) {
-        expect(result).to.equal(obj);
-        expect(obj.ilist[1]).to.equal(500);
-      });
+    result = await obj.partialUpdate().replace('ilist', 1, 500).execute();
+    expect(result).to.equal(obj);
+    expect(obj.ilist[1]).to.equal(500);
   });
 
   it('List Remove', async function () {
     obj = await storeObjects();
-    return obj.partialUpdate()
-      .remove('mlist', 'ListItem1')
-      .execute()
-      .then(function (result) {
-        expect(result).to.equal(obj);
-        expect(obj.mlist[0]).to.equal('ListItem2');
-      });
+    result = await obj.partialUpdate().remove('mlist', 'ListItem1').execute();
+    expect(result).to.equal(obj);
+    expect(obj.mlist[0]).to.equal('ListItem2');
   });
 
   it('List Remove for integer type', async function () {
     obj = await storeObjects();
-    return obj.partialUpdate()
-      .remove('ilist', 100)
-      .execute()
-      .then(function (result) {
-        expect(result).to.equal(obj);
-        expect(obj.ilist[0]).to.equal(200);
-      });
+    result = await obj.partialUpdate().remove('ilist', 100).execute();
+    expect(result).to.equal(obj);
+    expect(obj.ilist[0]).to.equal(200);
   });
 
   it('Add', async function () {
     obj = await storeObjects();
-    return obj.partialUpdate()
-      .add('mset', 'SetItem4')
-      .execute()
-      .then(function (result) {
-        expect(result).to.equal(obj);
-        expect(obj.mset.size).eql(4);
-      });
+    result = await obj.partialUpdate().add('mset', 'SetItem4').execute();
+    expect(result).to.equal(obj);
+    expect(obj.mset.size).eql(4);
   });
 
   it('Add for integer type', async function () {
     obj = await storeObjects();
-    return obj.partialUpdate()
-      .add('iset', 4)
-      .execute()
-      .then(function (result) {
-        expect(result).to.equal(obj);
-        expect(obj.iset.size).eql(4);
-      });
+    result = await obj.partialUpdate().add('iset', 4).execute();
+    expect(result).to.equal(obj);
+    expect(obj.iset.size).eql(4);
   });
 
   it('Set Remove', async function () {
     obj = await storeObjects();
-    return obj.partialUpdate()
-      .remove('mset', 'SetItem1')
-      .execute()
-      .then(function (result) {
-        expect(result).to.equal(obj);
-        expect(obj.mset.size).eql(2);
-      });
+    result = await obj.partialUpdate().remove('mset', 'SetItem1').execute();
+    expect(result).to.equal(obj);
+    expect(obj.mset.size).eql(2);
   });
 
   it('Set Remove for integer type', async function () {
     obj = await storeObjects();
-    return obj.partialUpdate()
-      .remove('iset', 1)
-      .execute()
-      .then(function (result) {
-        expect(result).to.equal(obj);
-        expect(obj.iset.size).eql(2);
-      });
+    result = await obj.partialUpdate().remove('iset', 1).execute();
+    expect(result).to.equal(obj);
+    expect(obj.iset.size).eql(2);
   });
 
   it('Put', async function () {
     obj = await storeObjects();
-    return obj.partialUpdate()
-      .put('mmap', 'four', 'MapItem4')
-      .execute()
-      .then(function (result) {
-        expect(result).to.equal(obj);
-        expect(obj.mmap.size).eql(4);
-      });
+    result = await obj.partialUpdate().put('mmap', 'four', 'MapItem4').execute();
+    expect(result).to.equal(obj);
+    expect(obj.mmap.size).eql(4);
   });
   
   it('Map Remove', async function () {
     obj = await storeObjects();
-    return obj.partialUpdate()
-      .remove('mmap', 'one')
-      .execute()
-      .then(function (result) {
-        expect(result).to.equal(obj);
-        expect(obj.mmap.size).eql(2);
-      });
+    result = await obj.partialUpdate().remove('mmap', 'one').execute();
+    expect(result).to.equal(obj);
+    expect(obj.mmap.size).eql(2);
   });
 });
 
