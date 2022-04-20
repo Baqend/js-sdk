@@ -1,5 +1,3 @@
-'use strict';
-
 if (typeof module !== 'undefined') {
   require('./node');
 }
@@ -9,7 +7,7 @@ describe('Test Acl', function () {
   before(function () {
     emf = new DB.EntityManagerFactory({ host: env.TEST_SERVER, tokenStorage: helper.rootTokenStorage });
     return emf.ready().then(function () {
-      var metamodel = emf.metamodel;
+      var { metamodel } = emf;
       if (!metamodel.managedType('AclPerson')) {
         var AclPerson = new DB.metamodel.EntityType('AclPerson', metamodel.entity(Object));
         AclPerson.addAttribute(new DB.metamodel.SingularAttribute('name', metamodel.baseType(String)));
@@ -38,7 +36,7 @@ describe('Test Acl', function () {
 
   describe('Object', function () {
     it('should be created with an empty rule set', function () {
-      var acl = (new db.AclPerson()).acl;
+      var { acl } = new db.AclPerson();
 
       expect(acl.isPublicReadAllowed()).be.true;
       expect(acl.isPublicWriteAllowed()).be.true;
@@ -73,7 +71,7 @@ describe('Test Acl', function () {
     });
 
     it('deny rule should remove allow rule', function () {
-      var acl = new db.AclPerson().acl;
+      var { acl } = new db.AclPerson();
 
       acl.allowReadAccess(db.User.me);
       acl.denyReadAccess(db.User.me);
@@ -83,7 +81,7 @@ describe('Test Acl', function () {
     });
 
     it('allow rule should remove deny rule', function () {
-      var acl = new db.AclPerson().acl;
+      var { acl } = new db.AclPerson();
 
       acl.denyReadAccess(db.User.me);
       acl.allowReadAccess(db.User.me);
@@ -93,7 +91,7 @@ describe('Test Acl', function () {
     });
 
     it('deny rule should be removable', function () {
-      var acl = new db.AclPerson().acl;
+      var { acl } = new db.AclPerson();
 
       acl.denyReadAccess(db.User.me);
       acl.deleteReadAccess(db.User.me);
@@ -103,7 +101,7 @@ describe('Test Acl', function () {
     });
 
     it('allow rule should be removable', function () {
-      var acl = new db.AclPerson().acl;
+      var { acl } = new db.AclPerson();
 
       acl.allowReadAccess(db.User.me);
       acl.deleteReadAccess(db.User.me);
@@ -113,7 +111,7 @@ describe('Test Acl', function () {
     });
 
     it('clear should remove all rules', function () {
-      var acl = new db.AclPerson().acl;
+      var { acl } = new db.AclPerson();
 
       acl.allowReadAccess(db.User.me);
       acl.denyWriteAccess(db.User.me);
@@ -151,7 +149,7 @@ describe('Test Acl', function () {
 
     it('modification should mark the object as dirty', function () {
       var person = new db.AclPerson();
-      var acl = person.acl;
+      var { acl } = person;
 
       person._metadata.setPersistent();
       acl.allowReadAccess(db.User.me);
@@ -190,7 +188,6 @@ describe('Test Acl', function () {
       person.toJSON({ persisting: true });
       expect(person._metadata.isDirty).be.true;
     });
-
 
     it('should be copyable', function () {
       var person1 = new db.AclPerson();
@@ -229,7 +226,7 @@ describe('Test Acl', function () {
   describe('save and load', function () {
     it('an empty set', function () {
       var person = new db.AclPerson();
-      var acl = person.acl;
+      var { acl } = person;
 
       return person.save({ refresh: true }).then(function () {
         expect(person.acl.read.allRules().length).equals(0);
@@ -239,7 +236,7 @@ describe('Test Acl', function () {
 
     it('a read set', function () {
       var person = new db.AclPerson();
-      var acl = person.acl;
+      var { acl } = person;
       acl.allowReadAccess(db.User.me);
 
       return person.save({ refresh: true }).then(function () {
@@ -250,7 +247,7 @@ describe('Test Acl', function () {
 
     it('a write set', function () {
       var person = new db.AclPerson();
-      var acl = person.acl;
+      var { acl } = person;
       acl.allowWriteAccess(db.User.me);
 
       return person.save({ refresh: true }).then(function () {
@@ -261,7 +258,7 @@ describe('Test Acl', function () {
 
     it('a write set', function () {
       var person = new db.AclPerson();
-      var acl = person.acl;
+      var { acl } = person;
       acl.allowReadAccess(db.User.me);
       acl.allowWriteAccess(db.User.me);
 
@@ -269,6 +266,30 @@ describe('Test Acl', function () {
         expect(person.acl.isReadAllowed(db.User.me)).be.true;
         expect(person.acl.isWriteAllowed(db.User.me)).be.true;
       });
+    });
+
+    it('refelct changes on a loaded object', function () {
+      var person = new db.AclPerson();
+      var { acl } = person;
+      acl.allowReadAccess(db.User.me);
+      acl.allowWriteAccess(db.User.me);
+
+      return person.save({ refresh: true }).then(function () {
+        db.clear();
+        return db.AclPerson.load(person.id);
+      }).then((loadedPerson) => {
+        loadedPerson.acl.deleteReadAccess(db.User.me);
+        loadedPerson.acl.deleteWriteAccess(db.User.me);
+
+        return loadedPerson.save();
+      }).then((person) => {
+        db.clear();
+        return db.AclPerson.load(person.id);
+      })
+        .then((person) => {
+          expect(person.acl.read.allRules().length).equals(0);
+          expect(person.acl.write.allRules().length).equals(0);
+        });
     });
   });
 
