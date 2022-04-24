@@ -1,5 +1,3 @@
-'use strict';
-
 if (typeof module !== 'undefined') {
   require('./node');
 }
@@ -414,7 +412,7 @@ describe('Test user and roles', function () {
     it('should remove token if token is invalid', function () {
       var login = helper.makeLogin();
       return DB.User.register(login, 'secret').then(function () {
-        var token = DB.tokenStorage.token;
+        var { token } = DB.tokenStorage;
         expect(token).be.ok;
         DB.tokenStorage.update(token.substring(0, token.length - 1) + (token.substr(token.length - 1, token.length) === '0' ? '1' : '0'));
         return DB.renew();
@@ -464,13 +462,43 @@ describe('Test user and roles', function () {
       });
     });
 
+    it('should autologin on new EntityManager instance', function () {
+      var login = helper.makeLogin();
+      return DB.User.register(login, 'secret').then(function () {
+        var userId = DB.User.me.id;
+        expect(userId).be.ok;
+        expect(DB.entityManagerFactory.connectData.user).be.ok;
+        var db = DB.entityManagerFactory.createEntityManager(true);
+        return db.ready().then(function () {
+          expect(db.me).be.ok;
+          expect(db.me.id).eq(userId);
+          expect(db.token).be.ok;
+        });
+      });
+    });
+
+    it('should not login if sharedTokenStorage is logged out', function () {
+      var login = helper.makeLogin();
+      return DB.User.register(login, 'secret').then(function () {
+        expect(DB.entityManagerFactory.connectData.user).be.ok;
+        return DB.User.logout();
+      }).then(function () {
+        expect(DB.entityManagerFactory.connectData.user).be.not.ok;
+        var localDB = DB.entityManagerFactory.createEntityManager(true);
+        return localDB.ready().then(function () {
+          expect(localDB.me).be.not.ok;
+          expect(localDB.token).be.not.ok;
+        });
+      });
+    });
+
     it('should autologin on when tokenStorage is true', function () {
       var login = helper.makeLogin();
       return DB.User.register(login, 'secret').then(function () {
-        var db = new DB.EntityManagerFactory(env.TEST_SERVER).createEntityManager(true);
-        return db.ready().then(function () {
-          expect(db.me).be.ok;
-          expect(db.token).be.ok;
+        var localDB = new DB.EntityManagerFactory(env.TEST_SERVER).createEntityManager(true);
+        return localDB.ready().then(function () {
+          expect(localDB.me).be.ok;
+          expect(localDB.token).be.ok;
         });
       });
     });
@@ -491,8 +519,8 @@ describe('Test user and roles', function () {
         var user = new DB.User({ username: helper.makeLogin() });
         return DB.User.register(user, 'secret', false).then(function (u) {
           expect(u.username).eqls(user.username);
-          expect(localStorage.getItem('BAT:' + db.connection.origin)).be.not.ok;
-          expect(sessionStorage.getItem('BAT:' + db.connection.origin)).be.ok;
+          expect(localStorage.getItem(`BAT:${db.connection.origin}`)).be.not.ok;
+          expect(sessionStorage.getItem(`BAT:${db.connection.origin}`)).be.ok;
         });
       });
 
@@ -500,8 +528,8 @@ describe('Test user and roles', function () {
         var user = new DB.User({ username: helper.makeLogin() });
         return DB.User.register(user, 'secret', true).then(function (u) {
           expect(u.username).eqls(user.username);
-          expect(localStorage.getItem('BAT:' + db.connection.origin)).be.ok;
-          expect(sessionStorage.getItem('BAT:' + db.connection.origin)).be.not.ok;
+          expect(localStorage.getItem(`BAT:${db.connection.origin}`)).be.ok;
+          expect(sessionStorage.getItem(`BAT:${db.connection.origin}`)).be.not.ok;
         });
       });
 
@@ -512,8 +540,8 @@ describe('Test user and roles', function () {
           return DB.User.login(username, 'secret', false);
         }).then(function (u) {
           expect(u.username).eqls(user.username);
-          expect(localStorage.getItem('BAT:' + db.connection.origin)).be.not.ok;
-          expect(sessionStorage.getItem('BAT:' + db.connection.origin)).be.ok;
+          expect(localStorage.getItem(`BAT:${db.connection.origin}`)).be.not.ok;
+          expect(sessionStorage.getItem(`BAT:${db.connection.origin}`)).be.ok;
         });
       });
 
@@ -524,8 +552,8 @@ describe('Test user and roles', function () {
           return DB.User.login(username, 'secret', true);
         }).then(function (u) {
           expect(u.username).eqls(user.username);
-          expect(localStorage.getItem('BAT:' + db.connection.origin)).be.ok;
-          expect(sessionStorage.getItem('BAT:' + db.connection.origin)).be.not.ok;
+          expect(localStorage.getItem(`BAT:${db.connection.origin}`)).be.ok;
+          expect(sessionStorage.getItem(`BAT:${db.connection.origin}`)).be.not.ok;
         });
       });
 
@@ -534,13 +562,13 @@ describe('Test user and roles', function () {
         var user = new DB.User({ username: username });
         return DB.User.register(user, 'secret').then(function () {
           expect(DB.User.me).be.ok;
-          expect(localStorage.getItem('BAT:' + db.connection.origin)).be.ok;
+          expect(localStorage.getItem(`BAT:${db.connection.origin}`)).be.ok;
           return DB.User.logout();
         }).then(function () {
           expect(DB.User.me).be.null;
           expect(DB.token).be.null;
-          expect(localStorage.getItem('BAT:' + db.connection.origin)).be.not.ok;
-          expect(sessionStorage.getItem('BAT:' + db.connection.origin)).be.not.ok;
+          expect(localStorage.getItem(`BAT:${db.connection.origin}`)).be.not.ok;
+          expect(sessionStorage.getItem(`BAT:${db.connection.origin}`)).be.not.ok;
         });
       });
     }

@@ -1,5 +1,3 @@
-'use strict';
-
 if (typeof module !== 'undefined') {
   require('./node');
 }
@@ -56,10 +54,5 @@ describe('Test Connect', function () {
       expect(db.User.me.username).be.equal(user);
       expect(db.token).be.ok;
     });
-  });
-
-  it('should set gzip flag', function () {
-    var connector = DB.connector.Connector.create(env.TEST_SERVER);
-    expect(connector.gzip).eql(typeof global === 'undefined');
   });
 });

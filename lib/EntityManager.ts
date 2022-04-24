@@ -228,6 +228,12 @@ export class EntityManager extends Lockable {
   public File: FileFactory = null as any; // is never null after the em is ready
 
   /**
+   * the shared connection data if this EntityManager shares the credentials with the EntityManagerFactory
+   * @private
+   */
+  private connectData : ConnectData | null = null;
+
+  /**
    * @param entityManagerFactory The factory which of this entityManager instance
    */
   constructor(entityManagerFactory: EntityManagerFactory) {
@@ -239,30 +245,30 @@ export class EntityManager extends Lockable {
 
   /**
    * Connects this entityManager, used for synchronous and asynchronous initialization
-   * @param connector
-   * @param connectData
-   * @param tokenStorage The used tokenStorage for token persistence
+   * @param useSharedTokenStorage Indicates if the shared credentials should be used
    */
-  connected(connector: Connector, connectData: ConnectData, tokenStorage: TokenStorage) {
-    this.connection = connector;
-    this.tokenStorage = tokenStorage;
+  connected(useSharedTokenStorage?: boolean) {
+    this.connection = this.entityManagerFactory.connection;
     this.bloomFilterRefresh = this.entityManagerFactory.staleness!;
+    this.tokenStorage = useSharedTokenStorage
+      ? this.entityManagerFactory.tokenStorage! : new TokenStorage(this.connection!.origin);
+    this.connectData = useSharedTokenStorage ? this.entityManagerFactory.connectData : null;
 
     this.File = FileFactory.create(this);
     this._createObjectFactory(this.metamodel.embeddables);
     this._createObjectFactory(this.metamodel.entities);
 
-    if (connectData) {
-      if (connectData.device) {
-        this._updateDevice(connectData.device);
+    if (this.connectData) {
+      if (this.connectData.device) {
+        this._updateDevice(this.connectData.device);
       }
 
-      if (connectData.user && tokenStorage.token) {
-        this._updateUser(connectData.user, true);
+      if (this.connectData.user) {
+        this._updateUser(this.connectData.user, true);
       }
 
-      if (this.bloomFilterRefresh > 0 && connectData.bloomFilter && atob && !isNode) {
-        this._updateBloomFilter(connectData.bloomFilter);
+      if (this.bloomFilterRefresh > 0 && this.connectData.bloomFilter && atob && !isNode) {
+        this._updateBloomFilter(this.connectData.bloomFilter);
       }
     }
   }
@@ -1060,6 +1066,9 @@ export class EntityManager extends Lockable {
 
     if (updateMe) {
       this.me = user;
+      if (this.connectData) {
+        this.connectData.user = obj;
+      }
     }
 
     return user;
@@ -1068,6 +1077,9 @@ export class EntityManager extends Lockable {
   private _logout() {
     this.me = null;
     this.token = null;
+    if (this.connectData) {
+      delete this.connectData.user;
+    }
   }
 
   private _userRequest(msg: Message, loginOption?: LoginOption | boolean) {

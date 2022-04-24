@@ -33,7 +33,7 @@ export class EntityManagerFactory extends Lockable {
 
   public staleness: number | null = null;
 
-  public connectData?: ConnectData;
+  public connectData: ConnectData | null = null;
 
   private [WS]?: WebSocketConnector;
 
@@ -230,18 +230,10 @@ export class EntityManagerFactory extends Lockable {
     const em = new EntityManager(this);
 
     if (this.isReady) {
-      em.connected(
-        this.connection!,
-        this.connectData!,
-        useSharedTokenStorage ? this.tokenStorage! : new TokenStorage(this.connection!.origin),
-      );
+      em.connected(useSharedTokenStorage);
     } else {
       em.withLock(() => this.ready().then(() => {
-        em.connected(
-          this.connection!,
-          this.connectData!,
-          useSharedTokenStorage ? this.tokenStorage! : new TokenStorage(this.connection!.origin),
-        );
+        em.connected(useSharedTokenStorage);
       }), true);
     }
 
