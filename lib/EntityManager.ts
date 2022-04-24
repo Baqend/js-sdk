@@ -266,10 +266,11 @@ export class EntityManager extends Lockable {
       if (this.connectData.user) {
         this._updateUser(this.connectData.user, true);
       }
+    }
 
-      if (this.bloomFilterRefresh > 0 && this.connectData.bloomFilter && atob && !isNode) {
-        this._updateBloomFilter(this.connectData.bloomFilter);
-      }
+    const bloomFilter = this.entityManagerFactory.connectData?.bloomFilter;
+    if (this.bloomFilterRefresh > 0 && bloomFilter && atob && !isNode) {
+      this._updateBloomFilter(bloomFilter);
     }
   }
 
@@ -1126,6 +1127,9 @@ export class EntityManager extends Lockable {
     metadata.type.fromJsonValue(metadata, obj, device, { persisting: true });
 
     this.deviceMe = device;
+    if (this.connectData) {
+      this.connectData.device = obj;
+    }
     return device;
   }
 

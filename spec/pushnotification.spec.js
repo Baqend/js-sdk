@@ -1,5 +1,3 @@
-'use strict';
-
 if (typeof module !== 'undefined') {
   require('./node');
 }
@@ -8,7 +6,7 @@ describe('Test Push Notifications', function () {
   var emf, db, lock;
 
   var TEST_GCM_DEVICE = 'APA91bFBRJGMI2OkQxhV3peP4ncZOIxGJBJ8s0tkKyWvzQErpZmuSzMzm6ugz3rOauMQ1CRui0bBsEQvuN0W8X1wTP547C6MSNcErnNYXyvc1F5eKZCs-GAtE_NcESolea2AM6_cRe9R';
-  var TEST_GCM_APIKEY = 'AIzaSyAQvWS3mtqnTfLAA3LjepyQRrqDisVRnE0';
+  var TEST_GCM_APIKEY = 'AAAAGvyekVM:APA91bHPRl-MulY1xAoH2LlGpvvUezPc_unKxfooN7G6rAVyKRINhoriPKrHUd5g5fdSyL3xl3B4NteDFMYXe589-UOtx0TXudwWjtG3eNUEhNXdsftC6BmLJEzxiiywSUzsa8Stogw8';
 
   before(function () {
     this.timeout(40000);
@@ -26,7 +24,8 @@ describe('Test Push Notifications', function () {
       lock = new db.Lock({ id: 'push' });
       return createLock();
     }).then(function () {
-      var msg = new DB.message.GCMAKey(TEST_GCM_APIKEY);
+      var msg = new DB.message.GCMAKey();
+      msg.entity(TEST_GCM_APIKEY, 'text');
       return emf.send(msg);
     })
       .then(function () {
