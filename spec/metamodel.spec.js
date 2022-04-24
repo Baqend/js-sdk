@@ -1,5 +1,3 @@
-'use strict';
-
 if (typeof module !== 'undefined') {
   require('./node');
 }
@@ -489,7 +487,7 @@ describe('Test Metamodel', function () {
   it('should update schema', function () {
     var emf = new DB.EntityManagerFactory({ host: env.TEST_SERVER, tokenStorage: new DB.util.TokenStorage() });
     var db = emf.createEntityManager(true);
-    var metamodel = db.metamodel;
+    var { metamodel } = db;
     var SchemaUpdatePerson = helper.randomize('SchemaUpdatePerson');
     var initialType;
 
@@ -727,12 +725,10 @@ describe('Test Metamodel', function () {
     expect(loadType.getDeclaredAttribute('map').keyType).equals(metamodel.baseType('String'));
     expect(loadType.getDeclaredAttribute('map').elementType).equals(loadType);
 
-
     expect(loadChildType.getDeclaredAttribute('age')).instanceof(DB.metamodel.SingularAttribute);
     expect(loadChildType.getDeclaredAttribute('age').declaringType).equals(loadChildType);
     expect(loadChildType.getDeclaredAttribute('age').name).equals('age');
     expect(loadChildType.getDeclaredAttribute('age').type).equals(metamodel.baseType('Integer'));
-
 
     expect(loadEmbeddedType.getDeclaredAttribute('age')).instanceof(DB.metamodel.SingularAttribute);
     expect(loadEmbeddedType.getDeclaredAttribute('age').declaringType).equals(loadEmbeddedType);
@@ -799,6 +795,8 @@ describe('Test Metamodel', function () {
           obj = new db[SchemaAclPersonName]();
           return obj.insert();
         });
+      }).then(function () {
+        return db.User.logout();
       });
     });
 
@@ -913,7 +911,7 @@ describe('Test Metamodel', function () {
           var AclPerson = metamodel.entity(SchemaAclPersonName);
 
           var rnd = Math.floor(Math.random() * 1000000);
-          var child = new DB.metamodel.EntityType('SchemaAclChildPerson' + rnd, AclPerson);
+          var child = new DB.metamodel.EntityType(`SchemaAclChildPerson${rnd}`, AclPerson);
           child.schemaReplacePermission.allowAccess(db.User.me);
           metamodel.addType(child);
 
@@ -985,7 +983,7 @@ describe('Test Metamodel', function () {
           var AclPerson = metamodel.entity(SchemaAclPersonName);
 
           var rnd = Math.floor(Math.random() * 1000000);
-          var child = new DB.metamodel.EntityType('SchemaAclChildPerson' + rnd, AclPerson);
+          var child = new DB.metamodel.EntityType(`SchemaAclChildPerson${rnd}`, AclPerson);
           child.schemaReplacePermission.allowAccess(db.User.me);
           metamodel.addType(child);
 
