@@ -3,7 +3,7 @@
 import type { ReadStream } from 'fs';
 import { ab2str } from 'string-arraybuffer';
 import { PersistentError } from '../error';
-import { Message } from './Message';
+import { Message, StatusCode } from './Message';
 import {
   Json, JsonMap, Class, JsonLike,
 } from '../util';
@@ -48,8 +48,6 @@ export abstract class Connector {
   static readonly connections: { [origin: string]: Connector } = {};
 
   private readonly accceptedDeltaEncoding = 'vcdiff';
-
-  protected readonly statusDeltaEncodingUsed = 226;
 
   decoder: any;
 
@@ -246,7 +244,7 @@ export abstract class Connector {
     }
 
     if (message.request.method === 'POST') {
-      message.acceptDeltaEncoding(this.accceptedDeltaEncoding);
+      message.setAcceptDeltaEncoding(message.request.entity);
       message.accept(`${message.accept()},application/octet-stream`);
     }
 
@@ -328,8 +326,8 @@ export abstract class Connector {
 
     let resolveEntity:Promise<any>;
     if (entity && headers.IM && headers.IM === this.accceptedDeltaEncoding
-      && response.status === this.statusDeltaEncodingUsed) {
-      resolveEntity = this.decode(entity, message.request.entity)
+      && response.status === StatusCode.DELTA_ENCODING_USED) {
+      resolveEntity = this.decode(entity, message.deltaBase)
         .then((decoded) => this.fromFormat(response, decoded, 'json'));
     } else {
       resolveEntity = new Promise((resolve) => {

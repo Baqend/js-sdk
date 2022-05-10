@@ -501,6 +501,10 @@ export class EntityManager extends Lockable {
     const msg = new messages.GetObject(state.bucket, state.key!);
 
     this.ensureCacheHeader(entity.id, msg, opt.refresh);
+    if (entity?.version) {
+      msg.ifNoneMatch(entity.version?.toString());
+      msg.setAcceptDeltaEncoding(entity);
+    }
 
     return this.send(msg).then((response) => {
       // refresh object if loaded older version from cache
@@ -510,7 +514,9 @@ export class EntityManager extends Lockable {
         return this.load(entityClass, oid, opt);
       }
 
-      this.addToWhiteList(response.entity.id);
+      if (entity.id) {
+        this.addToWhiteList(entity.id);
+      }
 
       if (response.status !== StatusCode.NOT_MODIFIED) {
         state.type.fromJsonValue(state, response.entity, entity, { persisting: true });

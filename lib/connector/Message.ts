@@ -31,7 +31,7 @@ export type ProgressListener = (event: ProgressEvent) => any;
  * Checks whether the user uses a browser which does support revalidation.
  */
 // @ts-ignore
-const REVALIDATION_SUPPORTED = typeof navigator === 'undefined' || (typeof chrome !== 'undefined' && /google/i.test(navigator.vendor)) || (/cros i686/i.test(navigator.platform));
+// const REVALIDATION_SUPPORTED = typeof navigator === 'undefined' || (typeof chrome !== 'undefined' && /google/i.test(navigator.vendor)) || (/cros i686/i.test(navigator.platform));
 
 export const StatusCode = {
   NOT_MODIFIED: 304,
@@ -51,6 +51,7 @@ export const StatusCode = {
   TYPE_ALREADY_EXISTS: 473,
   TYPE_STILL_REFERENCED: 474,
   SCRIPT_ABORTION: 475,
+  DELTA_ENCODING_USED: 226,
 };
 
 /**
@@ -94,6 +95,8 @@ export abstract class Message {
   private _tokenStorage: TokenStorage | null = null;
 
   private _responseType: ResponseBodyType | null = null;
+
+  private _deltaBase: any;
 
   /**
    * Returns the specification of this message
@@ -374,21 +377,18 @@ export abstract class Message {
     return this.header('if-unmodified-since', date && date.toUTCString().replace('UTC', 'GMT'));
   }
 
-  /**
-   * Gets the A-IM header
-   * @return This message object
-   */
-  acceptDeltaEncoding(): string;
+  setAcceptDeltaEncoding(base: any):this {
+    this.header('A-IM', 'vcdiff');
+    this._deltaBase = base;
+    return this;
+  }
 
-  /**
-    * Sets the A-IM header
-    * @param accepted encoding - default is vcdiff
-    * @return This message object
-    */
-  acceptDeltaEncoding(encoding: string): this;
+  get acceptDeltaEncoding():boolean {
+    return this.header('A-IM') === 'vcdiff';
+  }
 
-  acceptDeltaEncoding(encoding?: string): this | string {
-    return this.header('A-IM', encoding);
+  get deltaBase():any {
+    return this._deltaBase;
   }
 
   /**
@@ -396,10 +396,10 @@ export abstract class Message {
    * @return
    */
   noCache(): this {
-    if (!REVALIDATION_SUPPORTED) {
-      this.ifMatch('') // is needed for firefox or safari (but forbidden for chrome)
-        .ifNoneMatch('-'); // is needed for edge and ie (but forbidden for chrome)
-    }
+    // if (!REVALIDATION_SUPPORTED) {
+    //   this.ifMatch('') // is needed for firefox or safari (but forbidden for chrome)
+    //     .ifNoneMatch('-'); // is needed for edge and ie (but forbidden for chrome)
+    // }
 
     return this.cacheControl('max-age=0, no-cache');
   }
