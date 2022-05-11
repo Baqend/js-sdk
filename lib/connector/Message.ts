@@ -377,7 +377,7 @@ export abstract class Message {
     return this.header('if-unmodified-since', date && date.toUTCString().replace('UTC', 'GMT'));
   }
 
-  setAcceptDeltaEncoding(base: any):this {
+  setAcceptDeltaEncoding(base: string):this {
     this.header('A-IM', 'vcdiff');
     this._deltaBase = base;
     return this;

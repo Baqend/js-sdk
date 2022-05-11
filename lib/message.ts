@@ -300,7 +300,7 @@ interface GetObject {
 export const GetObject = Message.create<GetObject>({
   method: 'GET',
   path: '/db/:bucket/:oid',
-  status: [200, 304],
+  status: [200, 304, 226],
 });
 
 interface ReplaceObject {

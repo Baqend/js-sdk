@@ -503,7 +503,9 @@ export class EntityManager extends Lockable {
     this.ensureCacheHeader(entity.id, msg, opt.refresh);
     if (entity?.version) {
       msg.ifNoneMatch(entity.version?.toString());
-      msg.setAcceptDeltaEncoding(entity);
+      const copy = JSON.parse(JSON.stringify(entity));
+      copy.acl = null;
+      msg.setAcceptDeltaEncoding(JSON.stringify(copy));
     }
 
     return this.send(msg).then((response) => {
