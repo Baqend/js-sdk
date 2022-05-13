@@ -50,12 +50,12 @@ export function isFile(path: string) : Promise<boolean> {
  * @param {string} dir The path where a directory should exist.
  * @return {Promise<void>} Resolves when the given directory is existing.
  */
-export function ensureDir(dir: string): Promise<any> {
+export function ensureDir(dir: string): Promise<void> {
   return isDir(dir).then((directory) => {
     if (!directory) {
-      return mkdir(dir, { recursive: true });
+      return mkdir(dir, { recursive: true }).then(() => {});
     }
-    return Promise.resolve();
+    return undefined;
   });
 }
 
