@@ -4,7 +4,7 @@ import type { ReadStream } from 'fs';
 import { PersistentError } from '../error';
 import { Message } from './Message';
 import {
-  Json, JsonMap, Class, JsonLike,
+  Json, Class, JsonLike,
 } from '../util';
 
 export type Receiver = (response: Response) => void;

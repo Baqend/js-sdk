@@ -55,7 +55,7 @@ export class ModelBuilder {
       try {
         const model = this.getModel(ref);
         this.buildAttributes(model);
-      } catch (e) {
+      } catch (e: any) {
         throw new PersistentError(`Can't create model for entity class ${ref}`, e);
       }
     });
