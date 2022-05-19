@@ -91,7 +91,7 @@ export class WebSocketConnector {
             } else {
               observer.complete();
             }
-          } catch (e) {
+          } catch (e: any) {
             if (!firstErr) {
               firstErr = e;
             }

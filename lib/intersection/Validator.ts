@@ -126,7 +126,7 @@ export class Validator {
       if ((valLib[method] as Function).apply(this, args) === false) {
         this.errors.push(errorMessage || method);
       }
-    } catch (e) {
+    } catch (e: any) {
       this.errors.push(errorMessage || e.message);
     }
     return this;

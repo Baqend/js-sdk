@@ -169,7 +169,7 @@ async function uploadFile(db: EntityManager, bucket: string, filePath: string, c
       });
 
       return await file.upload({ force: true });
-    } catch (e) {
+    } catch (e: any) {
       if (retires <= 0) {
         console.warn(`Failed to upload file ${filePath}. ${retires} retries left.`);
         throw new Error(`Failed to upload file ${filePath}: ${e.message}`);
