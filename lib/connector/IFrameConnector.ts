@@ -105,6 +105,9 @@ export class IFrameConnector extends XMLHttpConnector {
     }
 
     if (!this.iframe) {
+      // ensure that we get a local resource cache hit
+      // eslint-disable-next-line no-param-reassign
+      message.request.path = '/connect';
       this.load(message);
     }
 
