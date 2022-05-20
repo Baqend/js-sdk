@@ -1,3 +1,19 @@
+<a name="v3.2.0"></a>
+# v3.2.0 (2022-5-20)
+
+
+### Bug Fixes
+
+* Fix a bug where ACL changes on objects aren't detected correctly as a change 
+* Remove legacy gzip handling from the SDK
+* Ensure that a relogin will expose the correct user object (previously it was in some cases null)
+* Some typing errors in the CLI and lib
+
+### Features
+
+* Change the connect API for CORS communication to the POST endpoint, to prevent security tokens exposed in the referrer header
+* Bump several dependencies and upgrade typescript version
+
 <a name="v3.1.4"></a>
 # v3.1.4 (2021-7-21)
 
