@@ -501,12 +501,6 @@ export class EntityManager extends Lockable {
     const msg = new messages.GetObject(state.bucket, state.key!);
 
     this.ensureCacheHeader(entity.id, msg, opt.refresh);
-    if (entity?.version) {
-      msg.ifNoneMatch(entity.version?.toString());
-      const copy = JSON.parse(JSON.stringify(entity));
-      copy.acl = null;
-      msg.setAcceptDeltaEncoding(JSON.stringify(copy));
-    }
 
     return this.send(msg).then((response) => {
       // refresh object if loaded older version from cache

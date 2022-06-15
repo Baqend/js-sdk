@@ -7,6 +7,7 @@ import { Message, StatusCode } from './Message';
 import {
   Json, JsonMap, Class, JsonLike,
 } from '../util';
+import { versionCache } from './VersionCache';
 
 export type Receiver = (response: Response) => void;
 export type RequestBody = string | Blob | Buffer | ArrayBuffer | FormData | Json | JsonLike | ReadStream;
@@ -243,9 +244,14 @@ export abstract class Connector {
       message.accept(accept);
     }
 
-    if (message.request.method === 'POST') {
-      message.setAcceptDeltaEncoding(message.request.entity);
+    const acceptDeltaEncodingForRevalidation = message.request.method === 'GET' && versionCache.has(message.request.path);
+    if (message.request.method === 'POST' || acceptDeltaEncodingForRevalidation) {
+      message.setAcceptDeltaEncoding();
       message.accept(`${message.accept()},application/octet-stream`);
+
+      if (acceptDeltaEncodingForRevalidation) {
+        message.ifNoneMatch(versionCache.get(message.request.path)!.ETag);
+      }
     }
 
     if (this.gzip) {
@@ -296,6 +302,13 @@ export abstract class Connector {
   prepareResponse(message: Message, response: Response): Promise<any> {
     // IE9 returns status code 1223 instead of 204
     response.status = response.status === 1223 ? 204 : response.status;
+    const entityToCache = message.request.method === 'GET' && response.headers.etag;
+    if (entityToCache && response.status === 200) {
+      versionCache.set(message.request.path, {
+        ETag: response.headers.ETag,
+        body: response.entity,
+      });
+    }
 
     let type: ResponseBodyType | null;
     const headers = response.headers || {};
@@ -327,8 +340,22 @@ export abstract class Connector {
     let resolveEntity:Promise<any>;
     if (entity && headers.IM && headers.IM === this.accceptedDeltaEncoding
       && response.status === StatusCode.DELTA_ENCODING_USED) {
-      resolveEntity = this.decode(entity, message.deltaBase)
-        .then((decoded) => this.fromFormat(response, decoded, 'json'));
+      let deltaBase;
+      if (message.request.entity) {
+        deltaBase = message.request.entity;
+      } else {
+        deltaBase = versionCache.get(message.request.path)?.body;
+      }
+      resolveEntity = this.decode(entity, deltaBase)
+        .then((decoded) => {
+          if (entityToCache) {
+            versionCache.set(message.request.path, {
+              ETag: response.headers.etag,
+              body: decoded,
+            });
+          }
+          return this.fromFormat(response, decoded, 'json');
+        });
     } else {
       resolveEntity = new Promise((resolve) => {
         resolve(entity && this.fromFormat(response, entity, type));
