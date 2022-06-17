@@ -161,7 +161,6 @@ describe('Test Transaction', function () {
       });
     });
 
-    /*
     it('Insert records with same ID', function () {
       return rootDb.transaction.begin().then(function (txid) {
         expect(txid).to.be.not.null;
@@ -196,7 +195,7 @@ describe('Test Transaction', function () {
         //check the exact exception
       });
     });
-  */
+    
     it('Update existing records', function () {
       return rootDb.transaction.begin().then(async function (txid) {
         await rootDb.PersonTable.find().equal('name', 'person1').singleResult((data) => {

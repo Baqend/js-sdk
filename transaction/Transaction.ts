@@ -159,31 +159,14 @@ export class Transaction {
     if (data) {
       const entries = Object.entries(data);
       for(let idx=0; idx < entries.length; idx ++){
-        var entity = null;
-        var mappedId = null;
         let entityJSonObj = entries[idx][1];
         for(var id in entityJSonObj){
-          let colonPos = id.indexOf("%3A");  // colon
-          if(colonPos > 0){
-            let oldId = id.substring(0, colonPos);
-            let path = oldId.substring(0, oldId.lastIndexOf("/") + 1);
-            mappedId = path + id.substring(colonPos + 3, id.length);
-            entity = this.db.entityById(oldId);
-          } else {
-            mappedId = id;
-            entity = this.db.entityById(id);
-          }
+          var entity = this.db.entityById(id);
           if(entity){
             var newVersion: number = +entityJSonObj[id];
             const state = Metadata.get(entity);
             if(state){
               state.version = newVersion;
-              if (state.id && state.id !== mappedId) {
-                this.db.removeReference(entity);
-                state.id = mappedId;
-                state.decodedKey = null;
-                this.db._attach(entity);
-              }
             }
           }
         }
