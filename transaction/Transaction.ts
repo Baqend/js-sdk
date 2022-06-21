@@ -106,8 +106,7 @@ export class Transaction {
     }
 
     for (const id of Object.keys(this.deleteEntities)) {
-      const object = this.deleteEntities[id];
-      const state = Metadata.get(object);
+      const state = Metadata.get(this.deleteEntities[id]);
       if (state.isAvailable != null && state.type instanceof ManagedType) {
           const json: {[attr: string]: any} = {};
           json[id] = state.version;
@@ -135,6 +134,10 @@ export class Transaction {
     const commitMessage = new message.CommitTransaction(this.tid, jsonBody)
       .responseType('json');
 
+    for (const id of Object.keys(this.deleteEntities)) {
+      this.db.detach(this.deleteEntities[id]);
+    }
+
     this.clear();
 
     let commitResult = await this.getResult(commitMessage);
@@ -153,6 +156,7 @@ export class Transaction {
           }
         }
       }
+
     }
     return Promise.resolve(commitResult).then(doneCallback,failCallback);
  }
