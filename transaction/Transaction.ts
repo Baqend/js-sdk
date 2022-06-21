@@ -105,24 +105,13 @@ export class Transaction {
       }
     }
 
-    for (const key of Object.keys(this.deleteEntities)) {
-      const object = this.deleteEntities[key];
+    for (const id of Object.keys(this.deleteEntities)) {
+      const object = this.deleteEntities[id];
       const state = Metadata.get(object);
-      const type = state.type;
-      if (state.isAvailable) {
-        if (type instanceof ManagedType) {
-          const value: {[attr: string]: any} = {};
+      if (state.isAvailable != null && state.type instanceof ManagedType) {
           const json: {[attr: string]: any} = {};
-          let iter = type.attributes();
-          let count: number = 0;
-          for (let el = iter.next(); count < 2; el = iter.next()) {
-            const attribute = el.value;
-            value[attribute.name] = attribute.getJsonValue(state, object, {persisting: true});
-            count++;
-          }
-          json[value.id] = `${value.version}`;
+          json[id] = state.version;
           deleteSetArray.push(json);
-        }
       }
     }
 
@@ -143,14 +132,14 @@ export class Transaction {
 
     var jsonBody = JSON.stringify(jsonObj);
 
-    const sqlMessage = new message.CommitTransaction(this.tid, jsonBody)
+    const commitMessage = new message.CommitTransaction(this.tid, jsonBody)
       .responseType('json');
 
     this.clear();
 
-    let data = await this.getResult(sqlMessage);
-    if (data) {
-      const entries = Object.entries(data);
+    let commitResult = await this.getResult(commitMessage);
+    if (commitResult) {
+      const entries = Object.entries(commitResult);
       for(let idx=0; idx < entries.length; idx ++){
         let entityJSonObj = entries[idx][1];
         for(var id in entityJSonObj){
@@ -165,12 +154,11 @@ export class Transaction {
         }
       }
     }
-    return Promise.resolve(data).then(doneCallback,failCallback);
+    return Promise.resolve(commitResult).then(doneCallback,failCallback);
  }
 
 
   async getResult(sqlMessage: Message ) : Promise<Json>{
-    // Here’s the magic
     let result = await this.db.send(sqlMessage).then((response) =>
         response.entity
       , (e) => {
