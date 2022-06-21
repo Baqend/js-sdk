@@ -616,15 +616,6 @@ export class EntityManager extends Lockable {
     withoutLock = false): Promise<E> {
     const opt = options || {};
 
-    if(this.isTransactionActive()){
-      this._attach(entity);
-      const metadata = Metadata.get(entity);
-      if (metadata.id) {
-        this.transaction.entities[metadata.id] = entity;
-      }
-      return Promise.resolve(entity);
-    }
-
     const msgFactory = (state: Metadata, json: JsonMap) => {
       if (opt.force) {
         if (!state.id) {
@@ -697,47 +688,55 @@ export class EntityManager extends Lockable {
     msgFactory: MessageFactory): Promise<T> {
     this.attach(entity);
     const state = Metadata.get(entity);
+
     let refPromises;
 
-    let json: JsonMap;
-    if (state.isAvailable) {
-      // getting json will check all collections changes, therefore we must do it before proofing the dirty state
-      json = state.type.toJsonValue(state, entity, {
-        persisting: true,
-      }) as JsonMap;
-    }
-
-    if (state.isDirty) {
-      if (!options.refresh) {
-        state.setPersistent();
+    if(this.isTransactionActive()){
+      if (state.id) {
+        this.transaction.entities[state.id] = entity;
       }
-
-      const sendPromise = this.send(msgFactory(state, json!!)).then((response) => {
-        if (state.id && state.id !== response.entity.id) {
-          this.removeReference(entity);
-          state.id = response.entity.id;
-          this._attach(entity);
-        }
-
-        state.type.fromJsonValue(state, response.entity, entity, {
-          persisting: options.refresh,
-          onlyMetadata: !options.refresh,
-        });
-        return entity;
-      }, (e) => {
-        if (e.status === StatusCode.OBJECT_NOT_FOUND) {
-          this.removeReference(entity);
-          state.setRemoved();
-          return null;
-        }
-
-        state.setDirty();
-        throw e;
-      });
-
-      refPromises = [sendPromise];
-    } else {
       refPromises = [Promise.resolve(entity)];
+    } else {
+      let json: JsonMap;
+      if (state.isAvailable) {
+        // getting json will check all collections changes, therefore we must do it before proofing the dirty state
+        json = state.type.toJsonValue(state, entity, {
+          persisting: true,
+        }) as JsonMap;
+      }
+  
+      if (state.isDirty) {
+        if (!options.refresh) {
+          state.setPersistent();
+        }
+  
+        const sendPromise = this.send(msgFactory(state, json!!)).then((response) => {
+          if (state.id && state.id !== response.entity.id) {
+            this.removeReference(entity);
+            state.id = response.entity.id;
+            this._attach(entity);
+          }
+  
+          state.type.fromJsonValue(state, response.entity, entity, {
+            persisting: options.refresh,
+            onlyMetadata: !options.refresh,
+          });
+          return entity;
+        }, (e) => {
+          if (e.status === StatusCode.OBJECT_NOT_FOUND) {
+            this.removeReference(entity);
+            state.setRemoved();
+            return null;
+          }
+  
+          state.setDirty();
+          throw e;
+        });
+  
+        refPromises = [sendPromise];
+      } else {
+        refPromises = [Promise.resolve(entity)];
+      }
     }
 
     const subOptions = { ...options };

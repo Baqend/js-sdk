@@ -161,6 +161,7 @@ describe('Test Transaction', function () {
       });
     });
 
+  /*
     it('Insert records with same ID', function () {
       return rootDb.transaction.begin().then(function (txid) {
         expect(txid).to.be.not.null;
@@ -195,7 +196,8 @@ describe('Test Transaction', function () {
         //check the exact exception
       });
     });
-    
+*/
+
     it('Update existing records', function () {
       return rootDb.transaction.begin().then(async function (txid) {
         await rootDb.PersonTable.find().equal('name', 'person1').singleResult((data) => {
@@ -283,10 +285,10 @@ describe('Test Transaction', function () {
       });
     });
 
-    async function createNewPerson(withCommit, personName) {
+    async function createNewPerson(withCommit, personName, id) {
       await rootDb.transaction.begin()
       const tt = rootDb.PersonTable();
-      tt.id = '2911';
+      tt.id = id;
       tt.name = personName;
       tt.age = 45;
       tt.zip = 21147;
@@ -299,7 +301,7 @@ describe('Test Transaction', function () {
 
     it('rollback created records', async function () {
       const personName = "Umarou";
-      await createNewPerson(false, personName); 
+      await createNewPerson(false, personName, 34901); 
       rootDb.transaction.rollback();
 
       // No record with name $personName should be found in the db since created record was rolled back
@@ -317,7 +319,7 @@ describe('Test Transaction', function () {
     });
 
     it('Unique index violation', async function () {
-      await createNewPerson(true, 'person1');
+      await createNewPerson(true, 'person1', 567888);
       await rootDb.transaction.begin();
       var index = new DB.metamodel.DbIndex('name', true); //second param 'true' for unique index
       var exceptionCaught = false;
