@@ -98,17 +98,10 @@ export class Transaction {
       // right now we send all the values irrespective whether it changed values or not
       if (state.isAvailable) {
         // getting json will check all collections changes, therefore we must do it before proofing the dirty state
-        try {
           json = state.type.toJsonValue(state, val, {
             persisting: true,
           }) as JsonMap;
           writeSetArray.push(json);
-        }
-        catch (e)
-        {
-          this.clear();
-          throw e;
-        }
       }
     }
 
