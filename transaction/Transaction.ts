@@ -12,6 +12,7 @@ import { ManagedType } from "../lib/metamodel";
 import {Entity} from '../lib/binding';
 import { EntityPartialUpdateBuilder} from '../lib/partialupdate'
 import { CommunicationError} from '../lib/error';
+import { isNumber } from 'util';
 
 /**
  * Transaction object class
@@ -139,21 +140,18 @@ export class Transaction {
     if (commitResult) {
       Object.values(this.deleteEntities).forEach(entity => this.db.detach(entity));
       this.clear();
-      const entries = Object.entries(commitResult);
-      for(let idx=0; idx < entries.length; idx ++){
-        let entityJSonObj = entries[idx][1];
-        for(var id in entityJSonObj){
-          var entity = this.db.entityById(id);
-          if(entity){
-            var newVersion: number = +entityJSonObj[id];
-            const state = Metadata.get(entity);
-            if(state){
-              state.version = newVersion;
-            }
+      Object.entries(commitResult).forEach(entry => {
+        const jsonEntity = entry[1];
+        const id = Object.keys(jsonEntity)[0];
+        const newVersion = Number(Object.values(jsonEntity)[0]);
+        const entity = this.db.entityById(id);
+        if(entity){
+          const state = Metadata.get(entity);
+          if(state){
+            state.version = newVersion;
           }
         }
-      }
-
+      });
     }
     return Promise.resolve(commitResult).then(doneCallback,failCallback);
  }
