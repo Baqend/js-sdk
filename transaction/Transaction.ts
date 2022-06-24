@@ -11,6 +11,8 @@ import {Metadata} from "../lib/intersection";
 import { ManagedType } from "../lib/metamodel";
 import {Entity} from '../lib/binding';
 import { EntityPartialUpdateBuilder} from '../lib/partialupdate'
+import { ExecOptions } from 'child_process';
+import { CommunicationError, PersistentError } from 'lib/error';
 
 /**
  * Transaction object class
@@ -161,17 +163,18 @@ export class Transaction {
     return Promise.resolve(commitResult).then(doneCallback,failCallback);
  }
 
-
   async getResult(sqlMessage: Message ) : Promise<Json>{
-    let result = await this.db.send(sqlMessage).then((response) =>
-        response.entity
-      , (e) => {
+    try {
+      let response = await this.db.send(sqlMessage);
+      return response.entity;
+    } catch (e) {
+      if(e instanceof CommunicationError){
         if (e.status === StatusCode.OBJECT_NOT_FOUND) {
           return null;
         }
-        throw e;
-      });
-    return result;
+      }
+      throw e;
+    }
   }
 
   rollback() {
