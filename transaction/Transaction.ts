@@ -11,8 +11,7 @@ import {Metadata} from "../lib/intersection";
 import { ManagedType } from "../lib/metamodel";
 import {Entity} from '../lib/binding';
 import { EntityPartialUpdateBuilder} from '../lib/partialupdate'
-import { ExecOptions } from 'child_process';
-import { CommunicationError, PersistentError } from 'lib/error';
+import { CommunicationError} from '../lib/error';
 
 /**
  * Transaction object class
@@ -136,14 +135,12 @@ export class Transaction {
     const commitMessage = new message.CommitTransaction(this.tid, jsonBody)
       .responseType('json');
 
-    for (const id of Object.keys(this.deleteEntities)) {
-      this.db.detach(this.deleteEntities[id]);
-    }
-
-    this.clear();
-
     let commitResult = await this.getResult(commitMessage);
     if (commitResult) {
+      for (const id of Object.keys(this.deleteEntities)) {
+        this.db.detach(this.deleteEntities[id]);
+      }
+      this.clear();
       const entries = Object.entries(commitResult);
       for(let idx=0; idx < entries.length; idx ++){
         let entityJSonObj = entries[idx][1];
