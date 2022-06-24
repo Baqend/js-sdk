@@ -137,9 +137,7 @@ export class Transaction {
 
     let commitResult = await this.getResult(commitMessage);
     if (commitResult) {
-      for (const deleteEntity of Object.values(this.deleteEntities)) {
-        this.db.detach(deleteEntity);
-      }
+      Object.values(this.deleteEntities).forEach(entity => this.db.detach(entity));
       this.clear();
       const entries = Object.entries(commitResult);
       for(let idx=0; idx < entries.length; idx ++){
