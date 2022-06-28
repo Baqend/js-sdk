@@ -1,5 +1,5 @@
 if (typeof module !== 'undefined') {
-  require('./node');
+  require('../spec/node');
 }
 
 describe('Test Transaction', function () {
