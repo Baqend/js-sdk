@@ -84,7 +84,7 @@ export class Transaction {
    * @param  failCallback The callback is invoked if any error occurred
    * @return  A promise which will be fulfilled when commit transaction is successfully executed
    */
-  async commit(doneCallback?: any, failCallback?: any): Promise<Json> {
+  commit(doneCallback?: any, failCallback?: any): Promise<Json> {
     if (!this.tid) {
       return Promise.reject(new Error('Transaction does not exist.. Please start a new transaction using transaction.begin'));
     }
@@ -136,24 +136,25 @@ export class Transaction {
     const commitMessage = new message.CommitTransaction(this.tid, jsonBody)
       .responseType('json');
 
-    let commitResult = await this.getResult(commitMessage);
-    if (commitResult) {
-      Object.values(this.deleteEntities).forEach(entity => this.db.detach(entity));
-      this.clear();
-      Object.entries(commitResult).forEach(entry => {
-        const jsonEntity = entry[1];
-        const id = Object.keys(jsonEntity)[0];
-        const newVersion = Number(Object.values(jsonEntity)[0]);
-        const entity = this.db.entityById(id);
-        if(entity){
-          const state = Metadata.get(entity);
-          if(state){
-            state.version = newVersion;
+    return this.getResult(commitMessage).then(commitResult => {
+      if (commitResult) {
+        Object.values(this.deleteEntities).forEach(entity => this.db.detach(entity));
+        this.clear();
+        Object.entries(commitResult).forEach(entry => {
+          const jsonEntity = entry[1];
+          const id = Object.keys(jsonEntity)[0];
+          const newVersion = Number(Object.values(jsonEntity)[0]);
+          const entity = this.db.entityById(id);
+          if(entity){
+            const state = Metadata.get(entity);
+            if(state){
+              state.version = newVersion;
+            }
           }
-        }
-      });
-    }
-    return Promise.resolve(commitResult).then(doneCallback,failCallback);
+        });
+      }
+      return commitResult;
+    }, failCallback).then(doneCallback, failCallback);
  }
 
   async getResult(sqlMessage: Message ) : Promise<Json>{
