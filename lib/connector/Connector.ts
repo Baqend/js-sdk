@@ -301,16 +301,21 @@ export abstract class Connector {
   prepareResponse(message: Message, response: Response): Promise<any> {
     // IE9 returns status code 1223 instead of 204
     response.status = response.status === 1223 ? 204 : response.status;
+
+    const headers = response.headers || {};
+    if (headers.etag) {
+      headers.etag = headers.etag.replace('--gzip', '');
+    }
+
     const entityToCache = message.request.method === 'GET' && response.headers.etag;
     if (entityToCache && response.status === 200) {
       localStorage.setItem(message.request.path, JSON.stringify({
-        ETag: response.headers.etag,
+        ETag: headers.etag,
         body: response.entity,
       }));
     }
 
     let type: ResponseBodyType | null;
-    const headers = response.headers || {};
     // some proxies send content back on 204 responses
     const entity = response.status === 204 ? null : response.entity;
 
@@ -322,10 +327,6 @@ export abstract class Connector {
           type = 'json';
         }
       }
-    }
-
-    if (headers.etag) {
-      headers.etag = headers.etag.replace('--gzip', '');
     }
 
     const tokenStorage = message.tokenStorage();
