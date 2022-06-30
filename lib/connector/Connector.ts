@@ -304,7 +304,7 @@ export abstract class Connector {
     const entityToCache = message.request.method === 'GET' && response.headers.etag;
     if (entityToCache && response.status === 200) {
       localStorage.setItem(message.request.path, JSON.stringify({
-        ETag: response.headers.ETag,
+        ETag: response.headers.etag,
         body: response.entity,
       }));
     }
