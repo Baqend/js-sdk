@@ -7,7 +7,6 @@ import { Message, StatusCode } from './Message';
 import {
   Json, JsonMap, Class, JsonLike,
 } from '../util';
-import { versionCache } from './VersionCache';
 
 export type Receiver = (response: Response) => void;
 export type RequestBody = string | Blob | Buffer | ArrayBuffer | FormData | Json | JsonLike | ReadStream;
@@ -244,13 +243,13 @@ export abstract class Connector {
       message.accept(accept);
     }
 
-    const acceptDeltaEncodingForRevalidation = message.request.method === 'GET' && versionCache.has(message.request.path);
+    const acceptDeltaEncodingForRevalidation = message.request.method === 'GET' && !!localStorage.getItem(message.request.path);
     if (message.request.method === 'POST' || acceptDeltaEncodingForRevalidation) {
       message.setAcceptDeltaEncoding();
       message.accept(`${message.accept()},application/octet-stream`);
 
       if (acceptDeltaEncodingForRevalidation) {
-        message.ifNoneMatch(versionCache.get(message.request.path)!.ETag);
+        message.ifNoneMatch(JSON.parse(localStorage.getItem(message.request.path)!).ETag);
       }
     }
 
@@ -304,10 +303,10 @@ export abstract class Connector {
     response.status = response.status === 1223 ? 204 : response.status;
     const entityToCache = message.request.method === 'GET' && response.headers.etag;
     if (entityToCache && response.status === 200) {
-      versionCache.set(message.request.path, {
+      localStorage.setItem(message.request.path, JSON.stringify({
         ETag: response.headers.ETag,
         body: response.entity,
-      });
+      }));
     }
 
     let type: ResponseBodyType | null;
@@ -344,15 +343,15 @@ export abstract class Connector {
       if (message.request.entity) {
         deltaBase = message.request.entity;
       } else {
-        deltaBase = versionCache.get(message.request.path)?.body;
+        deltaBase = JSON.parse(localStorage.getItem(message.request.path)!).body;
       }
       resolveEntity = this.decode(entity, deltaBase)
         .then((decoded) => {
           if (entityToCache) {
-            versionCache.set(message.request.path, {
+            localStorage.setItem(message.request.path, JSON.stringify({
               ETag: response.headers.etag,
               body: decoded,
-            });
+            }));
           }
           return this.fromFormat(response, decoded, 'json');
         });
