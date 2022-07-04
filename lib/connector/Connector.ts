@@ -249,7 +249,9 @@ export abstract class Connector {
       message.accept(`${message.accept()},application/octet-stream`);
 
       if (acceptDeltaEncodingForRevalidation) {
-        message.ifNoneMatch(JSON.parse(localStorage.getItem(message.request.path)!).ETag);
+        const preVersion = JSON.parse(localStorage.getItem(message.request.path)!);
+        message.deltaBase(preVersion.body);
+        message.ifNoneMatch(preVersion.ETag);
       }
     }
 
@@ -340,12 +342,7 @@ export abstract class Connector {
     let resolveEntity:Promise<any>;
     if (entity && headers.IM && headers.IM === this.accceptedDeltaEncoding
       && response.status === StatusCode.DELTA_ENCODING_USED) {
-      let deltaBase;
-      if (message.request.entity) {
-        deltaBase = message.request.entity;
-      } else {
-        deltaBase = JSON.parse(localStorage.getItem(message.request.path)!).body;
-      }
+      const deltaBase = message.deltaBase();
       resolveEntity = this.decode(entity, deltaBase)
         .then((decoded) => {
           if (entityToCache) {

@@ -96,7 +96,7 @@ export abstract class Message {
 
   private _responseType: ResponseBodyType | null = null;
 
-  private _deltaBase: any;
+  private _deltaBase: string | null = null;
 
   /**
    * Returns the specification of this message
@@ -197,6 +197,18 @@ export abstract class Message {
 
     this._tokenStorage = value;
     return this;
+  }
+
+  deltaBase(): string;
+
+  deltaBase(deltaBase: string): this;
+
+  deltaBase(deltaBase?: string): this | string {
+    if (deltaBase !== undefined) {
+      this._deltaBase = deltaBase;
+    }
+
+    return this._deltaBase || this.request.entity;
   }
 
   /**
@@ -383,10 +395,6 @@ export abstract class Message {
 
   get acceptDeltaEncoding():boolean {
     return this.header('A-IM') === 'vcdiff';
-  }
-
-  get deltaBase():any {
-    return this._deltaBase;
   }
 
   /**
