@@ -311,10 +311,14 @@ export abstract class Connector {
 
     const entityToCache = message.request.method === 'GET' && response.headers.etag;
     if (entityToCache && response.status === 200) {
-      localStorage.setItem(message.request.path, JSON.stringify({
-        ETag: headers.etag,
-        body: response.entity,
-      }));
+      try {
+        localStorage.setItem(message.request.path, JSON.stringify({
+          ETag: headers.etag,
+          body: response.entity,
+        }));
+      } catch (e) {
+        console.warn('Could not cache', e);
+      }
     }
 
     let type: ResponseBodyType | null;
@@ -346,10 +350,14 @@ export abstract class Connector {
       resolveEntity = this.decode(entity, deltaBase)
         .then((decoded) => {
           if (entityToCache) {
-            localStorage.setItem(message.request.path, JSON.stringify({
-              ETag: response.headers.etag,
-              body: decoded,
-            }));
+            try {
+              localStorage.setItem(message.request.path, JSON.stringify({
+                ETag: response.headers.etag,
+                body: decoded,
+              }));
+            } catch (e) {
+              console.warn('Could not cache', e);
+            }
           }
           return this.fromFormat(response, decoded, 'json');
         });
