@@ -1,4 +1,4 @@
-import * as messages from './message';
+import * as messages from "./message";
 import {
   FileFactory,
   UserFactory,
@@ -6,31 +6,38 @@ import {
   ManagedFactory,
   EntityFactory,
   DeviceFactory,
-  LoginOption, OAuthOptions,
-} from './binding';
+  LoginOption,
+  OAuthOptions,
+} from "./binding";
 import {
   atob,
-  Class, deprecated,
+  Class,
+  deprecated,
   isNode,
   JsonMap,
   Lockable,
   uuid,
   openWindow,
-} from './util';
-import {
-  Message, StatusCode, Connector, OAuthMessage,
-} from './connector';
-import { BloomFilter } from './caching';
-import { GeoPoint } from './GeoPoint';
-import type { ConnectData, EntityManagerFactory } from './EntityManagerFactory';
-import * as model from './model';
-import type { Metamodel } from './metamodel';
+} from "./util";
+import { Message, StatusCode, Connector, OAuthMessage } from "./connector";
+import { BloomFilter } from "./caching";
+import { GeoPoint } from "./GeoPoint";
+import type { ConnectData, EntityManagerFactory } from "./EntityManagerFactory";
+import * as model from "./model";
+import type { Metamodel } from "./metamodel";
 
-import { Builder } from './query';
-import { EntityExistsError, IllegalEntityError, PersistentError } from './error';
+import { Builder } from "./query";
 import {
-  MapAttribute, EntityType, ManagedType, PluralAttribute,
-} from './metamodel';
+  EntityExistsError,
+  IllegalEntityError,
+  PersistentError,
+} from "./error";
+import {
+  MapAttribute,
+  EntityType,
+  ManagedType,
+  PluralAttribute,
+} from "./metamodel";
 
 import {
   Code,
@@ -41,10 +48,10 @@ import {
   TokenStorage,
   ValidationResult,
   Validator,
-} from './intersection';
-import { appendQueryParams } from './connector/Message';
+} from "./intersection";
+import { appendQueryParams } from "./connector/Message";
 
-const DB_PREFIX = '/db/';
+const DB_PREFIX = "/db/";
 
 type MessageFactory = (state: Metadata, json: JsonMap) => Message;
 
@@ -88,7 +95,7 @@ export class EntityManager extends Lockable {
    * Whether caching is disabled
    * @deprecated
    */
-  @deprecated('EntityManager.isCachingEnabled()')
+  @deprecated("EntityManager.isCachingEnabled()")
   get isCachingDisabled() {
     return !this.isCachingEnabled();
   }
@@ -96,7 +103,11 @@ export class EntityManager extends Lockable {
   /**
    * Whether caching is enabled
    */
-  isCachingEnabled(): this is { bloomFilter: BloomFilter, cacheWhiteList: Set<string>, cacheBlackList: Set<string> } {
+  isCachingEnabled(): this is {
+    bloomFilter: BloomFilter;
+    cacheWhiteList: Set<string>;
+    cacheBlackList: Set<string>;
+  } {
     return !!this.bloomFilter;
   }
 
@@ -162,7 +173,7 @@ export class EntityManager extends Lockable {
   /**
    * The connector used for requests
    */
-  public connection : Connector | null = null;
+  public connection: Connector | null = null;
 
   /**
    * All managed and cached entity instances
@@ -231,7 +242,7 @@ export class EntityManager extends Lockable {
    * the shared connection data if this EntityManager shares the credentials with the EntityManagerFactory
    * @private
    */
-  private connectData : ConnectData | null = null;
+  private connectData: ConnectData | null = null;
 
   /**
    * @param entityManagerFactory The factory which of this entityManager instance
@@ -251,8 +262,11 @@ export class EntityManager extends Lockable {
     this.connection = this.entityManagerFactory.connection;
     this.bloomFilterRefresh = this.entityManagerFactory.staleness!;
     this.tokenStorage = useSharedTokenStorage
-      ? this.entityManagerFactory.tokenStorage! : new TokenStorage(this.connection!.origin);
-    this.connectData = useSharedTokenStorage ? this.entityManagerFactory.connectData : null;
+      ? this.entityManagerFactory.tokenStorage!
+      : new TokenStorage(this.connection!.origin);
+    this.connectData = useSharedTokenStorage
+      ? this.entityManagerFactory.connectData
+      : null;
 
     this.File = FileFactory.create(this);
     this._createObjectFactory(this.metamodel.embeddables);
@@ -278,7 +292,9 @@ export class EntityManager extends Lockable {
    * @param types
    * @return    * @private
    */
-  private _createObjectFactory(types: { [type: string]: ManagedType<any> }): void {
+  private _createObjectFactory(types: {
+    [type: string]: ManagedType<any>;
+  }): void {
     const values = Object.values(types);
     for (let i = 0; i < values.length; i += 1) {
       const type = values[i];
@@ -309,7 +325,7 @@ export class EntityManager extends Lockable {
 
   send(message: Message, ignoreCredentialError = true) {
     if (!this.connection) {
-      throw new Error('This EntityManager is not connected.');
+      throw new Error("This EntityManager is not connected.");
     }
 
     const msg = message;
@@ -338,7 +354,10 @@ export class EntityManager extends Lockable {
    * @param key
    * @return
    */
-  getReference<T extends Entity>(entityClass: Class<T> | string, key?: string): T {
+  getReference<T extends Entity>(
+    entityClass: Class<T> | string,
+    key?: string
+  ): T {
     let id: string | null = null;
     let type: EntityType<any> | null;
     if (key) {
@@ -349,12 +368,14 @@ export class EntityManager extends Lockable {
       } else {
         id = `${type.ref}/${encodeURIComponent(keyAsStr)}`;
       }
-    } else if (typeof entityClass === 'string') {
-      const keyIndex = entityClass.indexOf('/', DB_PREFIX.length); // skip /db/
+    } else if (typeof entityClass === "string") {
+      const keyIndex = entityClass.indexOf("/", DB_PREFIX.length); // skip /db/
       if (keyIndex !== -1) {
         id = entityClass;
       }
-      type = this.metamodel.entity(keyIndex !== -1 ? entityClass.substring(0, keyIndex) : entityClass);
+      type = this.metamodel.entity(
+        keyIndex !== -1 ? entityClass.substring(0, keyIndex) : entityClass
+      );
     } else {
       type = this.metamodel.entity(entityClass);
     }
@@ -458,8 +479,15 @@ export class EntityManager extends Lockable {
    * @param [options] The load options
    * @return
    */
-  resolveDepth<T extends Entity>(entity: T, options?: { refresh?: boolean, local?: boolean, depth?: number | boolean,
-    resolved?: Entity[] }): Promise<T> {
+  resolveDepth<T extends Entity>(
+    entity: T,
+    options?: {
+      refresh?: boolean;
+      local?: boolean;
+      depth?: number | boolean;
+      resolved?: Entity[];
+    }
+  ): Promise<T> {
     if (!options || !options.depth) {
       return Promise.resolve(entity);
     }
@@ -473,7 +501,11 @@ export class EntityManager extends Lockable {
     };
 
     this.getSubEntities(entity, 1).forEach((subEntity: Entity) => {
-      if (subEntity !== null && resolved!.indexOf(subEntity) === -1 && subEntity.id) {
+      if (
+        subEntity !== null &&
+        resolved!.indexOf(subEntity) === -1 &&
+        subEntity.id
+      ) {
         resolved!.push(subEntity);
         promises.push(this.load(subEntity.id, undefined, subOptions));
       }
@@ -495,8 +527,8 @@ export class EntityManager extends Lockable {
   load<T extends Entity>(
     entityClass: Class<T> | string,
     oid?: string,
-    options?: { refresh?: boolean, local?: boolean, resolved?: Entity[] },
-  ) : Promise<T | null> {
+    options?: { refresh?: boolean; local?: boolean; resolved?: Entity[] }
+  ): Promise<T | null> {
     const opt = options || {};
     const entity = this.getReference(entityClass, oid);
     const state = Metadata.get(entity);
@@ -509,30 +541,35 @@ export class EntityManager extends Lockable {
 
     this.ensureCacheHeader(entity.id, msg, opt.refresh);
 
-    return this.send(msg).then((response) => {
-      // refresh object if loaded older version from cache
-      // chrome doesn't using cache when ifNoneMatch is set
-      if (entity.version && entity.version > response.entity.version) {
-        opt.refresh = true;
-        return this.load(entityClass, oid, opt);
+    return this.send(msg).then(
+      (response) => {
+        // refresh object if loaded older version from cache
+        // chrome doesn't using cache when ifNoneMatch is set
+        if (entity.version && entity.version > response.entity.version) {
+          opt.refresh = true;
+          return this.load(entityClass, oid, opt);
+        }
+
+        this.addToWhiteList(response.entity.id);
+
+        if (response.status !== StatusCode.NOT_MODIFIED) {
+          state.type.fromJsonValue(state, response.entity, entity, {
+            persisting: true,
+          });
+        }
+
+        return this.resolveDepth(entity, opt);
+      },
+      (e) => {
+        if (e.status === StatusCode.OBJECT_NOT_FOUND) {
+          this.removeReference(entity);
+          state.setRemoved();
+          return null;
+        }
+
+        throw e;
       }
-
-      this.addToWhiteList(response.entity.id);
-
-      if (response.status !== StatusCode.NOT_MODIFIED) {
-        state.type.fromJsonValue(state, response.entity, entity, { persisting: true });
-      }
-
-      return this.resolveDepth(entity, opt);
-    }, (e) => {
-      if (e.status === StatusCode.OBJECT_NOT_FOUND) {
-        this.removeReference(entity);
-        state.setRemoved();
-        return null;
-      }
-
-      throw e;
-    });
+    );
   }
 
   /**
@@ -540,13 +577,16 @@ export class EntityManager extends Lockable {
    * @param options
    * @return
    */
-  insert(entity: Entity, options?: { depth?: number | boolean, refresh?: boolean }): Promise<Entity> {
+  insert(
+    entity: Entity,
+    options?: { depth?: number | boolean; refresh?: boolean }
+  ): Promise<Entity> {
     const opt = options || {};
     let isNew: boolean;
 
     return this._save(entity, opt, (state, json) => {
       if (state.version) {
-        throw new PersistentError('Existing objects can\'t be inserted.');
+        throw new PersistentError("Existing objects can't be inserted.");
       }
 
       isNew = !state.id;
@@ -566,22 +606,29 @@ export class EntityManager extends Lockable {
    * @param options
    * @return
    */
-  update(entity: Entity, options?: { force?: boolean, depth?: number | boolean, refresh?: boolean }): Promise<Entity> {
+  update(
+    entity: Entity,
+    options?: { force?: boolean; depth?: number | boolean; refresh?: boolean }
+  ): Promise<Entity> {
     const opt = options || {};
 
     return this._save(entity, opt, (state, json) => {
       if (!state.version) {
-        throw new PersistentError('New objects can\'t be inserted.');
+        throw new PersistentError("New objects can't be inserted.");
       }
 
       if (opt.force) {
         const { version, ...jsonWithoutVersion } = json;
-        return new messages.ReplaceObject(state.bucket, state.key!, jsonWithoutVersion)
-          .ifMatch('*');
+        return new messages.ReplaceObject(
+          state.bucket,
+          state.key!,
+          jsonWithoutVersion
+        ).ifMatch("*");
       }
 
-      return new messages.ReplaceObject(state.bucket, state.key!, json)
-        .ifMatch(`${state.version}`);
+      return new messages.ReplaceObject(state.bucket, state.key!, json).ifMatch(
+        `${state.version}`
+      );
     });
   }
 
@@ -591,29 +638,43 @@ export class EntityManager extends Lockable {
    * @param withoutLock Set true to save the entity without locking
    * @return
    */
-  save<E extends Entity>(entity: E, options?: { force?: boolean, depth?: number | boolean, refresh?: boolean },
-    withoutLock = false): Promise<E> {
+  save<E extends Entity>(
+    entity: E,
+    options?: { force?: boolean; depth?: number | boolean; refresh?: boolean },
+    withoutLock = false
+  ): Promise<E> {
     const opt = options || {};
 
     const msgFactory = (state: Metadata, json: JsonMap) => {
       if (opt.force) {
         if (!state.id) {
-          throw new PersistentError('New special objects can\'t be forcefully saved.');
+          throw new PersistentError(
+            "New special objects can't be forcefully saved."
+          );
         }
 
         const { version, ...jsonWithoutVersion } = json;
-        return new messages.ReplaceObject(state.bucket, state.key!, jsonWithoutVersion);
+        return new messages.ReplaceObject(
+          state.bucket,
+          state.key!,
+          jsonWithoutVersion
+        );
       }
 
       if (state.version) {
-        return new messages.ReplaceObject(state.bucket, state.key!, json)
-          .ifMatch(state.version);
+        return new messages.ReplaceObject(
+          state.bucket,
+          state.key!,
+          json
+        ).ifMatch(state.version);
       }
 
       return new messages.CreateObject(state.bucket, json);
     };
 
-    return withoutLock ? this._locklessSave(entity, opt, msgFactory) : this._save(entity, opt, msgFactory);
+    return withoutLock
+      ? this._locklessSave(entity, opt, msgFactory)
+      : this._save(entity, opt, msgFactory);
   }
 
   /**
@@ -621,8 +682,13 @@ export class EntityManager extends Lockable {
    * @param cb pre-safe callback
    * @return
    */
-  optimisticSave<E extends Entity>(entity: E, cb: (entity: E, abort: () => void) => any): Promise<E> {
-    return Metadata.get(entity).withLock(() => this._optimisticSave(entity, cb));
+  optimisticSave<E extends Entity>(
+    entity: E,
+    cb: (entity: E, abort: () => void) => any
+  ): Promise<E> {
+    return Metadata.get(entity).withLock(() =>
+      this._optimisticSave(entity, cb)
+    );
   }
 
   /**
@@ -631,7 +697,10 @@ export class EntityManager extends Lockable {
    * @return
    * @private
    */
-  private _optimisticSave<E extends Entity>(entity: E, cb: (entity: E, abort: () => void) => any): Promise<E> {
+  private _optimisticSave<E extends Entity>(
+    entity: E,
+    cb: (entity: E, abort: () => void) => any
+  ): Promise<E> {
     let abort = false;
     const abortFn = () => {
       abort = true;
@@ -642,17 +711,17 @@ export class EntityManager extends Lockable {
       return Promise.resolve(entity);
     }
 
-    return promise.then(() => (
-      this.save(entity, {}, true)
-        .catch((e) => {
-          if (e.status === 412) {
-            return this.refresh(entity, {})
-              .then(() => this._optimisticSave(entity, cb));
-          }
+    return promise.then(() =>
+      this.save(entity, {}, true).catch((e) => {
+        if (e.status === 412) {
+          return this.refresh(entity, {}).then(() =>
+            this._optimisticSave(entity, cb)
+          );
+        }
 
-          throw e;
-        })
-    ));
+        throw e;
+      })
+    );
   }
 
   /**
@@ -663,8 +732,11 @@ export class EntityManager extends Lockable {
    * @return
    * @private
    */
-  private _locklessSave<T extends Entity>(entity: T, options: { depth?: number | boolean, refresh?: boolean },
-    msgFactory: MessageFactory): Promise<T> {
+  private _locklessSave<T extends Entity>(
+    entity: T,
+    options: { depth?: number | boolean; refresh?: boolean },
+    msgFactory: MessageFactory
+  ): Promise<T> {
     this.attach(entity);
     const state = Metadata.get(entity);
     let refPromises;
@@ -682,28 +754,31 @@ export class EntityManager extends Lockable {
         state.setPersistent();
       }
 
-      const sendPromise = this.send(msgFactory(state, json!!)).then((response) => {
-        if (state.id && state.id !== response.entity.id) {
-          this.removeReference(entity);
-          state.id = response.entity.id;
-          this._attach(entity);
-        }
+      const sendPromise = this.send(msgFactory(state, json!!)).then(
+        (response) => {
+          if (state.id && state.id !== response.entity.id) {
+            this.removeReference(entity);
+            state.id = response.entity.id;
+            this._attach(entity);
+          }
 
-        state.type.fromJsonValue(state, response.entity, entity, {
-          persisting: options.refresh,
-          onlyMetadata: !options.refresh,
-        });
-        return entity;
-      }, (e) => {
-        if (e.status === StatusCode.OBJECT_NOT_FOUND) {
-          this.removeReference(entity);
-          state.setRemoved();
-          return null;
-        }
+          state.type.fromJsonValue(state, response.entity, entity, {
+            persisting: options.refresh,
+            onlyMetadata: !options.refresh,
+          });
+          return entity;
+        },
+        (e) => {
+          if (e.status === StatusCode.OBJECT_NOT_FOUND) {
+            this.removeReference(entity);
+            state.setRemoved();
+            return null;
+          }
 
-        state.setDirty();
-        throw e;
-      });
+          state.setDirty();
+          throw e;
+        }
+      );
 
       refPromises = [sendPromise];
     } else {
@@ -727,8 +802,11 @@ export class EntityManager extends Lockable {
    * @return
    * @private
    */
-  private _save<T extends Entity>(entity: T, options: { depth?: number | boolean, refresh?: boolean },
-    msgFactory: MessageFactory): Promise<T> {
+  private _save<T extends Entity>(
+    entity: T,
+    options: { depth?: number | boolean; refresh?: boolean },
+    msgFactory: MessageFactory
+  ): Promise<T> {
     this.ensureBloomFilterFreshness();
 
     const state = Metadata.get(entity);
@@ -736,7 +814,9 @@ export class EntityManager extends Lockable {
       this.addToBlackList(entity.id);
     }
 
-    return state.withLock(() => this._locklessSave(entity, options, msgFactory));
+    return state.withLock(() =>
+      this._locklessSave(entity, options, msgFactory)
+    );
   }
 
   /**
@@ -747,7 +827,12 @@ export class EntityManager extends Lockable {
    * @param initialEntity
    * @return
    */
-  getSubEntities(entity: Entity, depth?: boolean | number, resolved: Entity[] = [], initialEntity? : Entity): Entity[] {
+  getSubEntities(
+    entity: Entity,
+    depth?: boolean | number,
+    resolved: Entity[] = [],
+    initialEntity?: Entity
+  ): Entity[] {
     if (!depth) {
       return resolved;
     }
@@ -762,7 +847,12 @@ export class EntityManager extends Lockable {
         const subEntity = subEntities[i];
         if (resolved.indexOf(subEntity) === -1 && subEntity !== obj) {
           resolved.push(subEntity);
-          this.getSubEntities(subEntity, depth === true ? depth : depth - 1, resolved, obj);
+          this.getSubEntities(
+            subEntity,
+            depth === true ? depth : depth - 1,
+            resolved,
+            obj
+          );
         }
       }
     }
@@ -787,13 +877,18 @@ export class EntityManager extends Lockable {
           return;
         }
 
-        const attribute = this.metamodel.managedType(subEntity.constructor)!.getAttribute(attributeName);
+        const attribute = this.metamodel
+          .managedType(subEntity.constructor)!
+          .getAttribute(attributeName);
         if (attribute instanceof PluralAttribute) {
           const iter = curEntity.entries();
           for (let item = iter.next(); !item.done; item = iter.next()) {
             const entry = item.value;
             tmpSubEntities.push(entry[1]);
-            if (attribute instanceof MapAttribute && attribute.keyType.isEntity) {
+            if (
+              attribute instanceof MapAttribute &&
+              attribute.keyType.isEntity
+            ) {
               tmpSubEntities.push(entry[0]);
             }
           }
@@ -813,7 +908,10 @@ export class EntityManager extends Lockable {
    * @param options The delete options
    * @return
    */
-  delete<T extends Entity>(entity: T, options?: { force?: boolean, depth?: number | boolean }): Promise<T> {
+  delete<T extends Entity>(
+    entity: T,
+    options?: { force?: boolean; depth?: number | boolean }
+  ): Promise<T> {
     const opt = options || {};
 
     this.attach(entity);
@@ -832,11 +930,13 @@ export class EntityManager extends Lockable {
         msg.ifMatch(`${state.version}`);
       }
 
-      const refPromises: Promise<Entity>[] = [this.send(msg).then(() => {
-        this.removeReference(entity);
-        state.setRemoved();
-        return entity;
-      })];
+      const refPromises: Promise<Entity>[] = [
+        this.send(msg).then(() => {
+          this.removeReference(entity);
+          state.setRemoved();
+          return entity;
+        }),
+      ];
 
       const subOptions = { ...opt };
       subOptions.depth = 0;
@@ -854,7 +954,7 @@ export class EntityManager extends Lockable {
    * @return
    */
   flush(): Promise<any> {
-    throw new Error('Not implemented.');
+    throw new Error("Not implemented.");
   }
 
   /**
@@ -872,7 +972,10 @@ export class EntityManager extends Lockable {
    * @param options The refresh options
    * @return
    */
-  refresh<T extends Entity>(entity: T, options: { depth?: number | boolean }): Promise<T | null> {
+  refresh<T extends Entity>(
+    entity: T,
+    options: { depth?: number | boolean }
+  ): Promise<T | null> {
     if (!entity.id) {
       // entity is not persisted so far
       return Promise.resolve(entity);
@@ -912,7 +1015,11 @@ export class EntityManager extends Lockable {
     }
 
     if (!metadata.id) {
-      if (metadata.type.name !== 'User' && metadata.type.name !== 'Role' && metadata.type.name !== 'logs.AppLog') {
+      if (
+        metadata.type.name !== "User" &&
+        metadata.type.name !== "Role" &&
+        metadata.type.name !== "logs.AppLog"
+      ) {
         metadata.id = `${DB_PREFIX + metadata.type.name}/${uuid()}`;
       }
     }
@@ -931,10 +1038,14 @@ export class EntityManager extends Lockable {
     delete this.entities[state.id];
   }
 
-  register(user: model.User, password: string, loginOption: LoginOption | boolean) {
+  register(
+    user: model.User,
+    password: string,
+    loginOption: LoginOption | boolean
+  ) {
     const login = loginOption > LoginOption.NO_LOGIN;
     if (this.me && login) {
-      throw new PersistentError('User is already logged in.');
+      throw new PersistentError("User is already logged in.");
     }
 
     return this.withLock(() => {
@@ -943,9 +1054,13 @@ export class EntityManager extends Lockable {
     });
   }
 
-  login(username: string, password: string, loginOption: LoginOption | boolean) {
+  login(
+    username: string,
+    password: string,
+    loginOption: LoginOption | boolean
+  ) {
     if (this.me) {
-      throw new PersistentError('User is already logged in.');
+      throw new PersistentError("User is already logged in.");
     }
 
     return this.withLock(() => {
@@ -955,16 +1070,21 @@ export class EntityManager extends Lockable {
   }
 
   logout() {
-    return this.withLock(() => this.send(new messages.Logout()).then(this._logout.bind(this)));
+    return this.withLock(() =>
+      this.send(new messages.Logout()).then(this._logout.bind(this))
+    );
   }
 
-  loginWithOAuth(provider: string, options: OAuthOptions): any | string | Promise<model.User | null> {
+  loginWithOAuth(
+    provider: string,
+    options: OAuthOptions
+  ): any | string | Promise<model.User | null> {
     if (!this.connection) {
-      throw new Error('This EntityManager is not connected.');
+      throw new Error("This EntityManager is not connected.");
     }
 
     if (this.me) {
-      throw new PersistentError('User is already logged in.');
+      throw new PersistentError("User is already logged in.");
     }
 
     const opt = {
@@ -982,21 +1102,29 @@ export class EntityManager extends Lockable {
     }
 
     if (opt.oAuthVersion !== 1 && !opt.path && !opt.deviceCode) {
-      throw new Error('No OAuth path is provided to start the OAuth flow.');
+      throw new Error("No OAuth path is provided to start the OAuth flow.");
     }
 
     if (opt.redirect) {
-      Object.assign(opt.state, { redirect: opt.redirect, loginOption: opt.loginOption });
+      Object.assign(opt.state, {
+        redirect: opt.redirect,
+        loginOption: opt.loginOption,
+      });
     }
 
-    const oAuthEndpoint = `${this.connection.origin}${this.connection.basePath}/db/User/OAuth/${provider.toLowerCase()}`;
+    const oAuthEndpoint = `${this.connection.origin}${
+      this.connection.basePath
+    }/db/User/OAuth/${provider.toLowerCase()}`;
 
-    const url = opt.oAuthVersion === 1 ? oAuthEndpoint : appendQueryParams(opt.path!, {
-      client_id: opt.clientId,
-      scope: opt.scope,
-      state: JSON.stringify(opt.state),
-      redirect_uri: oAuthEndpoint,
-    });
+    const url =
+      opt.oAuthVersion === 1
+        ? oAuthEndpoint
+        : appendQueryParams(opt.path!, {
+            client_id: opt.clientId,
+            scope: opt.scope,
+            state: JSON.stringify(opt.state),
+            redirect_uri: oAuthEndpoint,
+          });
 
     const windowOptions = {
       title: opt.title,
@@ -1006,29 +1134,60 @@ export class EntityManager extends Lockable {
 
     if (opt.redirect) {
       // use oauth via redirect by opening the login in the same window
-      return opt.open(url, { target: '_self', ...windowOptions }) || url;
+      return opt.open(url, { target: "_self", ...windowOptions }) || url;
     }
 
     const req = this._userRequest(new OAuthMessage(), opt.loginOption);
-    if (!opt.open(url, windowOptions)) {
-      throw new Error('The OAuth flow with a Pop-Up can only be issued in browsers. Add a redirect URL to the options to return to your app via that redirect after the OAuth flow succeed.');
+    const window = opt.open(url, windowOptions);
+    if (!window) {
+      throw new Error(
+        "The OAuth flow with a Pop-Up can only be issued in browsers. Add a redirect URL to the options to return to your app via that redirect after the OAuth flow succeed."
+      );
     }
 
-    return new Promise((resolve, reject) => {
-      const timeout = setTimeout(() => {
-        reject(new PersistentError('OAuth login timeout.'));
+    /**
+     * timeout in given milliseconds
+     */
+    const timeoutPromise = new Promise((resolve, reject) => {
+      setTimeout(() => {
+        reject(new PersistentError("OAuth login timeout."));
       }, opt.timeout);
-
-      req.then(resolve, reject).then(() => {
-        clearTimeout(timeout);
-      });
     });
+    /**
+     * reject if the popup window is closed
+     */
+    const windowPromise = new Promise((resolve, reject) => {
+      const interval = setInterval(() => {
+        if (window.closed) {
+          clearInterval(interval);
+          setTimeout(() => {
+            reject(new Error("Popup window was closed ")); // give the connection a extra second to ensure that we dont get a false positive
+          }, 1000);
+        }
+      }, 1000);
+    });
+
+    /**
+     * The real request
+     */
+    const requestPromise = new Promise((resolve, reject) => {
+      req.then(resolve, reject);
+    });
+    return Promise.race([requestPromise, timeoutPromise, windowPromise]);
   }
 
-  private _loginOAuthDevice(provider: string, opt: OAuthOptions): Promise<model.User | null> {
-    return this._userRequest(new messages.OAuth2(provider, opt.deviceCode), opt.loginOption)
-      .catch(() => new Promise((resolve) => setTimeout(resolve, 5000))
-        .then(() => this._loginOAuthDevice(provider, opt)));
+  private _loginOAuthDevice(
+    provider: string,
+    opt: OAuthOptions
+  ): Promise<model.User | null> {
+    return this._userRequest(
+      new messages.OAuth2(provider, opt.deviceCode),
+      opt.loginOption
+    ).catch(() =>
+      new Promise((resolve) => setTimeout(resolve, 5000)).then(() =>
+        this._loginOAuthDevice(provider, opt)
+      )
+    );
   }
 
   renew(loginOption?: LoginOption | boolean) {
@@ -1042,14 +1201,23 @@ export class EntityManager extends Lockable {
     return this.withLock(() => {
       const msg = new messages.NewPassword({ username, password, newPassword });
 
-      return this.send(msg, true).then((response) => this._updateUser(response.entity));
+      return this.send(msg, true).then((response) =>
+        this._updateUser(response.entity)
+      );
     });
   }
 
-  newPasswordWithToken(token: string, newPassword: string, loginOption?: LoginOption | boolean) {
-    return this.withLock(() => (
-      this._userRequest(new messages.NewPassword({ token, newPassword }), loginOption)
-    ));
+  newPasswordWithToken(
+    token: string,
+    newPassword: string,
+    loginOption?: LoginOption | boolean
+  ) {
+    return this.withLock(() =>
+      this._userRequest(
+        new messages.NewPassword({ token, newPassword }),
+        loginOption
+      )
+    );
   }
 
   resetPassword(username: string) {
@@ -1057,7 +1225,9 @@ export class EntityManager extends Lockable {
   }
 
   changeUsername(username: string, newUsername: string, password: string) {
-    return this.send(new messages.ChangeUsername({ username, newUsername, password }));
+    return this.send(
+      new messages.ChangeUsername({ username, newUsername, password })
+    );
   }
 
   private _updateUser(obj: JsonMap, updateMe = false) {
@@ -1090,20 +1260,20 @@ export class EntityManager extends Lockable {
       this.tokenStorage.temporary = opt < LoginOption.PERSIST_LOGIN;
     }
 
-    return this.send(msg, !login)
-      .then(
-        (response) => (response.entity ? this._updateUser(response.entity, login) : null),
-        (e) => {
-          if (e.status === StatusCode.OBJECT_NOT_FOUND) {
-            if (login) {
-              this._logout();
-            }
-            return null;
+    return this.send(msg, !login).then(
+      (response) =>
+        response.entity ? this._updateUser(response.entity, login) : null,
+      (e) => {
+        if (e.status === StatusCode.OBJECT_NOT_FOUND) {
+          if (login) {
+            this._logout();
           }
+          return null;
+        }
 
-          throw e;
-        },
-      );
+        throw e;
+      }
+    );
   }
 
   /**
@@ -1112,13 +1282,21 @@ export class EntityManager extends Lockable {
    * @param device
    * @return
    */
-  registerDevice(deviceType: string, subscription: PushSubscription | { token: string }, device: model.Device | null):
-  Promise<model.Device> {
-    const msg = new messages.DeviceRegister({ devicetype: deviceType, subscription: subscription as JsonMap, device });
+  registerDevice(
+    deviceType: string,
+    subscription: PushSubscription | { token: string },
+    device: model.Device | null
+  ): Promise<model.Device> {
+    const msg = new messages.DeviceRegister({
+      devicetype: deviceType,
+      subscription: subscription as JsonMap,
+      device,
+    });
 
     msg.withCredentials = true;
-    return this.send(msg)
-      .then((response) => this._updateDevice(response.entity));
+    return this.send(msg).then((response) =>
+      this._updateDevice(response.entity)
+    );
   }
 
   private _updateDevice(obj: JsonMap) {
@@ -1134,14 +1312,16 @@ export class EntityManager extends Lockable {
   }
 
   checkDeviceRegistration(): Promise<boolean> {
-    return this.send(new messages.DeviceRegistered())
-      .then(() => true, (e) => {
+    return this.send(new messages.DeviceRegistered()).then(
+      () => true,
+      (e) => {
         if (e.status === StatusCode.OBJECT_NOT_FOUND) {
           return false;
         }
 
         throw e;
-      });
+      }
+    );
   }
 
   pushDevice(pushMessage: PushMessage) {
@@ -1214,7 +1394,9 @@ export class EntityManager extends Lockable {
   }
 
   private _updateBloomFilter(bloomFilter: JsonMap) {
-    this.bloomFilter = new BloomFilter(bloomFilter as { m: number, h: number, b: string });
+    this.bloomFilter = new BloomFilter(
+      bloomFilter as { m: number; h: number; b: string }
+    );
     this.cacheWhiteList = new Set();
     this.cacheBlackList = new Set();
   }
@@ -1230,7 +1412,10 @@ export class EntityManager extends Lockable {
     const now = new Date().getTime();
     const refreshRate = this.bloomFilterRefresh * 1000;
 
-    if (this.bloomFilterLock.isReady && now - this.bloomFilter.creation > refreshRate) {
+    if (
+      this.bloomFilterLock.isReady &&
+      now - this.bloomFilter.creation > refreshRate
+    ) {
       this.bloomFilterLock.withLock(() => this.refreshBloomFilter());
     }
   }
@@ -1251,7 +1436,10 @@ export class EntityManager extends Lockable {
       return true;
     }
 
-    return !this.cacheWhiteList.has(id) && (this.cacheBlackList.has(id) || this.bloomFilter.contains(id));
+    return (
+      !this.cacheWhiteList.has(id) &&
+      (this.cacheBlackList.has(id) || this.bloomFilter.contains(id))
+    );
   }
 
   /**
@@ -1260,7 +1448,11 @@ export class EntityManager extends Lockable {
    * @param refresh To force the reload headers
    * @return
    */
-  ensureCacheHeader(id: string | null, message: Message, refresh?: boolean): void {
+  ensureCacheHeader(
+    id: string | null,
+    message: Message,
+    refresh?: boolean
+  ): void {
     const noCache = refresh || !id || this.mustRevalidate(id);
 
     if (noCache) {
@@ -1278,14 +1470,15 @@ export class EntityManager extends Lockable {
   createURL(relativePath: string, authorize?: boolean): Promise<string> {
     const { connection } = this;
     if (!connection) {
-      throw new Error('This EntityManager is not connected.');
+      throw new Error("This EntityManager is not connected.");
     }
 
-    return this.tokenStorage.signPath(connection.basePath + relativePath, authorize)
+    return this.tokenStorage
+      .signPath(connection.basePath + relativePath, authorize)
       .then((path) => {
         let url = connection.origin + path;
         if (this.mustRevalidate(relativePath)) {
-          url += `${authorize ? '&' : '?'}BCB`;
+          url += `${authorize ? "&" : "?"}BCB`;
         }
 
         return url;
@@ -1301,7 +1494,10 @@ export class EntityManager extends Lockable {
    * @param user The user object or id of the user object
    * @return
    */
-  requestAPIToken(entityClass: Class<model.User>, user: model.User | string): Promise<JsonMap> {
+  requestAPIToken(
+    entityClass: Class<model.User>,
+    user: model.User | string
+  ): Promise<JsonMap> {
     const userObj = this._getUserReference(entityClass, user);
 
     const msg = new messages.UserToken(userObj.key!);
@@ -1316,15 +1512,21 @@ export class EntityManager extends Lockable {
    * @param entityClass
    * @param user The user object or id of the user object
    */
-  revokeAllTokens(entityClass: Class<model.User>, user: model.User | string): Promise<any> {
+  revokeAllTokens(
+    entityClass: Class<model.User>,
+    user: model.User | string
+  ): Promise<any> {
     const userObj = this._getUserReference(entityClass, user);
 
     const msg = new messages.RevokeUserToken(userObj.key!);
     return this.send(msg);
   }
 
-  private _getUserReference(entityClass: Class<model.User> | string, user: string | model.User): model.User {
-    if (typeof user === 'string') {
+  private _getUserReference(
+    entityClass: Class<model.User> | string,
+    user: string | model.User
+  ): model.User {
+    if (typeof user === "string") {
       return this.getReference(entityClass, user);
     }
 
