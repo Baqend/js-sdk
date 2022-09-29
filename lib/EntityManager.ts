@@ -1010,19 +1010,40 @@ export class EntityManager extends Lockable {
     }
 
     const req = this._userRequest(new OAuthMessage(), opt.loginOption);
-    if (!opt.open(url, windowOptions)) {
-      throw new Error('The OAuth flow with a Pop-Up can only be issued in browsers. Add a redirect URL to the options to return to your app via that redirect after the OAuth flow succeed.');
+    const window = opt.open(url, windowOptions);
+    if (!window) {
+      throw new Error(
+        'The OAuth flow with a Pop-Up can only be issued in browsers. Add a redirect URL to the options to return to your app via that redirect after the OAuth flow succeed.',
+      );
     }
-
-    return new Promise((resolve, reject) => {
-      const timeout = setTimeout(() => {
+    /**
+     * timeout in given milliseconds
+     */
+    const timeoutPromise = new Promise((resolve, reject) => {
+      setTimeout(() => {
         reject(new PersistentError('OAuth login timeout.'));
       }, opt.timeout);
-
-      req.then(resolve, reject).then(() => {
-        clearTimeout(timeout);
-      });
     });
+    /**
+     * reject if the popup window is closed
+     */
+    const windowPromise = new Promise((resolve, reject) => {
+      const interval = setInterval(() => {
+        if (window.closed) {
+          clearInterval(interval);
+          setTimeout(() => {
+            reject(new Error('Popup window was closed ')); // give the connection a extra second to ensure that we dont get a false positive
+          }, 1000);
+        }
+      }, 1000);
+    });
+    /**
+     * The real request
+     */
+    const requestPromise = new Promise((resolve, reject) => {
+      req.then(resolve, reject);
+    });
+    return Promise.race([requestPromise, timeoutPromise, windowPromise]);
   }
 
   private _loginOAuthDevice(provider: string, opt: OAuthOptions): Promise<model.User | null> {
