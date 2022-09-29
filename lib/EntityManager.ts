@@ -1032,7 +1032,7 @@ export class EntityManager extends Lockable {
         if (window.closed) {
           clearInterval(interval);
           setTimeout(() => {
-            reject(new Error('Popup window was closed ')); // give the connection a extra second to ensure that we dont get a false positive
+            reject(new Error('Popup window was closed ')); // to ensure that the popup closing isnt triggered by the success callback
           }, 1000);
         }
       }, 1000);
