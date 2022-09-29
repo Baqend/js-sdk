@@ -1075,6 +1075,13 @@ export class EntityManager extends Lockable {
     );
   }
 
+  /**
+   * Login via a OAuth provider.
+   * checks if the popup is closed without successful Login
+   * @param provider - the name of the provider
+   * @param options
+   * @returns
+   */
   loginWithOAuth(
     provider: string,
     options: OAuthOptions
