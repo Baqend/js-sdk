@@ -1,3 +1,4 @@
+import { RestSpecification } from 'commonjs/lib/connector';
 import * as messages from './message';
 import {
   FileFactory,
@@ -956,6 +957,76 @@ export class EntityManager extends Lockable {
 
   logout() {
     return this.withLock(() => this.send(new messages.Logout()).then(this._logout.bind(this)));
+  }
+
+  /**
+   * To start the init process, run this function without arguments.
+   * after getting the code run the function again with the code
+   * @param code - The MFA Code
+   * @returns
+   */
+  initMFA() {
+    type MFAResponse = {
+      token: string
+      qrCode: string
+      keyUri: string
+    };
+
+    const start = async () => {
+      const resp = await this._initMFA() as MFAResponse;
+      return resp;
+    };
+    const end = async (code: number) => {
+      const secondResp = await this._initMFA(code);
+      return secondResp;
+    };
+
+    return { start, end };
+  }
+
+  private _initMFA(code?: number) {
+    const MFARest: RestSpecification = {
+      method: code ? 'POST' : 'GET',
+      path: '/db/User/mfa/init',
+      status: [200],
+    };
+    const MFA = Message.create<{ new(body?: { code?:number }): Message }>(MFARest);
+    const msg = new MFA({ code });
+
+    return this.send(msg).then((resp) => {
+      if (resp.status === 200) {
+        const retObj = {
+          token: resp.headers['baqend-authorization-token'],
+          qrCode: resp.entity.qrCode as string,
+          keyUri: resp.entity.keyUri as string,
+        };
+        return retObj;
+      }
+    });
+  }
+
+  disableMFA() {
+    const MFARest: RestSpecification = {
+      method: 'DELETE',
+      path: '/db/User/mfa',
+      status: [204],
+    };
+    const MFA = Message.create<{ new(): Message }>(MFARest);
+    return this.send(new MFA());
+  }
+
+  getMFAStatus(): Promise<'ENABLED' | 'DISABLED' | 'PENDING'> {
+    const MFARest: RestSpecification = {
+      method: 'GET',
+      path: '/db/User/mfa/status',
+      status: [200],
+    };
+    const MFA = Message.create<{ new(): Message }>(MFARest);
+    return this.send(new MFA()).then((resp) =>{ 
+      console.log(resp)
+      return resp.entity
+    
+    });
   }
 
   loginWithOAuth(provider: string, options: OAuthOptions): any | string | Promise<model.User | null> {
