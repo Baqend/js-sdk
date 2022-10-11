@@ -960,28 +960,21 @@ export class EntityManager extends Lockable {
   }
 
   /**
-   * To start the init process, run this function without arguments.
-   * after getting the code run the function again with the code
-   * @param code - The MFA Code
+   * starts the MFA initate process
+   * @example submitMFACode(code) // after getting the code
    * @returns
    */
-  initMFA() {
+  async initMFA() {
     type MFAResponse = {
-      token: string
       qrCode: string
       keyUri: string
     };
+    const resp = await this._initMFA() as MFAResponse;
+    return resp;
+  }
 
-    const start = async () => {
-      const resp = await this._initMFA() as MFAResponse;
-      return resp;
-    };
-    const end = async (code: number) => {
-      const secondResp = await this._initMFA(code);
-      return secondResp;
-    };
-
-    return { start, end };
+  async submitMFACode(code: number) {
+    await this._initMFA(code);
   }
 
   private _initMFA(code?: number) {
@@ -996,12 +989,12 @@ export class EntityManager extends Lockable {
     return this.send(msg).then((resp) => {
       if (resp.status === 200) {
         const retObj = {
-          token: resp.headers['baqend-authorization-token'],
           qrCode: resp.entity.qrCode as string,
           keyUri: resp.entity.keyUri as string,
         };
         return retObj;
       }
+      return resp;
     });
   }
 
@@ -1022,11 +1015,7 @@ export class EntityManager extends Lockable {
       status: [200],
     };
     const MFA = Message.create<{ new(): Message }>(MFARest);
-    return this.send(new MFA()).then((resp) =>{ 
-      console.log(resp)
-      return resp.entity
-    
-    });
+    return this.send(new MFA()).then((resp) => resp.entity);
   }
 
   loginWithOAuth(provider: string, options: OAuthOptions): any | string | Promise<model.User | null> {
@@ -1170,6 +1159,13 @@ export class EntityManager extends Lockable {
               this._logout();
             }
             return null;
+          }
+          if (e.status === StatusCode.FORBIDDEN) {
+            const resp = e as Response;
+            return {
+              message: 'MFA Required',
+              token: resp.headers.get('Baqend-Authorization-Token'),
+            };
           }
 
           throw e;
