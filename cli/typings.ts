@@ -16,8 +16,8 @@ const tsTypeMapping: { [type: string]: string } = {
   Time: 'Date',
   Date: 'Date',
   GeoPoint: 'GeoPoint',
-  JsonArray: '[]',
-  JsonObject: '{}',
+  JsonArray: 'unknown[]',
+  JsonObject: 'Record<string, unknown>',
   File: 'binding.File',
 };
 
