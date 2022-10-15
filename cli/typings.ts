@@ -81,11 +81,11 @@ function typingsFromMetamodel(metamodel: meta.Metamodel) {
     // register only user defined types
     if (entity.name.indexOf('.') !== -1) {
       const [namespace, entityName] = entity.name.split('.');
-      module.push(`    ["${entity.name}"]: binding.EntityFactory<model.${entity.name}>;`);
+      module.push(`    ["${entity.name}"]: binding.EntityFactory<model.${entity.name}> & { new(init?: Partial<model.${entity.name}>): model.${entity.name} };`);
       if (!namespaces[namespace]) namespaces[namespace] = [];
       push(namespaces[namespace], typingsFromSchema(entityName, entity, 'Entity'));
     } else {
-      module.push(`    ${entity.name}: binding.EntityFactory<model.${entity.name}>;`);
+      module.push(`    ${entity.name}: binding.EntityFactory<model.${entity.name}> & { new(init?: Partial<model.${entity.name}>): model.${entity.name} };`);
       push(model, typingsFromSchema(entity.name, entity, 'Entity'));
     }
 
@@ -97,7 +97,7 @@ function typingsFromMetamodel(metamodel: meta.Metamodel) {
 
     if (embeddable.name.indexOf('.') !== -1) continue;
 
-    module.push(`    ${embeddable.name}: binding.ManagedFactory<model.${embeddable.name}>;`);
+    module.push(`    ${embeddable.name}: binding.ManagedFactory<model.${embeddable.name}> & { new(init?: Partial<model.${embeddable.name}>): model.${embeddable.name} };`);
 
     push(model, typingsFromSchema(embeddable.name, embeddable, 'Managed'));
     model.push('');
@@ -130,21 +130,21 @@ function typingsFromSchema(typeName: string, entity: meta.EntityType<any> | meta
       if (attribute.isCollection) {
         switch ((attribute as meta.PluralAttribute<any, any>).collectionType) {
           case CollectionType.LIST:
-            typing.push(`      ${attribute.name}: Array<${typingsFromType((attribute as meta.ListAttribute<any>).elementType)}>;`);
+            typing.push(`      ${attribute.name}: Array<${typingsFromType((attribute as meta.ListAttribute<any>).elementType)}> | null;`);
             break;
           case CollectionType.MAP: {
             const mapAttr = attribute as meta.MapAttribute<any, any>;
-            typing.push(`      ${attribute.name}: Map<${typingsFromType(mapAttr.keyType)}, ${typingsFromType(mapAttr.elementType)}>;`);
+            typing.push(`      ${attribute.name}: Map<${typingsFromType(mapAttr.keyType)}, ${typingsFromType(mapAttr.elementType)}> | null;`);
             break;
           }
           case CollectionType.SET:
-            typing.push(`      ${attribute.name}: Set<${typingsFromType((attribute as meta.SetAttribute<any>).elementType)}>;`);
+            typing.push(`      ${attribute.name}: Set<${typingsFromType((attribute as meta.SetAttribute<any>).elementType)}> | null;`);
             break;
           default:
             break;
         }
       } else {
-        typing.push(`      ${attribute.name}: ${typingsFromType((attribute as meta.SingularAttribute<any>).type)};`);
+        typing.push(`      ${attribute.name}: ${typingsFromType((attribute as meta.SingularAttribute<any>).type)} | null;`);
       }
     }
   }
@@ -166,8 +166,8 @@ function typingsFromType(type: meta.Type<any>): string {
  declare module "baqend" {
 
   interface baqend {
-    Campaign:binding.EntityFactory<Campaign>;
-    Profile:binding.EntityFactory<Profile>;
+    Campaign:binding.EntityFactory<Campaign> & { new(init?: Partial<model.Campaign>): model.Campaign };
+    Profile:binding.EntityFactory<Profile> & { new(init?: Partial<model.Profile>): model.Profile };
   }
 
   export interface Campaign extends binding.Entity {
