@@ -33,6 +33,7 @@ export abstract class Connector {
     'last-modified',
     'baqend-created-at',
     'baqend-custom-headers',
+    'Baqend-MFA-Auth-Token',
   ];
 
   /**

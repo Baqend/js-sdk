@@ -699,7 +699,7 @@ interface Login {
 export const Login = Message.create<Login>({
   method: 'POST',
   path: '/db/User/login',
-  status: [200],
+  status: [200, 403],
 });
 
 interface Register {

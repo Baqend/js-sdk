@@ -944,6 +944,13 @@ export class EntityManager extends Lockable {
     });
   }
 
+  /**
+   *
+   * @returns - null if the user doesnt exist
+   * @returns - a message containing the MFA token to verify MFA
+   * @example submitMFACode(code, token) // to verify MFA
+   * @returns - the user if MFA is disabled
+   */
   login(username: string, password: string, loginOption: LoginOption | boolean) {
     if (this.me) {
       throw new PersistentError('User is already logged in.');
@@ -973,8 +980,31 @@ export class EntityManager extends Lockable {
     return resp;
   }
 
-  async submitMFACode(code: number) {
+  /**
+   * Submit a verification code
+   * @async
+   * @param code - a 6 digit verification code
+   * @param token - a MFA token you obtain during the login process
+   */
+  async submitMFACode(code: number, token?: string): Promise<model.User | 'SUCCESS' > {
+    if (token) {
+      const login = this.tokenStorage.temporary || false;
+      const MFARest: RestSpecification = {
+        method: 'POST',
+        path: '/db/User/mfa/token',
+        status: [200],
+      };
+      const MFA = Message.create<{ new(body?: { authToken:string, code:number, global:boolean }): Message }>(MFARest);
+      const msg = new MFA({
+        authToken: token,
+        code,
+        global: login,
+      });
+      return this.withLock(() => this._userRequest(msg, login)) as Promise< model.User>;
+    }
+
     await this._initMFA(code);
+    return 'SUCCESS';
   }
 
   private _initMFA(code?: number) {
@@ -1008,6 +1038,9 @@ export class EntityManager extends Lockable {
     return this.send(new MFA());
   }
 
+  /**
+   * Returns the current MFA status of the user
+   */
   getMFAStatus(): Promise<'ENABLED' | 'DISABLED' | 'PENDING'> {
     const MFARest: RestSpecification = {
       method: 'GET',
@@ -1088,7 +1121,7 @@ export class EntityManager extends Lockable {
   private _loginOAuthDevice(provider: string, opt: OAuthOptions): Promise<model.User | null> {
     return this._userRequest(new messages.OAuth2(provider, opt.deviceCode), opt.loginOption)
       .catch(() => new Promise((resolve) => setTimeout(resolve, 5000))
-        .then(() => this._loginOAuthDevice(provider, opt)));
+        .then(() => this._loginOAuthDevice(provider, opt))) as Promise<model.User | null>;
   }
 
   renew(loginOption?: LoginOption | boolean) {
@@ -1152,20 +1185,22 @@ export class EntityManager extends Lockable {
 
     return this.send(msg, !login)
       .then(
-        (response) => (response.entity ? this._updateUser(response.entity, login) : null),
+        (response) => {
+          if (response.status === StatusCode.FORBIDDEN) {
+            console.log(response);
+            return {
+              message: 'MFA Required',
+              token: response.headers['Baqend-MFA-Auth-Token'],
+            };
+          }
+          return response.entity ? this._updateUser(response.entity, login) : null;
+        },
         (e) => {
           if (e.status === StatusCode.OBJECT_NOT_FOUND) {
             if (login) {
               this._logout();
             }
             return null;
-          }
-          if (e.status === StatusCode.FORBIDDEN) {
-            const resp = e as Response;
-            return {
-              message: 'MFA Required',
-              token: resp.headers.get('Baqend-Authorization-Token'),
-            };
           }
 
           throw e;
