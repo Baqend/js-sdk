@@ -44,6 +44,7 @@ import {
   Validator,
 } from './intersection';
 import { appendQueryParams, CACHE_REPLACEMENT_SUPPORTED } from './connector/Message';
+import { MFAError } from './error/MFAError';
 
 const DB_PREFIX = '/db/';
 
@@ -1187,11 +1188,7 @@ export class EntityManager extends Lockable {
       .then(
         (response) => {
           if (response.status === StatusCode.FORBIDDEN) {
-            console.log(response);
-            return {
-              message: 'MFA Required',
-              token: response.headers['Baqend-MFA-Auth-Token'],
-            };
+            throw new MFAError(response.headers['Baqend-MFA-Auth-Token']); // If MFA is required: throw an error containing the auth token
           }
           return response.entity ? this._updateUser(response.entity, login) : null;
         },
