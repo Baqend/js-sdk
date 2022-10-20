@@ -45,6 +45,8 @@ import {
 } from './intersection';
 import { appendQueryParams, CACHE_REPLACEMENT_SUPPORTED } from './connector/Message';
 import { MFAError } from './error/MFAError';
+import { Base64 } from './model/Base64';
+import { MFAResponse } from './model/Mfa';
 
 const DB_PREFIX = '/db/';
 
@@ -945,13 +947,6 @@ export class EntityManager extends Lockable {
     });
   }
 
-  /**
-   *
-   * @returns - null if the user doesnt exist
-   * @returns - a message containing the MFA token to verify MFA
-   * @example submitMFACode(code, token) // to verify MFA
-   * @returns - the user if MFA is disabled
-   */
   login(username: string, password: string, loginOption: LoginOption | boolean) {
     if (this.me) {
       throw new PersistentError('User is already logged in.');
@@ -969,16 +964,12 @@ export class EntityManager extends Lockable {
 
   /**
    * starts the MFA initate process
-   * @example submitMFACode(code) // after getting the code
-   * @returns
+   * @example
+   * const resp = await initMFA()
+   * const user = await resp.submitCode(code)
    */
   async initMFA() {
-    type MFAResponse = {
-      qrCode: string
-      keyUri: string
-    };
-    const resp = await this._initMFA() as MFAResponse;
-    return resp;
+    return await this._initMFA() as MFAResponse;
   }
 
   /**
@@ -987,25 +978,20 @@ export class EntityManager extends Lockable {
    * @param code - a 6 digit verification code
    * @param token - a MFA token you obtain during the login process
    */
-  async submitMFACode(code: number, token?: string): Promise<model.User | 'SUCCESS' > {
-    if (token) {
-      const login = this.tokenStorage.temporary || false;
-      const MFARest: RestSpecification = {
-        method: 'POST',
-        path: '/db/User/mfa/token',
-        status: [200],
-      };
-      const MFA = Message.create<{ new(body?: { authToken:string, code:number, global:boolean }): Message }>(MFARest);
-      const msg = new MFA({
-        authToken: token,
-        code,
-        global: login,
-      });
-      return this.withLock(() => this._userRequest(msg, login)) as Promise< model.User>;
-    }
-
-    await this._initMFA(code);
-    return 'SUCCESS';
+  async submitMFACode(code: number, token: string): Promise<model.User > {
+    const login = this.tokenStorage.temporary || false;
+    const MFARest: RestSpecification = {
+      method: 'POST',
+      path: '/db/User/mfa/token',
+      status: [200],
+    };
+    const MFA = Message.create<{ new(body?: { authToken:string, code:number, global:boolean }): Message }>(MFARest);
+    const msg = new MFA({
+      authToken: token,
+      code,
+      global: login,
+    });
+    return this.withLock(() => this._userRequest(msg, login)) as Promise< model.User>;
   }
 
   private _initMFA(code?: number) {
@@ -1016,20 +1002,21 @@ export class EntityManager extends Lockable {
     };
     const MFA = Message.create<{ new(body?: { code?:number }): Message }>(MFARest);
     const msg = new MFA({ code });
-
     return this.send(msg).then((resp) => {
-      if (resp.status === 200) {
-        const retObj = {
-          qrCode: resp.entity.qrCode as string,
-          keyUri: resp.entity.keyUri as string,
-        };
-        return retObj;
+      if (code) {
+        return this.User.me as model.User; // to be here user is already logged in;
       }
-      return resp;
+      const retObj: MFAResponse = {
+        qrCode: resp.entity.qrCode as Base64<'png'>,
+        keyUri: resp.entity.keyUri as string,
+        submitCode: this._initMFA.bind(this) as (code: number) => Promise<model.User>,
+      };
+      return retObj;
     });
   }
 
   disableMFA() {
+    if (!this.User.me) throw new PersistentError('User not Logged in');
     const MFARest: RestSpecification = {
       method: 'DELETE',
       path: '/db/User/mfa',
