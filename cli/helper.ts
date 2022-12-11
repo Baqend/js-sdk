@@ -8,7 +8,7 @@ export const writeFile = promisify(fs.writeFile);
 export const readFile = promisify(fs.readFile);
 export const mkdir = promisify(fs.mkdir);
 
-export const nativeNamespaces = ['logs', 'speedKit', 'rum', 'jobs'];
+export const nativeNamespaces = ['logs', 'speedKit', 'rum'];
 
 /**
  * Returns the stats for the given path
@@ -92,4 +92,9 @@ export function readInput(question: string, hidden = false): Promise<string> {
 export function isNativeClassNamespace(className: string): boolean {
   const [namespace] = className.split('.');
   return nativeNamespaces.includes(namespace);
+}
+
+export function readModuleFile(path: string): Promise<string> {
+  const filename = require.resolve(path);
+  return readFile(filename, 'utf8');
 }
