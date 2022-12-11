@@ -14,7 +14,7 @@ export type DownloadArgs = {
 
 export function download(args: DownloadArgs & AccountArgs) {
   return account.login(args).then((db) => {
-    const promises = [];
+    const promises: Promise<any>[] = [];
     if (args.code) {
       promises.push(downloadCode(db, args.codeDir));
     }

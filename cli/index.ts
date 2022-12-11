@@ -46,6 +46,7 @@ export function run() {
     .option('-f, --file-dir <dir>', 'path to file directory', 'www')
     .option('-g, --file-glob <pattern>', 'pattern to match files', '**/*')
     .option('-b, --bucket-path <path>', 'remote path where the files will be uploaded to.', 'www')
+    .option('-B, --cretae-bucket', 'create the bucket, if it does not exists.')
     .option('-C, --code', 'deploy baqend code')
     .option('-c, --code-dir <dir>', 'path to code directory', 'baqend')
     .option('-S, --schema', 'deploy schema')
