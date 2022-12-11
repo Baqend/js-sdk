@@ -3,7 +3,7 @@ import fs from 'fs';
 import glob from 'glob';
 import { join as pathJoin } from 'path';
 import readline from 'readline';
-import { EntityManager } from 'baqend';
+import { EntityManager, intersection } from 'baqend';
 import * as account from './account';
 import { uploadSchema } from './schema';
 import { AccountArgs } from './account';
@@ -16,6 +16,7 @@ export type SchemaArgs = {
   fileDir: string,
   fileGlob: string,
   bucketPath: string,
+  createBucket?: boolean,
   code?: boolean,
   codeDir: string,
   schema?: boolean,
@@ -23,14 +24,14 @@ export type SchemaArgs = {
 
 export function deploy(args: SchemaArgs & AccountArgs) {
   return account.login(args).then((db) => {
-    const promises = [];
+    const promises: Promise<any>[] = [];
     if ((!args.code && !args.files) || (args.code && args.files)) {
-      promises.push(deployFiles(db, args.bucketPath, args.fileDir, args.fileGlob));
+      promises.push(deployFiles(db, args.bucketPath, args.fileDir, args.fileGlob, args.createBucket));
       promises.push(deployCode(db, args.codeDir));
     } else if (args.code) {
       promises.push(deployCode(db, args.codeDir));
     } else if (args.files) {
-      promises.push(deployFiles(db, args.bucketPath, args.fileDir, args.fileGlob));
+      promises.push(deployFiles(db, args.bucketPath, args.fileDir, args.fileGlob, args.createBucket));
     }
     if (args.schema) {
       promises.push(uploadSchema(db));
@@ -39,31 +40,34 @@ export function deploy(args: SchemaArgs & AccountArgs) {
   });
 }
 
-function deployFiles(db: EntityManager, path: string, cwd: string, pattern: string): Promise<any> {
-  let normalizedPath = path;
-  while (normalizedPath.length && normalizedPath.charAt(0) === '/') normalizedPath = normalizedPath.substring(1);
+async function deployFiles(db: EntityManager, path: string, cwd: string, pattern: string, createBucket?: boolean):
+Promise<void> {
+  let bucket = path;
+  while (bucket.length && bucket.charAt(0) === '/') bucket = bucket.substring(1);
 
-  while (normalizedPath.length && normalizedPath.charAt(normalizedPath.length - 1) === '/') normalizedPath = normalizedPath.substring(0, normalizedPath.length - 1);
+  while (bucket.length && bucket.charAt(bucket.length - 1) === '/') bucket = bucket.substring(0, bucket.length - 1);
 
-  if (!normalizedPath.length) {
-    console.error(`Invalid bucket-path ${normalizedPath}`);
-    return Promise.resolve();
+  if (!bucket.length) {
+    throw new Error(`Invalid bucket-path ${bucket}`);
   }
 
-  return (new Promise((resolve, reject) => {
-    glob(pattern, { nodir: true, cwd }, (er, files) => {
+  if (createBucket) {
+    await ensureRootBucket(db, bucket);
+  }
+
+  const files = await (new Promise<string[]>((resolve, reject) => {
+    glob(pattern, { nodir: true, cwd }, (er, fileList) => {
       if (er) reject(er);
-      else resolve(files as string[]);
+      else resolve(fileList);
     });
-  }) as Promise<string[]>)
-    .then((files) => uploadFiles(db, normalizedPath, files, cwd))
-    .then((result) => {
-      if (result && result.length > 0) {
-        console.log('File deployment completed.');
-      } else {
-        console.warn('Your specified upload folder is empty, no files were uploaded.');
-      }
-    });
+  }));
+
+  const result = await uploadFiles(db, bucket, files, cwd);
+  if (result && result.length > 0) {
+    console.log('File deployment completed.');
+  } else {
+    console.warn('Your specified upload folder is empty, no files were uploaded.');
+  }
 }
 
 function deployCode(db: EntityManager, codePath: string) {
@@ -120,7 +124,7 @@ function uploadFiles(db: EntityManager, bucket: string, files: string | string[]
   const isTty = process.stdout.isTTY;
   let index = 0;
 
-  const uploads = [];
+  const uploads: Promise<any>[] = [];
   for (let i = 0; i < 10 && i < files.length; i += 1) {
     uploads.push(upload());
   }
@@ -146,7 +150,6 @@ function uploadFiles(db: EntityManager, bucket: string, files: string | string[]
 
       if (isTty && index === files.length) {
         console.log(''); // add a final linebreak
-        return;
       }
 
       await uploadFile(db, bucket, file, cwd);
@@ -176,4 +179,24 @@ async function uploadFile(db: EntityManager, bucket: string, filePath: string, c
       }
     }
   }
+}
+
+async function ensureRootBucket(db: EntityManager, name: string): Promise<void> {
+  try {
+    await db.File.loadMetadata(name);
+    return;
+  } catch (e) {
+    // ignored
+  }
+
+  const adminPermission = new intersection.Permission().allowAccess('/db/Role/1');
+  const publicPermission = new intersection.Permission();
+
+  await db.File.saveMetadata(name, {
+    load: publicPermission,
+    insert: adminPermission,
+    update: adminPermission,
+    delete: adminPermission,
+    query: adminPermission,
+  });
 }
