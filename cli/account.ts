@@ -3,12 +3,13 @@ import { ChildProcess } from 'child_process';
 import crypto from 'crypto';
 import { createServer } from 'http';
 import os from 'os';
+import inquirer from 'inquirer';
 import {
   EntityManager, EntityManagerFactory, intersection, binding,
 } from 'baqend';
 import * as helper from './helper';
 import {
-  isFile, readFile, readInput,
+  isFile, readFile, readModuleFile,
 } from './helper';
 
 const { TokenStorage } = intersection;
@@ -111,9 +112,10 @@ function getLocalCredentials(appInfo: AppInfo): Credentials | null {
   return null;
 }
 
-function getInputCredentials(appInfo: AppInfo, authProvider?: string, showLoginInfo?: boolean): Promise<Credentials> {
+async function getInputCredentials(appInfo: AppInfo, authProvider?: string, showLoginInfo?: boolean):
+Promise<Credentials> {
   if (!process.stdout.isTTY) {
-    return Promise.reject(new Error('Can\'t interactive login into baqend, no tty session was detected.'));
+    throw new Error('Can\'t interactive login into baqend, no tty session was detected.');
   }
 
   if (showLoginInfo) {
@@ -122,27 +124,27 @@ function getInputCredentials(appInfo: AppInfo, authProvider?: string, showLoginI
 
   const options = ['password', 'google', 'facebook', 'github'];
 
-  let result = Promise.resolve(String(options.indexOf(authProvider || 'password') + 1));
+  let result = authProvider || 'password';
   if (!appInfo.isCustomHost && options.length > 1 && !authProvider) {
-    console.log('Choose how you want to login:');
-    options.forEach((provider, index) => {
-      console.log(`${index + 1}. Login with ${provider}`);
-    });
-    result = readInput(`Type 1-${options.length}: `);
+    const responses = await inquirer.prompt([{
+      name: 'loginType',
+      message: 'Choose how you want to login:',
+      type: 'list',
+      default: 'google',
+      choices: options.map((op) => ({ name: op })),
+    }]);
+    result = responses.loginType as string;
   }
 
-  return result.then((option): Promise<Credentials> => {
-    if (option === '1') {
-      return readInputCredentials(appInfo);
-    }
+  if (!result) {
+    throw new Error('No valid login option was chosen.');
+  }
 
-    const provider = options[Number(option) - 1];
-    if (!provider) {
-      throw new Error('No valid login option was chosen.');
-    }
+  if (result === 'password') {
+    return readInputCredentials(appInfo);
+  }
 
-    return requestSSOCredentials(appInfo, provider);
-  });
+  return requestSSOCredentials(appInfo, result);
 }
 
 function requestSSOCredentials(appInfo: AppInfo, oAuthProvider: string, oAuthOptions: binding.OAuthOptions = {}):
@@ -176,23 +178,31 @@ Promise<TokenCredentials> {
     });
 }
 
-function oAuthHandler(host: string, port: number): Promise<TokenCredentials> {
+async function oAuthHandler(host: string, port: number): Promise<TokenCredentials> {
+  const htmlTemplate = await readModuleFile('./sso.html');
+
   return new Promise((resolve, reject) => {
     const server = createServer((req, res) => {
       const url = new URL(req.url!, `http://${host}:${port}`);
-      let done = false;
-      if (url.searchParams.has('errorMessage')) {
-        reject(new Error(url.searchParams.get('errorMessage')!));
-        done = true;
+      const errorMessage = url.searchParams.get('errorMessage');
+
+      let text: string | null = null;
+      if (errorMessage) {
+        reject(new Error(errorMessage));
+        text = `<h1>An error has occurred</h1><p>${errorMessage}</p>`;
       } else if (url.searchParams.has('token')) {
         resolve({ token: url.searchParams.get('token')! });
-        done = true;
+        text = '<h1>Continue within the CLI</h1><p>You can close this window now.</p>';
       }
 
-      if (done) {
+      if (text) {
+        // eslint-disable-next-line no-template-curly-in-string
+        const html = htmlTemplate.replace('${content}', text);
         res.writeHead(200, { 'Content-Type': 'text/html' });
-        res.end('<!DOCTYPE html><html><head></head><body><h1>Continue within the CLI!</h1></a></body></html>');
-        server.close();
+        res.end(html);
+        setTimeout(() => {
+          server.close();
+        });
       } else {
         res.writeHead(404);
         res.end();
