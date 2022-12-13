@@ -1,7 +1,7 @@
 import { join as pathJoin } from 'path';
 import { EntityManager, message, util } from 'baqend';
+import inquirer from 'inquirer';
 import * as account from './account';
-import * as helper from './helper';
 import { AccountArgs } from './account';
 import {
   ensureDir, isNativeClassNamespace, readDir, readFile, writeFile,
@@ -12,11 +12,11 @@ type JsonMap = util.JsonMap;
 const SCHEMA_FILE_PATH = './baqend/schema/';
 
 export type SchemaArgs = {
-  command: 'upload' | 'download' | 'push' | 'pull'
+  command: 'upload' | 'download' | 'deploy'
   force?: boolean,
 };
 
-export async function uploadSchema(db: EntityManager, args: { force?: boolean } = {}): Promise<boolean> {
+export async function uploadSchema(db: EntityManager, force: boolean = false): Promise<boolean> {
   let fileNames;
   try {
     fileNames = await readDir(SCHEMA_FILE_PATH);
@@ -31,9 +31,12 @@ export async function uploadSchema(db: EntityManager, args: { force?: boolean } 
     }),
   );
 
-  if (args.force) {
-    const answer: string = await helper.readInput('This will delete ALL your App data. Are you sure you want to continue? (yes/no)');
-    if (answer.toLowerCase() !== 'yes') {
+  if (force) {
+    const { answer } = await inquirer.prompt([
+      { type: 'confirm', name: 'answer', message: 'This will delete ALL your App data. Are you sure you want to continue?' },
+    ]);
+
+    if (!answer) {
       return false;
     }
 
@@ -81,8 +84,8 @@ export function schema(args: SchemaArgs & AccountArgs) {
   return account.login(args).then((db) => ensureDir(SCHEMA_FILE_PATH).then(() => {
     switch (args.command) {
       case 'upload':
-      case 'push':
-        return uploadSchema(db, args).then((deployed) => {
+      case 'deploy':
+        return uploadSchema(db, args.force).then((deployed) => {
           console.log('---------------------------------------');
           if (deployed) {
             console.log(`The schema was successfully ${args.force ? 'replaced' : 'updated'}`);
@@ -91,13 +94,12 @@ export function schema(args: SchemaArgs & AccountArgs) {
           }
         });
       case 'download':
-      case 'pull':
         return downloadSchema(db).then(() => {
           console.log('---------------------------------------');
           console.log('Your schema was successfully downloaded');
         });
       default:
-        throw new Error(`Invalid command: "${args.command}". Please use one of ["upload", "download"].`);
+        throw new Error(`Invalid command: "${args.command}". Please use one of ["deploy", "download"].`);
     }
   }));
 }

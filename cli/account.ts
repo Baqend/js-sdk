@@ -372,12 +372,11 @@ function getDefaultApp(db: EntityManager) {
   });
 }
 
-function readInputCredentials(appInfo: AppInfo): Promise<UsernamePasswordCredentials> {
-  return helper.readInput(appInfo.isCustomHost ? 'Username: ' : 'E-Mail: ')
-    .then((username: string) => helper.readInput('Password: ', true).then((password) => {
-      console.log();
-      return { username, password };
-    }));
+async function readInputCredentials(appInfo: AppInfo): Promise<UsernamePasswordCredentials> {
+  return inquirer.prompt([
+    { name: 'username', type: 'input', message: appInfo.isCustomHost ? 'Username:' : 'E-Mail:' },
+    { name: 'password', type: 'password', message: 'Password:' },
+  ]);
 }
 
 function decrypt(input: string) {
