@@ -59,36 +59,6 @@ export function ensureDir(dir: string): Promise<void> {
   });
 }
 
-export function readInput(question: string, hidden = false): Promise<string> {
-  let muted = false;
-  const mutableStdout = new Writable({
-    write(chunk, encoding, callback) {
-      if (!muted) {
-        process.stdout.write(chunk, encoding);
-      }
-      callback();
-    },
-  });
-
-  const rl = readline.createInterface({
-    input: process.stdin,
-    output: mutableStdout,
-    terminal: true,
-  });
-
-  return new Promise((resolve, reject) => {
-    rl.question(question, (answer) => {
-      rl.close();
-      resolve(answer);
-    });
-    rl.on('SIGINT', () => {
-      rl.close();
-      reject(new Error('Input is aborted.'));
-    });
-    muted = hidden;
-  });
-}
-
 export function isNativeClassNamespace(className: string): boolean {
   const [namespace] = className.split('.');
   return nativeNamespaces.includes(namespace);
