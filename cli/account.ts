@@ -298,14 +298,9 @@ export function login(args: AccountArgs): Promise<EntityManager> {
     });
 }
 
-function bbqAppLogin(db: EntityManager, appName: string) {
-  return db.modules.get('apps', { app: appName }).then((result: { name: string, token: string }) => {
-    if (!result) {
-      throw new Error(`App (${appName}) not found.`);
-    }
-
-    return appConnect({ host: result.name, isCustomHost: false, app: appName }, { token: result.token });
-  });
+async function bbqAppLogin(db: EntityManager, appName: string) {
+  const { token } = await db.modules.get('token', { app: appName });
+  return appConnect({ host: appName, isCustomHost: false, app: appName }, { token });
 }
 
 export function logout(args: AccountArgs) {
@@ -348,10 +343,11 @@ export function openDashboard(args: AccountArgs) {
   });
 }
 
-export function listApps(args: AccountArgs) {
-  return connect(args)
-    .then((db) => getApps(db))
-    .then((apps) => apps.forEach((app) => console.log(app)));
+export async function listApps(args: AccountArgs) {
+  const db = await connect(args);
+  let apps = await getApps(db);
+  apps = apps.sort();
+  apps.forEach((app) => console.log(app));
 }
 
 export function whoami(args: AccountArgs) {
@@ -359,8 +355,15 @@ export function whoami(args: AccountArgs) {
     .then((db) => console.log(db.User.me!.username), () => console.log('You are not logged in.'));
 }
 
-function getApps(db: EntityManager): Promise<string[]> {
-  return db.modules.get('apps').then((apps: ({ name: string })[]) => apps.map((app) => app.name));
+export async function getApps(db: EntityManager): Promise<string[]> {
+  let query = db.App.find()
+    .eq('status', 'running');
+
+  if (db.User.me?.username?.endsWith('@baqend.com')) {
+    query = query.eq('owner', db.User.me);
+  }
+
+  return (await query.resultList()).map((app: { name: string }) => app.name);
 }
 
 function getDefaultApp(db: EntityManager) {
