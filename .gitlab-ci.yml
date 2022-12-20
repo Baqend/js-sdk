@@ -1,0 +1,20 @@
+before_script:
+  - npm ci
+  - npm install --silent websocket
+
+default:
+  image: node:lts
+
+stages:
+  - verify
+  - build
+
+verify:
+  script:
+    - npm run lint
+
+build:
+  script:
+    - npm run dist
+    - npm run test:build
+
