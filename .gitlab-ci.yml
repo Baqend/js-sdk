@@ -10,10 +10,12 @@ stages:
   - build
 
 verify:
+  stage: verify
   script:
     - npm run lint
 
 build:
+  stage: build
   script:
     - npm run dist
     - npm run test:build
