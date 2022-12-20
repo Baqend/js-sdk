@@ -153,10 +153,11 @@ export class BasicType<T> extends Type<T> {
    * @param typeConstructor The javascript class of this type
    * @param noResolving Indicates if this type is not the main type of the constructor
    */
-  constructor(ref: string, typeConstructor: Class<T>, noResolving?: boolean) {
+  constructor(ref: string, typeConstructor: Class<T> | { <V>(value?: V): T }, noResolving?: boolean) {
     const id = ref.indexOf('/db/') === 0 ? ref : `/db/${ref}`;
 
-    super(id, typeConstructor);
+    // just to tricks TS here to handle native wrapper classes properly
+    super(id, typeConstructor as Class<T>);
 
     this.noResolving = !!noResolving;
   }
