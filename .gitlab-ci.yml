@@ -3,7 +3,7 @@ before_script:
   - npm install --silent websocket
 
 default:
-  image: node:lts
+  image: node:16
   tags:
     - orestes
 
