@@ -4,6 +4,8 @@ before_script:
 
 default:
   image: node:lts
+  tags:
+    - orestes
 
 stages:
   - verify
