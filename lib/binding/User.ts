@@ -25,7 +25,7 @@ export class User extends Entity {
    */
   @enumerable(false)
   newPassword(currentPassword: string, password: string, doneCallback?: any, failCallback?: any): Promise<model.User> {
-    return this._metadata.db.newPassword(this.username!!, currentPassword, password).then(doneCallback, failCallback);
+    return this._metadata.db.newPassword(this.username!, currentPassword, password).then(doneCallback, failCallback);
   }
 
   /**
@@ -39,7 +39,7 @@ export class User extends Entity {
    */
   @enumerable(false)
   changeUsername(newUsername: string, password: string, doneCallback?: any, failCallback?: any): Promise<any> {
-    return this._metadata.db.changeUsername(this.username!!, newUsername, password).then(doneCallback, failCallback);
+    return this._metadata.db.changeUsername(this.username!, newUsername, password).then(doneCallback, failCallback);
   }
 
   /**

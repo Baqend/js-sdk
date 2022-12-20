@@ -17,7 +17,7 @@ export class Metamodel extends Lockable {
   /**
    * Defines if the Metamodel has been finalized
    */
-  public isInitialized: boolean = false;
+  public isInitialized = false;
 
   public entityManagerFactory: EntityManagerFactory;
 
@@ -56,7 +56,7 @@ export class Metamodel extends Lockable {
    * @param arg
    * @return
    */
-  getRef(arg: Class<Managed> | Function | string): string | null {
+  getRef(arg: Class<Managed> | NewableFunction | string): string | null {
     let ref;
     if (typeof arg === 'string') {
       ref = arg;
@@ -77,7 +77,7 @@ export class Metamodel extends Lockable {
    * @param typeConstructor - the type of the represented entity
    * @return the metamodel entity type or null if the class is not a managed entity
    */
-  entity(typeConstructor: Class<any> | Function | string): EntityType<any> | null {
+  entity(typeConstructor: Class<any> | NewableFunction | string): EntityType<any> | null {
     const ref = this.getRef(typeConstructor);
     return ref ? this.entities[ref] : null;
   }
@@ -111,7 +111,7 @@ export class Metamodel extends Lockable {
    * @param typeConstructor - the type of the represented embeddable class
    * @return the metamodel embeddable type or null if the class is not a managed embeddable
    */
-  embeddable(typeConstructor: Class<any> | Function | string): EmbeddableType<any> | null {
+  embeddable(typeConstructor: Class<any> | NewableFunction | string): EmbeddableType<any> | null {
     const ref = this.getRef(typeConstructor);
     return ref ? this.embeddables[ref] : null;
   }
@@ -122,7 +122,7 @@ export class Metamodel extends Lockable {
    * @param typeConstructor - the type of the represented managed class
    * @return the metamodel managed type
    */
-  managedType(typeConstructor: Class<any> | Function | string): ManagedType<any> | null {
+  managedType(typeConstructor: Class<any> | NewableFunction | string): ManagedType<any> | null {
     return this.entity(typeConstructor) || this.embeddable(typeConstructor);
   }
 

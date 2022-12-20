@@ -159,6 +159,8 @@ export class File {
     return this[ID];
   }
 
+  // This method is removed from the API and should be not converted by ts
+  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
   // @ts-ignore
   get url(): string {
     throw new Error('This method is removed. Use the asynchronous File.createURL() method instead.');
@@ -363,14 +365,14 @@ export class File {
     this.setDataOptions(opt);
 
     const uploadMessage = new message.UploadFile(this.bucket, this.key)
-      .entity(this[DATA]!!.data!!, this[DATA]?.type);
+      .entity(this[DATA]!.data!, this[DATA]?.type);
 
     const meta = this[METADATA];
     if (meta) {
-      uploadMessage.acl(meta.acl!!);
-      uploadMessage.contentLength(meta.size!!);
-      uploadMessage.mimeType(meta.mimeType!!);
-      uploadMessage.customHeaders(meta.headers!!);
+      uploadMessage.acl(meta.acl!);
+      uploadMessage.contentLength(meta.size!);
+      uploadMessage.mimeType(meta.mimeType!);
+      uploadMessage.customHeaders(meta.headers!);
     }
 
     uploadMessage.progress(opt.progress || null);
@@ -500,7 +502,7 @@ export class File {
     }
 
     msg.ifUnmodifiedSince(meta.lastModified as Date);
-    msg.ifMatch(meta.eTag!!);
+    msg.ifMatch(meta.eTag!);
   }
 
   /**

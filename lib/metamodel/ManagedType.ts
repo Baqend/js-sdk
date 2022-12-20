@@ -24,19 +24,19 @@ export abstract class ManagedType<T extends Managed> extends Type<T> {
 
   public superType: EntityType<any> | null = null;
 
-  public _validationCode: Function | null = null;
+  public _validationCode: CallableFunction | null = null;
 
   /**
    * @type Function
    */
-  get validationCode(): Function | null {
+  get validationCode(): CallableFunction | null {
     return this._validationCode;
   }
 
   /**
    * @param code
    */
-  set validationCode(code: Function | null) {
+  set validationCode(code: CallableFunction | null) {
     this._validationCode = code;
   }
 
@@ -47,7 +47,7 @@ export abstract class ManagedType<T extends Managed> extends Type<T> {
     if (!this._typeConstructor) {
       this.typeConstructor = this.createProxyClass();
     }
-    return this._typeConstructor!!;
+    return this._typeConstructor!;
   }
 
   /**
@@ -68,7 +68,7 @@ export abstract class ManagedType<T extends Managed> extends Type<T> {
       throw new TypeError('Embeddable classes must extends the Managed class.');
     }
 
-    this.enhancer!!.enhance(this, typeConstructor);
+    this.enhancer!.enhance(this, typeConstructor);
     this._typeConstructor = typeConstructor;
   }
 
@@ -87,8 +87,8 @@ export abstract class ManagedType<T extends Managed> extends Type<T> {
   init(enhancer: Enhancer): void {
     this.enhancer = enhancer;
 
-    if (this._typeConstructor && !Enhancer.getIdentifier(this._typeConstructor!!)) {
-      Enhancer.setIdentifier(this._typeConstructor!!, this.ref);
+    if (this._typeConstructor && !Enhancer.getIdentifier(this._typeConstructor!)) {
+      Enhancer.setIdentifier(this._typeConstructor!, this.ref);
     }
   }
 
@@ -126,12 +126,12 @@ export abstract class ManagedType<T extends Managed> extends Type<T> {
   attributes(): IterableIterator<Attribute<any>> {
     let iter: Iterator<Attribute<any>> | null;
     let index = 0;
-    const type = this;
 
     if (this.superType) {
       iter = this.superType.attributes();
     }
 
+    const { declaredAttributes } = this;
     return {
       [Symbol.iterator]() {
         return this;
@@ -147,8 +147,8 @@ export abstract class ManagedType<T extends Managed> extends Type<T> {
           iter = null;
         }
 
-        if (index < type.declaredAttributes.length) {
-          const value = type.declaredAttributes[index];
+        if (index < declaredAttributes.length) {
+          const value = declaredAttributes[index];
           index += 1;
           return { value, done: false };
         }
@@ -180,7 +180,7 @@ export abstract class ManagedType<T extends Managed> extends Type<T> {
 
     this.declaredAttributes.push(attr);
     if (this._typeConstructor && this.name !== 'Object') {
-      this.enhancer!!.enhanceProperty(this._typeConstructor, attr);
+      this.enhancer!.enhanceProperty(this._typeConstructor, attr);
     }
   }
 
@@ -352,6 +352,6 @@ export abstract class ManagedType<T extends Managed> extends Type<T> {
       return null;
     }
 
-    return this.metadata!![key];
+    return this.metadata![key];
   }
 }

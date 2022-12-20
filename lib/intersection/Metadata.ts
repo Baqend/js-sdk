@@ -71,7 +71,7 @@ export class Metadata extends Lockable implements ManagedState {
     if (type.isEntity) {
       return new Metadata(type as EntityType<T>);
     } if (type.isEmbeddable) {
-      return { type, db, setDirty() {} };
+      return { type, db, setDirty() { /* ignored */ } };
     }
 
     throw new Error(`Illegal type ${type}`);
@@ -95,7 +95,8 @@ export class Metadata extends Lockable implements ManagedState {
       return this.entityManager;
     }
 
-    this.entityManager = require('../baqend').db; // eslint-disable-line global-require
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    this.entityManager = require('../baqend').db;
 
     return this.entityManager!;
   }

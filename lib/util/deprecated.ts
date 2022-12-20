@@ -2,7 +2,7 @@
 const alreadyWarned: { [signature: string]: boolean } = {};
 export function deprecated(alternativeSignature: string) {
   return function decorateProperty(
-    target: Object | string,
+    target: object | string,
     name: string,
     descriptor: PropertyDescriptor = {
       writable: true,

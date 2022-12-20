@@ -106,7 +106,9 @@ export class TokenStorage {
    * @protected
    */
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  protected _saveToken(origin: string, token: string | null, temporary: boolean): void {}
+  protected _saveToken(origin: string, token: string | null, temporary: boolean): void {
+    // stub implementation
+  }
 
   /**
    * Update the token for the givin origin, the operation may be asynchronous
@@ -130,7 +132,7 @@ export class TokenStorage {
    * @param sign Sign the given resource with a token, if sign is false the resource will only be encoded to a path
    * @return A resource token which can only be used to access the specified resource
    */
-  signPath(resource: string, sign: boolean = true): Promise<string> {
+  signPath(resource: string, sign = true): Promise<string> {
     const { tokenData } = this;
     const result = Promise.resolve(resource.split('/').map(encodeURIComponent).join('/'));
 

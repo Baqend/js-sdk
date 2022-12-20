@@ -17,7 +17,7 @@ export class IFrameConnector extends XMLHttpConnector {
 
   private queue: any[] | null = null;
 
-  private connected: boolean = false;
+  private connected = false;
 
   /**
    * Indicates if this connector implementation is usable for the given host and port

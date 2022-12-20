@@ -88,7 +88,7 @@ export class UserFactory extends EntityFactory<model.User> {
    * @param failCallback Called when the operation failed.
    * @return The created user object, for the new registered user.
    */
-  register(user: string | model.User, password: string, loginOption?: boolean | LoginOption | Function,
+  register(user: string | model.User, password: string, loginOption?: boolean | LoginOption | CallableFunction,
     doneCallback?: any, failCallback?: any): Promise<model.User> {
     if (loginOption instanceof Function) {
       return this.register(user, password, true, loginOption, doneCallback);
@@ -109,7 +109,7 @@ export class UserFactory extends EntityFactory<model.User> {
    * @param failCallback Called when the operation failed.
    * @return
    */
-  login(username: string, password: string, loginOption?: boolean | LoginOption | Function, doneCallback?: any,
+  login(username: string, password: string, loginOption?: boolean | LoginOption | CallableFunction, doneCallback?: any,
     failCallback?: any): Promise<model.User> {
     if (loginOption instanceof Function) {
       return this.login(username, password, true, loginOption, doneCallback);
@@ -128,7 +128,7 @@ export class UserFactory extends EntityFactory<model.User> {
    * @param failCallback Called when the operation failed.
    * @return
    */
-  loginWithToken(token: string, loginOption?: boolean | LoginOption | Function, doneCallback?: any,
+  loginWithToken(token: string, loginOption?: boolean | LoginOption | CallableFunction, doneCallback?: any,
     failCallback?: any): Promise<model.User> {
     if (loginOption instanceof Function) {
       return this.loginWithToken(token, true, loginOption, doneCallback);
@@ -185,7 +185,7 @@ export class UserFactory extends EntityFactory<model.User> {
 
     // eslint-disable-next-line prefer-const
     let [token, newPassword, loginOption, doneCallback, failCallback] = args as [
-      string, string, undefined | boolean | LoginOption | Function, any, any];
+      string, string, undefined | boolean | LoginOption | CallableFunction, any, any];
     if (loginOption instanceof Function) {
       failCallback = doneCallback;
       doneCallback = loginOption;
@@ -426,7 +426,7 @@ export interface OAuthOptions {
   const methodName = `loginWith${name}`;
   // do not use a lambda here since we will loose the this context
   (UserFactory.prototype as any)[methodName] = function loginWithOAuth(clientID: string | OAuthOptions,
-    options: OAuthOptions | Function, doneCallback?: any, failCallback?: any) {
+    options: OAuthOptions | CallableFunction, doneCallback?: any, failCallback?: any) {
     if (options instanceof Function) {
       return this[methodName](clientID, {}, options, doneCallback);
     }

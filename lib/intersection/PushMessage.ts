@@ -67,12 +67,13 @@ export interface PushMessageOptions {
   data?: Json;
 }
 
-// Extends all push message options
-export interface PushMessage extends PushMessageOptions {}
 
 /**
  * PushMessages are used to send a push notification to a set of devices
  */
+// Extends all push message options
+// eslint-disable-next-line @typescript-eslint/no-empty-interface
+export interface PushMessage extends PushMessageOptions {}
 export class PushMessage {
   /**
    * Set of devices

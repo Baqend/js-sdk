@@ -78,13 +78,6 @@ export class EntityManager extends Lockable {
   }
 
   /**
-   * The authentication token if the user is logged in currently
-   */
-  get token(): string | null {
-    return this.tokenStorage.token;
-  }
-
-  /**
    * Whether caching is disabled
    * @deprecated
    */
@@ -105,6 +98,13 @@ export class EntityManager extends Lockable {
    */
   get isDeviceRegistered(): boolean {
     return !!this.deviceMe;
+  }
+
+  /**
+   * The authentication token if the user is logged in currently
+   */
+  get token(): string | null {
+    return this.tokenStorage.token;
   }
 
   /**
@@ -213,7 +213,7 @@ export class EntityManager extends Lockable {
   /**
    * Bloom filter refresh interval in seconds.
    */
-  public bloomFilterRefresh: number = 60;
+  public bloomFilterRefresh = 60;
 
   /**
    * Bloom filter refresh Promise
@@ -343,7 +343,7 @@ export class EntityManager extends Lockable {
     let type: EntityType<any> | null;
     if (key) {
       const keyAsStr = key;
-      type = this.metamodel.entity(entityClass)!!;
+      type = this.metamodel.entity(entityClass)!;
       if (keyAsStr.indexOf(DB_PREFIX) === 0) {
         id = keyAsStr;
       } else {
@@ -361,7 +361,7 @@ export class EntityManager extends Lockable {
 
     let entity = this.entities[id as string] as T;
     if (!entity) {
-      entity = type!!.create();
+      entity = type!.create();
       const metadata = Metadata.get(entity);
       if (id) {
         metadata.id = id;
@@ -575,6 +575,7 @@ export class EntityManager extends Lockable {
       }
 
       if (opt.force) {
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const { version, ...jsonWithoutVersion } = json;
         return new messages.ReplaceObject(state.bucket, state.key!, jsonWithoutVersion)
           .ifMatch('*');
@@ -601,6 +602,7 @@ export class EntityManager extends Lockable {
           throw new PersistentError('New special objects can\'t be forcefully saved.');
         }
 
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const { version, ...jsonWithoutVersion } = json;
         return new messages.ReplaceObject(state.bucket, state.key!, jsonWithoutVersion);
       }
@@ -682,7 +684,7 @@ export class EntityManager extends Lockable {
         state.setPersistent();
       }
 
-      const sendPromise = this.send(msgFactory(state, json!!)).then((response) => {
+      const sendPromise = this.send(msgFactory(state, json!)).then((response) => {
         if (state.id && state.id !== response.entity.id) {
           this.removeReference(entity);
           state.id = response.entity.id;

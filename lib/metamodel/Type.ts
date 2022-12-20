@@ -60,7 +60,7 @@ export abstract class Type<T> {
    * The type constructor of this type
    */
   get typeConstructor(): Class<T> {
-    return this._typeConstructor!!;
+    return this._typeConstructor!;
   }
 
   /**

@@ -31,8 +31,8 @@ export class Modules {
    * @param failCallback
    * @return
    */
-  get(bucket: string, query?: { [param: string]: string } | string | Function,
-    options?: { responseType?: ResponseBodyType } | Function, doneCallback?: any, failCallback?: any): Promise<any> {
+  get(bucket: string, query?: { [param: string]: string } | string | CallableFunction, options?: {
+    responseType?: ResponseBodyType } | CallableFunction, doneCallback?: any, failCallback?: any): Promise<any> {
     if (query instanceof Function) {
       return this.get(bucket, {}, query, options, doneCallback);
     }

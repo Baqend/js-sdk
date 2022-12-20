@@ -30,6 +30,8 @@ export type ProgressListener = (event: ProgressEvent) => any;
 /**
  * Checks whether the user uses a browser which does support revalidation.
  */
+// TODO: this should be reworked
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
 const REVALIDATION_SUPPORTED = typeof navigator === 'undefined' || (typeof chrome !== 'undefined' && /google/i.test(navigator.vendor)) || (/cros i686/i.test(navigator.platform));
 
@@ -85,7 +87,7 @@ export abstract class Message {
     base64: true,
   };
 
-  public withCredentials: boolean = false;
+  public withCredentials = false;
 
   public progressCallback: null | ProgressListener = null;
 
@@ -132,7 +134,7 @@ export abstract class Message {
   }
 
   get isBinary() {
-    return (this.request.type && this.request.type in Message.BINARY) || this._responseType!! in Message.BINARY;
+    return (this.request.type && this.request.type in Message.BINARY) || this._responseType! in Message.BINARY;
   }
 
   /**

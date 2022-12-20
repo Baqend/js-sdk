@@ -61,7 +61,7 @@ export class DeviceFactory extends EntityFactory<model.Device> {
   register(os: string, tokenOrSubscription: string | PushSubscription, device: model.Device | null, doneCallback?: any,
     failCallback?: any): Promise<model.Device>;
 
-  register(os: string, tokenOrSubscription: string | PushSubscription, device: model.Device | Function | null,
+  register(os: string, tokenOrSubscription: string | PushSubscription, device: model.Device | CallableFunction | null,
     doneCallback?: any, failCallback?: any): Promise<model.Device> {
     if (device instanceof Function) {
       return this.register(os, tokenOrSubscription, null, device, doneCallback);

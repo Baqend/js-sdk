@@ -53,7 +53,7 @@ export class EntityManagerFactory extends Lockable {
       }
       this[WS] = WebSocketConnector.create(url);
     }
-    return this[WS]!!;
+    return this[WS]!;
   }
 
   /**
@@ -205,7 +205,7 @@ export class EntityManagerFactory extends Lockable {
 
     this.connection = Connector.create(hostOrApp, port, secure as boolean, basePath);
 
-    this[CONNECTED]!!();
+    this[CONNECTED]!();
     return this.ready();
   }
 

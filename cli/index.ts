@@ -10,6 +10,7 @@ import { copy } from './copy';
 
 export { deploy, typings, account };
 
+// eslint-disable-next-line @typescript-eslint/no-var-requires
 const pjson = require('../package.json');
 
 export function run() {
@@ -25,7 +26,7 @@ export function run() {
   program
     .command('register')
     .description('Registers an account and locally saves your credentials')
-    .action((options) => account.register({ ...options, ...program.opts() }).then(() => { }));
+    .action((options) => account.register({ ...options, ...program.opts() }).then(() => undefined));
   program
     .command('whoami [app]')
     .alias('me')
@@ -34,7 +35,7 @@ export function run() {
   program
     .command('open [app]')
     .description('Opens the url to your app')
-    .action((app) => account.openApp(app).then(() => { }));
+    .action((app) => account.openApp(app).then(() => undefined));
   program
     .command('dashboard')
     .description('Opens the url to the baqend dashboard')
@@ -49,7 +50,7 @@ export function run() {
     .option('-C, --code', 'deploy baqend code')
     .option('-c, --code-dir <dir>', 'path to code directory', 'baqend')
     .option('-S, --schema', 'deploy schema')
-    .action((app, options) => deploy({ app, ...options, ...program.opts() }).then(() => { }));
+    .action((app, options) => deploy({ app, ...options, ...program.opts() }).then(() => undefined));
   program
     .command('copy <source> <dest>')
     .alias('cp')
@@ -81,7 +82,7 @@ export function run() {
     .description('Downloads your Baqend code and files')
     .option('-C, --code', 'download code')
     .option('-c, --code-dir <dir>', 'path to code directory', 'baqend')
-    .action((app, options) => download({ app, ...options, ...program.opts() }).then(() => { }));
+    .action((app, options) => download({ app, ...options, ...program.opts() }).then(() => undefined));
   program
     .command('schema <command> [app]')
     .description('Upload and download your schema')

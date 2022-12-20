@@ -41,7 +41,7 @@ export class Managed {
    * @param {Class<*>} childClass
    * @return {Class<*>} The extended child class
    */
-  static extend(childClass: Class<any> | Function): Class<any> | Function {
+  static extend(childClass: Class<any> | NewableFunction): Class<any> | NewableFunction {
     // eslint-disable-next-line no-param-reassign
     childClass.prototype = Object.create(this.prototype, {
       constructor: {

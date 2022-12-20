@@ -89,7 +89,7 @@ export class Stream {
     return Stream.streamObservable<RealtimeEvent<T>>(entityManager, query, opt, (msg, next) => {
       const { type, ...eventProps } = msg;
 
-      if (msg.type === 'result') {
+      if (type === 'result') {
         msg.data.forEach((obj, index) => {
           const event: RealtimeEvent<T> = {
             matchType: 'add',
@@ -104,7 +104,7 @@ export class Stream {
         });
       }
 
-      if (msg.type === 'match') {
+      if (type === 'match') {
         next({
           initial: false,
           ...(eventProps as MatchEvent),

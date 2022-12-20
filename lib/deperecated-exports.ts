@@ -20,7 +20,7 @@ import { Acl } from './Acl';
 import { db } from './baqend';
 import { deprecated } from './util';
 
-function deprecateExports(target: Object, targetName: string, newImportSignature: string, exports: {
+function deprecateExports(target: object, targetName: string, newImportSignature: string, exports: {
   [exported: string]: any
 }) {
   Object.keys(exports).forEach((exported) => {

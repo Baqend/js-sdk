@@ -5,14 +5,12 @@ module.exports = {
 
   plugins: [
     '@typescript-eslint',
-    'node',
   ],
 
   extends: [
-    'airbnb-typescript/base',
-    'plugin:@typescript-eslint/eslint-recommended',
-    // "plugin:@typescript-eslint/recommended",
-    // 'plugin:node/recommended-module',
+    "eslint:recommended",
+    "plugin:@typescript-eslint/eslint-recommended",
+    "plugin:@typescript-eslint/recommended",
   ],
 
   env: {
@@ -35,14 +33,17 @@ module.exports = {
     strict: ['error', 'global'],
 
     // we disallow default exports
-    "import/prefer-default-export": "off",
-    "import/no-default-export": "error",
+    "no-restricted-syntax": ["error", {
+      "selector": "ExportDefaultDeclaration",
+      "message": "Prefer named exports"
+    }],
 
     // we use this in several places, should be discussed if we want to re-enable this
     'class-methods-use-this': 'off',
     "no-underscore-dangle": ['error', { "allowAfterThis": true }],
+    "@typescript-eslint/no-explicit-any": "off",
+    "@typescript-eslint/no-non-null-assertion": "off",
 
-    'node/no-deprecated-api': 'error',
     'no-buffer-constructor': 'error',
     'no-console': 'error',
 

@@ -38,7 +38,8 @@ export const db = (() => {
       return this;
     },
 
-    connect(this: baqend, hostOrApp: string, secure?: boolean | Function, doneCallback?: any, failCallback?: any) {
+    connect(this: baqend, hostOrApp: string, secure?: boolean | CallableFunction,
+      doneCallback?: any, failCallback?: any) {
       if (secure instanceof Function) {
         return this.connect(hostOrApp, undefined, secure, doneCallback);
       }

@@ -23,7 +23,7 @@ export class EntityType<T extends Entity> extends ManagedType<T> {
     constructor() {
       super(EntityType.Object.ref, null as any, Object);
 
-      this.declaredId = new class extends SingularAttribute<String> {
+      this.declaredId = new class extends SingularAttribute<string> {
         constructor() {
           super('id', BasicType.String, true);
         }
@@ -42,7 +42,7 @@ export class EntityType<T extends Entity> extends ManagedType<T> {
       this.declaredId.init(this, 0);
       this.declaredId.isId = true;
 
-      this.declaredVersion = new class extends SingularAttribute<Number> {
+      this.declaredVersion = new class extends SingularAttribute<number> {
         constructor() {
           super('version', BasicType.Integer, true);
         }
@@ -126,9 +126,9 @@ export class EntityType<T extends Entity> extends ManagedType<T> {
     }
   };
 
-  public declaredId: SingularAttribute<String> | null = null;
+  public declaredId: SingularAttribute<string> | null = null;
 
-  public declaredVersion: SingularAttribute<Number> | null = null;
+  public declaredVersion: SingularAttribute<number> | null = null;
 
   public declaredAcl: SingularAttribute<Acl> | null = null;
 
@@ -151,16 +151,16 @@ export class EntityType<T extends Entity> extends ManagedType<T> {
     return PersistenceType.ENTITY;
   }
 
-  get id(): SingularAttribute<String> {
-    return this.declaredId || this.superType!!.id;
+  get id(): SingularAttribute<string> {
+    return this.declaredId || this.superType!.id;
   }
 
-  get version(): SingularAttribute<Number> {
-    return this.declaredVersion || this.superType!!.version;
+  get version(): SingularAttribute<number> {
+    return this.declaredVersion || this.superType!.version;
   }
 
   get acl(): SingularAttribute<Acl> {
-    return this.declaredAcl || this.superType!!.acl;
+    return this.declaredAcl || this.superType!.acl;
   }
 
   /**
@@ -177,7 +177,7 @@ export class EntityType<T extends Entity> extends ManagedType<T> {
    * @inheritDoc
    */
   createProxyClass(): Class<T> {
-    let { typeConstructor } = this.superType!!;
+    let { typeConstructor } = this.superType!;
     if (typeConstructor === Object) {
       switch (this.name) {
         case 'User':
@@ -192,7 +192,7 @@ export class EntityType<T extends Entity> extends ManagedType<T> {
       }
     }
 
-    return this.enhancer!!.createProxy(typeConstructor);
+    return this.enhancer!.createProxy(typeConstructor);
   }
 
   /**

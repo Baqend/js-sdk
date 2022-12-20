@@ -26,5 +26,5 @@ const ListType = Array;
 export { SetType as Set, ListType as List, MapType as Map };
 
 // Use one global default export of this module
-// eslint-disable-next-line import/no-default-export
+// eslint-disable-next-line no-restricted-syntax
 export default db;

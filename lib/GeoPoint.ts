@@ -123,7 +123,8 @@ export class GeoPoint {
    * @see http://en.wikipedia.org/wiki/Haversine_formula
    */
   radiansTo(point: GeoPoint): number {
-    const from = this;
+    // eslint-disable-next-line @typescript-eslint/no-this-alias
+    const from = this; // make the following code more readable
     const to = point;
     const rad1 = from.latitude * GeoPoint.DEG_TO_RAD;
     const rad2 = to.latitude * GeoPoint.DEG_TO_RAD;

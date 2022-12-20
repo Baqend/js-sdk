@@ -56,7 +56,7 @@ export abstract class Attribute<T> {
   static attachState<T>(obj: Managed | Array<any> | Set<any> | Map<any, any>): T | undefined;
 
   static attachState<T>(obj: Managed | Array<any> | Set<any> | Map<any, any>, state?: T,
-    overwriteExistingValue: boolean = false): T | undefined {
+    overwriteExistingValue = false): T | undefined {
     if (state !== undefined && (overwriteExistingValue || (obj as any)[ATTACHED_STATE] === undefined)) {
       // ensure that this property is not visible on browsers which do not support Symbols
       Object.defineProperty(obj, ATTACHED_STATE, { value: state, configurable: true });

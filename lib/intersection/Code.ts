@@ -27,7 +27,7 @@ export class Code {
    * @param fn The JavaScript function to serialize
    * @return The serialized function
    */
-  functionToString(fn: Function): string {
+  functionToString(fn: CallableFunction): string {
     if (!fn) {
       return '';
     }
@@ -51,9 +51,8 @@ export class Code {
    * @param code The JavaScript function to deserialize
    * @return The deserialized function
    */
-  stringToFunction(signature: string[], code: string): Function {
-    // eslint-disable-next-line @typescript-eslint/no-implied-eval
-    return new Function(signature as any /* typings are incorrect here */, code); // eslint-disable-line no-new-func
+  stringToFunction(signature: string[], code: string): CallableFunction {
+    return new Function(signature as any /* typings are incorrect here */, code);
   }
 
   /**
@@ -77,7 +76,7 @@ export class Code {
    * instead of a string
    * @return The code as parsed function
    */
-  loadCode(type: ManagedType<any> | string, codeType: string, asFunction: true): Promise<Function>;
+  loadCode(type: ManagedType<any> | string, codeType: string, asFunction: true): Promise<CallableFunction>;
 
   /**
    * Loads Baqend code which will be identified by the given bucket and code type
@@ -91,7 +90,8 @@ export class Code {
    */
   loadCode(type: ManagedType<any> | string, codeType: string, asFunction?: false): Promise<string>;
 
-  loadCode(type: ManagedType<any> | string, codeType: string, asFunction = false): Promise<Function | string | null> {
+  loadCode(type: ManagedType<any> | string, codeType: string, asFunction = false):
+    Promise<CallableFunction | string | null> {
     const bucket = typeof type === 'string' ? type : type.name;
     const msg = new message.GetBaqendCode(bucket, codeType)
       .responseType('text');
@@ -126,9 +126,10 @@ export class Code {
    * @param fn Baqend code as a function
    * @return The stored code as a parsed function
    */
-  saveCode(type: ManagedType<any> | string, codeType: string, fn: Function): Promise<Function>;
+  saveCode(type: ManagedType<any> | string, codeType: string, fn: CallableFunction): Promise<CallableFunction>;
 
-  saveCode(type: ManagedType<any> | string, codeType: string, fn: Function | string): Promise<Function | string> {
+  saveCode(type: ManagedType<any> | string, codeType: string, fn: CallableFunction | string):
+    Promise<CallableFunction | string> {
     const bucket = typeof type === 'string' ? type : type.name;
 
     const msg = new message.SetBaqendCode(bucket, codeType)
@@ -162,7 +163,8 @@ export class Code {
    * @return
    * @private
    */
-  parseCode(bucket: string, codeType: string, asFunction: boolean, code: string | null): string | null | Function {
+  parseCode(bucket: string, codeType: string, asFunction: boolean, code: string | null):
+    string | null | CallableFunction {
     if (codeType === 'validate') {
       const type = this.metamodel.entity(bucket)!;
       type.validationCode = code === null ? null : Validator.compile(type, code);

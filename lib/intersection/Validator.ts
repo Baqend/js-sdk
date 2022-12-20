@@ -18,6 +18,7 @@ type Validators = Omit<
 >;
 
 // import all validators from the validation library
+// eslint-disable-next-line @typescript-eslint/no-empty-interface
 export interface Validator extends Pick<Validators, keyof Validators>{}
 export class Validator {
   /**
@@ -26,7 +27,7 @@ export class Validator {
    * @param validationCode The validation code
    * @return the parsed validation function
    */
-  static compile(managedType: ManagedType<any>, validationCode: string): Function {
+  static compile(managedType: ManagedType<any>, validationCode: string): CallableFunction {
     const keys: string[] = [];
     const iter = managedType.attributes();
     for (let el = iter.next(); !el.done; el = iter.next()) {
@@ -87,7 +88,7 @@ export class Validator {
    * @param fn will be used to validate the value
    * @return
    */
-  is(fn: Function): Validator;
+  is(fn: CallableFunction): Validator;
 
   /**
    * Executes the given validation function to validate the value.
@@ -100,9 +101,9 @@ export class Validator {
    * @param fn will be used to validate the value
    * @return
    */
-  is(error: string, fn: Function): Validator;
+  is(error: string, fn: CallableFunction): Validator;
 
-  is(error: string | Function, fn?: Function): Validator {
+  is(error: string | CallableFunction, fn?: CallableFunction): Validator {
     if (error instanceof Function) {
       return this.is('is', error);
     }
@@ -123,7 +124,7 @@ export class Validator {
     const args = argumentList || [];
     try {
       args.unshift(this.toStringValue());
-      if ((valLib[method] as Function).apply(this, args) === false) {
+      if ((valLib[method] as any).apply(this, args) === false) {
         this.errors.push(errorMessage || method);
       }
     } catch (e: any) {

@@ -28,14 +28,14 @@ export class Node<T extends Entity> extends Query<T> {
   /**
    * The offset how many results should be skipped
    */
-  public firstResult: number = 0;
+  public firstResult = 0;
 
   /**
    * The limit how many objects should be returned
    * @type number
    * @readonly
    */
-  public maxResults: number = -1;
+  public maxResults = -1;
 
   /**
    * The properties which should be used sort the result

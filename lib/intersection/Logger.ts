@@ -14,7 +14,7 @@ export class Logger {
 
   public entityManager: EntityManager = null as any;
 
-  public levelIndex: number = 2;
+  public levelIndex = 2;
 
   /**
    * Creates a Logger instance for the given EntityManager
@@ -125,7 +125,7 @@ export class Logger {
 
     let message: string = typeof args[0] === 'string' ? this.format(args.shift(), args) : '[no message]';
 
-    let data: { data: any } | { name: string, message: string, stack: string, data: {}, status: number } | null = null;
+    let data: { data: any } | { name: string, message: string, stack: string, data: any, status: number } | null = null;
     if (args.length) {
       const arg = args.pop();
       data = arg;
@@ -135,9 +135,8 @@ export class Logger {
       if (arg instanceof Error) {
         // errors aren't loggable by default, since they do not have any visible property
         const {
-          // @ts-ignore
           stack, data: data1, message: message1, name, status,
-        } = arg;
+        } = arg as Error & { data: any, status: number };
         data = {
           name,
           message: message1,

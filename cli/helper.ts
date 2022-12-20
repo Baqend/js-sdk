@@ -50,13 +50,11 @@ export function isFile(path: string) : Promise<boolean> {
  * @param {string} dir The path where a directory should exist.
  * @return {Promise<void>} Resolves when the given directory is existing.
  */
-export function ensureDir(dir: string): Promise<void> {
-  return isDir(dir).then((directory) => {
-    if (!directory) {
-      return mkdir(dir, { recursive: true }).then(() => {});
-    }
-    return undefined;
-  });
+export async function ensureDir(dir: string): Promise<void> {
+  const directory = await isDir(dir);
+  if (!directory) {
+    await mkdir(dir, { recursive: true });
+  }
 }
 
 export function readInput(question: string, hidden = false): Promise<string> {

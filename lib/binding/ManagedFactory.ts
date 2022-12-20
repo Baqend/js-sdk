@@ -55,7 +55,7 @@ export class ManagedFactory<T extends Managed> extends Factory<T> {
    * @param methods The methods to add
    * @return
    */
-  addMethods(methods: { [name: string]: Function }): void {
+  addMethods(methods: { [name: string]: NewableFunction }): void {
     Object.assign(this.methods, methods);
   }
 
@@ -65,7 +65,7 @@ export class ManagedFactory<T extends Managed> extends Factory<T> {
    * @param fn The Method to add
    * @return
    */
-  addMethod(name: string, fn: Function): void {
+  addMethod(name: string, fn: NewableFunction): void {
     this.methods[name] = fn;
   }
 }

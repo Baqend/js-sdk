@@ -23,26 +23,26 @@ function jsonToDate(json: Json, currentValue: Date | null): Date | null {
 }
 
 export class BasicType<T> extends Type<T> {
-  public static readonly Boolean = new class BooleanType extends BasicType<Boolean> {
-    fromJsonValue(state: ManagedState, json: Json, currentValue: Boolean | null): Boolean | null {
+  public static readonly Boolean = new class BooleanType extends BasicType<boolean> {
+    fromJsonValue(state: ManagedState, json: Json, currentValue: boolean | null): boolean | null {
       return typeof json === 'string' ? json !== 'false' : super.fromJsonValue(state, json, currentValue);
     }
   }('Boolean', Boolean);
 
-  public static readonly Double = new class DoubleType extends BasicType<Number> {
-    fromJsonValue(state: ManagedState, json: Json, currentValue: Number | null) {
+  public static readonly Double = new class DoubleType extends BasicType<number> {
+    fromJsonValue(state: ManagedState, json: Json, currentValue: number | null) {
       return typeof json === 'string' ? parseFloat(json) : super.fromJsonValue(state, json, currentValue);
     }
   }('Double', Number);
 
-  public static readonly Integer = new class IntegerType extends BasicType<Number> {
+  public static readonly Integer = new class IntegerType extends BasicType<number> {
     fromJsonValue(state: ManagedState, json: Json, currentValue: number | null) {
       return typeof json === 'string' ? parseInt(json, 10) : super.fromJsonValue(state, json, currentValue);
     }
   }('Integer', Number);
 
-  public static readonly String = new class StringType extends BasicType<String> {
-    fromJsonValue(state: ManagedState, json: Json, currentValue: String | null): String | null {
+  public static readonly String = new class StringType extends BasicType<string> {
+    fromJsonValue(state: ManagedState, json: Json, currentValue: string | null): string | null {
       return super.fromJsonValue(state, json, currentValue);
     }
   }('String', String);

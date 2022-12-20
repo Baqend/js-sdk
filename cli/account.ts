@@ -372,7 +372,6 @@ function readInputCredentials(appInfo: AppInfo): Promise<UsernamePasswordCredent
 
 function decrypt(input: string) {
   // This is legacy and we will remove support for the username / password storage in the profile file
-  // eslint-disable-next-line node/no-deprecated-api
   const decipher = crypto.createDecipher(algorithm, PROFILE_DEFAULT_KEY);
   let decrypted = decipher.update(input, 'base64', 'utf8');
   decrypted += decipher.final('utf8');

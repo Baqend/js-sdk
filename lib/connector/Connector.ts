@@ -116,8 +116,7 @@ export abstract class Connector {
       for (let i = this.connectors.length - 1; i >= 0; i -= 1) {
         const ConnectorConstructor = this.connectors[i];
         if (ConnectorConstructor.isUsable && ConnectorConstructor.isUsable(h, p, s, b)) {
-          // @ts-ignore
-          connection = new ConnectorConstructor(h, p, s, b);
+          connection = new (ConnectorConstructor as Class<Connector>)(h, p, s, b);
           break;
         }
       }
