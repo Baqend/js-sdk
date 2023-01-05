@@ -1259,6 +1259,22 @@ export const RevalidateAssets = Message.create<RevalidateAssets>({
   status: [202],
 });
 
+interface EditRevalidationJob {
+  /**
+   * Changes the status
+   * Change the status of the given revalidation job
+   *
+   * @param id The status id
+   * @param body The massage Content
+   */
+  new(id: string, body?: json): Message;
+}
+export const EditRevalidationJob = Message.create<EditRevalidationJob>({
+  method: 'POST',
+  path: '/asset/revalidate/:id',
+  status: [204],
+});
+
 interface GetRevalidationStatus {
   /**
    * Gets the status
@@ -1473,4 +1489,182 @@ export const UploadAPNSCertificate = Message.create<UploadAPNSCertificate>({
   method: 'POST',
   path: '/config/APNSCert',
   status: [204],
+});
+
+interface ConfigAPI {
+  /**
+   * Installation Project
+   * ##GetInstallationByDomainAndConfigVersion : Returns the complete Installation Object as it would do via the CRUD API
+   *
+   * @param domain domain to be searched
+   * @param configVersion configVersion to be searched
+   */
+  new(domain: string, configVersion: string): Message;
+}
+export const ConfigAPI = Message.create<ConfigAPI>({
+  method: 'GET',
+  path: '/speedkit/installation/:domain/:configVersion',
+  status: [200],
+});
+
+interface GetInstallationById {
+  /**
+   * Returns the complete Installation Object which had the given Id as it would do via the CRUD API
+   *
+   * @param id id to be searched
+   */
+  new(id: string): Message;
+}
+export const GetInstallationById = Message.create<GetInstallationById>({
+  method: 'GET',
+  path: '/speedkit/installation/:id',
+  status: [200],
+});
+
+interface CreateNewInstallation {
+  /**
+   * Creates Installation object properties and returns the updated version
+   *
+   * @param domain domain to be used to create new installation
+   * @param body The massage Content
+   */
+  new(domain: string, body?: json): Message;
+}
+export const CreateNewInstallation = Message.create<CreateNewInstallation>({
+  method: 'POST',
+  path: '/speedkit/installation/:domain',
+  status: [200],
+});
+
+interface UpdateInstallationByDomainAndConfigVersion {
+  /**
+   * Updates an existing installtion version
+   *
+   * @param domain domain to be searched
+   * @param configVersion configVersion to be searched
+   * @param body The massage Content
+   */
+  new(domain: string, configVersion: string, body?: json): Message;
+}
+export const UpdateInstallationByDomainAndConfigVersion = Message.create<UpdateInstallationByDomainAndConfigVersion>({
+  method: 'PUT',
+  path: '/speedkit/installation/:domain/:configVersion',
+  status: [200],
+});
+
+interface UpdateInstallationById {
+  /**
+   * Updates an existing installtion version
+   *
+   * @param id id to be searched
+   * @param body The massage Content
+   */
+  new(id: string, body?: json): Message;
+}
+export const UpdateInstallationById = Message.create<UpdateInstallationById>({
+  method: 'PUT',
+  path: '/speedkit/installation/:id',
+  status: [200],
+});
+
+interface CloneInstallationByDomainAndConfigVersion {
+  /**
+   * Clone existing installation, update it and return the cloned version with the updated properties
+   *
+   * @param domain domain
+   * @param configVersion configVersion the configuration version
+   */
+  new(domain: string, configVersion: string): Message;
+}
+export const CloneInstallationByDomainAndConfigVersion = Message.create<CloneInstallationByDomainAndConfigVersion>({
+  method: 'POST',
+  path: '/speedkit/installation/:domain/:configVersion/clone',
+  status: [200],
+});
+
+interface CloneInstallationById {
+  /**
+   * Clone existing installation, update it and return the cloned version with the updated properties
+   *
+   * @param id id to be searched
+   */
+  new(id: string): Message;
+}
+export const CloneInstallationById = Message.create<CloneInstallationById>({
+  method: 'POST',
+  path: '/speedkit/installation/:id/clone',
+  status: [200],
+});
+
+interface ActivateInstallationByDomainAndConfigVersion {
+  /**
+   * Activate a selected speedKit install configuration version by selecting the current active version of the same domain
+   *
+   * @param domain domain to be activated
+   * @param configVersion configVersion to be activated (current active version of the same domain)
+   */
+  new(domain: string, configVersion: string): Message;
+}
+export const ActivateInstallationByDomainAndConfigVersion = Message.create<ActivateInstallationByDomainAndConfigVersion>({
+  method: 'POST',
+  path: '/speedkit/installation/:domain/:configVersion/activate',
+  status: [200],
+});
+
+interface ActivateInstallationById {
+  /**
+   * Activate a selected speedKit install configuration version by selecting the current active version of the same domain
+   *
+   * @param id Id of a Speed Kit Installation to be activated
+   */
+  new(id: string): Message;
+}
+export const ActivateInstallationById = Message.create<ActivateInstallationById>({
+  method: 'POST',
+  path: '/speedkit/installation/:id/activate',
+  status: [200],
+});
+
+interface FindSpecificInstallation {
+  /**
+   * Search for a specific installation
+   *
+   * @param domain domain to be used to filter
+   * @param status status to be used to filter
+   * @param start start the amount of configs to skip
+   * @param count count the amount of configs to return
+   */
+  new(domain?: string, status?: string, start?: number, count?: number): Message;
+}
+export const FindSpecificInstallation = Message.create<FindSpecificInstallation>({
+  method: 'GET',
+  path: '/speedkit/installation?domain=&status=&start=0&count=-1',
+  status: [200],
+});
+
+interface GetAllDomains {
+  /**
+   * Queries the Database for all configured domains
+   */
+  new(): Message;
+}
+export const GetAllDomains = Message.create<GetAllDomains>({
+  method: 'GET',
+  path: '/speedkit/installation/domain',
+  status: [200],
+});
+
+interface Mail {
+  /**
+   * Endpoint to send e-mails
+   * Send an e-mail with the data given from the object
+   *
+   * @param body The massage Content
+   */
+  new(body?: json): Message;
+}
+export const Mail = Message.create<Mail>({
+  method: 'POST',
+  path: '/mail',
+  status: [200],
 });
