@@ -269,7 +269,7 @@ export class EntityManager extends Lockable {
     }
 
     const bloomFilter = this.entityManagerFactory.connectData?.bloomFilter;
-    if (this.bloomFilterRefresh > 0 && bloomFilter && atob && !isNode) {
+    if (this.bloomFilterRefresh > 0 && bloomFilter && typeof atob !== 'undefined' && !isNode) {
       this._updateBloomFilter(bloomFilter);
     }
   }

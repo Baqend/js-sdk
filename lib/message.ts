@@ -117,6 +117,18 @@ export const Connect = Message.create<Connect>({
   status: [200],
 });
 
+interface ConnectViaPost {
+  /**
+   * Connects a browser to this server via a post request
+   */
+  new(): Message;
+}
+export const ConnectViaPost = Message.create<ConnectViaPost>({
+  method: 'POST',
+  path: '/connect',
+  status: [200],
+});
+
 interface Status {
   /**
    * Gets the status of the server health
@@ -820,18 +832,17 @@ interface OAuth2 {
    * This resource is should be invoked by the provider with a redirect after the user granted permission.
    *
    * @param provider The OAuth provider
-   * @param device_code The device_code wich was received from the device OAuth request
    * @param state Additional form encoded state. Can contain an optional redirect (url) that will be called after login with the user token attached as query parameter.
-   * @param code The code wich was received from the normal OAuth flow
+   * @param code The code written by the provider
    * @param oauth_verifier OAuth 1.0 code
    * @param oauth_token OAuth 1.0 identifier
    * @param error_description The error description of the oauth provider
    */
-  new(provider: string, device_code?: string, state?: string, code?: string, oauth_verifier?: string, oauth_token?: string, error_description?: string): Message;
+  new(provider: string, state?: string, code?: string, oauth_verifier?: string, oauth_token?: string, error_description?: string): Message;
 }
 export const OAuth2 = Message.create<OAuth2>({
   method: 'GET',
-  path: '/db/User/OAuth/:provider?device_code=&state=&code=&oauth_verifier=&oauth_token=&error_description=',
+  path: '/db/User/OAuth/:provider?state=&code=&oauth_verifier=&oauth_token=&error_description=',
   status: [200],
 });
 
@@ -849,6 +860,19 @@ export const OAuth1 = Message.create<OAuth1>({
   method: 'GET',
   path: '/db/User/OAuth1/:provider',
   status: [200],
+});
+
+interface DeletePassword {
+  /**
+   * Deletes the password of the currently logged in user
+   * Method to delete the password of the currently logged in user
+   */
+  new(): Message;
+}
+export const DeletePassword = Message.create<DeletePassword>({
+  method: 'DELETE',
+  path: '/db/User/password',
+  status: [204],
 });
 
 interface UserToken {
@@ -879,6 +903,22 @@ export const RevokeUserToken = Message.create<RevokeUserToken>({
   method: 'DELETE',
   path: '/db/User/:oid/token',
   status: [204],
+});
+
+interface AssumeRole {
+  /**
+   * Assumes a role
+   * Assumes a role if it is permitted to the requesting user and returns a new token wich represents
+   * the assumed role
+   *
+   * @param oid The unique role identifier
+   */
+  new(oid: string): Message;
+}
+export const AssumeRole = Message.create<AssumeRole>({
+  method: 'POST',
+  path: '/db/Role/:oid/assume',
+  status: [200],
 });
 
 interface GetBaqendCode {
@@ -1433,52 +1473,4 @@ export const UploadAPNSCertificate = Message.create<UploadAPNSCertificate>({
   method: 'POST',
   path: '/config/APNSCert',
   status: [204],
-});
-
-interface Install {
-  /**
-   * Provides the speed kit installation script
-   * Provides the speed kit installation script
-   *
-   * @param x ignored - Workaround to allow regex in path. TODO: Allow regex for all path in restful-jetty
-   * @param d The domain to get the corresponding config
-   */
-  new(x: string, d?: string): Message;
-}
-export const Install = Message.create<Install>({
-  method: 'GET',
-  path: '/speedkit?d=',
-  status: [200],
-});
-
-interface SW {
-  /**
-   * Provides the service worker script
-   * Provides the service worker script
-   *
-   * @param x ignored - Workaround to allow regex in path. TODO: Allow regex for all path in restful-jetty
-   * @param r String The ID of the Speed Kit install object
-   * @param v The version of a released Speed Kit version
-   */
-  new(x: string, r?: string, v?: string): Message;
-}
-export const SW = Message.create<SW>({
-  method: 'GET',
-  path: '/speedkit?r=&v=',
-  status: [200],
-});
-
-interface Beacon {
-  /**
-   * Insert RUM Beacon
-   * Inserts a RUM Beacon in JSON format.
-   *
-   * @param body The massage Content
-   */
-  new(body?: json): Message;
-}
-export const Beacon = Message.create<Beacon>({
-  method: 'POST',
-  path: '/rum/pi',
-  status: [200],
 });
