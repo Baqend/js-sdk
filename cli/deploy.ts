@@ -20,18 +20,19 @@ export type SchemaArgs = {
   code?: boolean,
   codeDir: string,
   schema?: boolean,
+  uploadRetries?: number
 };
 
 export function deploy(args: SchemaArgs & AccountArgs) {
   return account.login(args).then((db) => {
     const promises: Promise<any>[] = [];
     if ((!args.code && !args.files) || (args.code && args.files)) {
-      promises.push(deployFiles(db, args.bucketPath, args.fileDir, args.fileGlob, args.createBucket));
+      promises.push(deployFiles(db, args.bucketPath, args.fileDir, args.fileGlob, args.createBucket, args.uploadRetries));
       promises.push(deployCode(db, args.codeDir));
     } else if (args.code) {
       promises.push(deployCode(db, args.codeDir));
     } else if (args.files) {
-      promises.push(deployFiles(db, args.bucketPath, args.fileDir, args.fileGlob, args.createBucket));
+      promises.push(deployFiles(db, args.bucketPath, args.fileDir, args.fileGlob, args.createBucket, args.uploadRetries));
     }
     if (args.schema) {
       promises.push(uploadSchema(db));
@@ -40,7 +41,7 @@ export function deploy(args: SchemaArgs & AccountArgs) {
   });
 }
 
-async function deployFiles(db: EntityManager, path: string, cwd: string, pattern: string, createBucket?: boolean):
+async function deployFiles(db: EntityManager, path: string, cwd: string, pattern: string, createBucket?: boolean, uploadRetries?: number):
 Promise<void> {
   let bucket = path;
   while (bucket.length && bucket.charAt(0) === '/') bucket = bucket.substring(1);
@@ -62,7 +63,7 @@ Promise<void> {
     });
   }));
 
-  const result = await uploadFiles(db, bucket, files, cwd);
+  const result = await uploadFiles(db, bucket, files, cwd, uploadRetries || 3);
   if (result && result.length > 0) {
     console.log('File deployment completed.');
   } else {
@@ -120,7 +121,7 @@ function uploadCode(db: EntityManager, name: string, codePath: string) {
   });
 }
 
-function uploadFiles(db: EntityManager, bucket: string, files: string | string[], cwd: string): Promise<any[]> {
+function uploadFiles(db: EntityManager, bucket: string, files: string | string[], cwd: string, uploadRetries: number): Promise<any[]> {
   const isTty = process.stdout.isTTY;
   let index = 0;
 
@@ -152,12 +153,12 @@ function uploadFiles(db: EntityManager, bucket: string, files: string | string[]
         console.log(''); // add a final linebreak
       }
 
-      await uploadFile(db, bucket, file, cwd);
+      await uploadFile(db, bucket, file, cwd, uploadRetries);
     }
   }
 }
 
-async function uploadFile(db: EntityManager, bucket: string, filePath: string, cwd: string): Promise<any> {
+async function uploadFile(db: EntityManager, bucket: string, filePath: string, cwd: string, uploadRetries: number): Promise<any> {
   const fullFilePath = pathJoin(cwd, filePath);
 
   const st = await stat(fullFilePath);
@@ -165,7 +166,7 @@ async function uploadFile(db: EntityManager, bucket: string, filePath: string, c
     return null;
   }
 
-  for (let retires = 3; ; retires -= 1) {
+  for (let retries = uploadRetries; ; retries -= 1) {
     try {
       const file = new db.File({
         path: `/${bucket}/${filePath}`, data: fs.createReadStream(fullFilePath), size: st.size, type: 'stream',
@@ -173,8 +174,8 @@ async function uploadFile(db: EntityManager, bucket: string, filePath: string, c
 
       return await file.upload({ force: true });
     } catch (e: any) {
-      if (retires <= 0) {
-        console.warn(`Failed to upload file ${filePath}. ${retires} retries left.`);
+      if (retries <= 0) {
+        console.warn(`Failed to upload file ${filePath}. ${uploadRetries} retries left.`);
         throw new Error(`Failed to upload file ${filePath}: ${e.message}`);
       }
     }
