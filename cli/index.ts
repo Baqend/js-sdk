@@ -47,7 +47,7 @@ export function run() {
     .option('-g, --file-glob <pattern>', 'pattern to match files', '**/*')
     .option('-b, --bucket-path <path>', 'remote path where the files will be uploaded to.', 'www')
     .option('-B, --create-bucket', 'create the bucket, if it does not exists.')
-    .option('--upload-retries', 'specifies the number of retries when the upload fails.')
+    .option('-R', '--upload-retries', 'specifies the number of retries when the upload fails.')
     .option('-C, --code', 'deploy baqend code')
     .option('-c, --code-dir <dir>', 'path to code directory', 'baqend')
     .option('-S, --schema', 'deploy schema')
