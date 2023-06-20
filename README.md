@@ -5,6 +5,7 @@ Baqend JavaScript SDK and CLI for High-Performance Websites
 * [Docs](https://www.baqend.com/guide/) and [API](https://www.baqend.com/js-sdk/latest/index.html)
 * [CLI help](https://www.baqend.com/guide/topics/cli/)
 * [Dashboard](https://dashboard.baqend.com/register/)
+* [Contributing](https://www.notion.so/Coding-Guidelines-161d619cb9d54299bb7717b848140a53)
 
 CLI
 -----
