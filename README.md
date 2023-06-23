@@ -6,7 +6,7 @@ Baqend JavaScript SDK and CLI for High-Performance Websites
 * [CLI help](https://www.baqend.com/guide/topics/cli/)
 * [Dashboard](https://dashboard.baqend.com/register/)
 
-__Please review the [contribution guide](CONTRIBUTING.md) and the [coding guidelines](https://www.notion.so/Coding-Guidelines-161d619cb9d54299bb7717b848140a53) for information on how to contribute to this project before supplying a merge request.__
+__Please review the [contribution guide](CONTRIBUTING.md) for information on how to contribute to this project before supplying a merge request.__
 
 ### Rules
 
