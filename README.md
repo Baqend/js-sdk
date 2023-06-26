@@ -1,4 +1,4 @@
-Baqend JavaScript SDK
+# Baqend JavaScript SDK
 =====================
 Baqend JavaScript SDK and CLI for High-Performance Websites
 
@@ -6,6 +6,15 @@ Baqend JavaScript SDK and CLI for High-Performance Websites
 * [CLI help](https://www.baqend.com/guide/topics/cli/)
 * [Dashboard](https://dashboard.baqend.com/register/)
 
+__Please review the [contribution guide](CONTRIBUTING.md) for information on how to contribute to this project before supplying a merge request.__
+
+### Rules
+
+* New fixes, features or other code work is done in separate branches. Please refer to the [contribution guide](CONTRIBUTING.md) for branch naming rules and
+  other rules on contributing to this project.
+* Regularily (at leas once a day) ***rebase*** your feature branch onto the master branch. This will make sure, that you're working on the most up-to-date code.
+  The chance for merge conflicts is much lower as well.
+  
 CLI
 -----
 Baqend provides a CLI to easily manage your app. Install it by typing `npm install -g baqend`.
