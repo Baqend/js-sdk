@@ -1,5 +1,3 @@
-'use strict';
-
 if (typeof module !== 'undefined') {
   require('./node');
 }
@@ -7,21 +5,25 @@ if (typeof module !== 'undefined') {
 describe('Test code', function () {
   var db, code, entityType, personType, emf;
 
-  before(function () {
-    emf = new DB.EntityManagerFactory({ host: env.TEST_SERVER, tokenStorage: helper.rootTokenStorage });
-
-    return emf.ready().then(function () {
-      var metamodel = emf.metamodel;
-      personType = new DB.metamodel.EntityType(helper.randomize('CodePerson'), metamodel.entity(Object));
-      metamodel.addType(personType);
-
-      personType.addAttribute(new DB.metamodel.SingularAttribute('name', metamodel.baseType(String)));
-      personType.addAttribute(new DB.metamodel.SingularAttribute('age', metamodel.baseType(Number)));
-      personType.addAttribute(new DB.metamodel.SingularAttribute('date', metamodel.baseType(Date)));
-      personType.addAttribute(new DB.metamodel.SingularAttribute('email', metamodel.baseType(String)));
-
-      return metamodel.save();
+  before(async function () {
+    emf = new DB.EntityManagerFactory({
+      host: env.TEST_SERVER,
+      tokenStorage: await helper.rootTokenStorage,
     });
+
+    return emf.ready()
+      .then(function () {
+        var { metamodel } = emf;
+        personType = new DB.metamodel.EntityType(helper.randomize('CodePerson'), metamodel.entity(Object));
+        metamodel.addType(personType);
+
+        personType.addAttribute(new DB.metamodel.SingularAttribute('name', metamodel.baseType(String)));
+        personType.addAttribute(new DB.metamodel.SingularAttribute('age', metamodel.baseType(Number)));
+        personType.addAttribute(new DB.metamodel.SingularAttribute('date', metamodel.baseType(Date)));
+        personType.addAttribute(new DB.metamodel.SingularAttribute('email', metamodel.baseType(String)));
+
+        return metamodel.save();
+      });
   });
 
   describe('handler', function () {
@@ -40,11 +42,11 @@ describe('Test code', function () {
     });
 
     handlers.forEach(function (type) {
-      var signature = 'on' + type.substring(0, 1).toUpperCase() + type.substring(1);
+      var signature = `on${type.substring(0, 1).toUpperCase()}${type.substring(1)}`;
 
       describe(signature, function () {
         it('should set and get code', function () {
-          var fn = 'exports.' + signature + ' = function(db, obj) { return \'' + type + Math.random().toString() + '\'; }';
+          var fn = `exports.${signature} = function(db, obj) { return '${type}${Math.random().toString()}'; }`;
           return code.saveCode(entityType, type, fn).then(function () {
             return code.loadCode(entityType, type);
           }).then(function (code) {
@@ -53,12 +55,12 @@ describe('Test code', function () {
         });
 
         it('should delete code', function () {
-          var fn = 'exports.' + signature + ' = function(db, obj) { return \'' + type + Math.random().toString() + '\'; }';
+          var fn = `exports.${signature} = function(db, obj) { return '${type}${Math.random().toString()}'; }`;
           return code.saveCode(entityType, type, fn).then(function () {
             return code.deleteCode(entityType, type);
-          }).then(function (fn) {
+          }).then(async function (fn) {
             expect(fn).be.null;
-            return expect(code.loadCode(entityType, type)).become(null);
+            expect(await code.loadCode(entityType, type)).be.null;
           });
         });
       });
@@ -68,7 +70,7 @@ describe('Test code', function () {
       it('should call handler', function () {
         return code.saveCode(entityType, 'insert', function (module, exports) {
           exports.onInsert = function (db, obj) {
-            obj.name = 'changed ' + obj.name;
+            obj.name = `changed ${obj.name}`;
           };
         }).then(function () {
           var obj = new db[personType.name]({
@@ -104,7 +106,7 @@ describe('Test code', function () {
       it('should call handler', function () {
         return code.saveCode(entityType, 'update', function (module, exports) {
           exports.onUpdate = function (db, obj) {
-            obj.name = 'updated ' + obj.name;
+            obj.name = `updated ${obj.name}`;
           };
         }).then(function () {
           var obj = new db[personType.name]({
@@ -125,7 +127,7 @@ describe('Test code', function () {
         return code.saveCode(entityType, 'update', function (module, exports) {
           exports.onUpdate = function (db, obj) {
             return db[obj._metadata.type.name].load(obj.id, function (before) {
-              obj.name += ' before ' + before.name;
+              obj.name += ` before ${before.name}`;
               return obj;
             });
           };
@@ -145,28 +147,34 @@ describe('Test code', function () {
     });
 
     describe('onDelete', function () {
-      it('should call handler', function () {
-        return expect(code.saveCode(entityType, 'delete', function (module, exports) {
+      it('should call handler', async function () {
+        await code.saveCode(entityType, 'delete', function (module, exports) {
+          // eslint-disable-next-line no-param-reassign
           exports.onDelete = function (db, obj) {
             throw new Abort('Delete not accepted.');
           };
-        }).then(function () {
-          var obj = new db[personType.name]({
-            name: 'test',
-          });
+        });
 
-          return obj.save();
-        }).then(function (obj) {
-          expect(obj.name).equals('test');
-          return obj.delete();
-        })).be.rejectedWith('Delete not accepted.');
+        var obj = new db[personType.name]({
+          name: 'test',
+        });
+
+        await obj.save();
+
+        expect(obj.name).equals('test');
+        try {
+          await obj.delete();
+          expect.fail();
+        } catch (e) {
+          expect(e.message).to.eq('Delete not accepted.');
+        }
       });
 
       it('should allow to load before image', function () {
         return code.saveCode(entityType, 'delete', function (module, exports) {
           exports.onDelete = function (db, obj) {
             return db[obj._metadata.type.name].load(obj.id, function (obj) {
-              if (obj.name !== 'test') { throw new Abort('name was ' + obj.name + ' not test'); }
+              if (obj.name !== 'test') { throw new Abort(`name was ${obj.name} not test`); }
             });
           };
         }).then(function () {
@@ -180,20 +188,26 @@ describe('Test code', function () {
         });
       });
 
-      it('should be abortable', function () {
-        return expect(code.saveCode(entityType, 'delete', function (module, exports) {
+      it('should be abortable', async function () {
+        await code.saveCode(entityType, 'delete', function (module, exports) {
+          // eslint-disable-next-line no-param-reassign
           exports.onDelete = function (db, obj) {
             throw new Abort('delete not permitted');
           };
-        }).then(function () {
-          var obj = new db[personType.name]({
-            name: 'test',
-          });
+        });
 
-          return obj.save();
-        }).then(function (obj) {
-          return obj.delete();
-        })).be.rejectedWith('delete not permitted');
+        var obj = new db[personType.name]({
+          name: 'test',
+        });
+
+        await obj.save();
+
+        try {
+          await obj.delete();
+          expect.fail();
+        } catch (e) {
+          expect(e.message).eq('delete not permitted');
+        }
       });
     });
 
@@ -315,20 +329,19 @@ describe('Test code', function () {
       });
     });
 
-    it('should delete code', function () {
-      return code.deleteCode(bucket, 'module').then(function () {
-        return expect(code.loadCode(bucket, 'module')).become(null);
-      });
+    it('should delete code', async function () {
+      await code.deleteCode(bucket, 'module');
+      expect(await code.loadCode(bucket, 'module')).be.null;
     });
 
-    it('should load list of code resources', function () {
-      return code.saveCode(bucket, 'module', function (module, exports) {
+    it('should load list of code resources', async function () {
+      await code.saveCode(bucket, 'module', function (module, exports) {
+        // eslint-disable-next-line no-param-reassign
         exports.call = function () { return 'yeah'; };
-      }).then(function () {
-        return expect(code.loadModules()).to.eventually.include('/code/' + bucket + '/module');
-      }).then(function () {
-        return code.deleteCode(bucket, 'module');
       });
+
+      expect(await code.loadModules()).to.include(`/code/${bucket}/module`);
+      await code.deleteCode(bucket, 'module');
     });
 
     it('should run code by get request', function () {
@@ -355,7 +368,7 @@ describe('Test code', function () {
 
     it('should accept query object', function () {
       return code.saveCode(bucket, 'module', function (module, exports) {
-        exports.call = function (db, data) { return data.first + ' ' + data.last; };
+        exports.call = function (db, data) { return `${data.first} ${data.last}`; };
       }).then(function () {
         return db.modules.get(bucket, { first: 'firstName', last: 'lastName' });
       }).then(function (result) {
@@ -394,17 +407,11 @@ describe('Test code', function () {
     });
 
     if (typeof Blob !== 'undefined' && !helper.isIE11) {
-      it('should accept blob parameter', function () {
-        var asset;
-
-        return code.saveCode(bucket, 'module', binaryNodeHandler).then(function () {
-          return helper.asset('flames.png');
-        }).then(function (blob) {
-          asset = blob;
-          return db.modules.post(bucket, blob, { responseType: 'blob' });
-        }).then(function (result) {
-          expect(result).eqls(asset);
-        });
+      it('should accept blob parameter', async function () {
+        await code.saveCode(bucket, 'module', binaryNodeHandler);
+        const asset = await helper.asset('flames.png');
+        const result = await db.modules.post(bucket, asset, { responseType: 'blob' });
+        expect(result.size).eqls(asset.size);
       });
 
       it('should accept base64 parameter', function () {
@@ -414,7 +421,7 @@ describe('Test code', function () {
         return code.saveCode(bucket, 'module', binaryNodeHandler).then(function () {
           return db.modules.post(bucket, svgBase64, { requestType: 'base64', mimeType: mimeType, responseType: 'data-url' });
         }).then(function (result) {
-          expect(result).string('data:' + mimeType);
+          expect(result).string(`data:${mimeType}`);
           expect(result).string(svgBase64);
         });
       });

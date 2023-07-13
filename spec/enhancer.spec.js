@@ -1,5 +1,3 @@
-'use strict';
-
 if (typeof module !== 'undefined') {
   require('./node');
 }
@@ -40,16 +38,17 @@ describe('Test enhancer', function () {
     },
   ];
 
-  beforeEach(function () {
+  beforeEach(async function () {
     var emf = new DB.EntityManagerFactory({
       host: env.TEST_SERVER,
       schema: model,
-      tokenStorage: helper.rootTokenStorage,
+      tokenStorage: await helper.rootTokenStorage,
     });
-    return emf.metamodel.save().then(function () {
-      db = emf.createEntityManager();
-      expect(db.isReady).be.true;
-    });
+    return emf.metamodel.save()
+      .then(function () {
+        db = emf.createEntityManager();
+        expect(db.isReady).be.true;
+      });
   });
 
   it('should add DAO methods', function () {
@@ -62,7 +61,7 @@ describe('Test enhancer', function () {
     expect(db.TestClass.partialUpdate).be.ok;
     expect(db.TestClass.fromJSON).be.ok;
 
-    var TestClass = db.TestClass;
+    var { TestClass } = db;
     var testClass = new TestClass();
     expect(testClass).be.ok;
 
@@ -95,7 +94,7 @@ describe('Test enhancer', function () {
     expect(db.TestEmbeddedClass.partialUpdate).be.undefined;
     expect(db.TestEmbeddedClass.fromJSON).be.ok;
 
-    var TestEmbeddedClass = db.TestEmbeddedClass;
+    var { TestEmbeddedClass } = db;
     var testClass = new TestEmbeddedClass();
     expect(testClass).be.ok;
 
@@ -175,7 +174,7 @@ describe('Test enhancer', function () {
   });
 
   it('should add new methods', function () {
-    var TestClass = db.TestClass;
+    var { TestClass } = db;
 
     var returnVal = 'testMethod';
     var newMethod = function () {
@@ -531,7 +530,7 @@ describe('Test enhancer', function () {
           this.b = b;\
           this.c = c;\
         }\
-      };\
+      }\
       Test;'); // add Test as last statement so firefox returns the class properly
   }
 
@@ -542,7 +541,7 @@ describe('Test enhancer', function () {
         constructor(a) {\
           this.a = a;\
         }\
-      };\
+      }\
       Test'); // add Test as last statement so firefox returns the class properly
   }
 });

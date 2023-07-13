@@ -1,5 +1,3 @@
-
-
 module.exports = {
   parser: '@typescript-eslint/parser',
 
@@ -9,7 +7,8 @@ module.exports = {
   ],
 
   extends: [
-    'airbnb-typescript/base',
+    'eslint:recommended',
+    'plugin:import/recommended',
     'plugin:@typescript-eslint/eslint-recommended',
     // "plugin:@typescript-eslint/recommended",
     // 'plugin:node/recommended-module',
@@ -37,10 +36,15 @@ module.exports = {
     // we disallow default exports
     "import/prefer-default-export": "off",
     "import/no-default-export": "error",
+    // we do not need that, since we are using ts
+    'import/no-unresolved': 'off',
 
     // we use this in several places, should be discussed if we want to re-enable this
     'class-methods-use-this': 'off',
     "no-underscore-dangle": ['error', { "allowAfterThis": true }],
+
+    // we are using unused args in several interface definitions
+    'no-unused-vars': 'off',
 
     'node/no-deprecated-api': 'error',
     'no-buffer-constructor': 'error',
@@ -104,6 +108,8 @@ module.exports = {
         'prefer-arrow-callback': 'off',
         'prefer-promise-reject-errors': 'warn',
         'vars-on-top': 'off',
+        '@typescript-eslint/no-unused-expressions': 'off',
+        'no-await-in-loop': 'off',
       },
     },
 

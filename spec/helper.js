@@ -1,5 +1,3 @@
-'use strict';
-
 var fs, http, https, urlParser;
 if (typeof module !== 'undefined') {
   fs = require('fs');
@@ -15,19 +13,43 @@ if (typeof window !== 'undefined') {
   global.DB = Baqend.db;
 }
 
+var rootTokenPromise;
+
 var helper = {
-  rootTokenStorage: null,
+  get rootTokenStorage() {
+    if (!rootTokenPromise) {
+      rootTokenPromise = (async () => {
+        var tokenStorage = new DB.util.TokenStorage();
+        var emf = new DB.EntityManagerFactory({ host: env.TEST_SERVER, tokenStorage });
+
+        const em = await emf.createEntityManager(true).ready();
+        await em.User.login('root', 'root');
+        return tokenStorage;
+      })();
+
+      rootTokenPromise.catch((e) => {
+        console.error('Root hook failed with error', e);
+      });
+    }
+    return rootTokenPromise;
+  },
+  async ensureGlobalConnected() {
+    if (DB.connection) return;
+
+    const localDb = await DB.connect(env.TEST_SERVER);
+    expect(localDb).equal(DB);
+  },
   makeLogin: function () {
     var text = '';
-    var possible = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+    var possible = 'abcdefghijklmnopqrstuvwxyz0123456789';
 
     for (var i = 0; i < 10; i += 1) { text += possible.charAt(Math.floor(Math.random() * possible.length)); }
 
-    return 'user-' + text;
+    return `user-${text}`;
   },
   randomize: function (name) {
     var rnd = Math.floor(Math.random() * 1000000);
-    return name + '_random_' + rnd;
+    return `${name}_random_${rnd}`;
   },
   sleep: function (time, value) {
     return new Promise(function (success) {
@@ -38,16 +60,16 @@ var helper = {
   },
   asset: function (src, type) {
     if (fs) {
-      return helper.file('spec/assets/' + src).then(function (file) {
+      return helper.file(`spec/assets/${src}`).then(function (file) {
         if (type === 'arraybuffer') {
           return file.buffer.slice(file.byteOffset, file.byteOffset + file.byteLength);
-        } else if (type === 'text') {
+        } if (type === 'text') {
           return file.toString();
         }
         return file;
       });
     }
-    return helper.req('/spec/assets/' + src, type).then(function (file) {
+    return helper.req(`/spec/assets/${src}`, type).then(function (file) {
       return file;
     });
   },
@@ -110,21 +132,12 @@ var helper = {
   isIEdge: typeof navigator !== 'undefined' && navigator.userAgent.indexOf('Edge') !== -1,
 };
 
-before(function () {
-  helper.rootTokenStorage = new DB.util.TokenStorage();
-  var emf = new DB.EntityManagerFactory({ host: env.TEST_SERVER, tokenStorage: helper.rootTokenStorage });
-
-  return Promise.all([
-    emf.createEntityManager(true).ready().then(function (em) {
-      return em.User.login('root', 'root');
-    }),
-    DB.connect(env.TEST_SERVER).then(function (localDb) {
-      expect(localDb).equal(DB);
-    }),
-  ]);
-});
-
 if (typeof module !== 'undefined') {
   module.exports = helper;
 }
 
+if (typeof window !== 'undefined' && '__WTR_CONFIG__' in window) {
+  // register mocha root hook for the web test runner based on the github issue
+  // https://github.com/modernweb-dev/web/issues/1462#issue-895453629
+  window.__WTR_CONFIG__.testFrameworkConfig.rootHooks = helper.mochaHooks;
+}

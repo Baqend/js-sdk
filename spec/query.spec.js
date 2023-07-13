@@ -5,10 +5,10 @@ if (typeof module !== 'undefined') {
 describe('Test Query', function () {
   var emf, metamodel;
 
-  before(function () {
+  before(async function () {
     var personType, addressType;
 
-    emf = new DB.EntityManagerFactory({ host: env.TEST_SERVER, schema: [], tokenStorage: helper.rootTokenStorage });
+    emf = new DB.EntityManagerFactory({ host: env.TEST_SERVER, schema: [], tokenStorage: await helper.rootTokenStorage });
     metamodel = emf.metamodel;
 
     metamodel.addType(personType = new DB.metamodel.EntityType('QueryPerson', metamodel.entity(Object)));
