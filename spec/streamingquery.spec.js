@@ -1595,7 +1595,7 @@ describe('Streaming Queries', function () {
   it('should work with minimal signature', function () {
     this.timeout(6000);
 
-    var result: String;
+    var result;
     subscription = db[bucket].find().matches('name', /^signature test/)
       .ascending('name')
       .descending('active')
