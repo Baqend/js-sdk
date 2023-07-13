@@ -414,7 +414,7 @@ describe('Streaming Queries', function () {
 
     it('should unsubscribe resultStream immediately', function () {
       this.timeout(10000);
-      var result, inserts;
+      var result = "", inserts;
 
       // Insert a bunch of elements
       inserts = 'abcdefghijklmnopqrstuvwxyz'.split('').map(function (char) {
@@ -497,7 +497,7 @@ describe('Streaming Queries', function () {
     it('should return updated object', function () {
       this.timeout(10000);
       sameForAll = helper.randomize(this.test.title);
-      var result;
+      var result = Object();
       query = db[bucket].find().equal('testID', sameForAll);
       stream = query.eventStream({ initial: false, operations: 'update' });
       subscription = stream.subscribe(function (e) {
@@ -869,7 +869,7 @@ describe('Streaming Queries', function () {
     it('should return removed object', function () {
       this.timeout(10000);
       sameForAll = helper.randomize(this.test.title);
-      var result;
+      var result = Object();
       query = db[bucket].find().equal('testID', sameForAll);
       stream = query.eventStream({ initial: false, matchTypes: 'remove' });
       subscription = stream.subscribe(function (e) {
@@ -1681,7 +1681,7 @@ describe('Streaming Queries', function () {
   it('should resume resultStream specific number of times after disconnect', function () {
     this.timeout(15000);
 
-    var result, otherResult;
+    var result = "", otherResult = "";
     var completions = 0, otherCompletions = 0, errors = 0, otherErrors = 0;
     var onNext = function (r) {
       result = r;
