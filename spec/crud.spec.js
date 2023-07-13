@@ -1,5 +1,3 @@
-'use strict';
-
 if (typeof module !== 'undefined') {
   require('./node');
 }
@@ -7,48 +5,54 @@ if (typeof module !== 'undefined') {
 describe('Test crud', function () {
   var db, db2, deviceType, personType, addressType, childType, emf, metamodel, streetType;
 
-  before(function () {
-    emf = new DB.EntityManagerFactory({ host: env.TEST_SERVER, tokenStorage: helper.rootTokenStorage });
+  before(async function () {
+    expect(await helper.rootTokenStorage).be.ok;
+
+    emf = new DB.EntityManagerFactory({
+      host: env.TEST_SERVER,
+      tokenStorage: await helper.rootTokenStorage,
+    });
     metamodel = emf.metamodel;
 
-    return emf.ready().then(function () {
-      deviceType = metamodel.entity('Device');
+    return emf.ready()
+      .then(function () {
+        deviceType = metamodel.entity('Device');
 
-      if (!metamodel.entity('Person')) {
-        metamodel.addType(personType = new DB.metamodel.EntityType('Person', metamodel.entity(Object)));
-        metamodel.addType(childType = new DB.metamodel.EntityType('Child', personType));
-        metamodel.addType(addressType = new DB.metamodel.EmbeddableType('Address'));
-        metamodel.addType(streetType = new DB.metamodel.EntityType('Street', metamodel.entity(Object)));
+        if (!metamodel.entity('Person')) {
+          metamodel.addType(personType = new DB.metamodel.EntityType('Person', metamodel.entity(Object)));
+          metamodel.addType(childType = new DB.metamodel.EntityType('Child', personType));
+          metamodel.addType(addressType = new DB.metamodel.EmbeddableType('Address'));
+          metamodel.addType(streetType = new DB.metamodel.EntityType('Street', metamodel.entity(Object)));
 
-        personType.addAttribute(new DB.metamodel.SingularAttribute('name', metamodel.baseType(String)));
-        personType.addAttribute(new DB.metamodel.SingularAttribute('address', addressType));
-        personType.addAttribute(new DB.metamodel.SingularAttribute('age', metamodel.baseType(Number)));
-        personType.addAttribute(new DB.metamodel.SingularAttribute('date', metamodel.baseType(Date)));
-        personType.addAttribute(new DB.metamodel.SingularAttribute('sister', personType));
-        personType.addAttribute(new DB.metamodel.SingularAttribute('child', personType));
+          personType.addAttribute(new DB.metamodel.SingularAttribute('name', metamodel.baseType(String)));
+          personType.addAttribute(new DB.metamodel.SingularAttribute('address', addressType));
+          personType.addAttribute(new DB.metamodel.SingularAttribute('age', metamodel.baseType(Number)));
+          personType.addAttribute(new DB.metamodel.SingularAttribute('date', metamodel.baseType(Date)));
+          personType.addAttribute(new DB.metamodel.SingularAttribute('sister', personType));
+          personType.addAttribute(new DB.metamodel.SingularAttribute('child', personType));
 
-        childType.addAttribute(new DB.metamodel.SingularAttribute('mother', personType));
-        childType.addAttribute(new DB.metamodel.SingularAttribute('aunt', personType));
-        childType.addAttribute(new DB.metamodel.SingularAttribute('father', personType));
-        childType.addAttribute(new DB.metamodel.ListAttribute('listSiblings', personType));
-        childType.addAttribute(new DB.metamodel.SetAttribute('setSiblings', personType));
-        childType.addAttribute(new DB.metamodel.MapAttribute('mapSiblings', personType, personType));
+          childType.addAttribute(new DB.metamodel.SingularAttribute('mother', personType));
+          childType.addAttribute(new DB.metamodel.SingularAttribute('aunt', personType));
+          childType.addAttribute(new DB.metamodel.SingularAttribute('father', personType));
+          childType.addAttribute(new DB.metamodel.ListAttribute('listSiblings', personType));
+          childType.addAttribute(new DB.metamodel.SetAttribute('setSiblings', personType));
+          childType.addAttribute(new DB.metamodel.MapAttribute('mapSiblings', personType, personType));
 
-        addressType.addAttribute(new DB.metamodel.SingularAttribute('street', streetType));
-        addressType.addAttribute(new DB.metamodel.SingularAttribute('zip', metamodel.baseType(Number)));
+          addressType.addAttribute(new DB.metamodel.SingularAttribute('street', streetType));
+          addressType.addAttribute(new DB.metamodel.SingularAttribute('zip', metamodel.baseType(Number)));
 
-        streetType.addAttribute(new DB.metamodel.SingularAttribute('name', metamodel.baseType(String)));
-        streetType.addAttribute(new DB.metamodel.SingularAttribute('number', metamodel.baseType(Number)));
-        streetType.addAttribute(new DB.metamodel.SingularAttribute('neighbor', personType));
-      } else {
-        personType = metamodel.entity('Person');
-        addressType = metamodel.embeddable('Address');
-        childType = metamodel.entity('Child');
-        streetType = metamodel.entity('Street');
-      }
+          streetType.addAttribute(new DB.metamodel.SingularAttribute('name', metamodel.baseType(String)));
+          streetType.addAttribute(new DB.metamodel.SingularAttribute('number', metamodel.baseType(Number)));
+          streetType.addAttribute(new DB.metamodel.SingularAttribute('neighbor', personType));
+        } else {
+          personType = metamodel.entity('Person');
+          addressType = metamodel.embeddable('Address');
+          childType = metamodel.entity('Child');
+          streetType = metamodel.entity('Street');
+        }
 
-      return metamodel.save();
-    });
+        return metamodel.save();
+      });
   });
 
   beforeEach(function () {
@@ -107,7 +111,7 @@ describe('Test crud', function () {
       obj.attach(db);
       expect(obj.id).be.ok;
 
-      var id = obj.id;
+      var { id } = obj;
       obj.attach(db);
       expect(obj.id).equals(id);
 
@@ -115,8 +119,10 @@ describe('Test crud', function () {
       expect(db.contains(obj)).be.true;
     });
 
-    it('should attach implicit attached objects to same db', function () {
+    it('should attach implicit attached objects to same db', async function () {
       // use user type since the global db may not know our created person schema
+      await helper.ensureGlobalConnected();
+
       var obj = deviceType.create();
       expect(obj._metadata.db).equals(DB);
       expect(DB.contains(obj)).be.false;
@@ -270,7 +276,7 @@ describe('Test crud', function () {
 
     it('should save existing object from JSON', function () {
       var json = {
-        id: '/db/Person/' + db.util.uuid(),
+        id: `/db/Person/${db.util.uuid()}`,
         name: 'TestName',
         address: {
           zip: 22527,
@@ -287,10 +293,10 @@ describe('Test crud', function () {
       });
     });
 
-    it('should save and refresh object', function () {
+    it('should save and refresh object', async function () {
       var person = new db.Person();
       person.name = 'Old Name';
-      var promise = expect(person.save({ refresh: true })).eventually.have.property('name', 'Old Name');
+      var promise = expect(await person.save({ refresh: true })).have.property('name', 'Old Name');
       person.name = 'New Name';
       return promise;
     });
@@ -313,21 +319,23 @@ describe('Test crud', function () {
       });
     });
 
-    it('should not save a stale object', function () {
+    it('should not save a stale object', async function () {
       var person = new db2.Person();
+      await person.save();
 
-      return expect(person.save().then(function () {
-        return db.Person.load(person._metadata.id).then(function (person2) {
-          person2.name = 'Peter Parker';
-          return person2.save();
-        });
-      }).then(function () {
-        person.name = 'Alice Ford';
-        return person.save();
-      })).be.rejected.then(function (e) {
+      const person2 = await db.Person.load(person.id);
+      person2.name = 'Peter Parker';
+      await person2.save();
+
+      person.name = 'Alice Ford';
+      try {
+        await person.save();
+        expect.fail();
+      } catch (e) {
         expect(e).instanceOf(DB.error.PersistentError);
-        return expect(db.Person.load(person._metadata.id)).eventually.have.property('name', 'Peter Parker');
-      });
+      }
+
+      expect(await db.Person.load(person.id)).have.property('name', 'Peter Parker');
     });
 
     it('should forcibly save a stale object', function () {
@@ -348,14 +356,17 @@ describe('Test crud', function () {
       });
     });
 
-    it('should not override an object that exists', function () {
+    it('should not override an object that exists', async function () {
       var person = new db2.Person();
 
-      return person.save().then(function () {
-        var newPerson = new db.Person();
-        newPerson.id = person.id;
-        return expect(newPerson.save()).rejected;
-      });
+      await person.save();
+      var newPerson = new db.Person();
+      newPerson.id = person.id;
+
+      try {
+        await newPerson.save();
+        expect.fail();
+      } catch {}
     });
 
     it('should forcibly override an object that exists', function () {
@@ -373,16 +384,18 @@ describe('Test crud', function () {
       });
     });
 
-    it('should not save an deleted object', function () {
+    it('should not save an deleted object', async function () {
       var person = new db.Person();
-      return person.save().then(function () {
-        return db2.Person.load(person.id).then(function (person2) {
-          return person2.delete();
-        });
-      }).then(function () {
-        person.name = 'New Name';
-        return expect(person.save()).rejected;
-      });
+      await person.save();
+
+      const person2 = await db2.Person.load(person.id);
+      await person2.delete();
+
+      person.name = 'New Name';
+      try {
+        await person.save();
+        expect.fail();
+      } catch {}
     });
 
     it('should forcibly save an deleted object', function () {
@@ -429,7 +442,6 @@ describe('Test crud', function () {
         expect(person.name).equals('Old Name');
       });
     });
-
 
     describe('optimisticSave', function () {
       it('should retry if the object is out of date', function () {
@@ -517,7 +529,6 @@ describe('Test crud', function () {
     });
   });
 
-
   describe('get', function () {
     var person;
 
@@ -582,7 +593,7 @@ describe('Test crud', function () {
       // Check unloaded reference is not loaded
       expect(function () {
         obj4.name;
-      }).to.throw('Illegal property access on ' + person.id);
+      }).to.throw(`Illegal property access on ${person.id}`);
     });
 
     it('should get referencing classes', function () {
@@ -740,7 +751,6 @@ describe('Test crud', function () {
     });
   });
 
-
   describe('delete', function () {
     var person;
 
@@ -752,11 +762,10 @@ describe('Test crud', function () {
       return person.save();
     });
 
-    it('should delete object from database', function () {
-      return person.delete().then(function (deleted) {
-        expect(person).eqls(deleted);
-        return expect(db.Person.load(person.id)).become(null);
-      });
+    it('should delete object from database', async function () {
+      const deleted = await person.delete();
+      expect(person).eqls(deleted);
+      expect(await db.Person.load(person.id)).be.null;
     });
 
     it('should delete object from EntityManager', function () {
@@ -796,54 +805,55 @@ describe('Test crud', function () {
       });
     });
 
-    it('should be allowed to delete an object without id', function () {
-      return expect(person.delete().then(function (per) {
-        return per.delete();
-      })).be.rejectedWith(DB.error.IllegalEntityError);
+    it('should be allowed to delete an object without id', async function () {
+      const per = await person.delete();
+      expect(function () {
+        per.delete();
+      }).throw(DB.error.IllegalEntityError);
     });
 
-    it('should be allowed to forcly delete an object without id', function () {
-      return expect(person.delete().then(function (per) {
-        return per.delete({ force: true });
-      })).be.fulfilled;
+    it('should be allowed to forcly delete an object without id', async function () {
+      const per = await person.delete();
+      await per.delete({ force: true });
     });
 
-    it('should not be allowed to add deleted objects with same id', function () {
-      return expect(person.delete().then(function () {
-        db.attach(person);
-        var newPerson = new db.Person();
-        newPerson.id = person.id;
-        return db.attach(newPerson);
-      })).be.rejectedWith(DB.error.EntityExistsError);
+    it('should not be allowed to add deleted objects with same id', async function () {
+      await person.delete();
+
+      db.attach(person);
+      var newPerson = new db.Person();
+      newPerson.id = person.id;
+
+      expect(function () {
+        db.attach(newPerson);
+      }).throw(DB.error.EntityExistsError);
     });
 
-    it('should not be allowed to delete outdated object', function () {
+    it('should not be allowed to delete outdated object', async function () {
       var person = new db2.Person();
 
-      return expect(person.save().then(function () {
-        return db.Person.load(person.id);
-      }).then(function (person2) {
-        person2.name = 'Foo Bar';
-        return person2.save();
-      }).then(function () {
-        return person.delete();
-      })).be.rejected;
+      await person.save();
+
+      const person2 = await db.Person.load(person.id);
+      person2.name = 'Foo Bar';
+      await person2.save();
+
+      try {
+        await person.delete();
+        expect.fail();
+      } catch {}
     });
 
-    it('should be allowed to forcibly delete outdated object', function () {
+    it('should be allowed to forcibly delete outdated object', async function () {
       var person = new db2.Person();
+      await person.save();
 
-      return person.save().then(function () {
-        return db.Person.load(person.id);
-      }).then(function (person2) {
-        person2.name = 'Foo Bar';
-        return person2.save();
-      }).then(function () {
-        return person.delete({ force: true });
-      })
-        .then(function () {
-          return expect(db.Person.load(person.id)).become(null);
-        });
+      const person2 = await db.Person.load(person.id);
+      person2.name = 'Foo Bar';
+      await person2.save();
+
+      await person.delete({ force: true });
+      expect(await db.Person.load(person.id)).be.null;
     });
   });
 
@@ -867,9 +877,9 @@ describe('Test crud', function () {
 
     it('should update object', function () {
       person.name = 'New Name';
-      return person.update().then(function () {
+      return person.update().then(async function () {
         expect(person.name).equals('New Name');
-        return expect(db.Person.load(person.id)).eventually.have.property('name', 'New Name');
+        expect(await db.Person.load(person.id)).to.have.property('name', 'New Name');
       });
     });
 
@@ -886,26 +896,27 @@ describe('Test crud', function () {
       });
     });
 
-    it('should update and refresh object', function () {
+    it('should update and refresh object', async function () {
       person.name = 'New Name';
-      var promise = expect(person.update({ refresh: true })).eventually.have.property('name', 'New Name');
+      var promise = expect(await person.update({ refresh: true })).have.property('name', 'New Name');
       person.name = 'Newer Name';
 
       return promise;
     });
 
-    it('should not allowed to update outdated object', function () {
+    it('should not allowed to update outdated object', async function () {
       var person = new db2.Person();
 
-      return expect(person.save().then(function () {
-        return db.Person.load(person.id);
-      }).then(function (person2) {
-        person2.name = 'Foo Bar';
-        return person2.save();
-      }).then(function () {
-        person.name = 'New Name';
-        return person.update();
-      })).be.rejected;
+      await person.save();
+      const person2 = await db.Person.load(person.id);
+      person2.name = 'Foo Bar';
+      await person2.save();
+
+      person.name = 'New Name';
+      try {
+        await person.update();
+        expect.fail();
+      } catch {}
     });
 
     it('should allowed to forcibly update outdated object', function () {
@@ -937,12 +948,11 @@ describe('Test crud', function () {
   });
 
   describe('insert', function () {
-    it('should insert object', function () {
+    it('should insert object', async function () {
       var person = new db.Person();
       person.name = 'Peter Insert';
-      return person.insert().then(function () {
-        return expect(db.Person.load(person.id)).become(person);
-      });
+      await person.insert();
+      expect(await db.Person.load(person.id)).be.eql(person);
     });
 
     it('should update metadata', function () {
@@ -959,72 +969,68 @@ describe('Test crud', function () {
       });
     });
 
-    it('should insert and refresh object', function () {
+    it('should insert and refresh object', async function () {
       var person = new db.Person();
       person.name = 'Peter Insert';
-      var promise = expect(person.insert({ refresh: true })).eventually.have.property('name', 'Peter Insert');
+      var promise = expect(await person.insert({ refresh: true })).have.property('name', 'Peter Insert');
       person.name = 'New Peter Insert';
       return promise;
     });
 
-    it('should not be allowed to insert loaded object', function () {
+    it('should not be allowed to insert loaded object', async function () {
       var person = new db.Person();
       person.name = 'Peter Insert';
-      return person.insert().then(function () {
-        return db.Person.load(person.id);
-      }).then(function (loaded) {
-        loaded.name = 'Peter Inserted';
-        expect(function () {
-          loaded.insert();
-        }).throw(Error);
-      });
+      await person.insert();
+      var loaded = await db.Person.load(person.id);
+
+      loaded.name = 'Peter Inserted';
+      try {
+        await loaded.insert();
+        expect.fail();
+      } catch {}
     });
 
-    it('should not be allowed to insert existing object', function () {
+    it('should not be allowed to insert existing object', async function () {
       var person = new db2.Person();
 
-      return person.save().then(function (saved) {
-        var newPerson = new db.Person();
-        newPerson.name = 'Blub';
-        newPerson.id = saved.id;
-        return expect(newPerson.insert()).rejected;
-      });
+      var saved = await person.save();
+      var newPerson = new db.Person();
+      newPerson.name = 'Blub';
+      newPerson.id = saved.id;
+      try {
+        await newPerson.insert();
+      } catch {}
     });
   });
 
   describe('load', function () {
-    it('should load modified object', function () {
+    it('should load modified object', async function () {
       var person = new db.Person();
       person.name = 'Old Name';
-      return person.save().then(function () {
-        return db2.Person.load(person.id);
-      }).then(function (loaded) {
-        loaded.name = 'New Name';
-        return loaded.save();
-      }).then(function () {
-        return db.refreshBloomFilter();
-      })
-        .then(function () {
-          expect(person).have.property('name', 'Old Name');
-          return expect(db.Person.load(person.id)).eventually.have.property('name', 'New Name');
-        });
+      await person.save();
+
+      const loaded = await db2.Person.load(person.id);
+      loaded.name = 'New Name';
+      await loaded.save();
+
+      await db.refreshBloomFilter();
+      expect(person).have.property('name', 'Old Name');
+      expect(await db.Person.load(person.id)).have.property('name', 'New Name');
     });
 
-    it('should load and refresh object with same version', function () {
+    it('should load and refresh object with same version', async function () {
       var person = new db.Person();
       person.name = 'Old Name';
-      return person.save(function () {
-        return db2.Person.load(person.id, { refresh: true });
-      }).then(function (loaded) {
-        loaded.name = 'New Name';
-        return loaded.save();
-      }).then(function () {
-        person._metadata.version = 2;
-        expect(person).have.property('name', 'Old Name');
-        return expect(db.Person.load(person.id, { refresh: true })).eventually.have.property('name', 'New Name');
-      }).then(function () {
-        return expect(person.load({ refresh: true })).eventually.have.property('name', 'New Name');
-      });
+      await person.save();
+      const loaded = await db2.Person.load(person.id, { refresh: true });
+      loaded.name = 'New Name';
+      await loaded.save();
+
+      person._metadata.version = 2;
+      expect(person).have.property('name', 'Old Name');
+
+      expect(await db.Person.load(person.id, { refresh: true })).have.property('name', 'New Name');
+      expect(await person.load({ refresh: true })).have.property('name', 'New Name');
     });
 
     it('should not find deleted object', function () {
@@ -1091,6 +1097,7 @@ describe('Test crud', function () {
 
     before(function () {
       return emf.createEntityManager().code.saveCode('updatePerson', 'module', function (module, exports) {
+        // eslint-disable-next-line no-param-reassign
         exports.call = function (db, data) {
           var objId = data.id;
           var newValue = data.value;
@@ -1102,160 +1109,116 @@ describe('Test crud', function () {
       });
     });
 
-    it('should refresh', function () {
+    it('should refresh', async function () {
       var person = new db.Person();
       person.name = 'Old Name';
-      return person.save(function () {
-      }).then(function () {
-        return db.Person.load(person.id);
-      }).then(function () {
-        return db.modules.post('updatePerson', { id: person.id, value: 'New Name' });
-      }).then(function () {
-        return db.refreshBloomFilter();
-      })
-        .then(function () {
-          return expect(db.Person.load(person.id)).eventually.have.property('name', 'New Name');
-        });
+      await person.save();
+      await db.Person.load(person.id);
+      await db.modules.post('updatePerson', { id: person.id, value: 'New Name' });
+      await db.refreshBloomFilter();
+
+      expect(await db.Person.load(person.id)).have.property('name', 'New Name');
     });
 
-    it('should automatically refresh bloom filter', function () {
+    it('should automatically refresh bloom filter', async function () {
       var person = new db.Person();
       person.name = 'Old Name';
       db.bloomFilterRefresh = 1;
       var oldBFDate = db.bloomFilter.creation;
-      return person.save(function () {
-      }).then(function () {
-        expect(db.bloomFilter.contains(person.id)).not.be.true;
-        return db.Person.load(person.id);
-      }).then(function () {
-        return db.modules.post('updatePerson', { id: person.id, value: 'New Name' });
-      }).then(function () {
-        return helper.sleep(1000);
-      })
-        .then(function () {
-          return expect(db.Person.load(person.id)).eventually.have.property('name', 'New Name');
-        })
-        .then(function () {
-          db.bloomFilterRefresh = 60;
-          return helper.sleep(200);
-        })
-        .then(function () {
-          expect(db.bloomFilter.creation).not.equals(oldBFDate);
-          expect(db.bloomFilter.contains(person.id)).be.true;
-        });
+      await person.save();
+      expect(db.bloomFilter.contains(person.id)).not.be.true;
+      await db.Person.load(person.id);
+      await db.modules.post('updatePerson', { id: person.id, value: 'New Name' });
+      await helper.sleep(1000);
+      expect(await db.Person.load(person.id)).to.have.property('name', 'New Name');
+
+      db.bloomFilterRefresh = 60;
+      await helper.sleep(200);
+
+      expect(db.bloomFilter.creation).not.equals(oldBFDate);
+      expect(db.bloomFilter.contains(person.id)).be.true;
     });
 
-    it('should find ids with special characters in bloom filter', function () {
+    it('should find ids with special characters in bloom filter', async function () {
       var person = new db.Person();
       person.id = helper.randomize('1 1;,/?:@&=+$#-_.!~*\\\'()');
       person.name = 'Old Name';
-      return person.save(function () {
-      }).then(function () {
-        return db.Person.load(person.id);
-      }).then(function () {
-        return db.modules.post('updatePerson', { id: person.id, value: 'New Name' });
-      }).then(function () {
-        return db.refreshBloomFilter();
-      })
-        .then(function () {
-          expect(db.bloomFilter.contains(person.id)).be.true;
-          return expect(db.Person.load(person.id)).eventually.have.property('name', 'New Name');
-        });
+      await person.save();
+      await db.Person.load(person.id);
+      await db.modules.post('updatePerson', { id: person.id, value: 'New Name' });
+      await db.refreshBloomFilter();
+
+      expect(db.bloomFilter.contains(person.id)).be.true;
+      expect(await db.Person.load(person.id)).have.property('name', 'New Name');
     });
 
-    it('should disable cache during bloom filter refresh', function () {
+    it('should disable cache during bloom filter refresh', async function () {
       var person = new db.Person();
       person.name = 'Old Name';
       db.bloomFilterRefresh = 1;
       var oldBFDate = db.bloomFilter.creation;
-      return person.save(function () {
-      }).then(function () {
-        return db.Person.load(person.id);
-      }).then(function () {
-        return db.modules.post('updatePerson', { id: person.id, value: 'New Name' });
-      }).then(function () {
-        return helper.sleep(1500);
-      })
-        .then(function () {
-          expect(db.bloomFilter.creation).equals(oldBFDate);
-          return expect(db.Person.load(person.id)).eventually.have.property('name', 'New Name');
-        })
-        .then(function () {
-          db.bloomFilterRefresh = 60;
-        });
+      await person.save();
+      await db.Person.load(person.id);
+      await db.modules.post('updatePerson', { id: person.id, value: 'New Name' });
+      await helper.sleep(1500);
+
+      expect(db.bloomFilter.creation).equals(oldBFDate);
+      expect(await db.Person.load(person.id)).have.property('name', 'New Name');
+
+      db.bloomFilterRefresh = 60;
     });
 
-    it('should use browser cache', function () {
+    it('should use browser cache', async function () {
       var person = new db.Person();
       person.name = 'Old Name';
-      return db.refreshBloomFilter().then(function () {
-        return person.save();
-      }).then(function () {
-        return db.Person.load(person.id);
-      }).then(function () {
-        return db.modules.post('updatePerson', { id: person.id, value: 'New Name' });
-      })
-        .then(function () {
-          return expect(db.Person.load(person.id)).eventually.have.property('name', 'Old Name');
-        });
+      await db.refreshBloomFilter();
+      await person.save();
+      await db.Person.load(person.id);
+      await db.modules.post('updatePerson', { id: person.id, value: 'New Name' });
+
+      expect(await db.Person.load(person.id)).have.property('name', 'Old Name');
     });
 
-    it('should use cache white listing', function () {
+    it('should use cache white listing', async function () {
       var person = new db.Person();
       person.name = 'Old Name';
-      return db.refreshBloomFilter().then(function () {
-        return person.save();
-      }).then(function () {
-        return db.Person.load(person.id);
-      }).then(function () {
-        return db.modules.post('updatePerson', { id: person.id, value: 'New Name' });
-      })
-        .then(function () {
-          return db.refreshBloomFilter();
-        })
-        .then(function () {
-          // BloomFilter forces revalidation.
-          return expect(db.Person.load(person.id)).eventually.have.property('name', 'New Name');
-        })
-        .then(function () {
-          return db.modules.post('updatePerson', { id: person.id, value: 'Very New Name' });
-        })
-        .then(function () {
-          // Now the object must be on the cache white list
-          return expect(db.Person.load(person.id)).eventually.have.property('name', 'New Name');
-        });
+      await db.refreshBloomFilter();
+      await person.save();
+      await db.Person.load(person.id);
+      await db.modules.post('updatePerson', { id: person.id, value: 'New Name' });
+
+      await db.refreshBloomFilter();
+
+      // BloomFilter forces revalidation.
+      expect(await db.Person.load(person.id)).have.property('name', 'New Name');
+
+      await db.modules.post('updatePerson', { id: person.id, value: 'Very New Name' });
+
+      // Now the object must be on the cache white list
+      expect(await db.Person.load(person.id)).have.property('name', 'New Name');
     });
 
-    it('should use cache black listing', function () {
+    it('should use cache black listing', async function () {
       var person = new db.Person();
       person.name = 'Old Name';
-      return db.refreshBloomFilter().then(function () {
-        return person.save();
-      }).then(function () {
-        return expect(db.Person.load(person.id)).eventually.have.property('name', 'Old Name');
-      }).then(function () {
-        return db.Person.load(person.id);
-      })
-        .then(function (loaded) {
-          loaded.name = 'New Name';
-          // adds the obj to the blacklist.
-          return loaded.save();
-        })
-        .then(function () {
-          // updates the object again
-          return db.modules.post('updatePerson', { id: person.id, value: 'Very New Name' });
-        })
-        .then(function () {
-          // loads the obj from sever and removes it from the blacklist.
-          return expect(db.Person.load(person.id)).eventually.have.property('name', 'Very New Name');
-        })
-        .then(function () {
-          return db.modules.post('updatePerson', { id: person.id, value: 'Extremely New Name' });
-        })
-        .then(function () {
-          // Now the object must be loaded from cache again
-          return expect(db.Person.load(person.id)).eventually.have.property('name', 'Very New Name');
-        });
+      await db.refreshBloomFilter();
+      await person.save();
+      expect(await db.Person.load(person.id)).have.property('name', 'Old Name');
+      const loaded = await db.Person.load(person.id);
+      loaded.name = 'New Name';
+      // adds the obj to the blacklist.
+      await loaded.save();
+
+      // updates the object again
+      await db.modules.post('updatePerson', { id: person.id, value: 'Very New Name' });
+
+      // loads the obj from sever and removes it from the blacklist.
+      expect(await db.Person.load(person.id)).have.property('name', 'Very New Name');
+
+      await db.modules.post('updatePerson', { id: person.id, value: 'Extremely New Name' });
+
+      // Now the object must be loaded from cache again
+      expect(await db.Person.load(person.id)).have.property('name', 'Very New Name');
     });
   });
 
@@ -1294,7 +1257,7 @@ describe('Test crud', function () {
       sibs = [];
       for (var i = 0; i < 6; i += 1) {
         var sib = new db.Person();
-        sib.name = 'sib' + i;
+        sib.name = `sib${i}`;
         sibs.child = child;
         sibs.sister = mother;
         sibs.address = address;
@@ -1371,66 +1334,55 @@ describe('Test crud', function () {
       });
     });
 
-    it('should save and delete referenced objects by depth', function () {
-      return child.save({ depth: 2 }).then(function () {
-        var promises = [
-          expect(db.Child.load(child.id)).not.become(null),
-          expect(db.Person.load(mother.id)).not.become(null),
-          expect(db.Person.load(father.id)).not.become(null),
-          expect(db.Street.load(street.id)).not.become(null),
-          expect(db.Person.load(sister.id)).not.become(null),
-        ];
-        sibs.forEach(function (sib) {
-          promises.push(expect(db.Person.load(sib.id)).not.become(null));
-        });
-        return Promise.all(promises);
-      }).then(function () {
-        return child.delete({ depth: 2 });
-      }).then(function (deleted) {
-        expect(deleted).equals(child);
-        var promises = [
-          expect(db.Child.load(child.id)).become(null),
-          expect(db.Person.load(mother.id)).become(null),
-          expect(db.Person.load(father.id)).become(null),
-          expect(db.Street.load(street.id)).become(null),
-          expect(db.Person.load(sister.id)).become(null),
-        ];
-        sibs.forEach(function (sib) {
-          promises.push(expect(db.Person.load(sib.id)).become(null));
-        });
-        return Promise.all(promises);
-      });
+    it('should save and delete referenced objects by depth', async function () {
+      await child.save({ depth: 2 });
+      expect(await db.Child.load(child.id)).not.be.null;
+      expect(await db.Person.load(mother.id)).not.be.null;
+      expect(await db.Person.load(father.id)).not.be.null;
+      expect(await db.Street.load(street.id)).not.be.null;
+      expect(await db.Person.load(sister.id)).not.be.null;
+
+      for (const sib of sibs) {
+        expect(await db.Person.load(sib.id)).not.be.null;
+      }
+
+      const deleted = await child.delete({ depth: 2 });
+      expect(deleted).equals(child);
+
+      expect(await db.Child.load(child.id)).be.null;
+      expect(await db.Person.load(mother.id)).be.null;
+      expect(await db.Person.load(father.id)).be.null;
+      expect(await db.Street.load(street.id)).be.null;
+      expect(await db.Person.load(sister.id)).be.null;
+
+      for (const sib of sibs) {
+        expect(await db.Person.load(sib.id)).be.null;
+      }
     });
 
-    it('should save and delete referenced objects by reachability', function () {
-      return child.save({ depth: true }).then(function () {
-        var promises = [
-          expect(db.Child.load(child.id)).not.become(null),
-          expect(db.Person.load(mother.id)).not.become(null),
-          expect(db.Person.load(father.id)).not.become(null),
-          expect(db.Street.load(street.id)).not.become(null),
-          expect(db.Person.load(sister.id)).not.become(null),
-        ];
-        sibs.forEach(function (sib) {
-          promises.push(expect(db.Person.load(sib.id)).not.become(null));
-        });
-        return Promise.all(promises);
-      }).then(function () {
-        return child.delete({ depth: true });
-      }).then(function (deleted) {
-        expect(deleted).equals(child);
-        var promises = [
-          expect(db.Child.load(child.id)).become(null),
-          expect(db.Person.load(mother.id)).become(null),
-          expect(db.Person.load(father.id)).become(null),
-          expect(db.Street.load(street.id)).become(null),
-          expect(db.Person.load(sister.id)).become(null),
-        ];
-        sibs.forEach(function (sib) {
-          promises.push(expect(db.Person.load(sib.id)).become(null));
-        });
-        return Promise.all(promises);
-      });
+    it('should save and delete referenced objects by reachability', async function () {
+      await child.save({ depth: true });
+      expect(await db.Child.load(child.id)).not.be.null;
+      expect(await db.Person.load(mother.id)).not.be.null;
+      expect(await db.Person.load(father.id)).not.be.null;
+      expect(await db.Street.load(street.id)).not.be.null;
+      expect(await db.Person.load(sister.id)).not.be.null;
+
+      for (const sib of sibs) {
+        expect(await db.Person.load(sib.id)).not.be.null;
+      }
+
+      const deleted = await child.delete({ depth: true });
+      expect(deleted).equals(child);
+      expect(await db.Child.load(child.id)).be.null;
+      expect(await db.Person.load(mother.id)).be.null;
+      expect(await db.Person.load(father.id)).be.null;
+      expect(await db.Street.load(street.id)).be.null;
+      expect(await db.Person.load(sister.id)).be.null;
+
+      for (const sib of sibs) {
+        expect(await db.Person.load(sib.id)).be.null;
+      }
     });
 
     it('should get referenced objects by depth', function () {
@@ -1524,28 +1476,22 @@ describe('Test crud', function () {
       });
     });
 
-    it('should insert referenced objects by depth', function () {
-      return child.insert({ depth: 2 }).then(function () {
-        return Promise.all([
-          expect(db.Child.load(child.id)).not.become(null),
-          expect(db.Person.load(mother.id)).not.become(null),
-          expect(db.Person.load(father.id)).not.become(null),
-          expect(db.Street.load(street.id)).not.become(null),
-          expect(db.Person.load(sister.id)).not.become(null),
-        ]);
-      });
+    it('should insert referenced objects by depth', async function () {
+      await child.insert({ depth: 2 });
+      expect(await db.Child.load(child.id)).not.be.null;
+      expect(await db.Person.load(mother.id)).not.be.null;
+      expect(await db.Person.load(father.id)).not.be.null;
+      expect(await db.Street.load(street.id)).not.be.null;
+      expect(await db.Person.load(sister.id)).not.be.null;
     });
 
-    it('should insert referenced objects by reachability', function () {
-      return child.insert({ depth: true }).then(function () {
-        return Promise.all([
-          expect(db.Child.load(child.id)).not.become(null),
-          expect(db.Person.load(mother.id)).not.become(null),
-          expect(db.Person.load(father.id)).not.become(null),
-          expect(db.Street.load(street.id)).not.become(null),
-          expect(db.Person.load(sister.id)).not.become(null),
-        ]);
-      });
+    it('should insert referenced objects by reachability', async function () {
+      await child.insert({ depth: true });
+      expect(await db.Child.load(child.id)).not.be.null;
+      expect(await db.Person.load(mother.id)).not.be.null;
+      expect(await db.Person.load(father.id)).not.be.null;
+      expect(await db.Street.load(street.id)).not.be.null;
+      expect(await db.Person.load(sister.id)).not.be.null;
     });
 
     it('should update all referenced objects by depth', function () {
@@ -1649,14 +1595,14 @@ describe('Test crud', function () {
     it('should handle key as ids', function () {
       var person = new db.Person();
       person.id = myKey;
-      expect(person.id).equal('/db/Person/' + encodeURIComponent(myKey));
+      expect(person.id).equal(`/db/Person/${encodeURIComponent(myKey)}`);
       expect(person.key).equal(myKey);
     });
 
     it('should handle ids as ids', function () {
       var person = new db.Person();
-      person.id = '/db/Person/' + encodeURIComponent(myKey);
-      expect(person.id).equal('/db/Person/' + encodeURIComponent(myKey));
+      person.id = `/db/Person/${encodeURIComponent(myKey)}`;
+      expect(person.id).equal(`/db/Person/${encodeURIComponent(myKey)}`);
       expect(person.key).equal(myKey);
     });
 
@@ -1685,7 +1631,7 @@ describe('Test crud', function () {
     it('should be useable as references', function () {
       var person = new db.Person();
       person.id = myId;
-      var id = person.id;
+      var { id } = person;
       person.name = 'Custom Person';
 
       person.child = new db.Person();
@@ -1723,7 +1669,7 @@ describe('Test crud', function () {
     it('should map to the returned server reference', function () {
       var person = new db.Person();
       person.id = myId;
-      var id = person.id;
+      var { id } = person;
       person.name = 'Custom Person';
       var newId = 123456;
       var dbsend = db.send;

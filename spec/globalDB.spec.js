@@ -1,10 +1,12 @@
-'use strict';
-
 if (typeof module !== 'undefined') {
   require('./node');
 }
 
 describe('Test Global DB', function () {
+  before(async function () {
+    await helper.ensureGlobalConnected();
+  });
+
   it('should export global DB', function () {
     expect(DB).be.ok;
     expect(DB).instanceof(DB.EntityManager);
@@ -17,7 +19,7 @@ describe('Test Global DB', function () {
     });
   });
 
-  it('should only allow one connect call', function () {
+  it('should only allow one connect call', async function () {
     expect(function () {
       DB.connect(env.TEST_SERVER);
     }).throw(Error);

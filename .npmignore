@@ -8,9 +8,8 @@
 .DS_Store
 .eslintrc.js
 .gitattributes
-browserstack.js
-localSeleniumBrowser.js
 webpack.config.js
-karma.conf.js
 tsconfig.*
-mocharc.json
+mocharc.*
+.gitlab-ci.yml
+web-test-runner.config.*

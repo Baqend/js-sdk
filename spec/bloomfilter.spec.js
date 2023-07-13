@@ -1,11 +1,9 @@
-'use strict';
-
 if (typeof module !== 'undefined') {
   require('./node');
 }
 
 describe('Test Bloomfilter', function () {
-  var BloomFilter = DB.caching.BloomFilter;
+  var { BloomFilter } = DB.caching;
   var db, type;
 
   // Skip fo IE 9
@@ -13,19 +11,24 @@ describe('Test Bloomfilter', function () {
     return;
   }
 
-  before(function () {
-    var emf = new DB.EntityManagerFactory({ host: env.TEST_SERVER, tokenStorage: helper.rootTokenStorage });
-
-    return emf.ready().then(function () {
-      var metamodel = emf.metamodel;
-      type = helper.randomize('BFObject');
-      var objectType = new DB.metamodel.EntityType(type, metamodel.entity(Object));
-      metamodel.addType(objectType);
-      objectType.addAttribute(new DB.metamodel.SingularAttribute('value', metamodel.baseType(String)));
-      return metamodel.save();
-    }).then(function () {
-      db = emf.createEntityManager();
+  before(async function () {
+    var emf = new DB.EntityManagerFactory({
+      host: env.TEST_SERVER,
+      tokenStorage: await helper.rootTokenStorage,
     });
+
+    return emf.ready()
+      .then(function () {
+        var { metamodel } = emf;
+        type = helper.randomize('BFObject');
+        var objectType = new DB.metamodel.EntityType(type, metamodel.entity(Object));
+        metamodel.addType(objectType);
+        objectType.addAttribute(new DB.metamodel.SingularAttribute('value', metamodel.baseType(String)));
+        return metamodel.save();
+      })
+      .then(function () {
+        db = emf.createEntityManager();
+      });
   });
 
   after(function () {
@@ -34,7 +37,7 @@ describe('Test Bloomfilter', function () {
 
   it('should initially not contain objects that were not updated', function () {
     return db.refreshBloomFilter().then(function (BF) {
-      if (db.isCachingDisabled) {
+      if (!db.isCachingEnabled()) {
         expect(BF).not.ok;
         return; // Node do not use a bloomfilter;
       }
@@ -46,7 +49,7 @@ describe('Test Bloomfilter', function () {
   });
 
   it('should contain updated objects', function () {
-    if (db.isCachingDisabled) { return; }
+    if (!db.isCachingEnabled()) { return; }
 
     var obj = new db[type]();
     return db.insert(obj).then(function () {
@@ -67,7 +70,7 @@ describe('Test Bloomfilter', function () {
   });
 
   it('should perform fast lookups', function () {
-    if (db.isCachingDisabled) { return; }
+    if (!db.isCachingEnabled()) { return; }
 
     var obj = new db[type]();
     return db.insert(obj).then(function () {

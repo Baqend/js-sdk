@@ -64,6 +64,7 @@ export class WebSocketConnector {
   open(): Promise<WebSocket> {
     if (!this.socket) {
       const socket = new WebSocket(this.url);
+      // eslint-disable-next-line prefer-const
       let socketPromise: Promise<WebSocket>;
 
       const handleSocketCompletion = (error: Error | any) => {
