@@ -1,8 +1,9 @@
 #workflow rulez comes later here
 image: node:14
 stages:      
-  - lint    # List of stages for jobs, and their order of execution
   - build
+  - lint
+  - run
 
 build-job:      
   stage: build
@@ -15,4 +16,9 @@ lint-job:
   stage: lint
   script:
     - npm run lint
+
+run-job:
+  stage: run
+  script:
+    - npm run test:node
    
