@@ -31,6 +31,30 @@ build-job:
          - dist
       expire_in: 30 mins
 
+e2e:
+  stage: test-node
+  dependencies: ["build-job"]
+  services:
+    - mongo:4.0.5
+    - redis:4.0
+    - name: docker.baqend.com/baqend/node14:master
+      alias: node
+      command: ["tcp://orestes:8081", "http://orestes:8080/v1", "debug"]
+    - name: docker.baqend.com/baqend/orestes:master
+      alias: orestes
+      command:
+        - "--with-mongo"
+        - "--with-gridfs"
+        - "--log-level"
+        - "trace"
+        - "--debug"
+        - "--dashboard"
+        - "/opt/baqend/node_modules/baqend-dash/dist"
+  before_script:
+    - docker login -u $DOCKER_REGISTRY_USERNAME -p $DOCKER_REGISTRY_PASSWORD docker.baqend.com
+  script:
+    - npm run test:node
+
 run-job:
   image: docker:cli
   stage: test-node
