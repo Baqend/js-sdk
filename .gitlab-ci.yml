@@ -31,26 +31,26 @@ build-job:
          - dist
       expire_in: 30 mins
 
-run-job:
-  image: docker:cli
+e2e:
   stage: test-node
-  variables:
-   SERVER_RUN_FLAGS : --with-mongo --with-gridfs --log-level trace --debug --dashboard /opt/baqend/node_modules/baqend-dash/dist
-  needs:
-    - build-job
+  dependencies: ["build-job"]
+  services:
+    - mongo:4.0.5
+    - redis:4.0
+    - name: docker.baqend.com/baqend/node14:master
+      alias: node
+      command: ["tcp://orestes:8081", "http://orestes:8080/v1", "debug"]
+    - name: docker.baqend.com/baqend/orestes:master
+      alias: orestes
+      command:
+        - "--with-mongo"
+        - "--with-gridfs"
+        - "--log-level"
+        - "trace"
+        - "--debug"
+        - "--dashboard"
+        - "/opt/baqend/node_modules/baqend-dash/dist"
   before_script:
     - docker login -u $DOCKER_REGISTRY_USERNAME -p $DOCKER_REGISTRY_PASSWORD docker.baqend.com
-    # run-mongo:
-    - docker run --network host -d --name $DOCKER_REGISTRY_USERNAME-mongo -p 27017:27017 mongo:4.0.5
-    # Starts a basic server server and connects it to the branches network
-    - docker run --network host -d -p 8080:8080 -p 8081:8081 --name $DOCKER_REGISTRY_USERNAME-server docker.baqend.com/baqend/orestes:master $SERVER_RUN_FLAGS
-    # Starts the server-node server and connects it to the branches network
-    - docker run --network host -d --name -$DOCKER_REGISTRY_USERNAME-node docker.baqend.com/baqend/node14:master tcp://$DOCKER_REGISTRY_USERNAME-server:8081 http://$DOCKER_REGISTRY_USERNAME-server:8080/v1 debug
-  after_script:
-    - docker stop $DOCKER_REGISTRY_USERNAME-mongo
-    - docker stop $DOCKER_REGISTRY_USERNAME-server
-    - docker stop $DOCKER_REGISTRY_USERNAME-node
-    - docker rm $(docker ps -aq)
-    - docker network rm $CI_COMMIT_REF_NAME
   script:
-   - npm run test:node
+    - npm run test:node
