@@ -39,13 +39,13 @@ run-job:
     - docker login -u $DOCKER_REGISTRY_USERNAME -p $DOCKER_REGISTRY_PASSWORD docker.baqend.com
     - docker network create $CI_COMMIT_REF_NAME || echo 0
     # run-mongo:
-    - docker run --network $CI_COMMIT_REF_NAME -d --name mongo -p 27017:27017 mongo:4.0.5
+    - docker run --network $CI_COMMIT_REF_NAME -d --name -$DOCKER_REGISTRY_USERNAMEmongo -p 27017:27017 mongo:4.0.5
     # Starts a basic server server and connects it to the branches network
-    - docker run --network $CI_COMMIT_REF_NAME -d -p 8080:8080 -p 8081:8081 --name server docker.baqend.com/baqend/orestes:master $SERVER_RUN_FLAGS
+    - docker run --network $CI_COMMIT_REF_NAME -d -p 8080:8080 -p 8081:8081 --name $DOCKER_REGISTRY_USERNAME-server docker.baqend.com/baqend/orestes:master $SERVER_RUN_FLAGS
     # Starts the server-node server and connects it to the branches network
-    - docker run --network $CI_COMMIT_REF_NAME -d --name node docker.baqend.com/baqend/node14:master tcp://server:8081 http://server:8080/v1 debug
+    - docker run --network $CI_COMMIT_REF_NAME -d --name -$DOCKER_REGISTRY_USERNAME-node docker.baqend.com/baqend/node14:master tcp://$DOCKER_REGISTRY_USERNAME-server:8081 http://$DOCKER_REGISTRY_USERNAME-server:8080/v1 debug
   after_script:
-    - docker -rm $(docker ps -aq)
+    - docker rm $(docker ps -aq)
     - docker network rm $CI_COMMIT_REF_NAME
   script:
    - npm run test:node
