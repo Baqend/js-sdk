@@ -36,6 +36,7 @@ run-job:
   needs:
     - build-job
   before_script:
+    - docker login -u $DOCKER_REGISTRY_USERNAME -p $DOCKER_REGISTRY_PASSWORD docker.baqend.com
     - docker network create $CI_COMMIT_REF_NAME || echo 0
     # run-mongo:
     - docker run --network $CI_COMMIT_REF_NAME -d --name mongo -p 27017:27017 mongo:4.0.5
