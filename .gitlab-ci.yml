@@ -13,21 +13,9 @@ lint-job:
   script:
     - echo 'try lint'
 
-#install-job:
-#   stage: install
-#   script:
-#     - npm ci
-#     - npm install --silent websocket
-#     - npm install 
-#   artifacts:
-#      name: "artifacts"
-#      untracked: true
-#      expire_in: 30 mins
-#      paths:
-#        - .npm/
-#        - node_modules/
-
 build-job:      
+  needs:
+    - lint-job
   stage: build
   script:
     - npm ci
@@ -39,7 +27,6 @@ build-job:
          - build
          - dist
       expire_in: 30 mins
-
 
 run-job:
   image: docker:cli
