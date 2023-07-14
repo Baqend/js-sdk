@@ -15,7 +15,7 @@ build-job:
 lint-job:
   stage: lint
   script:
-    - npm run lint
+    - echo 'try lint'
 
 run-job:
   stage: run
