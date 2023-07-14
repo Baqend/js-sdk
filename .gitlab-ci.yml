@@ -1,5 +1,6 @@
 #workflow rulez comes later here
 image: node:14
+
 stages:      
   - build
   - lint
@@ -20,8 +21,11 @@ lint-job:
 
 run-job:
   stage: run
+  needs:
+    - build-job
   script:
     - npm ci
     - npm install --silent websocket
+    - npm run dist
     - npm run test:node
    
