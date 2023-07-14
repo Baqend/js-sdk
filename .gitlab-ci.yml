@@ -5,7 +5,6 @@ default:
   image: node:14
 stages:
   - lint
-  - install      
   - build
   - test-node
 
@@ -31,6 +30,8 @@ install-job:
 build-job:      
   stage: build
   script:
+    - npm ci
+    - npm install --silent websocket
     - npm run dist 
     - npm run test:build  
   artifacts:
