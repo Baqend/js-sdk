@@ -10,7 +10,8 @@ build-job:
   script:
     - npm ci
     - npm install --silent websocket
-    - npm run dist
+    - npm run dist 
+    - npm run test:build
 
 lint-job:
   stage: lint
@@ -20,5 +21,7 @@ lint-job:
 run-job:
   stage: run
   script:
+    - npm ci
+    - npm install --silent websocket
     - npm run test:node
    
