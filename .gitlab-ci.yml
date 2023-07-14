@@ -33,21 +33,18 @@ run-job:
   stage: test-node
   variables:
    SERVER_RUN_FLAGS : --with-mongo --with-gridfs --log-level trace --debug --dashboard /opt/baqend/node_modules/baqend-dash/dist
-   NETWORK_NAME : $CI_COMMIT_REF_NAME
   needs:
     - build-job
   before_script:
-    - docker network create $(NETWORK_NAME) || echo 0
+    - docker network create $CI_COMMIT_REF_NAME || echo 0
     # run-mongo:
-    - docker run --network $(NETWORK_NAME) --rm -d --name mongo -p 27017:27017 mongo:4.0.5
+    - docker run --network $CI_COMMIT_REF_NAME -d --name mongo -p 27017:27017 mongo:4.0.5
     # Starts a basic server server and connects it to the branches network
-    - docker rm -f server
-    - docker run --network $(NETWORK_NAME) -d -p 8080:8080 -p 8081:8081 --name server docker.baqend.com/baqend/orestes:master $(SERVER_RUN_FLAGS)
+    - docker run --network $CI_COMMIT_REF_NAME -d -p 8080:8080 -p 8081:8081 --name server docker.baqend.com/baqend/orestes:master $SERVER_RUN_FLAGS
     # Starts the server-node server and connects it to the branches network
-    - docker rm -f node || echo 0
-    - docker run --network $(NETWORK_NAME) -d --name node docker.baqend.com/baqend/node14:master tcp://server:8081 http://server:8080/v1 debug
+    - docker run --network $CI_COMMIT_REF_NAME -d --name node docker.baqend.com/baqend/node14:master tcp://server:8081 http://server:8080/v1 debug
   after_script:
-    - docker -rm ($(docker ps -aq))
-    - docker network rm $NETWORK_NAME
+    - docker -rm $(docker ps -aq)
+    - docker network rm $CI_COMMIT_REF_NAME
   script:
    - npm run test:node
