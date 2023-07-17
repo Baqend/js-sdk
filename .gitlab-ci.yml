@@ -16,8 +16,7 @@ variables:
 stages:
   - lint
   - build
-  - test-node
-  - test-karma
+  - test
 
 lint-job:
   stage: lint
@@ -42,7 +41,7 @@ build-job:
       expire_in: 30 mins
 
 node-test-job:
-  stage: test-node
+  stage: test
   dependencies: ["build-job"]
   variables:
     TEST_SERVER: "http://orestes:8080/v1"
@@ -72,7 +71,7 @@ node-test-job:
 
 
 karma-test-job:
-  stage: test-karma
+  stage: test
   dependencies: ["build-job"]
   variables:
     TEST_SERVER: "http://orestes:8080/v1"
