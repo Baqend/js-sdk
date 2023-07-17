@@ -93,7 +93,7 @@ karma-test-job:
         - "--dashboard"
         - "/opt/baqend/node_modules/baqend-dash/dist"
   script:
-    - npm run test:karma -- --single-run --browsers $browsers --reporters=junit
+    - npm run test:karma
   artifacts:
     when: always
     reports:
