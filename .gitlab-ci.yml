@@ -28,6 +28,7 @@ build-job:
   stage: build
   script:
     - npm ci --cache .npm --prefer-offline
+    - npm install
     - npm install --silent websocket
     - npm run dist 
     - npm run test:build  
