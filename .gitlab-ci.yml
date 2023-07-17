@@ -37,6 +37,7 @@ build-job:
       paths:
          - build
          - dist
+         - commonjs
       expire_in: 30 mins
 
 e2e:
