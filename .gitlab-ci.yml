@@ -3,6 +3,10 @@ default:
   tags:
     - glexecutor-docker
   image: node:14
+  cache: # Cache modules in between jobs
+    key: $CI_COMMIT_REF_SLUG
+    paths:
+      - .npm/
 
 variables:
   FF_NETWORK_PER_BUILD: "true"
@@ -23,7 +27,7 @@ build-job:
     - lint-job
   stage: build
   script:
-    - npm ci
+    - npm ci --cache .npm --prefer-offline
     - npm install --silent websocket
     - npm run dist 
     - npm run test:build  
@@ -31,7 +35,6 @@ build-job:
       paths:
          - build
          - dist
-         - node_modules
       expire_in: 30 mins
 
 e2e:
@@ -54,6 +57,7 @@ e2e:
         - "--dashboard"
         - "/opt/baqend/node_modules/baqend-dash/dist"
   script:
+    - npm ci --cache .npm --prefer-offline
     - npm run test:node
 
 run-job:
