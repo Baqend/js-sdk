@@ -63,3 +63,8 @@ e2e:
         - "/opt/baqend/node_modules/baqend-dash/dist"
   script:
     - npm run test:node
+  artifacts:
+    when: always
+    reports:
+      junit:
+        - ./build/test-results/node-${process.version}.xml
