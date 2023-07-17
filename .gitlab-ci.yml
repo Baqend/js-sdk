@@ -6,6 +6,8 @@ default:
 
 variables:
   FF_NETWORK_PER_BUILD: "true"
+  CI_DEBUG_SERVICES: "true"
+
 stages:
   - lint
   - build
@@ -50,8 +52,6 @@ e2e:
         - "--debug"
         - "--dashboard"
         - "/opt/baqend/node_modules/baqend-dash/dist"
-  before_script:
-    - docker login -u $DOCKER_REGISTRY_USERNAME -p $DOCKER_REGISTRY_PASSWORD docker.baqend.com
   script:
     - npm run test:node
 
