@@ -31,6 +31,7 @@ build-job:
       paths:
          - build
          - dist
+         - node_modules
       expire_in: 30 mins
 
 e2e:
