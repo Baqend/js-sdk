@@ -37,11 +37,14 @@ build-job:
       paths:
          - build
          - dist
+         - commonjs
       expire_in: 30 mins
 
 e2e:
   stage: test-node
   dependencies: ["build-job"]
+  variables:
+    TEST_SERVER: "http://orestes:8080/v1"
   services:
     - mongo:4.0.5
     - redis:4.0
