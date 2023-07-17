@@ -43,9 +43,6 @@ e2e:
   services:
     - mongo:4.0.5
     - redis:4.0
-    - name: docker.baqend.com/baqend/node14:master
-      alias: node
-      command: ["tcp://orestes:8081", "http://orestes:8080/v1", "debug"]
     - name: docker.baqend.com/baqend/orestes:master
       alias: orestes
       command:
@@ -56,6 +53,9 @@ e2e:
         - "--debug"
         - "--dashboard"
         - "/opt/baqend/node_modules/baqend-dash/dist"
+    - name: docker.baqend.com/baqend/node14:master
+      alias: node
+      command: ["tcp://orestes:8081", "http://orestes:8080/v1", "debug"]
   script:
     - npm ci --cache .npm --prefer-offline
     - npm run test:node
