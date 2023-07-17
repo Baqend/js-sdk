@@ -47,6 +47,7 @@ module.exports = function (config) {
     // JUnit reporter output dir
     junitReporter: {
       outputDir: 'build/test-results/',
+      outputFile : 'karma-result.xml'
     },
 
     // web server hostname
