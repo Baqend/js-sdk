@@ -3,9 +3,15 @@ default:
   tags:
     - glexecutor-docker
   image: node:14
+  cache: # Cache modules in between jobs
+    key: $CI_COMMIT_REF_SLUG
+    paths:
+      - .npm/
 
 variables:
   FF_NETWORK_PER_BUILD: "true"
+  CI_DEBUG_SERVICES: "true"
+
 stages:
   - lint
   - build
@@ -21,7 +27,7 @@ build-job:
     - lint-job
   stage: build
   script:
-    - npm ci
+    - npm ci --cache .npm --prefer-offline
     - npm install --silent websocket
     - npm run dist 
     - npm run test:build  
