@@ -67,4 +67,4 @@ e2e:
     when: always
     reports:
       junit:
-        - ./build/test-results/node-${process.version}.xml
+        - ./build/test-results/node-result.xml
