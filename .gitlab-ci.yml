@@ -17,6 +17,7 @@ stages:
   - lint
   - build
   - test-node
+  - test-karma
 
 lint-job:
   stage: lint
@@ -40,7 +41,7 @@ build-job:
          - commonjs
       expire_in: 30 mins
 
-e2e:
+node-test-job:
   stage: test-node
   dependencies: ["build-job"]
   variables:
@@ -68,3 +69,34 @@ e2e:
     reports:
       junit:
         - ./build/test-results/node-result.xml
+
+
+karma-test-job:
+  stage: test-karma
+  dependencies: ["build-job"]
+  variables:
+    TEST_SERVER: "http://orestes:8080/v1"
+    KARMA_HOST : "bq3.baqend.com"
+  services:
+    - mongo:4.0.5
+    - redis:4.0
+    - name: docker.baqend.com/baqend/node14:master
+      alias: node
+      command: ["tcp://orestes:8081", "http://orestes:8080/v1", "debug"]
+    - name: docker.baqend.com/baqend/orestes:master
+      alias: orestes
+      command:
+        - "--with-mongo"
+        - "--with-gridfs"
+        - "--log-level"
+        - "trace"
+        - "--debug"
+        - "--dashboard"
+        - "/opt/baqend/node_modules/baqend-dash/dist"
+  script:
+    - npm run test:karma -- --single-run --browsers $browsers --reporters=junit
+  artifacts:
+    when: always
+    reports:
+      junit:
+        - ./build/test-results/karma-result.xml
