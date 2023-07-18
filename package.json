@@ -103,7 +103,7 @@
     "karma-webdriver-launcher": "^1.0.8",
     "mocha": "^10.2.0",
     "mocha-junit-reporter": "^2.2.1",
-    "puppeteer": "^4.0.1",
+    "puppeteer": "^20.8.3",
     "shelljs": "^0.8.4",
     "shx": "^0.3.4",
     "source-map-support": "^0.5.19",
