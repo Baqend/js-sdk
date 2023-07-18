@@ -83,7 +83,7 @@ module.exports = function (config) {
       Chrome_without_security: {
         base: 'Chrome',
         // This option is needed to use the crypto module on http origins
-        flags: [`--unsafely-treat-insecure-origin-as-secure=http://${process.env.KARMA_HOST}:9876`],
+        flags: ['--no-sandbox',`--unsafely-treat-insecure-origin-as-secure=http://${process.env.KARMA_HOST}:9876`],
       },
       ...require('./localSeleniumBrowser'),
       ...require('./browserstack'),
