@@ -142,7 +142,7 @@
     "prepare": ""
   },
   "engines": {
-    "node": ">=14.0.0"
+    "node": ">=16.0.0"
   },
   "bin": {
     "baqend": "./cli/index.js"
