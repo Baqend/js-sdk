@@ -2,7 +2,7 @@
 default:
   tags:
     - glexecutor-docker
-  image: node:14
+  image: node:16
   cache: # Cache modules in between jobs
     key: $CI_COMMIT_REF_SLUG
     paths:
