@@ -92,6 +92,9 @@ karma-test-job:
         - "--debug"
         - "--dashboard"
         - "/opt/baqend/node_modules/baqend-dash/dist"
+  before_script:
+    - apt-get update
+    - apt-get install chromium-browser -y
   script:
     - npm run test:karma --reporters=junit
   artifacts:
