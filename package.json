@@ -121,7 +121,7 @@
     "test": "npm run test:node && npm run test:karma",
     "test:build": "",
     "test:node": "mocha --config mocharc.cjs --exit",
-    "test:karma": "karma start",
+    "test:karma": "karma start karma.conf.js",
     "clean": "shx rm -rf dist commonjs doc",
     "dev-node-commonjs": "tsc --watch -m commonjs --target es5 --declaration --outDir commonjs --declaration --project tsconfig.lib.json",
     "_dev-node-esm": "UNSUDED FOR NOW -> https://nodejs.org/api/packages.html#packages_dual_package_hazard tsc --watch -m es2015 --target es6 --outDir esm --project tsconfig.lib.json",
