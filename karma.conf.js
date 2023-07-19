@@ -77,7 +77,6 @@ module.exports = function (config) {
     // - Safari (only Mac; has to be installed with `npm install karma-safari-launcher`)
     // - PhantomJS
     // - IE (only Windows; has to be installed with `npm install karma-ie-launcher`)
-    browsers: ['HeadlessChrome'],
     customLaunchers: {
       HeadlessChrome: {
         base: "Chrome",
@@ -85,10 +84,7 @@ module.exports = function (config) {
           "--headless",
           "--disable-gpu",
         ]
-      }
-    },
-
-    customLaunchers: {
+      },
       Chrome_without_security: {
         base: 'Chrome',
         // This option is needed to use the crypto module on http origins
