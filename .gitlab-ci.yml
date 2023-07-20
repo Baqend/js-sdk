@@ -100,7 +100,7 @@ karma-test-job:
     - node node_modules/puppeteer/install.js
 
   script:
-    - npm run test:karma --single-run --reporters=junit
+    - npm run test:karma
   artifacts:
     when: always
     reports:
