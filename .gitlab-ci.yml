@@ -77,6 +77,7 @@ karma-test-job:
     TEST_SERVER: "http://orestes:8080/v1"
     KARMA_HOST : "localhost"
   services:
+    - selenium/standalone-chrome
     - mongo:4.0.5
     - redis:4.0
     - name: docker.baqend.com/baqend/node14:master
