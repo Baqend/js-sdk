@@ -1,6 +1,3 @@
-// Karma configuration
-// Generated on Thu Mar 06 2014 17:16:01 GMT+0100 (Mitteleuropäische Zeit)
-process.env.CHROME_BIN = require('puppeteer').executablePath();
 
 var webdriverConfig = {
   hostname: 'selenium__standalone-chrome',
