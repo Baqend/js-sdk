@@ -91,6 +91,7 @@ module.exports = function (config) {
         platform: 'LINUX',
         version: '',
         name: 'Karma Chrome',
+        pseudoActivityInterval: 30000
       },
       HeadlessChrome: {
         base: "Chrome",
