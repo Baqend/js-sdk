@@ -91,7 +91,7 @@ module.exports = function (config) {
         base: "WebDriver",
         config: webdriverConfig,
         browserName: 'chrome',
-      }
+      },
       HeadlessChrome: {
         base: "Chrome",
         flags: [
