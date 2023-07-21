@@ -2,6 +2,10 @@
 // Generated on Thu Mar 06 2014 17:16:01 GMT+0100 (Mitteleuropäische Zeit)
 process.env.CHROME_BIN = require('puppeteer').executablePath();
 
+var webdriverConfig = {
+  hostname: 'selenium__standalone-chrome',
+  port: 4444,
+}
 module.exports = function (config) {
   config.set({
 
@@ -80,7 +84,14 @@ module.exports = function (config) {
     // - Safari (only Mac; has to be installed with `npm install karma-safari-launcher`)
     // - PhantomJS
     // - IE (only Windows; has to be installed with `npm install karma-ie-launcher`)
+    browsers: ['SeleniumChrome'],
+
     customLaunchers: {
+      SeleniumChrome: {
+        base: "WebDriver",
+        config: webdriverConfig,
+        browserName: 'chrome',
+      }
       HeadlessChrome: {
         base: "Chrome",
         flags: [
