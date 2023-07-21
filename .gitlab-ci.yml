@@ -76,6 +76,7 @@ karma-test-job:
   variables:
     TEST_SERVER: "http://orestes:8080/v1"
     KARMA_HOST : "localhost"
+    SE_OPTS: "--log-level FINE"
   services:
     - selenium/standalone-chrome
     - mongo:4.0.5
