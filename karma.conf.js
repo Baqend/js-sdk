@@ -88,6 +88,9 @@ module.exports = function (config) {
         base: "WebDriver",
         config: webdriverConfig,
         browserName: 'chrome',
+        platform: 'LINUX',
+        version: '',
+        name: 'Karma Chrome',
       },
       HeadlessChrome: {
         base: "Chrome",
