@@ -75,7 +75,7 @@ karma-test-job:
   dependencies: ["build-job"]
   variables:
     TEST_SERVER: "http://orestes:8080/v1"
-    KARMA_HOST : "bq3.baqend.com"
+    KARMA_HOST : "localhost"
   services:
     - mongo:4.0.5
     - redis:4.0
