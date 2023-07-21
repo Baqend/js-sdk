@@ -12,6 +12,9 @@ module.exports = function (config) {
     frameworks: ['mocha', 'chai', 'chai-as-promised'],
 
     client: {
+      args:[
+         process.env.TEST_SERVER
+      ],
       mocha: {
         timeout: 30000,
       },
@@ -42,7 +45,7 @@ module.exports = function (config) {
 
     // test results reporter to use
     // possible values: 'dots', 'progress', 'junit', 'growl', 'coverage'
-    reporters: ['progress'],
+    reporters: ['junit'],
 
     // JUnit reporter output dir
     junitReporter: {
@@ -61,7 +64,7 @@ module.exports = function (config) {
 
     // level of logging
     // possible values: config.LOG_DISABLE || config.LOG_ERROR || config.LOG_WARN || config.LOG_INFO || config.LOG_DEBUG
-    logLevel: config.LOG_INFO,
+    logLevel: config.LOG_DEBUG,
 
     // enable / disable watching file and executing tests whenever any file changes
     autoWatch: false,
