@@ -97,7 +97,7 @@ module.exports = function (config) {
           // example from https://www.npmjs.com/package/selenium-webdriver#usage
           var driver = new chrome.getDriver();
           return driver;
-        }
+        },
         platform: 'LINUX',
         version: '',
         name: 'KarmaChrome',
