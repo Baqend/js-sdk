@@ -3,6 +3,11 @@ var webdriverConfig = {
   hostname: 'selenium__standalone-chrome',
   port: 4444,
 }
+
+var By = require('selenium-webdriver').By,
+    until = require('selenium-webdriver').until,
+    chrome = require('selenium-webdriver/chrome');
+
 module.exports = function (config) {
   config.set({
 
@@ -88,7 +93,11 @@ module.exports = function (config) {
         base: "WebDriver",
         config: webdriverConfig,
         browserName: 'chrome',
-        driver: "chromedriver",
+        getDriver: function(){
+          // example from https://www.npmjs.com/package/selenium-webdriver#usage
+          var driver = new chrome.getDriver();
+          return driver;
+        }
         platform: 'LINUX',
         version: '',
         name: 'KarmaChrome',

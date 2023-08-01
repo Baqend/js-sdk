@@ -100,6 +100,7 @@
     "karma-junit-reporter": "^2.0.1",
     "karma-mocha": "^2.0.1",
     "karma-safari-launcher": "^1.0.0",
+    "karma-selenium-webdriver-launcher": "^0.0.4",
     "karma-webdriver-launcher": "^1.0.8",
     "mocha": "^10.2.0",
     "mocha-junit-reporter": "^2.2.1",
