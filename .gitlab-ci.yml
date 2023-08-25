@@ -38,7 +38,7 @@ stages:
       - commonjs
     expire_in: 30 mins
 
-create_config:
+.create_config:
   stage: build
   script:
     - echo "Creating build directory..."
@@ -128,6 +128,9 @@ test-job:
         - ls
         - -la
         - /builds/team-backend/orestes/orestes-js/config
+  before_script:
+    - mkdir -p config
+    - cp $SSL_CONFIG config/config.json
   script:
     - ls -la .
     - pwd
