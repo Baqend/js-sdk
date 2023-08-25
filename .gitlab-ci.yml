@@ -38,7 +38,7 @@ stages:
       - commonjs
     expire_in: 30 mins
 
-.ssl-config:
+ssl-config:
   stage: build
   variables:
     SECURE_FILES_DOWNLOAD_PATH: config
@@ -118,6 +118,8 @@ stages:
 
 test-job:
   stage: test
+  dependencies:
+    - ssl-config
   variables:
     TEST_SERVER: "https://local.baqend.com:8443/v1"
     KARMA_HOST : "localhost"
