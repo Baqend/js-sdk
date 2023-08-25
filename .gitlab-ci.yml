@@ -8,6 +8,7 @@ default:
     paths:
       - .npm/
       - node_modules/
+      - config/
 
 variables:
   FF_NETWORK_PER_BUILD: "true"
