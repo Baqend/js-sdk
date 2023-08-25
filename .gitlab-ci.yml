@@ -81,7 +81,7 @@ karma-test-job:
     - name: docker.baqend.com/baqend/node14:master
       alias: node
       command: ["tcp://local.baqend.com:8081", "http://local.baqend.com:8080/v1", "debug"]
-    - name: docker.baqend.com/baqend/orestes:master
+    - name: docker.baqend.com/baqend/orestes:2023-34-change-docker-file-35d1b062
       alias: local.baqend.com
       command:
         - "--with-ssl"
