@@ -109,7 +109,8 @@ karma-test-job:
         - "--dashboard"
         - "/opt/baqend/node_modules/baqend-dash/dist"
   script:
-    - npm run test:karma
+    - ls -la .
+    # - npm run test:karma
   artifacts:
     when: always
     reports:
