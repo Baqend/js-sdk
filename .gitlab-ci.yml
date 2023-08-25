@@ -14,18 +14,16 @@ variables:
   CI_DEBUG_SERVICES: "true"
 
 stages:
-  - lint
   - build
   - test
 
 lint-job:
-  stage: lint
+  stage: build
   script:
-    - echo 'try lint'
+    - npm run lint
+  allow_failure: true
 
 build-job:      
-  needs:
-    - lint-job
   stage: build
   script:
     - npm ci --cache .npm --prefer-offline
