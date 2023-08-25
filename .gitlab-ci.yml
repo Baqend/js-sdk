@@ -72,7 +72,7 @@ karma-test-job:
   stage: test
   dependencies: ["build-job"]
   variables:
-    TEST_SERVER: "http://orestes:8080/v1"
+    TEST_SERVER: "https://orestes:8443/v1"
     KARMA_HOST : "localhost"
     SE_OPTS: "--log-level FINE"
   services:
