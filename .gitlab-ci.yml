@@ -28,7 +28,7 @@ build-job:
   variables:
     SECURE_FILES_DOWNLOAD_PATH: config # Folder where the orestes ssl config should be placed
   script:
-    - mkdir -p config
+    - mkdir -p config # pull the orestes ssl config to the cache
     - curl -s https://gitlab.com/gitlab-org/incubation-engineering/mobile-devops/download-secure-files/-/raw/main/installer | bash
     - npm ci --cache .npm --prefer-offline
     - npm install
@@ -75,7 +75,6 @@ karma-test-job:
   stage: test
   dependencies:
     - build-job
-    - ssl-config
   variables:
     TEST_SERVER: "https://local.baqend.com:8443/v1"
     KARMA_HOST : "localhost"
