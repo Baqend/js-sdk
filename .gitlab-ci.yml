@@ -38,16 +38,18 @@ stages:
       - commonjs
     expire_in: 30 mins
 
-.create_config:
+.ssl-config:
   stage: build
+  variables:
+    SECURE_FILES_DOWNLOAD_PATH: config
   script:
     - echo "Creating build directory..."
     - mkdir -p config
-    - cp $SSL_CONFIG config/config.json
+    - curl -s https://gitlab.com/gitlab-org/incubation-engineering/mobile-devops/download-secure-files/-/raw/main/installer | bash
   artifacts:
     paths:
-      - config/config.json
-    expire_in: 1 hour
+      - config/
+    expire_in: 5 m
 
 .node-test-job:
   stage: test
@@ -119,7 +121,6 @@ test-job:
   variables:
     TEST_SERVER: "https://local.baqend.com:8443/v1"
     KARMA_HOST : "localhost"
-    SECURE_FILES_DOWNLOAD_PATH: config
   services:
     - name: busybox
       alias: local.baqend.com
@@ -127,9 +128,6 @@ test-job:
         - ls
         - -la
         - /builds/team-backend/orestes/orestes-js/config
-  before_script:
-    - mkdir -p config
-    - curl -s https://gitlab.com/gitlab-org/incubation-engineering/mobile-devops/download-secure-files/-/raw/main/installer | bash
   script:
     - ls -la .
     - pwd
