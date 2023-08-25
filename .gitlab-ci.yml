@@ -127,6 +127,7 @@ test-job:
       command:
         - ls
         - -la
-        - /builds
+        - $CI_PROJECT_DIR
   script:
-    - npm run test:karma
+    - ls -la .
+    - pwd
