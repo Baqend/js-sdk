@@ -129,5 +129,5 @@ test-job:
         - -la
         - /builds/team-backend/orestes/orestes-js/config
   script:
-    - ls -la .
+    - ls -la config
     - pwd
