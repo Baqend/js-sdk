@@ -85,6 +85,10 @@ karma-test-job:
       alias: local.baqend.com
       command:
         - "--with-ssl"
+        - "--ssl-keystore"
+        - "conf/local.jks"
+        - "--ssl-keystore-password"
+        - "$LOCAL_KEYSTORE_PASSWORD"
         - "--with-mongo"
         - "--with-gridfs"
         - "--log-level"
