@@ -18,8 +18,7 @@ stages:
   - test
 
 ssl-config:
-  stage:
-    - build
+  stage: build
   variables:
     SECURE_FILES_DOWNLOAD_PATH: config # Folder where the orestes ssl config should be placed
   script:
