@@ -76,7 +76,6 @@ karma-test-job:
     KARMA_HOST : "localhost"
     SE_OPTS: "--log-level FINE"
   services:
-    - selenium/standalone-chrome:latest
     - mongo:4.0.5
     - redis:4.0
     - name: docker.baqend.com/baqend/node14:master
@@ -85,6 +84,7 @@ karma-test-job:
     - name: docker.baqend.com/baqend/orestes:master
       alias: local.baqend.com
       command:
+        - "--with-ssl"
         - "--with-mongo"
         - "--with-gridfs"
         - "--log-level"
