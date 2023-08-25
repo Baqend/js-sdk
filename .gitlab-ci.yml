@@ -72,7 +72,7 @@ karma-test-job:
   stage: test
   dependencies: ["build-job"]
   variables:
-    TEST_SERVER: "https://orestes:8443/v1"
+    TEST_SERVER: "https://local.baqend.com:8443/v1"
     KARMA_HOST : "localhost"
     SE_OPTS: "--log-level FINE"
   services:
@@ -81,9 +81,9 @@ karma-test-job:
     - redis:4.0
     - name: docker.baqend.com/baqend/node14:master
       alias: node
-      command: ["tcp://orestes:8081", "http://orestes:8080/v1", "debug"]
+      command: ["tcp://local.baqend.com:8081", "http://local.baqend.com:8080/v1", "debug"]
     - name: docker.baqend.com/baqend/orestes:master
-      alias: orestes
+      alias: local.baqend.com
       command:
         - "--with-mongo"
         - "--with-gridfs"
