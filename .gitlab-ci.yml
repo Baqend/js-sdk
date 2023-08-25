@@ -17,20 +17,6 @@ stages:
   - build
   - test
 
-ssl-config:
-  stage: build
-  variables:
-    SECURE_FILES_DOWNLOAD_PATH: config # Folder where the orestes ssl config should be placed
-  script:
-    - mkdir -p config
-    - curl -s https://gitlab.com/gitlab-org/incubation-engineering/mobile-devops/download-secure-files/-/raw/main/installer | bash
-  cache:
-    key:
-      files:
-        - config/local.jks
-    paths:
-      - config
-
 .lint-job:
   stage: build
   script:
@@ -39,7 +25,11 @@ ssl-config:
 
 build-job:
   stage: build
+  variables:
+    SECURE_FILES_DOWNLOAD_PATH: config # Folder where the orestes ssl config should be placed
   script:
+    - mkdir -p config
+    - curl -s https://gitlab.com/gitlab-org/incubation-engineering/mobile-devops/download-secure-files/-/raw/main/installer | bash
     - npm ci --cache .npm --prefer-offline
     - npm install
     - npm install --silent websocket
