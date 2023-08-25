@@ -119,6 +119,7 @@ test-job:
   variables:
     TEST_SERVER: "https://local.baqend.com:8443/v1"
     KARMA_HOST : "localhost"
+    SECURE_FILES_DOWNLOAD_PATH: config
   services:
     - name: busybox
       alias: local.baqend.com
@@ -128,7 +129,7 @@ test-job:
         - /builds/team-backend/orestes/orestes-js/config
   before_script:
     - mkdir -p config
-    - cp $SSL_CONFIG config/config.json
+    - curl -s https://gitlab.com/gitlab-org/incubation-engineering/mobile-devops/download-secure-files/-/raw/main/installer | bash
   script:
     - ls -la .
     - pwd
