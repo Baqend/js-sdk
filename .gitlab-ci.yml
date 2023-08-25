@@ -116,8 +116,6 @@ stages:
 
 test-job:
   stage: test
-  dependencies:
-    - create_config
   variables:
     TEST_SERVER: "https://local.baqend.com:8443/v1"
     KARMA_HOST : "localhost"
