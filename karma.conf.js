@@ -123,6 +123,7 @@ module.exports = function (config) {
     browserStack: {
       project: 'JS SDK',
       // startTunnel: false,
+      forcelocal: true,
       timeout: 1800,
     },
 
@@ -135,6 +136,6 @@ module.exports = function (config) {
 
     // Continuous Integration mode
     // if true, it capture browsers, run tests and exit
-    singleRun: false,
+    singleRun: true,
   });
 };
