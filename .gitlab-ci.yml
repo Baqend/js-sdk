@@ -67,7 +67,7 @@ build-job:
       junit:
         - ./build/test-results/node-result.xml
 
-.karma-test-job:
+karma-test-job:
   stage: test
   dependencies:
     - build-job
