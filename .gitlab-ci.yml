@@ -85,11 +85,8 @@ karma-test-job:
     - name: docker.baqend.com/baqend/orestes:2023-34-change-docker-file-35d1b062
       alias: local.baqend.com
       command:
-        - "--with-ssl"
-        - "--ssl-keystore"
-        - "conf/local.jks"
-        - "--ssl-keystore-password"
-        - $KEYSTORE_PASSWORD
+        - "--config"
+        - "/builds/config.json"
         - "--with-mongo"
         - "--with-gridfs"
         - "--log-level"
@@ -97,6 +94,8 @@ karma-test-job:
         - "--debug"
         - "--dashboard"
         - "/opt/baqend/node_modules/baqend-dash/dist"
+  before_script:
+    - cp $SSL_CONFIG ./config.json
   script:
     - npm run test:karma
   artifacts:
