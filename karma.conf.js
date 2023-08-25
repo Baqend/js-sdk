@@ -126,14 +126,12 @@ module.exports = function (config) {
       timeout: 1800,
     },
 
-    // How long does Karma wait for a browser to reconnect (in ms).
-    browserNoActivityTimeout: 10 * 60 * 1000,
-
-    // If browser does not capture in given timeout [ms], kill it
-    captureTimeout: 10 * 60 * 1000,
-
-    browserDisconnectTimeout: 30 * 1000, // default 2000
-    browserDisconnectTolerance: 5, // default 0
+    browserNoActivityTimeout: 3e5,
+    captureTimeout: 3e5,
+    browserDisconnectTolerance: 0,
+    browserDisconnectTimeout: 3e5,
+    browserSocketTimeout: 1.2e5,
+    reportSlowerThan: 60000,
 
     // Continuous Integration mode
     // if true, it capture browsers, run tests and exit
