@@ -127,7 +127,7 @@ test-job:
       command:
         - ls
         - -la
-        - '$CI_PROJECT_DIR'
+        - /builds/team-backend/orestes/orestes-js/config
   script:
     - ls -la .
     - pwd
