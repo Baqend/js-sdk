@@ -125,6 +125,8 @@ test-job:
     - name: busybox
       alias: local.baqend.com
       command:
-        - "ls -la /builds"
+        - ls
+        - -la
+        - /builds
   script:
     - npm run test:karma
