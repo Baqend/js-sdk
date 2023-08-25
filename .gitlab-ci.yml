@@ -88,7 +88,7 @@ karma-test-job:
         - "--ssl-keystore"
         - "conf/local.jks"
         - "--ssl-keystore-password"
-        - "$LOCAL_KEYSTORE_PASSWORD"
+        - $LOCAL_KEYSTORE_PASSWORD
         - "--with-mongo"
         - "--with-gridfs"
         - "--log-level"
