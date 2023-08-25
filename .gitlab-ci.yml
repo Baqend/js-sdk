@@ -17,6 +17,21 @@ stages:
   - build
   - test
 
+ssl-config:
+  stage:
+    - build
+  variables:
+    SECURE_FILES_DOWNLOAD_PATH: config # Folder where the orestes ssl config should be placed
+  script:
+    - mkdir -p config
+    - curl -s https://gitlab.com/gitlab-org/incubation-engineering/mobile-devops/download-secure-files/-/raw/main/installer | bash
+  cache:
+    key:
+      files:
+        - config/local.jks
+    paths:
+      - config
+
 .lint-job:
   stage: build
   script:
@@ -71,11 +86,11 @@ karma-test-job:
   stage: test
   dependencies:
     - build-job
+    - ssl-config
   variables:
     TEST_SERVER: "https://local.baqend.com:8443/v1"
     KARMA_HOST : "localhost"
     SE_OPTS: "--log-level FINE"
-    SECURE_FILES_DOWNLOAD_PATH: config # Folder where the orestes ssl config should be placed
   services:
     - mongo:4.0.5
     - redis:4.0
@@ -94,9 +109,6 @@ karma-test-job:
         - "--debug"
         - "--dashboard"
         - "/opt/baqend/node_modules/baqend-dash/dist"
-  before_script:
-    - mkdir -p config
-    - curl -s https://gitlab.com/gitlab-org/incubation-engineering/mobile-devops/download-secure-files/-/raw/main/installer | bash
   script:
     - npm run test:karma
   artifacts:
