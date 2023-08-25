@@ -18,9 +18,6 @@ module.exports = function (config) {
     frameworks: ['mocha', 'chai', 'chai-as-promised'],
 
     client: {
-      args:[
-         process.env.TEST_SERVER
-      ],
       mocha: {
         timeout: 30000,
       },
