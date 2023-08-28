@@ -309,6 +309,40 @@ describe('Test user and roles', function () {
           })
     })
 
+    it('should disable MFA', function () {
+      const OTPAuth = require('otpauth');
+      var login = helper.makeLogin()
+
+      return db.User.register(login, 'secret')
+          .then(function () {
+            return db.initMFA()
+          })
+          .then(function(response) {
+            const { keyUri, submitCode } = response
+
+            // Create second factorm through usage of the keyUri and use it to create the code
+            // to confirm mfa activation
+            const totp = OTPAuth.URI.parse(keyUri)
+            const code = totp.generate()
+
+            return submitCode(code)
+          })
+          .then(function(response) {
+            return db.getMFAStatus()
+          })
+          .then(function(mfaStatus) {
+            expect(mfaStatus).to.equal('REQUIRED')
+
+            return db.disableMFA()
+          })
+          .then(function(response) {
+            return db.getMFAStatus()
+          })
+          .then(function(mfaStatus) {
+            expect(mfaStatus).to.equal('DISABLED')
+          })
+    })
+
     it('should keep user login when newPassword is called with invalid credentials', async function () {
       var oldLogin = helper.makeLogin();
       var oldToken;
