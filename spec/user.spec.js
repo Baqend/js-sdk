@@ -249,6 +249,18 @@ describe('Test user and roles', function () {
       } catch {}
     });
 
+    it('should create user with MFA disabled', function() {
+      var login = helper.makeLogin()
+
+      return db.User.register(login, 'secret')
+          .then(function() {
+            return db.getMFAStatus()
+          })
+          .then(function(response) {
+            expect(response).be.equal('DISABLED')
+          })
+    })
+
     it('should keep user login when newPassword is called with invalid credentials', async function () {
       var oldLogin = helper.makeLogin();
       var oldToken;
