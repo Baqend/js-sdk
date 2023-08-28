@@ -287,6 +287,28 @@ describe('Test user and roles', function () {
           })
     })
 
+    it('should not init MFA with false code', function () {
+      const OTPAuth = require('otpauth');
+      var login = helper.makeLogin()
+
+      return db.User.register(login, 'secret')
+          .then(function () {
+            return db.initMFA()
+          })
+          .then(function(response) {
+            const { keyUri, submitCode } = response
+            const code = '123456'
+            return submitCode(code)
+          })
+          .then(function(response) {
+            expect.fail('Invalid code was accepted')
+          })
+          .catch(function(response) {
+            expect(response.status).to.equal(400)
+            expect(response.message).to.equal('MFA code invalid')
+          })
+    })
+
     it('should keep user login when newPassword is called with invalid credentials', async function () {
       var oldLogin = helper.makeLogin();
       var oldToken;
