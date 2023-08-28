@@ -381,7 +381,6 @@ describe('Test user and roles', function () {
             expect.fail('login proceeded without mfa')
           })
           .catch(function(response) {
-            console.log(response)
             const { message, token } = response
             expect(message).to.equal('MFA Required')
             const code = totp.generate()
@@ -391,6 +390,58 @@ describe('Test user and roles', function () {
                 })
           })
     })
+
+    it("should prevent mfa login without a valid code", function () {
+      const OTPAuth = require("otpauth");
+      var login = helper.makeLogin();
+      var user;
+
+      return db.User.register(login, "secret")
+          .then(function (newUser) {
+            user = newUser;
+            return db.initMFA();
+          })
+          .then(function (response) {
+            const { keyUri, submitCode } = response;
+
+            // Create second factorm through usage of the keyUri and use it to create the code
+            // to confirm mfa activation
+            const totp = OTPAuth.URI.parse(keyUri);
+            const code = totp.generate();
+
+            return submitCode(code);
+          })
+          .then(function (response) {
+            user = response;
+            return db.getMFAStatus();
+          })
+          .then(function (mfaStatus) {
+            expect(mfaStatus).to.equal("REQUIRED");
+
+            return db.User.logout();
+          })
+          .then(function (response) {
+            expect(db.User.me).to.equal(null);
+            return db.User.login(login, "secret");
+          })
+          .then(function (response) {
+            expect.fail("login proceeded without mfa");
+          })
+          .catch(function (response) {
+            const { message, token } = response;
+            expect(message).to.equal("MFA Required");
+
+            const code = '123456'
+            return db.submitMFACode(code, token)
+                .then(function (response) {
+                  expect.fail("login proceeded without valid code");
+                })
+                .catch(function (response) {
+                  console.log(response)
+                  expect.fail('Change when it is clear that we receive the correct error')
+                })
+          });
+    });
 
     it('should keep user login when newPassword is called with invalid credentials', async function () {
       var oldLogin = helper.makeLogin();
