@@ -343,6 +343,55 @@ describe('Test user and roles', function () {
           })
     })
 
+    it('should require MFA code during login', function () {
+      const OTPAuth = require('otpauth')
+      var login = helper.makeLogin()
+      var totp
+      var user
+
+      return db.User.register(login, 'secret')
+          .then(function(newUser) {
+            user = newUser
+            return db.initMFA()
+          })
+          .then(function(response) {
+            const { keyUri, submitCode } = response
+
+            // Create second factorm through usage of the keyUri and use it to create the code
+            // to confirm mfa activation
+            totp = OTPAuth.URI.parse(keyUri)
+            const code = totp.generate()
+
+            return submitCode(code)
+          })
+          .then(function(response) {
+            user = response
+            return db.getMFAStatus()
+          })
+          .then(function(mfaStatus) {
+            expect(mfaStatus).to.equal('REQUIRED')
+
+            return db.User.logout()
+          })
+          .then(function(response) {
+            expect(db.User.me).to.equal(null)
+            return db.User.login(login, 'secret')
+          })
+          .then(function(response) {
+            expect.fail('login proceeded without mfa')
+          })
+          .catch(function(response) {
+            console.log(response)
+            const { message, token } = response
+            expect(message).to.equal('MFA Required')
+            const code = totp.generate()
+            return db.submitMFACode(code, token)
+                .then(function(response) {
+                  expect(response).equals(user)
+                })
+          })
+    })
+
     it('should keep user login when newPassword is called with invalid credentials', async function () {
       var oldLogin = helper.makeLogin();
       var oldToken;
