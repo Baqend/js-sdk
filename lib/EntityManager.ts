@@ -1175,7 +1175,8 @@ export class EntityManager extends Lockable {
       .then(
         (response) => {
           if (response.status === StatusCode.FORBIDDEN) {
-            throw new MFAError(response.headers['Baqend-MFA-Auth-Token']); // If MFA is required: throw an error containing the auth token
+            const { data } = response.entity
+             throw new MFAError(data['baqend-mfa-auth-token']); // If MFA is required: throw an error containing the auth token
           }
           return response.entity ? this._updateUser(response.entity, login) : null;
         },
