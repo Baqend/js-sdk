@@ -357,7 +357,7 @@ describe('Test user and roles', function () {
           .then(function(response) {
             const { keyUri, submitCode } = response
 
-            // Create second factorm through usage of the keyUri and use it to create the code
+            // Create second factor through usage of the keyUri and use it to create the code
             // to confirm mfa activation
             totp = OTPAuth.URI.parse(keyUri)
             const code = totp.generate()
@@ -437,8 +437,8 @@ describe('Test user and roles', function () {
                   expect.fail("login proceeded without valid code");
                 })
                 .catch(function (response) {
-                  console.log(response)
-                  expect.fail('Change when it is clear that we receive the correct error')
+                  expect(response.status).to.equal(400)
+                  expect(response.message).to.equal('MFA code invalid')
                 })
           });
     });
