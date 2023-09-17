@@ -1,12 +1,10 @@
-'use strict';
-
 if (typeof module !== 'undefined') {
   require('./node');
 }
 
 describe('Test entity type', function () {
   var em, emf, EntityClass, EmbeddedClass, obj, state, metamodel, EntityType, EmbeddedType, types;
-  emf = new DB.EntityManagerFactory({ schema: [], tokenStorage: {} /* will later be set in the before handler */});
+  emf = new DB.EntityManagerFactory({ schema: [], tokenStorage: {} /* will later be set in the before handler */ });
   metamodel = emf.metamodel;
 
   EntityType = new DB.metamodel.EntityType('jstest.Type', metamodel.entity(Object));
@@ -53,23 +51,23 @@ describe('Test entity type', function () {
     type.addAttribute(new DB.metamodel.SingularAttribute('embedded', EmbeddedType));
 
     for (var name2 in types) {
-      type.addAttribute(new DB.metamodel.ListAttribute(name2 + 'List', types[name2].type));
+      type.addAttribute(new DB.metamodel.ListAttribute(`${name2}List`, types[name2].type));
     }
     type.addAttribute(new DB.metamodel.ListAttribute('refList', EntityType));
     type.addAttribute(new DB.metamodel.ListAttribute('embeddedList', EmbeddedType));
 
     for (var name3 in types) {
       if (types[name3].simple) {
-        type.addAttribute(new DB.metamodel.SetAttribute(name3 + 'Set', types[name3].type));
+        type.addAttribute(new DB.metamodel.SetAttribute(`${name3}Set`, types[name3].type));
       }
     }
 
     type.addAttribute(new DB.metamodel.SetAttribute('refSet', EntityType));
 
     for (var name4 in types) {
-      type.addAttribute(new DB.metamodel.MapAttribute('simple' + name4 + 'Map', metamodel.baseType('String'), types[name4].type));
+      type.addAttribute(new DB.metamodel.MapAttribute(`simple${name4}Map`, metamodel.baseType('String'), types[name4].type));
       if (types[name4].simple) {
-        type.addAttribute(new DB.metamodel.MapAttribute(name4 + 'simpleMap', types[name4].type, metamodel.baseType('String')));
+        type.addAttribute(new DB.metamodel.MapAttribute(`${name4}simpleMap`, types[name4].type, metamodel.baseType('String')));
       }
     }
 
@@ -83,19 +81,22 @@ describe('Test entity type', function () {
   metamodel.addType(EntityType);
   metamodel.addType(EmbeddedType);
 
-  before(function () {
-    emf.tokenStorage = helper.rootTokenStorage;
+  before(async function () {
+    emf.tokenStorage = await helper.rootTokenStorage;
 
-    return emf.connect(env.TEST_SERVER).then(function () {
-      return metamodel.save();
-    }).then(function () {
-      return emf.createEntityManager();
-    }).then(function (entityManager) {
-      em = entityManager;
+    return emf.connect(env.TEST_SERVER)
+      .then(function () {
+        return metamodel.save();
+      })
+      .then(function () {
+        return emf.createEntityManager();
+      })
+      .then(function (entityManager) {
+        em = entityManager;
 
-      EntityClass = em['jstest.Type'];
-      EmbeddedClass = em['jstest.Embedded'];
-    });
+        EntityClass = em['jstest.Type'];
+        EmbeddedClass = em['jstest.Embedded'];
+      });
   });
 
   beforeEach(function () {
@@ -181,11 +182,11 @@ describe('Test entity type', function () {
       return obj.save().then(function () {
         obj.file = null;
         return obj.load({ refresh: true });
-      }).then(function () {
+      }).then(async function () {
         expect(obj.file.id).equals(ref.id);
         expect(obj.file).not.equal(ref);
         expect(obj.file instanceof em.File).to.be.true;
-        return expect(obj.file.createURL()).eventually.contains('/file/test/myFile.png');
+        expect(await obj.file.createURL()).contains('/file/test/myFile.png');
       });
     });
   });
@@ -226,8 +227,8 @@ describe('Test entity type', function () {
   });
 
   Object.keys(types).forEach(function (name) {
-    describe(name + 'List value', function () {
-      testList(name + 'List', function () {
+    describe(`${name}List value`, function () {
+      testList(`${name}List`, function () {
         return DB.List.from(types[name].values());
       });
     });
@@ -247,8 +248,8 @@ describe('Test entity type', function () {
 
   Object.keys(types).forEach(function (name) {
     if (types[name].simple) {
-      describe(name + 'Set value', function () {
-        testSet(name + 'Set', function () {
+      describe(`${name}Set value`, function () {
+        testSet(`${name}Set`, function () {
           return new DB.Set(types[name].values());
         });
       });
@@ -271,24 +272,24 @@ describe('Test entity type', function () {
   });
 
   Object.keys(types).forEach(function (name) {
-    describe('simple' + name + 'Map value', function () {
-      testMap('simple' + name + 'Map', function () {
+    describe(`simple${name}Map value`, function () {
+      testMap(`simple${name}Map`, function () {
         var map = new DB.Map();
         var vals = types[name].values();
         for (var i = 0; i < vals.length; i += 1) {
-          map.set('key' + i, vals[i]);
+          map.set(`key${i}`, vals[i]);
         }
         return map;
       });
     });
 
     if (types[name].simple) {
-      describe(name + 'simpleMap value', function () {
-        testMap(name + 'simpleMap', function () {
+      describe(`${name}simpleMap value`, function () {
+        testMap(`${name}simpleMap`, function () {
           var keys = types[name].values();
           var map = new DB.Map();
           for (var i = 0; i < keys.length; i += 1) {
-            map.set(keys[i], 'value' + i);
+            map.set(keys[i], `value${i}`);
           }
           return map;
         });
@@ -478,7 +479,7 @@ describe('Test entity type', function () {
         expectedValue = value;
       }
 
-      it(value + ' should be saved and reloaded', function () {
+      it(`${value} should be saved and reloaded`, function () {
         obj[name] = value;
 
         return obj.save({ refresh: true }).then(function () {
@@ -744,7 +745,6 @@ describe('Test entity type', function () {
       });
     });
 
-
     it('should be saved and reloaded', function () {
       var value = new DB.Set(set);
       var expectedValue = new DB.Set(value);
@@ -752,7 +752,7 @@ describe('Test entity type', function () {
 
       return obj.save({ refresh: true }).then(function () {
         var set = obj[name];
-        var size = expectedValue.size;
+        var { size } = expectedValue;
         expect(set.size).eql(size);
         expectedValue.forEach(function (val) {
           expect(set.has(val)).be.true;

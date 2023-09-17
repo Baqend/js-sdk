@@ -1,5 +1,3 @@
-'use strict';
-
 if (typeof module !== 'undefined') {
   require('./node');
   require('rxjs/operators');
@@ -11,7 +9,7 @@ xdescribe('Guide Examples', function () {
     return;
   }
 
-  var Stream = DB.query.Stream;
+  var { Stream } = DB.query;
   var tautology = { $or: [{ value: { $exists: true } }, { value: { $exists: false } }] };
   var t = 400;
   var bucket = helper.randomize('Guide_StreamingQuery');
@@ -23,9 +21,14 @@ xdescribe('Guide Examples', function () {
 
   });
 
-  before(function () {
-    var todoType, activityType;
-    emf = new DB.EntityManagerFactory({ host: env.TEST_SERVER, schema: {}, tokenStorage: helper.rootTokenStorage });
+  before(async function () {
+    var todoType,
+      activityType;
+    emf = new DB.EntityManagerFactory({
+      host: env.TEST_SERVER,
+      schema: {},
+      tokenStorage: await helper.rootTokenStorage,
+    });
     metamodel = emf.metamodel;
 
     metamodel.addType(todoType = new DB.metamodel.EntityType(bucket, metamodel.entity(Object)));
@@ -38,11 +41,14 @@ xdescribe('Guide Examples', function () {
     // activities
     activityType.addAttribute(new DB.metamodel.SingularAttribute('name', metamodel.baseType(String)));
 
-    return metamodel.save().then(function () {
-      return emf.createEntityManager().ready();
-    }).then(function (em) {
-      db = em;
-    });
+    return metamodel.save()
+      .then(function () {
+        return emf.createEntityManager()
+          .ready();
+      })
+      .then(function (em) {
+        db = em;
+      });
   });
 
   afterEach(function () {
@@ -66,7 +72,6 @@ xdescribe('Guide Examples', function () {
     });
   });
 
-
   it('should compute aggregate: count', function () {
     this.timeout(6000);
 
@@ -75,12 +80,12 @@ xdescribe('Guide Examples', function () {
 
     var todo1, todo2, todo3;
     return helper.sleep(t).then(function () {
-      console.log('count: ' + aggregate);
+      console.log(`count: ${aggregate}`);
       expect(aggregate).to.be.equal(undefined);
       todo1 = new db[bucket]({ name: 'My Todo: groceries' });
       return helper.sleep(t, todo1.save());
     }).then(function () {
-      console.log('subscribing --> count: ' + aggregate);
+      console.log(`subscribing --> count: ${aggregate}`);
       expect(aggregate).to.be.equal(undefined);
       subscription = stream.scan(maintainCardinality, 0) // update counter
         .subscribe(function (value) {
@@ -89,29 +94,29 @@ xdescribe('Guide Examples', function () {
         }); // output aggregate value
       return helper.sleep(t);
     }).then(function () {
-      console.log('subscribed --> count: ' + aggregate);
+      console.log(`subscribed --> count: ${aggregate}`);
       expect(aggregate).to.be.equal(1);
       return helper.sleep(t);
     })
       .then(function () {
-        console.log('new list --> count: ' + aggregate);
+        console.log(`new list --> count: ${aggregate}`);
         todo2 = new db[bucket]({ name: 'My Todo: dinner' });
         return helper.sleep(t, todo2.save());
       })
       .then(function () {
-        console.log('another new list --> count: ' + aggregate);
+        console.log(`another new list --> count: ${aggregate}`);
         expect(aggregate).to.be.equal(2);
         todo3 = new db[bucket]({ name: 'My Todo: write invitations' });
         return helper.sleep(t, todo3.save());
       })
       .then(function () {
-        console.log('yet another new list --> count: ' + aggregate);
+        console.log(`yet another new list --> count: ${aggregate}`);
         expect(aggregate).to.be.equal(3);
         return helper.sleep(t, todo3.delete());
       })
       .then(helper.sleep(t))
       .then(function () {
-        console.log('removed a list --> count: ' + aggregate);
+        console.log(`removed a list --> count: ${aggregate}`);
         expect(aggregate).to.be.equal(2);
       });
   });
@@ -124,7 +129,7 @@ xdescribe('Guide Examples', function () {
 
     var todo1, todo2, todo3;
     return helper.sleep(t).then(function () {
-      console.log('count: ' + aggregate);
+      console.log(`count: ${aggregate}`);
       expect(aggregate).to.be.equal(undefined);
       todo1 = new db[bucket]({ name: 'My Todo: groceries', activities: [] });
       todo1.activities = [//
@@ -133,7 +138,7 @@ xdescribe('Guide Examples', function () {
       ];
       return helper.sleep(t, todo1.save());
     }).then(function () {
-      console.log('saved: ' + print(todo1) + '\n --> average: ' + aggregate);
+      console.log(`saved: ${print(todo1)}\n --> average: ${aggregate}`);
       expect(aggregate).to.be.equal(undefined);
       subscription = stream.scan(maintainAverage, initialAccumulatorAverage)// update counter
         .map(function (accumulator) {
@@ -145,7 +150,7 @@ xdescribe('Guide Examples', function () {
         }); // output aggregate value
       return helper.sleep(t);
     }).then(function () {
-      console.log('subscribed --> average: ' + aggregate);
+      console.log(`subscribed --> average: ${aggregate}`);
       expect(aggregate).to.be.equal(2);
       return helper.sleep(t);
     })
@@ -154,7 +159,7 @@ xdescribe('Guide Examples', function () {
         return helper.sleep(t, todo2.save());
       })
       .then(function () {
-        console.log('saved: ' + print(todo2) + '\n --> average: ' + aggregate);
+        console.log(`saved: ${print(todo2)}\n --> average: ${aggregate}`);
         expect(aggregate).to.be.equal(1);
         todo3 = new db[bucket]({ name: 'My Todo: write invitations', activities: [] });
         todo3.activities = [//
@@ -166,29 +171,29 @@ xdescribe('Guide Examples', function () {
         return helper.sleep(t, todo3.save());
       })
       .then(function () {
-        console.log('saved: ' + print(todo3) + '\n --> average: ' + aggregate);
+        console.log(`saved: ${print(todo3)}\n --> average: ${aggregate}`);
         expect(aggregate).to.be.equal(2);
         return helper.sleep(t, todo2.delete());
       })
       .then(function () {
-        console.log('removed: ' + print(todo2) + '\n --> average: ' + aggregate);
+        console.log(`removed: ${print(todo2)}\n --> average: ${aggregate}`);
         expect(aggregate).to.be.equal(3);
         todo3.activities.splice(2, 1);
         return helper.sleep(t, todo3.save());
       })
       .then(function () {
-        console.log('updated: ' + print(todo3) + '\n --> average: ' + aggregate);
+        console.log(`updated: ${print(todo3)}\n --> average: ${aggregate}`);
         expect(aggregate).to.be.equal(2.5);
         return helper.sleep(t, todo1.delete());
       })
       .then(function () {
-        console.log('removed: ' + print(todo1) + '\n --> average: ' + aggregate);
+        console.log(`removed: ${print(todo1)}\n --> average: ${aggregate}`);
         expect(aggregate).to.be.equal(3);
         return helper.sleep(t, todo3.delete());
       })
       .then(helper.sleep(t))
       .then(function () {
-        console.log(' removed: ' + print(todo3) + '\n --> average: ' + aggregate);
+        console.log(` removed: ${print(todo3)}\n --> average: ${aggregate}`);
         expect(aggregate).to.be.equal(0);
       });
   });
@@ -208,79 +213,79 @@ xdescribe('Guide Examples', function () {
 
     var todo0, todo1, todo2, todo3;
     return helper.sleep(t).then(function () {
-      console.log('\t result size: ' + result.length);
+      console.log(`\t result size: ${result.length}`);
       expect(result.length).to.be.equal(0);
       todo1 = new db[bucket]({ name: 'My Todo 1' });
       return helper.sleep(t, todo1.save());
     }).then(function () {
-      console.log('\t result size: ' + result.length);
-      console.log('\t\t\t User 2 saved ' + print(todo1));
+      console.log(`\t result size: ${result.length}`);
+      console.log(`\t\t\t User 2 saved ${print(todo1)}`);
       expect(result.length).to.be.equal(0);
-      console.log('User 1 subscribed --> result size: ' + result.length);
+      console.log(`User 1 subscribed --> result size: ${result.length}`);
       subscription = stream.subscribe(function (event) {
         events.push(event);
         maintainResult(result, event);
-        console.log('User 1 received: ' + event.matchType + '/' + event.operation + ': ' + event.data.name + ' is now at index ' + event.index);
-        console.log('\t\t result: [ ' + result.map(function (match) {
+        console.log(`User 1 received: ${event.matchType}/${event.operation}: ${event.data.name} is now at index ${event.index}`);
+        console.log(`\t\t result: [ ${result.map(function (match) {
           return match.name;
-        }).join(', ') + ']');
+        }).join(', ')}]`);
       });
       return helper.sleep(t);
     }).then(function () {
-      console.log('\t result size: ' + result.length);
+      console.log(`\t result size: ${result.length}`);
       todo2 = new db[bucket]({ name: 'My Todo 2' });
-      console.log('\t\t\t User 2 saved ' + print(todo2));
+      console.log(`\t\t\t User 2 saved ${print(todo2)}`);
       expect(result.length).to.be.equal(1);
       expect(result[0]).to.be.equal(todo1);
       return helper.sleep(t, todo2.save());
     })
       .then(function () {
-        console.log('\t result size: ' + result.length);
+        console.log(`\t result size: ${result.length}`);
         expect(result.length).to.be.equal(2);
         expect(events[0].index).to.be.equal(0);
         expect(result[0]).to.be.equal(todo1);
         expect(result[1]).to.be.equal(todo2);
         todo3 = new db[bucket]({ name: 'My Todo 3' });
-        console.log('\t\t\t User 2 saved ' + print(todo3));
+        console.log(`\t\t\t User 2 saved ${print(todo3)}`);
         return helper.sleep(t, todo3.save());
       })
       .then(function () {
-        console.log('\t result size: ' + result.length);
+        console.log(`\t result size: ${result.length}`);
         expect(result.length).to.be.equal(3);
         expect(result[0]).to.be.equal(todo1);
         expect(result[1]).to.be.equal(todo2);
         expect(result[2]).to.be.equal(todo3);
         todo3.name = 'My Todo 1b (former 3)';
-        console.log('\t\t\t User 2 updated ' + print(todo3));
+        console.log(`\t\t\t User 2 updated ${print(todo3)}`);
         return helper.sleep(t, todo3.save());
       })
       .then(function () {
-        console.log('\t result size: ' + result.length);
+        console.log(`\t result size: ${result.length}`);
         expect(result.length).to.be.equal(3);
         expect(result[0]).to.be.equal(todo1);
         expect(result[1]).to.be.equal(todo3);
         expect(result[2]).to.be.equal(todo2);
         todo0 = new db[bucket]({ name: 'My Todo 0' });
-        console.log('\t\t\t User 2 saved ' + print(todo0));
+        console.log(`\t\t\t User 2 saved ${print(todo0)}`);
         return helper.sleep(t, todo0.save());
       })
       .then(function () {
-        console.log('\t result size: ' + result.length);
+        console.log(`\t result size: ${result.length}`);
         expect(result.length).to.be.equal(3);
         expect(result[0]).to.be.equal(todo0);
         expect(result[1]).to.be.equal(todo1);
         expect(result[2]).to.be.equal(todo3);
         todo3.name = 'My Todo 3';
-        console.log('\t\t\t User 2 updated ' + print(todo3));
+        console.log(`\t\t\t User 2 updated ${print(todo3)}`);
         return helper.sleep(t, todo3.save());
       })
       .then(function () {
-        console.log('\t result size: ' + result.length);
+        console.log(`\t result size: ${result.length}`);
         expect(result.length).to.be.equal(3);
         expect(result[0]).to.be.equal(todo0);
         expect(result[1]).to.be.equal(todo1);
         expect(result[2]).to.be.equal(todo2);
-        console.log('\t\t\t User 2 deleted ' + print(todo3));
+        console.log(`\t\t\t User 2 deleted ${print(todo3)}`);
         return helper.sleep(t, todo3.delete());
       })
       .then(function () {
@@ -288,7 +293,7 @@ xdescribe('Guide Examples', function () {
         expect(result[0]).to.be.equal(todo0);
         expect(result[1]).to.be.equal(todo1);
         expect(result[2]).to.be.equal(todo2);
-        console.log('\ttest is over --> result size: ' + result.length);
+        console.log(`\ttest is over --> result size: ${result.length}`);
         console.log('checking event attributes');
         //
         expect(events[0].index).to.be.equal(0);
@@ -380,76 +385,75 @@ xdescribe('Guide Examples', function () {
       .limit(3)
       .eventStream();
 
-
     var todo0, todo1, todo2, todo3;
     return helper.sleep(t).then(function () {
-      console.log('result: ' + urgent);
+      console.log(`result: ${urgent}`);
       expect(urgent.length).to.be.equal(0);
       todo1 = new db[bucket]({ name: 'result 1' });
       return helper.sleep(t, todo1.save());
     }).then(function () {
-      console.log('result: ' + urgent);
-      console.log('\t\t\t User 2 saved ' + print(todo1));
+      console.log(`result: ${urgent}`);
+      console.log(`\t\t\t User 2 saved ${print(todo1)}`);
       expect(urgent.length).to.be.equal(0);
-      console.log('User 1 subscribed --> result size: ' + urgent.length);
+      console.log(`User 1 subscribed --> result size: ${urgent.length}`);
       subscription = stream.scan(maintainResult, []).subscribe(function (result) {
         urgent = result;
       });
       return helper.sleep(t);
     }).then(function () {
-      console.log('result: ' + urgent);
+      console.log(`result: ${urgent}`);
       todo2 = new db[bucket]({ name: 'result 2' });
-      console.log('\t\t\t User 2 saved ' + print(todo2));
+      console.log(`\t\t\t User 2 saved ${print(todo2)}`);
       expect(urgent.length).to.be.equal(1);
       expect(urgent[0]).to.be.equal(todo1);
       return helper.sleep(t, todo2.save());
     })
       .then(function () {
-        console.log('result: ' + urgent);
+        console.log(`result: ${urgent}`);
         expect(urgent.length).to.be.equal(2);
         expect(urgent[0]).to.be.equal(todo1);
         expect(urgent[1]).to.be.equal(todo2);
         todo3 = new db[bucket]({ name: 'result 3' });
-        console.log('\t\t\t User 2 saved ' + print(todo3));
+        console.log(`\t\t\t User 2 saved ${print(todo3)}`);
         return helper.sleep(t, todo3.save());
       })
       .then(function () {
-        console.log('result: ' + urgent);
+        console.log(`result: ${urgent}`);
         expect(urgent.length).to.be.equal(3);
         expect(urgent[0]).to.be.equal(todo1);
         expect(urgent[1]).to.be.equal(todo2);
         expect(urgent[2]).to.be.equal(todo3);
         todo3.name = 'result 1b (former 3)';
-        console.log('\t\t\t User 2 updated ' + print(todo3));
+        console.log(`\t\t\t User 2 updated ${print(todo3)}`);
         return helper.sleep(t, todo3.save());
       })
       .then(function () {
-        console.log('result: ' + urgent);
+        console.log(`result: ${urgent}`);
         expect(urgent.length).to.be.equal(3);
         expect(urgent[0]).to.be.equal(todo1);
         expect(urgent[1]).to.be.equal(todo3);
         expect(urgent[2]).to.be.equal(todo2);
         todo0 = new db[bucket]({ name: 'result 0' });
-        console.log('\t\t\t User 2 saved ' + print(todo0));
+        console.log(`\t\t\t User 2 saved ${print(todo0)}`);
         return helper.sleep(t, todo0.save());
       })
       .then(function () {
-        console.log('result: ' + urgent);
+        console.log(`result: ${urgent}`);
         expect(urgent.length).to.be.equal(3);
         expect(urgent[0]).to.be.equal(todo0);
         expect(urgent[1]).to.be.equal(todo1);
         expect(urgent[2]).to.be.equal(todo3);
         todo3.name = 'result 3';
-        console.log('\t\t\t User 2 updated ' + print(todo3));
+        console.log(`\t\t\t User 2 updated ${print(todo3)}`);
         return helper.sleep(t, todo3.save());
       })
       .then(function () {
-        console.log('result: ' + urgent);
+        console.log(`result: ${urgent}`);
         expect(urgent.length).to.be.equal(3);
         expect(urgent[0]).to.be.equal(todo0);
         expect(urgent[1]).to.be.equal(todo1);
         expect(urgent[2]).to.be.equal(todo2);
-        console.log('\t\t\t User 2 deleted ' + print(todo3));
+        console.log(`\t\t\t User 2 deleted ${print(todo3)}`);
         return helper.sleep(t, todo3.delete());
       });
   });
@@ -460,82 +464,81 @@ xdescribe('Guide Examples', function () {
     var urgent = [];
     stream = db[bucket].find().matches('name', /^result unordered/).eventStream();
 
-
     var todo0, todo1, todo2, todo3;
     return helper.sleep(t).then(function () {
-      console.log('result: ' + urgent);
+      console.log(`result: ${urgent}`);
       expect(urgent.length).to.be.equal(0);
       todo1 = new db[bucket]({ name: 'result unordered 1' });
       return helper.sleep(t, todo1.save());
     }).then(function () {
-      console.log('result: ' + urgent);
-      console.log('\t\t\t User 2 saved ' + print(todo1));
+      console.log(`result: ${urgent}`);
+      console.log(`\t\t\t User 2 saved ${print(todo1)}`);
       expect(urgent.length).to.be.equal(0);
-      console.log('User 1 subscribed --> result size: ' + urgent.length);
+      console.log(`User 1 subscribed --> result size: ${urgent.length}`);
       subscription = stream.scan(maintainResult, []).subscribe(function (result) {
         urgent = result;
       });
       return helper.sleep(t);
     }).then(function () {
-      console.log('result: ' + urgent);
+      console.log(`result: ${urgent}`);
       todo2 = new db[bucket]({ name: 'result unordered 2' });
-      console.log('\t\t\t User 2 saved ' + print(todo2));
+      console.log(`\t\t\t User 2 saved ${print(todo2)}`);
       expect(urgent.length).to.be.equal(1);
       expect(urgent.includes(todo1)).to.be.greaterThan(-1);
       return helper.sleep(t, todo2.save());
     })
       .then(function () {
-        console.log('result: ' + urgent);
+        console.log(`result: ${urgent}`);
         expect(urgent.length).to.be.equal(2);
         expect(urgent.includes(todo1)).to.be.greaterThan(-1);
         expect(urgent.includes(todo2)).to.be.greaterThan(-1);
         todo3 = new db[bucket]({ name: 'result unordered 3' });
-        console.log('\t\t\t User 2 saved ' + print(todo3));
+        console.log(`\t\t\t User 2 saved ${print(todo3)}`);
         return helper.sleep(t, todo3.save());
       })
       .then(function () {
-        console.log('result: ' + urgent);
+        console.log(`result: ${urgent}`);
         expect(urgent.length).to.be.equal(3);
         expect(urgent.includes(todo1)).to.be.greaterThan(-1);
         expect(urgent.includes(todo2)).to.be.greaterThan(-1);
         expect(urgent.includes(todo3)).to.be.greaterThan(-1);
         todo3.name = 'result unordered 1b (former 3)';
-        console.log('\t\t\t User 2 updated ' + print(todo3));
+        console.log(`\t\t\t User 2 updated ${print(todo3)}`);
         return helper.sleep(t, todo3.save());
       })
       .then(function () {
-        console.log('result: ' + urgent);
+        console.log(`result: ${urgent}`);
         expect(urgent.length).to.be.equal(3);
         expect(urgent.includes(todo1)).to.be.greaterThan(-1);
         expect(urgent.includes(todo2)).to.be.greaterThan(-1);
         expect(urgent.includes(todo3)).to.be.greaterThan(-1);
         todo0 = new db[bucket]({ name: 'result unordered 0' });
-        console.log('\t\t\t User 2 saved ' + print(todo0));
+        console.log(`\t\t\t User 2 saved ${print(todo0)}`);
         return helper.sleep(t, todo0.save());
       })
       .then(function () {
-        console.log('result: ' + urgent);
+        console.log(`result: ${urgent}`);
         expect(urgent.length).to.be.equal(4);
         expect(urgent.includes(todo0)).to.be.greaterThan(-1);
         expect(urgent.includes(todo1)).to.be.greaterThan(-1);
         expect(urgent.includes(todo2)).to.be.greaterThan(-1);
         expect(urgent.includes(todo3)).to.be.greaterThan(-1);
         todo3.name = 'result unordered 3';
-        console.log('\t\t\t User 2 updated ' + print(todo3));
+        console.log(`\t\t\t User 2 updated ${print(todo3)}`);
         return helper.sleep(t, todo3.save());
       })
       .then(function () {
-        console.log('result: ' + urgent);
+        console.log(`result: ${urgent}`);
         expect(urgent.length).to.be.equal(4);
         expect(urgent.includes(todo0)).to.be.greaterThan(-1);
         expect(urgent.includes(todo1)).to.be.greaterThan(-1);
         expect(urgent.includes(todo2)).to.be.greaterThan(-1);
         expect(urgent.includes(todo3)).to.be.greaterThan(-1);
-        console.log('\t\t\t User 2 deleted ' + print(todo3));
+        console.log(`\t\t\t User 2 deleted ${print(todo3)}`);
         return helper.sleep(t, todo3.delete());
       })
       .then(function () {
-        console.log('result: ' + urgent);
+        console.log(`result: ${urgent}`);
         expect(urgent.length).to.be.equal(3);
         expect(urgent.includes(todo0)).to.be.greaterThan(-1);
         expect(urgent.includes(todo1)).to.be.greaterThan(-1);
@@ -555,7 +558,7 @@ xdescribe('Guide Examples', function () {
   // });
 
   function print(object) {
-    return object.name + ' (' + (object.activities ? object.activities.length : 0) + ' activities)';
+    return `${object.name} (${object.activities ? object.activities.length : 0} activities)`;
   }
 
   function maintainResult(result, event) {
@@ -614,4 +617,3 @@ xdescribe('Guide Examples', function () {
     return accumulator;
   }
 });
-

@@ -1,5 +1,3 @@
-'use strict';
-
 if (typeof module !== 'undefined') {
   require('./node');
 }
@@ -69,18 +67,19 @@ describe('Test toJSON and fromJSON', function () {
     },
   ];
 
-  beforeEach(function () {
+  beforeEach(async function () {
     var emf = new DB.EntityManagerFactory({
       host: env.TEST_SERVER,
       schema: model,
-      tokenStorage: helper.rootTokenStorage,
+      tokenStorage: await helper.rootTokenStorage,
     });
-    return emf.metamodel.save().then(function () {
-      db = emf.createEntityManager();
-      db2 = emf.createEntityManager();
-      expect(db.isReady).be.true;
-      expect(db2.isReady).be.true;
-    });
+    return emf.metamodel.save()
+      .then(function () {
+        db = emf.createEntityManager();
+        db2 = emf.createEntityManager();
+        expect(db.isReady).be.true;
+        expect(db2.isReady).be.true;
+      });
   });
 
   describe('default', function () {

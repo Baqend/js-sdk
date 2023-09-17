@@ -1,5 +1,3 @@
-'use strict';
-
 var env = {
   TEST_SERVER: 'https://local.baqend.com:8443/v1',
 };

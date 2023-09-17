@@ -4,8 +4,8 @@ if (typeof module !== 'undefined') {
 
 describe('Test Acl', function () {
   var db, emf;
-  before(function () {
-    emf = new DB.EntityManagerFactory({ host: env.TEST_SERVER, tokenStorage: helper.rootTokenStorage });
+  before(async function () {
+    emf = new DB.EntityManagerFactory({ host: env.TEST_SERVER, tokenStorage: await helper.rootTokenStorage });
     return emf.ready().then(function () {
       var { metamodel } = emf;
       if (!metamodel.managedType('AclPerson')) {
@@ -329,68 +329,56 @@ describe('Test Acl', function () {
       ]);
     });
 
-    it('should allow read access by user', function () {
+    it('should allow read access by user', async function () {
       var obj = new db.AclPerson();
       obj.acl.allowReadAccess(db.User.me)
         .allowReadAccess(db2.User.me);
 
       var id;
-      return obj.save().then(function (o) {
-        id = obj.id;
-        return db.AclPerson.load(id);
-      }).then(function (obj) {
-        // use refresh to bypass the cache for the same object
-        return Promise.all([
-          expect(db.AclPerson.load(id, { refresh: true })).eventually.property('id', id),
-          expect(db2.AclPerson.load(id, { refresh: true })).eventually.property('id', id),
-          expect(db3.AclPerson.load(id, { refresh: true })).eventually.be.null,
-        ]);
-      });
+      await obj.save();
+      id = obj.id;
+      obj = await db.AclPerson.load(id);
+
+      // use refresh to bypass the cache for the same object
+      expect(await db.AclPerson.load(id, { refresh: true })).have.property('id', id);
+      expect(await db2.AclPerson.load(id, { refresh: true })).have.property('id', id);
+      expect(await db3.AclPerson.load(id, { refresh: true })).be.null;
     });
 
-    it('should deny read access by user', function () {
+    it('should deny read access by user', async function () {
       var obj = new db.AclPerson();
       obj.acl.denyReadAccess(db2.User.me);
 
-      var id;
-      return obj.save().then(function () {
-        id = obj.id;
-        return Promise.all([
-          expect(db.AclPerson.load(id, { refresh: true })).eventually.property('id', id),
-          expect(db2.AclPerson.load(id, { refresh: true })).eventually.be.null,
-          expect(db3.AclPerson.load(id, { refresh: true })).eventually.property('id', id),
-        ]);
-      });
+      await obj.save();
+      var { id } = obj;
+
+      expect(await db.AclPerson.load(id, { refresh: true })).to.have.property('id', id);
+      expect(await db2.AclPerson.load(id, { refresh: true })).be.null;
+      expect(await db3.AclPerson.load(id, { refresh: true })).to.have.property('id', id);
     });
 
-    it('should allow read access by group', function () {
+    it('should allow read access by group', async function () {
       var obj = new db.AclPerson();
       obj.acl.allowReadAccess(role13);
 
       var id;
-      return obj.save().then(function () {
-        id = obj.id;
-        return Promise.all([
-          expect(db.AclPerson.load(id, { refresh: true })).eventually.property('id', id),
-          expect(db2.AclPerson.load(id, { refresh: true })).eventually.be.null,
-          expect(db3.AclPerson.load(id, { refresh: true })).eventually.property('id', id),
-        ]);
-      });
+      await obj.save();
+      id = obj.id;
+      expect(await db.AclPerson.load(id, { refresh: true })).property('id', id);
+      expect(await db2.AclPerson.load(id, { refresh: true })).be.null;
+      expect(await db3.AclPerson.load(id, { refresh: true })).property('id', id);
     });
 
-    it('should deny read access by group', function () {
+    it('should deny read access by group', async function () {
       var obj = new db.AclPerson();
       obj.acl.denyReadAccess(role23);
 
-      var id;
-      return obj.save().then(function () {
-        id = obj.id;
-        return Promise.all([
-          expect(db.AclPerson.load(id, { refresh: true })).eventually.property('id', id),
-          expect(db2.AclPerson.load(id, { refresh: true })).eventually.be.null,
-          expect(db3.AclPerson.load(id, { refresh: true })).eventually.be.null,
-        ]);
-      });
+      await obj.save();
+      const { id } = obj;
+
+      expect(await db.AclPerson.load(id, { refresh: true })).property('id', id);
+      expect(await db2.AclPerson.load(id, { refresh: true })).be.null;
+      expect(await db3.AclPerson.load(id, { refresh: true })).be.null;
     });
   });
 });

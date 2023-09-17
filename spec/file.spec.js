@@ -488,29 +488,34 @@ describe('Test file', function () {
       });
     });
 
-    it('should not contains credentials for anonymous user', function () {
+    it('should not contains credentials for anonymous user', async function () {
       var file = new anonymousDB.File({ name: 'public.png' });
-      return expect(file.createURL()).eventually.eql(`${env.TEST_SERVER}/file/www/public.png`);
+      expect(await file.createURL()).be.eql(`${env.TEST_SERVER}/file/www/public.png`);
     });
 
-    it('should not contains credentials for anonymous user in none www bucket', function () {
+    it('should not contains credentials for anonymous user in none www bucket', async function () {
       var file = new anonymousDB.File({ parent: '/testfolder/', name: 'private.png' });
-      return expect(file.createURL()).eventually.eql(`${env.TEST_SERVER}/file/testfolder/private.png`);
+      expect(await file.createURL()).be.eql(`${env.TEST_SERVER}/file/testfolder/private.png`);
     });
 
-    it('should not contains credentials for the www bucket', function () {
+    it('should not contains credentials for the www bucket', async function () {
       var file = new rootDb.File({ name: 'public.png' });
-      return expect(file.createURL()).eventually.eql(`${env.TEST_SERVER}/file/www/public.png`);
+      expect(await file.createURL()).be.eql(`${env.TEST_SERVER}/file/www/public.png`);
     });
 
-    it('should contains credentials for none www bucket', function () {
+    it('should contains credentials for none www bucket', async function () {
       var file = new rootDb.File({ parent: '/testfolder/', name: 'private.png' });
-      return expect(file.createURL()).eventually.string(`${env.TEST_SERVER}/file/testfolder/private.png?BAT=`);
+      expect(await file.createURL()).be.string(`${env.TEST_SERVER}/file/testfolder/private.png?BAT=`);
     });
 
-    it('should provide no access for none authorized user', function () {
+    it('should provide no access for none authorized user', async function () {
       var file = new anonymousDB.File(uploadFile.id);
-      return expect(file.createURL().then(function (url) { return helper.req(url); })).be.rejectedWith({ status: 466 });
+      var url = await file.createURL();
+
+      try {
+        await helper.req(url);
+        expect.fail();
+      } catch {}
     });
 
     it('should provide access for authorized user', function () {
@@ -549,12 +554,16 @@ describe('Test file', function () {
       });
     });
 
-    it('should denied for anonymous', function () {
-      var file;
-      return expect(emf.createEntityManager().ready().then(function (db) {
-        file = new db.File({ data: flames });
-        return file.upload();
-      })).rejectedWith('insert permissions are required');
+    it('should denied for anonymous', async function () {
+      const db = await emf.createEntityManager().ready();
+      const file = new db.File({ data: flames });
+
+      try {
+        await file.upload();
+        expect.fail();
+      } catch (e) {
+        expect(e.message).to.contain('insert permissions are required');
+      }
     });
 
     it('should handle conditional update', function () {
@@ -566,20 +575,28 @@ describe('Test file', function () {
       });
     });
 
-    it('should reject stale insertion', function () {
+    it('should reject stale insertion', async function () {
       var file = new rootDb.File({ data: flames });
-      return expect(file.upload().then(function () {
-        return new rootDb.File(file.id).upload({ data: flames });
-      })).be.rejectedWith(`Unique index violation. Another object already exists with the same value of the newly created/modified object FileMetadata: ${file.id}`);
+      await file.upload();
+
+      try {
+        await new rootDb.File(file.id).upload({ data: flames });
+        expect.fail();
+      } catch (e) {
+        expect(e.message).to.contain(`Unique index violation. Another object already exists with the same value of the newly created/modified object FileMetadata: ${file.id}`);
+      }
     });
 
-    it('should reject stale update', function () {
+    it('should reject stale update', async function () {
       var file = new rootDb.File({ data: flames });
-      return expect(file.upload().then(function () {
-        return new rootDb.File(file.id).upload({ data: dataSvg, type: 'data-url', force: true });
-      }).then(function () {
-        return file.upload({ data: dataBase64, type: 'data-url' });
-      })).be.rejectedWith('out of date');
+      await file.upload();
+      await new rootDb.File(file.id).upload({ data: dataSvg, type: 'data-url', force: true });
+      try {
+        await file.upload({ data: dataBase64, type: 'data-url' });
+        expect.fail();
+      } catch (e) {
+        expect(e.message).to.contain('out of date');
+      }
     });
 
     it('should allow stale update with force', function () {
@@ -623,7 +640,7 @@ describe('Test file', function () {
         });
       });
 
-      it('should reject stream format', function () {
+      it('should reject stream format', async function () {
         var fs = require('fs');
 
         var file = new rootDb.File({
@@ -632,7 +649,10 @@ describe('Test file', function () {
           mimeType: 'image/png',
         });
 
-        return expect(file.upload()).rejectedWith('');
+        try {
+          await file.upload();
+          expect.fail();
+        } catch {}
       });
     }
 
@@ -1049,11 +1069,15 @@ describe('Test file', function () {
       return uploadFile.delete();
     });
 
-    it('should reject a stale deletion', function () {
+    it('should reject a stale deletion', async function () {
       var file = new rootDb.File({ name: fileName, data: dataSvg, type: 'data-url' });
-      return expect(file.upload({ force: true }).then(function () {
-        return uploadFile.delete();
-      })).be.rejectedWith('is out of date');
+      await file.upload({ force: true });
+      try {
+        await uploadFile.delete();
+        expect.fail();
+      } catch (e) {
+        expect(e.message).to.contain('is out of date');
+      }
     });
 
     it('should remove a stale deletion with force', function () {
@@ -1171,9 +1195,14 @@ describe('Test file', function () {
         });
       });
 
-      it('should deny load without load permission', function () {
+      it('should deny load without load permission', async function () {
         var file = new db3.File(uploadFile.id);
-        return expect(file.download()).rejectedWith('load permissions are required');
+        try {
+          await file.download();
+          expect.fail();
+        } catch (e) {
+          expect(e.message).to.contain('load permissions are required');
+        }
       });
 
       it('should allow insert with insert permission', function () {
@@ -1183,9 +1212,14 @@ describe('Test file', function () {
         });
       });
 
-      it('should deny insert without insert permission', function () {
+      it('should deny insert without insert permission', async function () {
         var file = new db2.File({ parent: bucket, data: flames });
-        return expect(file.upload()).rejectedWith('insert permissions are required');
+        try {
+          await file.upload();
+          expect.fail();
+        } catch (e) {
+          expect(e.message).to.contain('insert permissions are required');
+        }
       });
 
       it('should allow update with update permission', function () {
@@ -1197,11 +1231,15 @@ describe('Test file', function () {
         });
       });
 
-      it('should deny update without update permission', function () {
+      it('should deny update without update permission', async function () {
         var file = new db1.File({
           parent: bucket, name: uploadFile.name, data: flames, eTag: uploadFile.eTag,
         });
-        return expect(file.upload()).rejectedWith('update permissions are required');
+        try {
+          await file.upload();
+        } catch (e) {
+          expect(e.message).to.contain('update permissions are required');
+        }
       });
 
       it('should allow delete with delete permission', function () {
@@ -1211,11 +1249,19 @@ describe('Test file', function () {
         return file.delete();
       });
 
-      it('should deny delete without delete permission', function () {
+      it('should deny delete without delete permission', async function () {
         var file = new db2.File({
-          parent: bucket, name: uploadFile.name, data: flames, eTag: uploadFile.eTag,
+          parent: bucket,
+          name: uploadFile.name,
+          data: flames,
+          eTag: uploadFile.eTag,
         });
-        return expect(file.delete()).rejectedWith('delete permissions are required');
+
+        try {
+          await file.delete();
+        } catch (e) {
+          expect(e.message).to.contain('delete permissions are required');
+        }
       });
     });
 
@@ -1259,9 +1305,9 @@ describe('Test file', function () {
         });
       });
 
-      it('should deny load without read Permission', function () {
+      it('should deny load without read Permission', async function () {
         var file = new db3.File(uploadFile.id);
-        return expect(file.download()).eventually.be.null;
+        expect(await file.download()).be.null;
       });
 
       it('should allow update with write Permission', function () {
@@ -1273,11 +1319,17 @@ describe('Test file', function () {
         });
       });
 
-      it('should deny update without write Permission', function () {
+      it('should deny update without write Permission', async function () {
         var file = new db2.File({
           parent: bucket, name: uploadFile.name, data: flames, eTag: uploadFile.eTag,
         });
-        return expect(file.upload()).rejectedWith('Write permissions are required');
+
+        try {
+          await file.upload();
+          expect.fail();
+        } catch (e) {
+          expect(e.message).to.contain('Write permissions are required');
+        }
       });
 
       it('should allow delete with write Permission', function () {
@@ -1287,11 +1339,16 @@ describe('Test file', function () {
         return file.delete();
       });
 
-      it('should deny delete without write Permission', function () {
+      it('should deny delete without write Permission', async function () {
         var file = new db2.File({
           parent: bucket, name: uploadFile.name, data: flames, eTag: uploadFile.eTag,
         });
-        return expect(file.delete()).rejectedWith('Write permissions are required');
+        try {
+          await file.delete();
+          expect.fail();
+        } catch (e) {
+          expect(e.message).to.contain('Write permissions are required');
+        }
       });
     });
   });
@@ -1375,22 +1432,31 @@ describe('Test file', function () {
       db,
       jsonBlob;
 
-    before(function () {
+    before(async function () {
       db = emf.createEntityManager();
       jsonBlob = new Blob([JSON.stringify(json)], { type: 'application/json' });
 
-      var rootEmf = new DB.EntityManagerFactory({ host: env.TEST_SERVER, tokenStorage: helper.rootTokenStorage });
-      rootEmf.ready().then(function () {
-        return rootEmf.code.saveCode('updateFile', 'module', function (module, exports) {
-          exports.call = function (codeDb, data) {
-            var fileId = data.id;
-            var newValue = data.value;
-            return new codeDb.File(fileId).upload({ type: 'json', data: newValue, force: true });
-          };
-        });
-      }).then(function () {
-        return db.ready();
+      var rootEmf = new DB.EntityManagerFactory({
+        host: env.TEST_SERVER,
+        tokenStorage: await helper.rootTokenStorage,
       });
+      rootEmf.ready()
+        .then(function () {
+          return rootEmf.code.saveCode('updateFile', 'module', function (module, exports) {
+            exports.call = function (codeDb, data) {
+              var fileId = data.id;
+              var newValue = data.value;
+              return new codeDb.File(fileId).upload({
+                type: 'json',
+                data: newValue,
+                force: true,
+              });
+            };
+          });
+        })
+        .then(function () {
+          return db.ready();
+        });
 
       return rootDb;
     });

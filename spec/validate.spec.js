@@ -1,5 +1,3 @@
-'use strict';
-
 if (typeof module !== 'undefined') {
   require('./node');
 }
@@ -7,9 +5,13 @@ if (typeof module !== 'undefined') {
 describe('Test validate', function () {
   var db, type, person;
 
-  before(function () {
-    var emf = new DB.EntityManagerFactory({ host: env.TEST_SERVER, schema: [], tokenStorage: helper.rootTokenStorage });
-    var metamodel = emf.metamodel;
+  before(async function () {
+    var emf = new DB.EntityManagerFactory({
+      host: env.TEST_SERVER,
+      schema: [],
+      tokenStorage: await helper.rootTokenStorage,
+    });
+    var { metamodel } = emf;
 
     var personType = new DB.metamodel.EntityType('ValidatePerson', metamodel.entity(Object));
     var addressType = new DB.metamodel.EmbeddableType('ValidateAddress');
@@ -27,9 +29,10 @@ describe('Test validate', function () {
 
     personType.validationCode = 'email.isEmail();';
 
-    return metamodel.save().then(function () {
-      db = emf.createEntityManager();
-    });
+    return metamodel.save()
+      .then(function () {
+        db = emf.createEntityManager();
+      });
   });
 
   beforeEach(function () {
@@ -54,7 +57,7 @@ describe('Test validate', function () {
 
   it('should use own error message', function () {
     var message = 'TestError';
-    type.validationCode = DB.intersection.Validator.compile(type, 'email.isEmail(\'' + message + '\');');
+    type.validationCode = DB.intersection.Validator.compile(type, `email.isEmail('${message}');`);
     person.email = 'testtest.de';
     var result = person.validate().fields;
     expect(result.email).be.instanceOf(DB.util.Validator);
@@ -82,7 +85,7 @@ describe('Test validate', function () {
   it('should use own validate function', function () {
     person.age = 20;
     var message = 'TestError';
-    type.validationCode = DB.intersection.Validator.compile(type, 'age.is(\'' + message + '\', function(value) { return value <= 18 && value >= 13 });');
+    type.validationCode = DB.intersection.Validator.compile(type, `age.is('${message}', function(value) { return value <= 18 && value >= 13 });`);
     var result = person.validate().fields;
     expect(result.age).be.instanceOf(DB.util.Validator);
     expect(result.age.isValid).be.false;
@@ -98,7 +101,7 @@ describe('Test validate', function () {
   it('should use validation library in "is" function', function () {
     person.email = 'testtest.de';
     var message = 'TestError';
-    type.validationCode = DB.intersection.Validator.compile(type, 'email.is(\'' + message + '\', function(value, validate) { return validate.isEmail(value); });');
+    type.validationCode = DB.intersection.Validator.compile(type, `email.is('${message}', function(value, validate) { return validate.isEmail(value); });`);
     var result = person.validate().fields;
     expect(result.email).be.instanceOf(DB.util.Validator);
     expect(result.email.isValid).be.false;
@@ -114,7 +117,7 @@ describe('Test validate', function () {
   it('should validate embedded objects in "is" function', function () {
     person.address.street = 'UPPERCASE STREET';
     var message = 'TestError';
-    type.validationCode = DB.intersection.Validator.compile(type, 'address.is(\'' + message + '\', function(value, validate) { return validate.isLowercase(value.street); });');
+    type.validationCode = DB.intersection.Validator.compile(type, `address.is('${message}', function(value, validate) { return validate.isLowercase(value.street); });`);
     var result = person.validate().fields;
     expect(result.address).be.instanceOf(DB.util.Validator);
     expect(result.address.isValid).be.false;
@@ -131,7 +134,7 @@ describe('Test validate', function () {
     person.name = 'Peter';
     person.age = '20';
     var message = 'TestError';
-    type.validationCode = DB.intersection.Validator.compile(type, 'name.equals(\'' + message + '\', age.value);');
+    type.validationCode = DB.intersection.Validator.compile(type, `name.equals('${message}', age.value);`);
     var result = person.validate().fields;
     expect(result.name).be.instanceOf(DB.util.Validator);
     expect(result.name.isValid).be.false;
