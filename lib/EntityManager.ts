@@ -1,4 +1,3 @@
-import { RestSpecification } from 'commonjs/lib/connector';
 import * as messages from './message';
 import {
   FileFactory,
@@ -19,7 +18,7 @@ import {
   openWindow,
 } from './util';
 import {
-  Message, StatusCode, Connector, OAuthMessage,
+  Message, StatusCode, Connector, OAuthMessage, RestSpecification
 } from './connector';
 import { BloomFilter } from './caching';
 import { GeoPoint } from './GeoPoint';
