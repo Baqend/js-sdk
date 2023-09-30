@@ -3,11 +3,12 @@ default:
   tags:
     - glexecutor-docker
   image: public.ecr.aws/docker/library/node:16
-  cache: # Cache modules in between jobs
+  cache: # Cache modules in between jobs, update als the install-npm-dependencies job!
     key: $CI_COMMIT_REF_SLUG
     paths:
       - .npm/
       - node_modules/
+    policy: pull
 
 workflow:
   rules:
@@ -21,16 +22,29 @@ variables:
   CI_DEBUG_SERVICES: "true"
 
 stages:
+  - prepare
   - validate
   - build
   - test
   - release
 
+install-npm-dependencies:
+  stage: prepare
+  cache: # Cache modules in between jobs, update als the default job!
+    key: $CI_COMMIT_REF_SLUG
+    paths:
+      - .npm/
+      - node_modules/
+    policy: pull-push
+  script:
+    - npm ci --cache .npm --prefer-offline
+    - npm install --silent websocket
+
 lint-job:
   stage: validate
   script:
     # prepare linting for the cli
-    - npm link .
+    - npm run build-commonjs
     - npm run lint
   allow_failure: true
 
@@ -48,9 +62,6 @@ commitlint:
 build-job:
   stage: build
   script:
-    - npm ci --cache .npm --prefer-offline
-    - npm install
-    - npm install --silent websocket
     - npm run dist
   artifacts:
       paths:
