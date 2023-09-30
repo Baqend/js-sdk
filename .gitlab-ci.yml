@@ -9,6 +9,13 @@ default:
       - .npm/
       - node_modules/
 
+workflow:
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+    - if: $CI_COMMIT_BRANCH && $CI_OPEN_MERGE_REQUESTS
+      when: never
+    - if: $CI_COMMIT_BRANCH
+
 variables:
   FF_NETWORK_PER_BUILD: "true"
   CI_DEBUG_SERVICES: "true"
@@ -23,8 +30,7 @@ lint-job:
   stage: validate
   script:
     # prepare linting for the cli
-    - npm link
-    - npm link baqend
+    - npm link .
     - npm run lint
   allow_failure: true
 
