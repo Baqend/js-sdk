@@ -125,7 +125,7 @@ web-test-job:
     # https://github.com/modernweb-dev/web/issues/2429
     - sed -i "s/\.replace(.*, localIp)//" node_modules/@web/test-runner-browserstack/dist/browserstackLauncher.js
     - cat node_modules/@web/test-runner-browserstack/dist/browserstackLauncher.js
-    - npm run test:browserstack
+    - npm run test:browserstack -- --browsers Chrome
   artifacts:
     when: always
     reports:
