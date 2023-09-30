@@ -14,16 +14,30 @@ variables:
   CI_DEBUG_SERVICES: "true"
 
 stages:
+  - validate
   - build
   - test
+  - release
 
 lint-job:
-  stage: build
+  stage: validate
   script:
+    # prepare linting for the cli
     - npm link
     - npm link baqend
     - npm run lint
   allow_failure: true
+
+commitlint:
+  image: public.ecr.aws/docker/library/node:18
+  cache: []
+  stage: validate
+  before_script:
+    - npm install -g @commitlint/{config-conventional,cli}
+  script:
+    - commitlint --from="$CI_MERGE_REQUEST_DIFF_BASE_SHA" --verbose
+  rules:
+    - if: $CI_MERGE_REQUEST_IID != null
 
 build-job:
   stage: build
@@ -111,3 +125,17 @@ web-test-job:
     reports:
       junit:
         - ./browserstack-result.xml
+
+release:
+  image: public.ecr.aws/docker/library/node:18
+  cache: []
+  stage: release
+  before_script:
+    - apt-get update
+    - apt-get install -y awscli
+    - npm install -g semantic-release @semantic-release/{gitlab,changelog,git,exec}
+  script:
+    - semantic-release --repository-url $CI_REPOSITORY_URL
+  rules:
+    - if: $CI_COMMIT_BRANCH == "main"
+    - if: $CI_COMMIT_BRANCH == "prerelease"

@@ -15,16 +15,10 @@ module.exports = {
   ],
 
   env: {
-    es6: true,
-    browser: true,
     node: true,
   },
 
-  parserOptions: {
-    sourceType: 'module',
-    ecmaVersion: 2015,
-    project: './tsconfig.json',
-  },
+  ignorePatterns: ['dist/**', 'doc/**', 'commonjs/**', 'lib/**/*.js', 'cli/**/*.js'],
 
   rules: {
     // enforce consistent linebreak style
@@ -32,23 +26,6 @@ module.exports = {
     'linebreak-style': 'off',
 
     strict: ['error', 'global'],
-
-    // we disallow default exports
-    "import/prefer-default-export": "off",
-    "import/no-default-export": "error",
-    // we do not need that, since we are using ts
-    'import/no-unresolved': 'off',
-
-    // we use this in several places, should be discussed if we want to re-enable this
-    'class-methods-use-this': 'off',
-    "no-underscore-dangle": ['error', { "allowAfterThis": true }],
-
-    // we are using unused args in several interface definitions
-    'no-unused-vars': 'off',
-
-    'node/no-deprecated-api': 'error',
-    'no-buffer-constructor': 'error',
-    'no-console': 'error',
 
     // specify the maximum length of a line in your program
     // http://eslint.org/docs/rules/max-len
@@ -59,9 +36,65 @@ module.exports = {
       ignoreStrings: true,
       ignoreTemplateLiterals: true,
     }],
+
+    // we are using unused args in several interface definitions
+    'no-unused-vars': 'off',
   },
 
   overrides: [
+    {
+      files: ['lib/**/*.ts', 'realtime/*.js', 'connect.js'],
+      parserOptions: {
+        sourceType: 'module',
+        ecmaVersion: 2015,
+        project: './tsconfig.json',
+      },
+
+      env: {
+        es6: true,
+        browser: true,
+        node: true,
+      },
+
+      rules: {
+        // we disallow default exports
+        "import/prefer-default-export": "off",
+        "import/no-default-export": "error",
+        // we do not need that, since we are using ts
+        'import/no-unresolved': 'off',
+
+        // we use this in several places, should be discussed if we want to re-enable this
+        'class-methods-use-this': 'off',
+        "no-underscore-dangle": ['error', { "allowAfterThis": true }],
+
+        'node/no-deprecated-api': 'error',
+        'no-buffer-constructor': 'error',
+        'no-console': 'error',
+      }
+    },
+
+    {
+      files: ['cli/*.ts'],
+      parserOptions: {
+        sourceType: 'module',
+        ecmaVersion: 2015,
+        project: './tsconfig.json',
+      },
+
+      env: {
+        node: true,
+      },
+
+      rules: {
+        'no-console': 'off',
+        '@typescript-eslint/no-use-before-define': 'off',
+        // we must require our self which isn't supported right now in ts
+        // https://github.com/microsoft/TypeScript/issues/38675
+        'import/no-extraneous-dependencies': 'off',
+        'no-restricted-syntax': 'off',
+      }
+    },
+
     {
       files: ['spec/*.js'],
 
@@ -75,12 +108,15 @@ module.exports = {
         Map: true,
         Promise: true,
         Set: true,
+        Baqend: true,
+        rxjs: true,
       },
 
       env: {
         es6: false,
         node: true,
         mocha: true,
+        browser: true,
       },
 
       rules: {
@@ -112,22 +148,5 @@ module.exports = {
         'no-await-in-loop': 'off',
       },
     },
-
-    {
-      files: ['cli/*.ts'],
-
-      env: {
-        node: true,
-      },
-
-      rules: {
-        'no-console': 'off',
-        '@typescript-eslint/no-use-before-define': 'off',
-        // we must require our self which isn't supported right now in ts
-        // https://github.com/microsoft/TypeScript/issues/38675
-        'import/no-extraneous-dependencies': 'off',
-        'no-restricted-syntax': 'off',
-      }
-    }
   ],
 };

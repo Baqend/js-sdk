@@ -113,15 +113,13 @@
     "build-cli": "tsc -m commonjs --target es6 --project tsconfig.cli.json",
     "build-dist": "webpack --config-name=es5 && webpack --config-name=es2015",
     "dist": "npm run build-commonjs && npm run build-dist && npm run build-cli && npm run docs",
-    "prepack": "npm install && npm run dist",
-    "release": "node scripts/release",
+    "prepack": "npm run dist",
     "typings": "npm run typings:test",
     "typings:test": "tsc --version && tsc -p spec-ts/tsconfig.json --noEmit",
     "docs": "typedoc --out doc lib",
     "docs-actian": "typedoc --readme README-ACTIAN.md --out doc lib",
     "baqend": "npm run build-cli && node cli",
-    "lint": "eslint --ext .ts lib/ cli/",
-    "prepare": ""
+    "lint": "eslint ."
   },
   "engines": {
     "node": ">=16.0.0"

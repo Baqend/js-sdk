@@ -49,7 +49,7 @@ export default {
         os: 'Windows',
       },
     }),
-    /*
+
     browserstackLauncher({
       capabilities: {
         ...sharedCapabilities,
@@ -65,6 +65,5 @@ export default {
         os: 'Windows',
       },
     }),
-    */
   ],
 };
