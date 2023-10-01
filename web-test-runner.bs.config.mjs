@@ -45,15 +45,15 @@ export default {
     browserstackLauncher({
       capabilities: {
         ...sharedCapabilities,
-        browserName: 'Chrome',
+        browser: 'Chrome',
         os: 'Windows',
       },
     }),
-    /*
+
     browserstackLauncher({
       capabilities: {
         ...sharedCapabilities,
-        browserName: 'Safari',
+        browser: 'Safari',
         os: 'OS X',
       },
     }),
@@ -61,10 +61,9 @@ export default {
     browserstackLauncher({
       capabilities: {
         ...sharedCapabilities,
-        browserName: 'Firefox',
+        browser: 'Firefox',
         os: 'Windows',
       },
     }),
-    */
-  ],
+  ].filter(b => !process.env.BROWSER || b.name.startsWith(process.env.BROWSER)),
 };

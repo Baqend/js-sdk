@@ -89,7 +89,7 @@ describe('Test user and roles', function () {
 
     it('should logout an user', function () {
       var login = helper.makeLogin();
-      return db.User.register(login, 'secret').then(function (user) {
+      return db.User.register(login, 'secret').then(function ( ) {
         return db.User.logout();
       }).then(function () {
         expect(db.User.me).be.null;
@@ -112,7 +112,7 @@ describe('Test user and roles', function () {
 
     it('should not register an existing user', async function () {
       var login = helper.makeLogin();
-      const user = await db.User.register(login, 'secret');
+      await db.User.register(login, 'secret');
       await db.User.logout();
 
       try {
@@ -170,7 +170,7 @@ describe('Test user and roles', function () {
 
     it('should not login twice', function () {
       var login = helper.makeLogin();
-      return db.User.register(login, 'secret').then(function (u) {
+      return db.User.register(login, 'secret').then(function () {
         return expect(function () {
           db.User.login(login, 'secret');
         }).throw(Error);
