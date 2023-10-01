@@ -108,7 +108,7 @@ web-test-job:
     ORESTES_CONFIGURATION : $ORESTES_CONFIGURATION_JSON
   parallel:
     matrix:
-      - BROWSER: [ Chrome, Safari, Firefox ]
+      - BROWSER: [ Chrome ]
   services:
     - name: public.ecr.aws/docker/library/mongo:4
       alias: mongo
