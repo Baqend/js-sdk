@@ -39,6 +39,8 @@ module.exports = {
 
     // we are using unused args in several interface definitions
     'no-unused-vars': 'off',
+    // we do not need that, since we are using ts
+    'import/no-unresolved': 'off',
   },
 
   overrides: [
@@ -60,8 +62,6 @@ module.exports = {
         // we disallow default exports
         "import/prefer-default-export": "off",
         "import/no-default-export": "error",
-        // we do not need that, since we are using ts
-        'import/no-unresolved': 'off',
 
         // we use this in several places, should be discussed if we want to re-enable this
         'class-methods-use-this': 'off',

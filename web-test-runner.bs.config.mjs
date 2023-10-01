@@ -65,5 +65,5 @@ export default {
         os: 'Windows',
       },
     }),
-  ],
+  ].filter(b => !process.env.BROWSER || b.name === process.env.BROWSER),
 };
