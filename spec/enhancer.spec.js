@@ -38,6 +38,31 @@ describe('Test enhancer', function () {
     },
   ];
 
+  function defineEntityClass() {
+    return eval('\
+      "use strict";\
+      class Test extends DB.binding.Entity {\
+        constructor(a,b,c) {\
+          super();\
+          this.a = a;\
+          this.b = b;\
+          this.c = c;\
+        }\
+      }\
+      Test;'); // add Test as last statement so firefox returns the class properly
+  }
+
+  function defineClass() {
+    return eval('\
+      "use strict";\
+      class Test {\
+        constructor(a) {\
+          this.a = a;\
+        }\
+      }\
+      Test'); // add Test as last statement so firefox returns the class properly
+  }
+
   beforeEach(async function () {
     var emf = new DB.EntityManagerFactory({
       host: env.TEST_SERVER,
@@ -520,28 +545,4 @@ describe('Test enhancer', function () {
     });
   }
 
-  function defineEntityClass() {
-    return eval('\
-      "use strict";\
-      class Test extends DB.binding.Entity {\
-        constructor(a,b,c) {\
-          super();\
-          this.a = a;\
-          this.b = b;\
-          this.c = c;\
-        }\
-      }\
-      Test;'); // add Test as last statement so firefox returns the class properly
-  }
-
-  function defineClass() {
-    return eval('\
-      "use strict";\
-      class Test {\
-        constructor(a) {\
-          this.a = a;\
-        }\
-      }\
-      Test'); // add Test as last statement so firefox returns the class properly
-  }
 });
