@@ -5,10 +5,30 @@ if (typeof module !== 'undefined') {
 describe('Test Query', function () {
   var emf, metamodel;
 
+  function expectResult(expectedResult, actualResult) {
+    expect(actualResult.length).equals(expectedResult.length);
+    actualResult.forEach(function (el) {
+      var index = expectedResult.indexOf(el);
+      expect(index).not.equal(-1);
+      expectedResult[index] = null;
+    });
+  }
+
+  function expectSortedResult(expectedResult, actualResult) {
+    expect(actualResult.length).equals(expectedResult.length);
+    expectedResult.forEach(function (el, index) {
+      expect(actualResult[index]).equals(el);
+    });
+  }
+
   before(async function () {
     var personType, addressType;
 
-    emf = new DB.EntityManagerFactory({ host: env.TEST_SERVER, schema: [], tokenStorage: await helper.rootTokenStorage });
+    emf = new DB.EntityManagerFactory({
+      host: env.TEST_SERVER,
+      schema: [],
+      tokenStorage: await helper.rootTokenStorage
+    });
     metamodel = emf.metamodel;
 
     metamodel.addType(personType = new DB.metamodel.EntityType('QueryPerson', metamodel.entity(Object)));
@@ -912,21 +932,5 @@ describe('Test Query', function () {
           expect(person.person.person.version).be.null;
         });
     });
-
-    function expectResult(expectedResult, actualResult) {
-      expect(actualResult.length).equals(expectedResult.length);
-      actualResult.forEach(function (el) {
-        var index = expectedResult.indexOf(el);
-        expect(index).not.equal(-1);
-        expectedResult[index] = null;
-      });
-    }
-
-    function expectSortedResult(expectedResult, actualResult) {
-      expect(actualResult.length).equals(expectedResult.length);
-      expectedResult.forEach(function (el, index) {
-        expect(actualResult[index]).equals(el);
-      });
-    }
   });
 });
