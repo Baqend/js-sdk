@@ -1,13 +1,20 @@
-#workflow rulez comes later here
+workflow:
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+    - if: $CI_COMMIT_BRANCH && $CI_OPEN_MERGE_REQUESTS
+      when: never
+    - if: $CI_COMMIT_BRANCH
+
 default:
   tags:
     - glexecutor-docker
   image: public.ecr.aws/docker/library/node:16
-  cache: # Cache modules in between jobs
+  cache: # Cache modules in between jobs, update also the build-job job!
     key: $CI_COMMIT_REF_SLUG
     paths:
       - .npm/
       - node_modules/
+    policy: pull
 
 variables:
   FF_NETWORK_PER_BUILD: "true"
@@ -15,29 +22,48 @@ variables:
 
 stages:
   - build
+  - validate
   - test
-
-lint-job:
-  stage: build
-  script:
-    - npm link
-    - npm link baqend
-    - npm run lint
-  allow_failure: true
+  - release
 
 build-job:
   stage: build
+  cache: # Cache modules in between jobs, update als the default job!
+    key: $CI_COMMIT_REF_SLUG
+    paths:
+      - .npm/
+      - node_modules/
+    policy: pull-push
   script:
     - npm ci --cache .npm --prefer-offline
-    - npm install
     - npm install --silent websocket
+    - npm link .
     - npm run dist
   artifacts:
-      paths:
-         - build
-         - dist
-         - commonjs
-      expire_in: 30 mins
+    paths:
+      - build
+      - dist
+      - commonjs
+    expire_in: 30 mins
+
+lint-job:
+  stage: validate
+  script:
+    # prepare linting for the cli
+    - npm link .
+    - npm run lint
+  allow_failure: true
+
+commitlint:
+  image: public.ecr.aws/docker/library/node:18
+  cache: []
+  stage: validate
+  before_script:
+    - npm install -g @commitlint/{config-conventional,cli}
+  script:
+    - commitlint --from="$CI_MERGE_REQUEST_DIFF_BASE_SHA" --verbose
+  rules:
+    - if: $CI_MERGE_REQUEST_IID != null
 
 node-test-job:
   stage: test
@@ -80,6 +106,9 @@ web-test-job:
     TEST_SERVER: "https://local.baqend.com:8443/v1"
     SE_OPTS: "--log-level FINE"
     ORESTES_CONFIGURATION : $ORESTES_CONFIGURATION_JSON
+  parallel:
+    matrix:
+      - BROWSER: [ Chrome ]
   services:
     - name: public.ecr.aws/docker/library/mongo:4
       alias: mongo
@@ -111,3 +140,17 @@ web-test-job:
     reports:
       junit:
         - ./browserstack-result.xml
+
+release:
+  image: public.ecr.aws/docker/library/node:18
+  cache: []
+  stage: release
+  before_script:
+    - apt-get update
+    - apt-get install -y awscli
+    - npm install -g semantic-release @semantic-release/{gitlab,changelog,git,exec}
+  script:
+    - semantic-release --repository-url $CI_REPOSITORY_URL
+  rules:
+    - if: $CI_COMMIT_BRANCH == "main"
+    - if: $CI_COMMIT_BRANCH == "prerelease"
