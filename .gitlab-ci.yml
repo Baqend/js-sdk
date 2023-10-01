@@ -106,7 +106,9 @@ web-test-job:
     TEST_SERVER: "https://local.baqend.com:8443/v1"
     SE_OPTS: "--log-level FINE"
     ORESTES_CONFIGURATION : $ORESTES_CONFIGURATION_JSON
-    BROWSER: "Chrome"
+  parallel:
+    matrix:
+      - BROWSER: [ Chrome, Safari, Firefox ]
   services:
     - name: public.ecr.aws/docker/library/mongo:4
       alias: mongo
