@@ -8,7 +8,7 @@ workflow:
 default:
   tags:
     - glexecutor-docker
-  image: public.ecr.aws/docker/library/node:16
+  image: public.ecr.aws/docker/library/node:18
   cache: # Cache modules in between jobs, update also the build-job job!
     key: $CI_COMMIT_REF_SLUG
     paths:
@@ -23,7 +23,6 @@ variables:
 stages:
   - build
   - validate
-  - test
   - release
 
 build-job:
@@ -37,11 +36,9 @@ build-job:
   script:
     - npm ci --cache .npm --prefer-offline
     - npm install --silent websocket
-    - npm link .
     - npm run dist
   artifacts:
     paths:
-      - build
       - dist
       - commonjs
     expire_in: 30 mins
@@ -66,7 +63,7 @@ commitlint:
     - if: $CI_MERGE_REQUEST_IID != null
 
 node-test-job:
-  stage: test
+  stage: validate
   dependencies:
     - build-job
   services:
@@ -99,7 +96,7 @@ node-test-job:
 
 
 web-test-job:
-  stage: test
+  stage: validate
   dependencies:
     - build-job
   variables:
@@ -142,13 +139,14 @@ web-test-job:
         - ./browserstack-result.xml
 
 release:
-  image: public.ecr.aws/docker/library/node:18
-  cache: []
   stage: release
+  cache: []
   before_script:
     - apt-get update
     - apt-get install -y awscli
     - npm install -g semantic-release @semantic-release/{gitlab,changelog,git,exec}
+    - npm ci --cache .npm --prefer-offlinexx
+    - npm install --silent websocket
   script:
     - semantic-release
   rules:
