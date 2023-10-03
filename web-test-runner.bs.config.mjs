@@ -23,6 +23,11 @@ export default {
   ...localConfig,
   name: 'browserstack',
   watch: false,
+  protocol: 'https:',
+  http2: true,
+  hostname: 'local.baqend.com',
+  sslKey: process.env.SSL_KEY ?? 'certs/local-key.pem',
+  sslCert: process.env.SSL_CERT ?? 'certs/local-cert.pem',
   reporters: [
     // use the default reporter only for reporting test progress
     defaultReporter({ reportTestResults: false, reportTestProgress: true }),
@@ -54,6 +59,7 @@ export default {
       capabilities: {
         ...sharedCapabilities,
         browser: 'Safari',
+        browser_version: '16',
         os: 'OS X',
       },
     }),
