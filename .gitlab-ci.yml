@@ -150,7 +150,7 @@ release:
     - apt-get install -y awscli
     - npm install -g semantic-release @semantic-release/{gitlab,changelog,git,exec}
   script:
-    - semantic-release --repository-url $CI_REPOSITORY_URL
+    - semantic-release
   rules:
     - if: $CI_COMMIT_BRANCH == "main"
     - if: $CI_COMMIT_BRANCH == "prerelease"

@@ -1,4 +1,4 @@
-{
+module.exports = {
   "branches": [
     { "name": "main" },
     { "name": "prerelease", "channel": "pre", "prerelease": true }
@@ -13,13 +13,13 @@
       }
     ],
     "@semantic-release/npm",
-    "@semantic-release/gitlab",
     [
-      "@semantic-release/github",
+      "@semantic-release/gitlab",
       {
-        "repositoryUrl": "https://github.com/Baqend/js-sdk.git"
+        "repositoryUrl": process.env.REPOSITORY_URL
       }
     ],
+    "@semantic-release/github",
     [
       "@semantic-release/exec",
       {
@@ -33,6 +33,7 @@
     [
       "@semantic-release/git",
       {
+        "repositoryUrl": process.env.REPOSITORY_URL,
         "assets": ["package.json", "package-lock.json", "CHANGELOG.md"],
         "message": "chore(release): ${nextRelease.version} [skip ci]\n\n${nextRelease.notes}"
       }
