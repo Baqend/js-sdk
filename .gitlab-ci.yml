@@ -96,6 +96,7 @@ node-test-job:
 
 
 web-test-job:
+  image: mcr.microsoft.com/playwright:v1.38.0-jammy
   stage: test
   dependencies:
     - build-job
@@ -104,7 +105,7 @@ web-test-job:
     ORESTES_BRANCH: "master"
   parallel:
     matrix:
-      - BROWSER: [ Chrome ]
+      - BROWSER: [ Chromium, Firefox, Webkit ]
   services:
     - name: public.ecr.aws/docker/library/mongo:4
       alias: mongo
@@ -118,16 +119,12 @@ web-test-job:
       command: [ "--config", "conf/config.json", "--with-mongo", "--with-gridfs", "--with-sns" ]
       pull_policy: [always, if-not-present]
   script:
-    # we need to patch the browserstack runner to allow localhost connections until the issue is resolved
-    # https://github.com/modernweb-dev/web/issues/2429
-    - sed -i "s/\.replace(.*, localIp)//" node_modules/@web/test-runner-browserstack/dist/browserstackLauncher.js
-    - cat node_modules/@web/test-runner-browserstack/dist/browserstackLauncher.js
-    - npm run test:browserstack
+    - npm run test:playwright
   artifacts:
     when: always
     reports:
       junit:
-        - ./browserstack-result.xml
+        - ./playwright-result.xml
 
 release:
   image: public.ecr.aws/docker/library/node:18
