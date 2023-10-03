@@ -23,6 +23,7 @@ variables:
 stages:
   - build
   - validate
+  - test
   - release
 
 build-job:
@@ -63,9 +64,13 @@ commitlint:
     - if: $CI_MERGE_REQUEST_IID != null
 
 node-test-job:
-  stage: validate
+  image: public.ecr.aws/docker/library/node:$NODE_VERSION
+  stage: test
   dependencies:
     - build-job
+  parallel:
+    matrix:
+      - NODE_VERSION: [ 16 ]
   services:
     - name: public.ecr.aws/docker/library/mongo:4
       alias: mongo
@@ -96,7 +101,7 @@ node-test-job:
 
 
 web-test-job:
-  stage: validate
+  stage: test
   dependencies:
     - build-job
   variables:
