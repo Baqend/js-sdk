@@ -1,9 +1,8 @@
-module.exports = {
+{
   "branches": [
     { "name": "main" },
     { "name": "prerelease", "channel": "pre", "prerelease": true }
   ],
-  "repositoryUrl": `${process.env.CI_PROJECT_URL}.git`,
   "plugins": [
     "@semantic-release/commit-analyzer",
     [
