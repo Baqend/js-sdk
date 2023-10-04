@@ -6,7 +6,14 @@ module.exports = {
   "repositoryUrl": process.env.REPOSITORY_URL,
   "plugins": [
     "@semantic-release/commit-analyzer",
-    "@semantic-release/release-notes-generator",
+    [
+      "@semantic-release/release-notes-generator",
+      {
+        "presetConfig": {
+          "repository": "https://github.com/Baqend/js-sdk.git",
+        }
+      }
+    ],
     [
       "@semantic-release/changelog",
       {
@@ -15,12 +22,6 @@ module.exports = {
     ],
     "@semantic-release/npm",
     "@semantic-release/gitlab",
-    [
-      "@semantic-release/github",
-      {
-        "repositoryUrl": "https://github.com/Baqend/js-sdk.git",
-      }
-    ],
     [
       "@semantic-release/exec",
       {

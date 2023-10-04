@@ -147,7 +147,10 @@ release:
   stage: release
   cache: []
   variables:
-    GIT_STRATEGY: clone
+    GIT_AUTHOR_NAME: ci@baqend.com
+    GIT_AUTHOR_EMAIL: Baqend CI
+    GIT_COMMITTER_EMAIL: ci@baqend.com
+    GIT_COMMITTER_NAME: Baqend CI
   before_script:
     - apt-get update
     - apt-get install -y awscli
