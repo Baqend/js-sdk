@@ -1,11 +1,18 @@
-{
+module.exports = {
   "branches": [
     { "name": "main" },
     { "name": "prerelease", "channel": "pre", "prerelease": true }
   ],
+  "repositoryUrl": `${process.env.CI_PROJECT_URL}.git`,
   "plugins": [
     "@semantic-release/commit-analyzer",
+    [
     "@semantic-release/release-notes-generator",
+      {
+        "linkCompare": false,
+        "linkReferences": false,
+      }
+    ],
     [
       "@semantic-release/changelog",
       {
@@ -14,12 +21,6 @@
     ],
     "@semantic-release/npm",
     "@semantic-release/gitlab",
-    [
-      "@semantic-release/github",
-      {
-        "repositoryUrl": "https://github.com/Baqend/js-sdk.git"
-      }
-    ],
     [
       "@semantic-release/exec",
       {
