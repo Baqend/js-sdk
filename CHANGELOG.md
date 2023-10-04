@@ -1,3 +1,11 @@
+# 3.3.0-prerelease.4 (2023-10-04)
+
+
+### Bug Fixes
+
+* readd repository url to package json (eb95a9f)
+* the repository url env variable (c82e0c5)
+
 # 3.3.0-prerelease.3 (2023-10-04)
 
 
