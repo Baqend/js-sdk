@@ -54,6 +54,10 @@
     "validator": "^13.9.0",
     "websocket": "^1.0.34"
   },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Baqend/js-sdk.git"
+  },
   "bugs": {
     "url": "https://github.com/Baqend/js-sdk/issues"
   },
