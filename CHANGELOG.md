@@ -1,3 +1,11 @@
+# [3.3.0-prerelease.2](https://gitlab.orestes.info/team-backend/orestes/orestes-js/compare/v3.3.0-prerelease.1...v3.3.0-prerelease.2) (2023-10-04)
+
+
+### Bug Fixes
+
+* add gitlab back to the release steps ([bd7b42b](https://gitlab.orestes.info/team-backend/orestes/orestes-js/commit/bd7b42b7f9ec8cea93f932074fce789488264bd2))
+* change the commit references in the changelog ([1070d18](https://gitlab.orestes.info/team-backend/orestes/orestes-js/commit/1070d1887cb4accd2f6b0fd5c04e3158382e99e7))
+
 # [3.3.0-prerelease.1](https://gitlab.orestes.info/team-backend/orestes/orestes-js/compare/v3.2.0...v3.3.0-prerelease.1) (2023-10-04)
 
 
