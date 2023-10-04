@@ -16,6 +16,12 @@ module.exports = {
     "@semantic-release/npm",
     "@semantic-release/gitlab",
     [
+      "@semantic-release/github",
+      {
+        "repositoryUrl": "https://github.com/Baqend/js-sdk.git",
+      }
+    ],
+    [
       "@semantic-release/exec",
       {
         "verifyConditionsCmd": "bash ./scripts/publish.sh --action verify --base-path ${config.basePath} --project ${config.project}",
