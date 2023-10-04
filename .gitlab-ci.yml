@@ -152,7 +152,7 @@ release:
     - apt-get update
     - apt-get install -y awscli
     - npm install -g semantic-release @semantic-release/{gitlab,changelog,git,exec}
-    - npm ci --cache .npm --prefer-offlinexx
+    - npm ci --cache .npm --prefer-offline
     - npm install --silent websocket
   script:
     - semantic-release

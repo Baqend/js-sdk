@@ -3,6 +3,7 @@ module.exports = {
     { "name": "main" },
     { "name": "prerelease", "channel": "pre", "prerelease": true }
   ],
+  "repositoryUrl": process.env.REPOSITORY_URL,
   "plugins": [
     "@semantic-release/commit-analyzer",
     "@semantic-release/release-notes-generator",
@@ -13,13 +14,13 @@ module.exports = {
       }
     ],
     "@semantic-release/npm",
+    "@semantic-release/gitlab",
     [
-      "@semantic-release/gitlab",
+      "@semantic-release/github",
       {
-        "repositoryUrl": process.env.REPOSITORY_URL
+        "repositoryUrl": "https://github.com/Baqend/js-sdk.git",
       }
     ],
-    "@semantic-release/github",
     [
       "@semantic-release/exec",
       {
@@ -33,7 +34,6 @@ module.exports = {
     [
       "@semantic-release/git",
       {
-        "repositoryUrl": process.env.REPOSITORY_URL,
         "assets": ["package.json", "package-lock.json", "CHANGELOG.md"],
         "message": "chore(release): ${nextRelease.version} [skip ci]\n\n${nextRelease.notes}"
       }
