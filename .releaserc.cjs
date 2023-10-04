@@ -3,7 +3,7 @@ module.exports = {
     { "name": "main" },
     { "name": "prerelease", "channel": "pre", "prerelease": true }
   ],
-  "repositoryUrl": process.env.REPOSITORY_URL,
+  "repositoryUrl": `${process.env.CI_PROJECT_URL}.git`,
   "plugins": [
     "@semantic-release/commit-analyzer",
     [
