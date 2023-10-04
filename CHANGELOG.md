@@ -1,33 +1,33 @@
-# [3.3.0-prerelease.3](https://gitlab.orestes.info/team-backend/orestes/orestes-js/compare/v3.3.0-prerelease.2...v3.3.0-prerelease.3) (2023-10-04)
+# 3.3.0-prerelease.3 (2023-10-04)
 
 
 ### Bug Fixes
 
-* change repository url for the change logs ([1afe285](https://gitlab.orestes.info/team-backend/orestes/orestes-js/commit/1afe285c44a6e7c0af439d72fb01c73af5c39240))
+* change repository url for the change logs (1afe285)
 
-# [3.3.0-prerelease.2](https://gitlab.orestes.info/team-backend/orestes/orestes-js/compare/v3.3.0-prerelease.1...v3.3.0-prerelease.2) (2023-10-04)
+# 3.3.0-prerelease.2 (2023-10-04)
 
 
 ### Bug Fixes
 
-* add gitlab back to the release steps ([bd7b42b](https://gitlab.orestes.info/team-backend/orestes/orestes-js/commit/bd7b42b7f9ec8cea93f932074fce789488264bd2))
-* change the commit references in the changelog ([1070d18](https://gitlab.orestes.info/team-backend/orestes/orestes-js/commit/1070d1887cb4accd2f6b0fd5c04e3158382e99e7))
+* add gitlab back to the release steps (bd7b42b)
+* change the commit references in the changelog (1070d18)
 
-# [3.3.0-prerelease.1](https://gitlab.orestes.info/team-backend/orestes/orestes-js/compare/v3.2.0...v3.3.0-prerelease.1) (2023-10-04)
+# 3.3.0-prerelease.1 (2023-10-04)
 
 
 ### Features
 
-* **cli:** Create the file bucket on  deployments if it doesn't exist ([9429f53](https://gitlab.orestes.info/team-backend/orestes/orestes-js/commit/9429f53635015cad53a600d9b1c25d9a8b44ffa1))
-* **cli:** Improve the sso login flow ([422730c](https://gitlab.orestes.info/team-backend/orestes/orestes-js/commit/422730c40ab754c1c721abe83c18a2c7cc4aa070))
-* **cli:** Improve typings generation ([c17b411](https://gitlab.orestes.info/team-backend/orestes/orestes-js/commit/c17b411b4ab52639eb686f94cc16d3ef3b5f5d27))
-* **cli:** Make generated typing constructors more future complete ([7052f5f](https://gitlab.orestes.info/team-backend/orestes/orestes-js/commit/7052f5fe448f8913218a216e14da80cdb80a7808))
-* **cli:** Make generated typings JSON Objects / Arrays more typescript friendly ([b5c81f2](https://gitlab.orestes.info/team-backend/orestes/orestes-js/commit/b5c81f26f06bf10717354014e9862a6b5713ecc4))
-* **cli:** Migrate to the new token endpoint ([2591a4b](https://gitlab.orestes.info/team-backend/orestes/orestes-js/commit/2591a4b90983fc107e630b345b244af87e9c1765))
-* **cli:** Sync schema ACLs back by the deploy command ([4348fb6](https://gitlab.orestes.info/team-backend/orestes/orestes-js/commit/4348fb61694f287f6a80d10ded5fc701f0bec8fc))
-* **cli:** Use in every place inquirer ([9045fa4](https://gitlab.orestes.info/team-backend/orestes/orestes-js/commit/9045fa4ff868ae112621f694850cfc7e68bb5345))
-* **messages:** Add new Server endpoints ([d6508a0](https://gitlab.orestes.info/team-backend/orestes/orestes-js/commit/d6508a09819ceb57c402af882770fb4a2db87abd))
-* **messages:** Generate new version of message from current server ([c35fa4e](https://gitlab.orestes.info/team-backend/orestes/orestes-js/commit/c35fa4e44b131648ccb4ec3f55faebc420cdc157))
+* **cli:** Create the file bucket on  deployments if it doesn't exist (9429f53)
+* **cli:** Improve the sso login flow (422730c)
+* **cli:** Improve typings generation (c17b411)
+* **cli:** Make generated typing constructors more future complete (7052f5f)
+* **cli:** Make generated typings JSON Objects / Arrays more typescript friendly (b5c81f2)
+* **cli:** Migrate to the new token endpoint (2591a4b)
+* **cli:** Sync schema ACLs back by the deploy command (4348fb6)
+* **cli:** Use in every place inquirer (9045fa4)
+* **messages:** Add new Server endpoints (d6508a0)
+* **messages:** Generate new version of message from current server (c35fa4e)
 
 <a name="v3.2.0"></a>
 # v3.2.0 (2022-5-20)
