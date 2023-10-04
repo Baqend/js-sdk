@@ -9,9 +9,7 @@ module.exports = {
     [
       "@semantic-release/release-notes-generator",
       {
-        "presetConfig": {
-          "repository": "https://github.com/Baqend/js-sdk.git",
-        }
+        "repositoryUrl":  "https://github.com/Baqend/js-sdk.git",
       }
     ],
     [
