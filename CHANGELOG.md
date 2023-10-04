@@ -1,3 +1,11 @@
+# [3.3.0-prerelease.4](https://gitlab.orestes.info/team-backend/orestes/orestes-js/compare/v3.3.0-prerelease.3...v3.3.0-prerelease.4) (2023-10-04)
+
+
+### Bug Fixes
+
+* readd repository url to package json ([eb95a9f](https://gitlab.orestes.info/team-backend/orestes/orestes-js/commit/eb95a9f7ee57f5236c477fbb0f814f8d72d8fa97))
+* the repository url env variable ([c82e0c5](https://gitlab.orestes.info/team-backend/orestes/orestes-js/commit/c82e0c5f4aab25dbcc24f92b2e8f9eef1e5dc3f8))
+
 # [3.3.0-prerelease.3](https://gitlab.orestes.info/team-backend/orestes/orestes-js/compare/v3.3.0-prerelease.2...v3.3.0-prerelease.3) (2023-10-04)
 
 
