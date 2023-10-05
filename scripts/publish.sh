@@ -90,7 +90,6 @@ verify() {
     exit 1
   fi
 
-  # Add your commands for action2 here
   echo "validate" | aws s3 cp - "$BASE_PATH/$PROJECT/.validate" --profile s3-publish --metadata "surrogate-key=test" --cache-control "max-age=0"
   aws s3 rm "$BASE_PATH/$PROJECT/.validate" --profile s3-publish
 

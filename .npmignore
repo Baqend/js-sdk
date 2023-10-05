@@ -6,10 +6,12 @@
 /tpl
 *.iml
 .DS_Store
-.eslintrc.js
+.eslintrc.*
 .gitattributes
-webpack.config.js
+.releaserc.*
+.commitlintrc.*
+webpack.config.*
 tsconfig.*
 mocharc.*
 .gitlab-ci.yml
-web-test-runner.config.*
+web-test-runner.*
