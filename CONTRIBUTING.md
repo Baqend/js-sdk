@@ -59,3 +59,28 @@ The commit message should contain a short explanaition what the commited change 
 the change itself since it's self explainatory by the code change.
 
 Please refer to [this article](https://chris.beams.io/posts/git-commit/#imperative) to to see how to write good commit messages.
+
+Run the tests locally
+---------------------
+
+There are two types of tests. Before you can run the tests you need to build the project with:
+
+```bash
+npm run build dist
+```
+
+The node base tests can then be started with:
+
+```bash
+npm run test:node
+```
+
+The node tests can also be started with the build in mocha runner of IntelliJ.
+
+
+The browser based can then be started with:
+```bash
+npm run test:browser
+```
+
+
