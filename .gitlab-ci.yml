@@ -73,7 +73,7 @@ node-test-job:
     ORESTES_BRANCH: "master"
   parallel:
     matrix:
-      - NODE_VERSION: [ 16 ]
+      - NODE_VERSION: [ 16, 18, 20 ]
   services:
     - name: public.ecr.aws/docker/library/mongo:4
       alias: mongo
