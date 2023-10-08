@@ -1194,14 +1194,22 @@ describe('Test crud', function () {
 
       await db.modules.post('updatePerson', { id: person.id, value: 'Very New Name' });
 
-      // Now the object must be on the cache white list
-      expect(await db.Person.load(person.id)).have.property('name', 'New Name');
+      if (helper.isFirefox || helper.isChromium) {
+        // Now the object must be on the cache white list
+        expect(await db.Person.load(person.id)).have.property('name', 'New Name');
+      } else {
+        // Webkit engines does not support cache replacement
+        // therefore the resource is still on the blacklist and will fetched from the server
+        // https://stackoverflow.com/questions/32571769/cache-control-no-cache-in-request-header-response-does-not-replace-previously-c
+        expect(await db.Person.load(person.id)).have.property('name', 'Very New Name');
+      }
     });
 
     it('should use cache black listing', async function () {
       var person = new db.Person();
       person.name = 'Old Name';
       await db.refreshBloomFilter();
+
       await person.save();
       expect(await db.Person.load(person.id)).have.property('name', 'Old Name');
       const loaded = await db.Person.load(person.id);
@@ -1217,8 +1225,15 @@ describe('Test crud', function () {
 
       await db.modules.post('updatePerson', { id: person.id, value: 'Extremely New Name' });
 
-      // Now the object must be loaded from cache again
-      expect(await db.Person.load(person.id)).have.property('name', 'Very New Name');
+      if (helper.isFirefox || helper.isChromium) {
+        // Now the object must be loaded from cache again
+        expect(await db.Person.load(person.id)).have.property('name', 'Very New Name');
+      } else {
+        // Webkit engines does not support cache replacement
+        // therefore the resource is still on the blacklist and will fetched from the server
+        // https://stackoverflow.com/questions/32571769/cache-control-no-cache-in-request-header-response-does-not-replace-previously-c
+        expect(await db.Person.load(person.id)).have.property('name', 'Extremely New Name');
+      }
     });
   });
 

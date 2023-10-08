@@ -130,7 +130,11 @@ var helper = {
   isIE: typeof navigator !== 'undefined' && navigator.userAgent.indexOf('Trident') !== -1,
   isIE11: typeof navigator !== 'undefined' && navigator.userAgent.indexOf('Trident/7.0') !== -1,
   isIEdge: typeof navigator !== 'undefined' && navigator.userAgent.indexOf('Edge') !== -1,
+  isChromium: typeof navigator !== 'undefined' && navigator.userAgentData?.brands?.some(data => data.brand === 'Chromium'),
+  isFirefox: typeof navigator !== 'undefined' && navigator.userAgent.indexOf('Firefox') !== -1,
 };
+
+helper.isWebKit = typeof navigator !== 'undefined' && !(helper.isIE || helper.isIEdge || helper.isChromium || helper.isFirefox)
 
 if (typeof module !== 'undefined') {
   module.exports = helper;
