@@ -30,8 +30,12 @@ export type ProgressListener = (event: ProgressEvent) => any;
 /**
  * Checks whether the user uses a browser which does support revalidation.
  */
+// only chromium based browsers are supporting cache revalidations with the cache-control: no-cache directive
 // @ts-ignore
-const REVALIDATION_SUPPORTED = typeof navigator === 'undefined' || (typeof chrome !== 'undefined' && /google/i.test(navigator.vendor)) || (/cros i686/i.test(navigator.platform));
+export const REVALIDATION_SUPPORTED = typeof navigator === 'undefined' || navigator.userAgentData?.brands?.some(data => data.brand === 'Chromium');
+// webkit does not support cache replacement https://stackoverflow.com/questions/32571769/cache-control-no-cache-in-request-header-response-does-not-replace-previously-c
+// @ts-ignore
+export const CACHE_REPLACEMENT_SUPPORTED = typeof navigator === 'undefined' || REVALIDATION_SUPPORTED || /firefox/i.test(navigator.userAgent);
 
 export const StatusCode = {
   NOT_MODIFIED: 304,
