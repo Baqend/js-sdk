@@ -88,6 +88,10 @@ export class NodeConnector extends Connector {
 
     if (type === 'stream') {
       entity.pipe(req);
+    } else if (type === 'blob') {
+      entity.arrayBuffer()
+        .then((buffer: Buffer) => req.end(Buffer.from(buffer)))
+        .catch((e: Error) => req.destroy(e))
     } else if (type === 'buffer') {
       req.end(entity);
     } else if (type) {
@@ -139,6 +143,9 @@ export class NodeConnector extends Connector {
         case 'arraybuffer':
           type = 'buffer';
           entity = Buffer.from(entity);
+          break;
+        case 'blob':
+          mimeType = mimeType || entity.type;
           break;
         case 'data-url': {
           const match = entity.match(/^data:(.+?)(;base64)?,(.*)$/);
@@ -193,6 +200,8 @@ export class NodeConnector extends Connector {
       }
       case 'arraybuffer':
         return entity.buffer.slice(entity.byteOffset, entity.byteOffset + entity.byteLength);
+      case 'blob':
+        return new Blob([entity.buffer], { type: response.headers['content-type'] });
       default:
         return entity;
     }
