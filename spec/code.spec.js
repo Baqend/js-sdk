@@ -409,7 +409,7 @@ describe('Test code', function () {
     if (typeof Blob !== 'undefined' && !helper.isIE11) {
       it('should accept blob parameter', async function () {
         await code.saveCode(bucket, 'module', binaryNodeHandler);
-        const asset = await helper.asset('flames.png');
+        const asset = await helper.asset('flames.png', 'blob');
         const result = await db.modules.post(bucket, asset, { responseType: 'blob' });
         expect(result.size).eqls(asset.size);
       });

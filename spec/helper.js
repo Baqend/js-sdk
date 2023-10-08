@@ -63,8 +63,12 @@ var helper = {
       return helper.file(`spec/assets/${src}`).then(function (file) {
         if (type === 'arraybuffer') {
           return file.buffer.slice(file.byteOffset, file.byteOffset + file.byteLength);
-        } if (type === 'text') {
+        }
+        if (type === 'text') {
           return file.toString();
+        }
+        if (type === 'blob') {
+          return new Blob([file.buffer], { type: 'image/png' })
         }
         return file;
       });
