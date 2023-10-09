@@ -1585,4 +1585,29 @@ describe('Test file', function () {
         });
     });
   });
+
+  function bufferToBlob(buffer, type) {
+    if (typeof Blob !== 'undefined')
+      return new Blob([buffer], { type })
+
+    return buffer;
+  }
+
+  function expectSameBlob(expected, actual) {
+    if (typeof Blob !== 'undefined' && expected instanceof Blob) {
+      expect(actual).be.an.instanceof(Blob)
+      expect(actual.size).be.equal(expected.size)
+      expect(actual.type).be.equal(expected.type)
+      return;
+    }
+
+    if (typeof Buffer !== 'undefined' && expected instanceof Buffer) {
+      expect(actual).be.an.instanceof(Buffer)
+      expect(actual.length).be.equal(expected.length)
+      expect(actual.compare(expected)).equal(0, 'Buffers arn\'t content wise equal.')
+      return;
+    }
+
+    expect.fail('Files can\'t be compared, thier types are not compatible.');
+  }
 });
