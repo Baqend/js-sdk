@@ -1440,23 +1440,21 @@ describe('Test file', function () {
         host: env.TEST_SERVER,
         tokenStorage: await helper.rootTokenStorage,
       });
-      rootEmf.ready()
-        .then(function () {
-          return rootEmf.code.saveCode('updateFile', 'module', function (module, exports) {
-            exports.call = function (codeDb, data) {
-              var fileId = data.id;
-              var newValue = data.value;
-              return new codeDb.File(fileId).upload({
-                type: 'json',
-                data: newValue,
-                force: true,
-              });
-            };
+
+      await rootEmf.ready();
+      await rootEmf.code.saveCode('updateFile', 'module', function (module, exports) {
+        exports.call = function (codeDb, data) {
+          var fileId = data.id;
+          var newValue = data.value;
+          return new codeDb.File(fileId).upload({
+            type: 'json',
+            data: newValue,
+            force: true,
           });
-        })
-        .then(function () {
-          return db.ready();
-        });
+        };
+      });
+
+      await db.ready();
 
       return rootDb;
     });
