@@ -408,9 +408,13 @@ describe('Test code', function () {
 
     if (typeof Blob !== 'undefined' && !helper.isIE11) {
       it('should accept blob parameter', async function () {
+        console.log('save-code')
         await code.saveCode(bucket, 'module', binaryNodeHandler);
+        console.log('load-asset')
         const asset = await helper.asset('flames.png', 'blob');
+        console.log('post-asset')
         const result = await db.modules.post(bucket, asset, { responseType: 'blob' });
+        console.log('assert-result')
         expect(result.size).eqls(asset.size);
       });
 

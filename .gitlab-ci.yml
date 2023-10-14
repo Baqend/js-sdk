@@ -63,7 +63,7 @@ commitlint:
   rules:
     - if: $CI_MERGE_REQUEST_IID != null
 
-.node-test-job:
+node-test-job:
   image: public.ecr.aws/docker/library/node:$NODE_VERSION
   stage: test
   dependencies:
@@ -103,10 +103,10 @@ web-test-job:
   variables:
     TEST_SERVER: "https://local.baqend.com:8443/v1"
     ORESTES_BRANCH: "master"
-    DEBUG: pw:api
+    # DEBUG: pw:api
   parallel:
     matrix:
-      - BROWSER: [ Firefox ]
+      - BROWSER: [ Chromium, Firefox, Webkit ]
   services:
     - name: public.ecr.aws/docker/library/mongo:4
       alias: mongo
