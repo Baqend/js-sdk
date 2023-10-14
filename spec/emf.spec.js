@@ -34,7 +34,7 @@ describe('Test EntityManagerFactory', function () {
 
     expect(emf.isReady).be.false;
 
-    var connectPromise = emf.connect('http://example.test/');
+    var connectPromise = emf.connect('http://example.local/');
     var em = emf.createEntityManager();
 
     return Promise.all([
