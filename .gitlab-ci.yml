@@ -68,6 +68,9 @@ node-test-job:
   stage: test
   dependencies:
     - build-job
+  variables:
+    TEST_SERVER: "https://local.baqend.com:8443/v1"
+    ORESTES_BRANCH: "master"
   parallel:
     matrix:
       - NODE_VERSION: [ 16 ]
@@ -75,22 +78,12 @@ node-test-job:
     - name: public.ecr.aws/docker/library/mongo:4
       alias: mongo
     - public.ecr.aws/docker/library/redis:5.0
-    - name: docker.baqend.com/baqend/node14:master
+    - name: "${CI_REGISTRY}/team-backend/orestes/orestes-node:${ORESTES_BRANCH}"
       alias: node
-      command: ["tcp://local.baqend.com:8081", "http://local.baqend.com:8080/v1", "debug"]
-    - name: docker.baqend.com/baqend/orestes:2023-34-change-docker-file-16ccb2e4-testing
+      command: [ "tcp://local.baqend.com:8081", "http://local.baqend.com:8080/v1", "debug" ]
+    - name: "${CI_REGISTRY}/team-backend/orestes/orestes-server:${ORESTES_BRANCH}"
       alias: local.baqend.com
-      command:
-        - "--config"
-        - "/opt/baqend/lib/conf/config.json"
-        - "--with-mongo"
-        - "--with-gridfs"
-        - "--with-sns"
-        - "--log-level"
-        - "trace"
-        - "--debug"
-        - "--dashboard"
-        - "/opt/baqend/node_modules/baqend-dash/dist"
+      command: [ "--with-mongo", "--with-gridfs", "--with-sns" ]
   script:
     - npm run test:node
   artifacts:
@@ -106,8 +99,7 @@ web-test-job:
     - build-job
   variables:
     TEST_SERVER: "https://local.baqend.com:8443/v1"
-    SE_OPTS: "--log-level FINE"
-    ORESTES_CONFIGURATION : $ORESTES_CONFIGURATION_JSON
+    ORESTES_BRANCH: "master"
   parallel:
     matrix:
       - BROWSER: [ Chrome ]
@@ -115,27 +107,13 @@ web-test-job:
     - name: public.ecr.aws/docker/library/mongo:4
       alias: mongo
     - public.ecr.aws/docker/library/redis:5.0
-    - name: docker.baqend.com/baqend/node14:master
+    - name: "${CI_REGISTRY}/team-backend/orestes/orestes-node:${ORESTES_BRANCH}"
       alias: node
       command: ["tcp://local.baqend.com:8081", "http://local.baqend.com:8080/v1", "debug"]
-    - name: docker.baqend.com/baqend/orestes:2023-34-change-docker-file-16ccb2e4-testing
+    - name: "${CI_REGISTRY}/team-backend/orestes/orestes-server:${ORESTES_BRANCH}"
       alias: local.baqend.com
-      command:
-        - "--config"
-        - "/opt/baqend/lib/conf/config.json"
-        - "--with-mongo"
-        - "--with-gridfs"
-        - "--with-sns"
-        - "--log-level"
-        - "trace"
-        - "--debug"
-        - "--dashboard"
-        - "/opt/baqend/node_modules/baqend-dash/dist"
+      command: ["--with-mongo", "--with-gridfs", "--with-sns"]
   script:
-    # we need to patch the browserstack runner to allow localhost connections until the issue is resolved
-    # https://github.com/modernweb-dev/web/issues/2429
-    - sed -i "s/\.replace(.*, localIp)//" node_modules/@web/test-runner-browserstack/dist/browserstackLauncher.js
-    - cat node_modules/@web/test-runner-browserstack/dist/browserstackLauncher.js
     - npm run test:browserstack
   artifacts:
     when: always
