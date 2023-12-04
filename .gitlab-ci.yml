@@ -83,7 +83,7 @@ node-test-job:
       command: [ "tcp://local.baqend.com:8081", "http://local.baqend.com:8080/v1", "debug" ]
     - name: "${CI_REGISTRY}/team-backend/orestes/orestes-server:${ORESTES_BRANCH}"
       alias: local.baqend.com
-      command: [ "--with-mongo", "--with-gridfs", "--with-sns" ]
+      command: [ "--config", "conf/config.json", "--with-mongo", "--with-gridfs", "--with-sns" ]
   script:
     - npm run test:node
   artifacts:
@@ -109,10 +109,10 @@ web-test-job:
     - public.ecr.aws/docker/library/redis:5.0
     - name: "${CI_REGISTRY}/team-backend/orestes/orestes-node:${ORESTES_BRANCH}"
       alias: node
-      command: ["tcp://local.baqend.com:8081", "http://local.baqend.com:8080/v1", "debug"]
+      command: [ "tcp://local.baqend.com:8081", "http://local.baqend.com:8080/v1", "debug" ]
     - name: "${CI_REGISTRY}/team-backend/orestes/orestes-server:${ORESTES_BRANCH}"
       alias: local.baqend.com
-      command: ["--with-mongo", "--with-gridfs", "--with-sns"]
+      command: [ "--config", "conf/config.json", "--with-mongo", "--with-gridfs", "--with-sns" ]
   script:
     - npm run test:browserstack
   artifacts:
