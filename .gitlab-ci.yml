@@ -81,6 +81,7 @@ node-test-job:
     - name: "${CI_REGISTRY}/team-backend/orestes/orestes-node:${ORESTES_BRANCH}"
       alias: node
       command: [ "tcp://local.baqend.com:8081", "http://local.baqend.com:8080/v1", "debug" ]
+      pull_policy: [always, if-not-present]
     - name: "${CI_REGISTRY}/team-backend/orestes/orestes-server:${ORESTES_BRANCH}"
       alias: local.baqend.com
       command: [ "--config", "conf/config.json", "--with-mongo", "--with-gridfs", "--with-sns" ]
@@ -111,6 +112,7 @@ web-test-job:
     - name: "${CI_REGISTRY}/team-backend/orestes/orestes-node:${ORESTES_BRANCH}"
       alias: node
       command: [ "tcp://local.baqend.com:8081", "http://local.baqend.com:8080/v1", "debug" ]
+      pull_policy: [always, if-not-present]
     - name: "${CI_REGISTRY}/team-backend/orestes/orestes-server:${ORESTES_BRANCH}"
       alias: local.baqend.com
       command: [ "--config", "conf/config.json", "--with-mongo", "--with-gridfs", "--with-sns" ]
