@@ -102,7 +102,7 @@
     "webpack-cli": "^4.10.0"
   },
   "scripts": {
-    "test": "npm run test:node && npm run test:karma",
+    "test": "npm run test:node && npm run test:browser",
     "test:node": "mocha --config mocharc.cjs --exit",
     "test:browser": "web-test-runner",
     "test:browserstack": "web-test-runner --config web-test-runner.bs.config.mjs",

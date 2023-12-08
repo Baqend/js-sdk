@@ -3,7 +3,7 @@ import { PersistentError } from '../error';
 import { Acl } from '../Acl';
 import {
   uuid, trailingSlashIt,
-  Json, JsonArray, JsonMap,
+  Json, JsonArray, JsonMap, isNode,
 } from '../util';
 import * as message from '../message';
 import {
@@ -403,7 +403,7 @@ export class File {
       throw new Error('A folder cannot be downloaded');
     }
 
-    const type = opt.type || 'blob';
+    const type = opt.type || (isNode ? 'buffer' : 'blob');
 
     const downloadMessage = new message.DownloadFile(this.bucket, this.key)
       .responseType(type);

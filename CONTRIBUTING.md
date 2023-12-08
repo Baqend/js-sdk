@@ -78,7 +78,7 @@ npm run test:node
 The node tests can also be started with the build in mocha runner of IntelliJ.
 
 
-The browser based test can beused with your local installed chrome with:
+The browser based test can be used with your local installed chrome with:
 ```bash
 npm run test:browser
 ```
