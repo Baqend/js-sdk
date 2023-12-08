@@ -67,7 +67,7 @@ var helper = {
         if (type === 'text') {
           return file.toString();
         }
-        if (type === 'blob') {
+        if (typeof Blob !== 'undefined' && type === 'blob') {
           return new Blob([file.buffer], { type: 'image/png' })
         }
         return file;

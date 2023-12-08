@@ -19,6 +19,8 @@ default:
 variables:
   FF_NETWORK_PER_BUILD: "true"
   CI_DEBUG_SERVICES: "true"
+  ORESTES_BRANCH: "master"
+  NODE_BRANCH: "master"
 
 stages:
   - build
@@ -70,7 +72,6 @@ node-test-job:
     - build-job
   variables:
     TEST_SERVER: "https://local.baqend.com:8443/v1"
-    ORESTES_BRANCH: "master"
   parallel:
     matrix:
       - NODE_VERSION: [ 16, 18, 20 ]
@@ -78,7 +79,7 @@ node-test-job:
     - name: public.ecr.aws/docker/library/mongo:4
       alias: mongo
     - public.ecr.aws/docker/library/redis:5.0
-    - name: "${CI_REGISTRY}/team-backend/orestes/orestes-node:${ORESTES_BRANCH}"
+    - name: "${CI_REGISTRY}/team-backend/orestes/orestes-node:${NODE_BRANCH}"
       alias: node
       command: [ "tcp://local.baqend.com:8081", "http://local.baqend.com:8080/v1", "debug" ]
       pull_policy: [always, if-not-present]
@@ -102,7 +103,6 @@ web-test-job:
     - build-job
   variables:
     TEST_SERVER: "https://local.baqend.com:8443/v1"
-    ORESTES_BRANCH: "master"
     # DEBUG: pw:api
   parallel:
     matrix:
@@ -111,7 +111,7 @@ web-test-job:
     - name: public.ecr.aws/docker/library/mongo:4
       alias: mongo
     - public.ecr.aws/docker/library/redis:5.0
-    - name: "${CI_REGISTRY}/team-backend/orestes/orestes-node:${ORESTES_BRANCH}"
+    - name: "${CI_REGISTRY}/team-backend/orestes/orestes-node:${NODE_BRANCH}"
       alias: node
       command: [ "tcp://local.baqend.com:8081", "http://local.baqend.com:8080/v1", "debug" ]
       pull_policy: [always, if-not-present]
