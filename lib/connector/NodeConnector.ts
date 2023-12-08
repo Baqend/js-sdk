@@ -144,9 +144,6 @@ export class NodeConnector extends Connector {
           type = 'buffer';
           entity = Buffer.from(entity);
           break;
-        case 'blob':
-          mimeType = mimeType || entity.type;
-          break;
         case 'data-url': {
           const match = entity.match(/^data:(.+?)(;base64)?,(.*)$/);
           const isBase64 = match[2];
@@ -174,6 +171,12 @@ export class NodeConnector extends Connector {
           break;
         case 'text':
           break;
+        case 'blob':
+          if (typeof Blob !== 'undefined') {
+            mimeType = mimeType || entity.type;
+            break;
+          }
+          // fall through
         default:
           throw new Error(`The request type ${type} is not supported`);
       }
@@ -201,7 +204,10 @@ export class NodeConnector extends Connector {
       case 'arraybuffer':
         return entity.buffer.slice(entity.byteOffset, entity.byteOffset + entity.byteLength);
       case 'blob':
-        return new Blob([entity.buffer], { type: response.headers['content-type'] });
+        if (typeof Blob !== 'undefined') {
+          return new Blob([entity.buffer], { type: response.headers['content-type'] });
+        }
+        // fall through
       default:
         return entity;
     }

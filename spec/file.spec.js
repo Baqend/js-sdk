@@ -757,6 +757,7 @@ describe('Test file', function () {
       expect(file.createdAt.getTime()).equal(creationDate.getTime());
       loadedFile = new rootDb.File(file.id);
       const data = await loadedFile.download();
+      expect(data).instanceof(helper.isNode ? Buffer : Blob);
       expect(loadedFile.createdAt.getTime()).equal(creationDate.getTime());
       expectSameBlob(fileBinary, data);
     });
@@ -764,7 +765,7 @@ describe('Test file', function () {
     it('should stored under specified name', async function () {
       var file = new rootDb.File(pngFile.id);
       var data = await file.download();
-      expect(data).instanceof(typeof Blob !== 'undefined' ? Blob : Buffer);
+      expect(data).instanceof(helper.isNode ? Buffer : Blob);
       expect(file.eTag).eql(pngFile.eTag);
       expect(file.lastModified).gt(new Date(Date.now() - 5 * 60 * 1000));
       expect(file.lastModified).lt(new Date(Date.now() + 5 * 60 * 1000));
@@ -778,7 +779,7 @@ describe('Test file', function () {
       var db = await emf.createEntityManager().ready();
       var file = new db.File(pngFile.id);
       var data = await file.download();
-      expect(data).instanceof(typeof Blob !== 'undefined' ? Blob : Buffer);
+      expect(data).instanceof(helper.isNode ? Buffer : Blob);
       expect(file.eTag).eql(pngFile.eTag);
       expect(file.lastModified).gt(new Date(Date.now() - 5 * 60 * 1000));
       expect(file.lastModified).lt(new Date(Date.now() + 5 * 60 * 1000));
@@ -1182,7 +1183,7 @@ describe('Test file', function () {
         var file = new db1.File(uploadFile.id);
         var data = await file.download();
         expect(file.mimeType).eql('image/png');
-        expectSameBlob(flames, data);
+        expectSameBlob(flames, bufferToBlob(data, 'image/png'));
       });
 
       it('should deny load without load permission', async function () {
@@ -1283,7 +1284,7 @@ describe('Test file', function () {
         var file = new db1.File(uploadFile.id);
         var data = await file.download();
         expect(file.mimeType).eql('image/png');
-        expectSameBlob(flames, data);
+        expectSameBlob(flames, bufferToBlob(data, 'image/png'));
         expect(file.acl.isPublicReadAllowed()).be.false;
         expect(file.acl.isPublicWriteAllowed()).be.false;
         expect(file.acl.isReadAllowed(db1.User.me)).be.true;
@@ -1429,23 +1430,21 @@ describe('Test file', function () {
         host: env.TEST_SERVER,
         tokenStorage: await helper.rootTokenStorage,
       });
-      rootEmf.ready()
-        .then(function () {
-          return rootEmf.code.saveCode('updateFile', 'module', function (module, exports) {
-            exports.call = function (codeDb, data) {
-              var fileId = data.id;
-              var newValue = data.value;
-              return new codeDb.File(fileId).upload({
-                type: 'json',
-                data: newValue,
-                force: true,
-              });
-            };
+
+      await rootEmf.ready();
+      await rootEmf.code.saveCode('updateFile', 'module', function (module, exports) {
+        exports.call = function (codeDb, data) {
+          var fileId = data.id;
+          var newValue = data.value;
+          return new codeDb.File(fileId).upload({
+            type: 'json',
+            data: newValue,
+            force: true,
           });
-        })
-        .then(function () {
-          return db.ready();
-        });
+        };
+      });
+
+      await db.ready();
 
       return rootDb;
     });
