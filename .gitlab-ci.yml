@@ -84,6 +84,7 @@ node-test-job:
     - name: "${CI_REGISTRY}/team-backend/orestes/orestes-server:${ORESTES_BRANCH}"
       alias: local.baqend.com
       command: [ "--config", "conf/config.json", "--with-mongo", "--with-gridfs", "--with-sns" ]
+      pull_policy: [always, if-not-present]
   script:
     - npm run test:node
   artifacts:
@@ -113,6 +114,7 @@ web-test-job:
     - name: "${CI_REGISTRY}/team-backend/orestes/orestes-server:${ORESTES_BRANCH}"
       alias: local.baqend.com
       command: [ "--config", "conf/config.json", "--with-mongo", "--with-gridfs", "--with-sns" ]
+      pull_policy: [always, if-not-present]
   script:
     - npm run test:browserstack
   artifacts:
