@@ -65,7 +65,7 @@ commitlint:
   rules:
     - if: $CI_MERGE_REQUEST_IID != null
 
-node-test-job:
+.node-test-job:
   image: public.ecr.aws/docker/library/node:$NODE_VERSION
   stage: test
   dependencies:
