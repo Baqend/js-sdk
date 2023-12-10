@@ -37,7 +37,6 @@ describe('Test code', function () {
       await Promise.all(handlers.map(async function (type) {
         await code.deleteCode(entityType, type);
       }));
-      console.log('code deleted!')
     });
 
     handlers.forEach(function (type) {
@@ -274,18 +273,14 @@ describe('Test code', function () {
     });
 
     beforeEach(async function () {
-      console.log('prepare modules')
       const saved = await code.saveCode(bucket, 'module', fn);
       const module = { exports: {} };
       saved(module, module.exports);
       expect(module.exports.call).be.a('function');
-      console.log('prepare modules done')
     });
 
     afterEach(async function () {
-      console.log('deleted modules')
       await code.deleteCode(bucket, 'module');
-      console.log('deleted modules done')
     });
 
     it('should load code', function () {
@@ -405,28 +400,20 @@ describe('Test code', function () {
 
       const result = await db.modules.post(bucket, ['yeah']);
       expect(result).eqls(['yeah']);
-
-      console.log('array-test-done');
     });
 
     if (typeof Blob !== 'undefined' && !helper.isIE11) {
       it('should accept blob parameter', async function () {
+        this.timeout(40000) // leave it for webkit debugging purposes
         var start = Date.now()
-        console.log('save-code ' + (Date.now() - start))
         await code.saveCode(bucket, 'module', binaryNodeHandler);
-        console.log('load-asset ' + (Date.now() - start))
         const asset = await helper.asset('flames.png', 'blob');
-        console.log('post-asset ' + (Date.now() - start))
         const result = await db.modules.post(bucket, asset, { responseType: 'blob' });
-        console.log('assert-result ' + (Date.now() - start))
         expect(result.size).eqls(asset.size);
-        console.log('sleep ' + (Date.now() - start));
         await helper.sleep(2000)
-        console.log('done ' + (Date.now() - start))
       });
 
       it('should accept base64 parameter', async function () {
-        console.log('next base64 test')
         var svgBase64 = 'PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxIDEiPjxwYXRoIGQ9Im0wLDB2MWgxVjAiLz48L3N2Zz4=';
         var mimeType = 'image/svg+xml';
 
