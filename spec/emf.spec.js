@@ -30,6 +30,11 @@ describe('Test EntityManagerFactory', function () {
   });
 
   it('should reject connect to invalid destination', function () {
+    if (helper.isFirefox) {
+      // FF can't connect to unresolvable destinations in playwright container
+      return this.skip();
+    }
+
     this.timeout(40000);
 
     expect(emf.isReady).be.false;
