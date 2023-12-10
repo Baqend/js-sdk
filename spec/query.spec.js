@@ -868,6 +868,8 @@ describe('Test Query', function () {
     });
 
     it('should allow large query', function () {
+      this.timeout(40000) // leave it for webkit debugging purposes
+
       var inQuery = [];
       for (var i = 0; i < 5000; i += 1) {
         inQuery.push(`QueryPerson ${i}`);

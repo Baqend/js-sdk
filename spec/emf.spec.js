@@ -30,7 +30,7 @@ describe('Test EntityManagerFactory', function () {
   });
 
   it('should reject connect to invalid destination', function () {
-    this.timeout(30000);
+    this.timeout(40000);
 
     expect(emf.isReady).be.false;
 

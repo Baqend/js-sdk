@@ -117,7 +117,8 @@ web-test-job:
       pull_policy: [always, if-not-present]
     - name: "${CI_REGISTRY}/team-backend/orestes/orestes-server:${ORESTES_BRANCH}"
       alias: local.baqend.com
-      command: [ "--config", "conf/config.json", "--with-mongo", "--with-gridfs", "--with-sns" ]
+      # we need to disabled http2, otherwise the query spec "should allow large query" and the code spec "should accept blob parameter" are failing in webkit
+      command: [ "--config", "conf/config.json", "--with-mongo", "--with-gridfs", "--with-sns", "--debug", "--http2=false" ]
       pull_policy: [always, if-not-present]
   script:
     - npm run test:playwright -- --debug
