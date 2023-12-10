@@ -58,24 +58,22 @@ var helper = {
       }, time);
     });
   },
-  asset: function (src, type) {
+  asset: async function (src, type) {
     if (fs) {
-      return helper.file(`spec/assets/${src}`).then(function (file) {
-        if (type === 'arraybuffer') {
-          return file.buffer.slice(file.byteOffset, file.byteOffset + file.byteLength);
-        }
-        if (type === 'text') {
-          return file.toString();
-        }
-        if (typeof Blob !== 'undefined' && type === 'blob') {
-          return new Blob([file.buffer], { type: 'image/png' })
-        }
-        return file;
-      });
-    }
-    return helper.req(`/spec/assets/${src}`, type).then(function (file) {
+      const file = await helper.file(`spec/assets/${src}`);
+      if (type === 'arraybuffer') {
+        return file.buffer.slice(file.byteOffset, file.byteOffset + file.byteLength);
+      }
+      if (type === 'text') {
+        return file.toString();
+      }
+      if (typeof Blob !== 'undefined' && type === 'blob') {
+        return new Blob([file.buffer], { type: 'image/png' })
+      }
       return file;
-    });
+    }
+
+    return helper.req(`/spec/assets/${src}`, type);
   },
   file: function (path) {
     return new Promise(function (success, error) {
@@ -147,5 +145,5 @@ if (typeof module !== 'undefined') {
 if (typeof window !== 'undefined' && '__WTR_CONFIG__' in window) {
   // register mocha root hook for the web test runner based on the github issue
   // https://github.com/modernweb-dev/web/issues/1462#issue-895453629
-  window.__WTR_CONFIG__.testFrameworkConfig.rootHooks = helper.mochaHooks;
+  // window.__WTR_CONFIG__.testFrameworkConfig.rootHooks = helper.mochaHooks;
 }
