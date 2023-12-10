@@ -74,6 +74,14 @@ export class XMLHttpConnector extends Connector {
       xhr.upload.onprogress = message.progress();
     }
 
+    xhr.onerror = (e) => {
+      receive({
+        status: 0,
+        headers: {},
+        error: new Error(`Fetch of ${url} failed with a network error ${e}`),
+      });
+    }
+
     xhr.open(request.method, url, true);
 
     const { entity } = request;
