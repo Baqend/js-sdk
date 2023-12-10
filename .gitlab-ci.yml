@@ -19,7 +19,7 @@ default:
 variables:
   FF_NETWORK_PER_BUILD: "true"
   CI_DEBUG_SERVICES: "true"
-  ORESTES_BRANCH: "master"
+  ORESTES_BRANCH: "fix-device-interface-type"
   NODE_BRANCH: "master"
 
 stages:
