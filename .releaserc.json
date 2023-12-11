@@ -9,7 +9,7 @@
     "@semantic-release/release-notes-generator",
       {
         "linkCompare": false,
-        "linkReferences": false,
+        "linkReferences": false
       }
     ],
     [
