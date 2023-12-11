@@ -1,3 +1,16 @@
+# 3.3.0-prerelease.6 (2023-12-11)
+
+
+### Bug Fixes
+
+* add network fail handler a3f3ffc
+* cache replacement handling in webkit based engines f248eb8
+
+
+### Features
+
+* implement support for Blob's in Node.js 6cb2de1
+
 # 3.3.0-prerelease.5 (2023-10-04)
 
 
