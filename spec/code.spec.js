@@ -11,19 +11,17 @@ describe('Test code', function () {
       tokenStorage: await helper.rootTokenStorage,
     });
 
-    return emf.ready()
-      .then(function () {
-        var { metamodel } = emf;
-        personType = new DB.metamodel.EntityType(helper.randomize('CodePerson'), metamodel.entity(Object));
-        metamodel.addType(personType);
+    await emf.ready()
+    var { metamodel } = emf;
+    personType = new DB.metamodel.EntityType(helper.randomize('CodePerson'), metamodel.entity(Object));
+    metamodel.addType(personType);
 
-        personType.addAttribute(new DB.metamodel.SingularAttribute('name', metamodel.baseType(String)));
-        personType.addAttribute(new DB.metamodel.SingularAttribute('age', metamodel.baseType(Number)));
-        personType.addAttribute(new DB.metamodel.SingularAttribute('date', metamodel.baseType(Date)));
-        personType.addAttribute(new DB.metamodel.SingularAttribute('email', metamodel.baseType(String)));
+    personType.addAttribute(new DB.metamodel.SingularAttribute('name', metamodel.baseType(String)));
+    personType.addAttribute(new DB.metamodel.SingularAttribute('age', metamodel.baseType(Number)));
+    personType.addAttribute(new DB.metamodel.SingularAttribute('date', metamodel.baseType(Date)));
+    personType.addAttribute(new DB.metamodel.SingularAttribute('email', metamodel.baseType(String)));
 
-        return metamodel.save();
-      });
+    await metamodel.save();
   });
 
   describe('handler', function () {
@@ -35,9 +33,9 @@ describe('Test code', function () {
       entityType = db.metamodel.entity(personType.typeConstructor);
     });
 
-    afterEach(function () {
-      return Promise.all(handlers.map(function (type) {
-        return code.deleteCode(entityType, type);
+    afterEach(async function () {
+      await Promise.all(handlers.map(async function (type) {
+        await code.deleteCode(entityType, type);
       }));
     });
 
@@ -274,16 +272,15 @@ describe('Test code', function () {
       entityType = db.metamodel.entity(personType.typeConstructor);
     });
 
-    beforeEach(function () {
-      return code.saveCode(bucket, 'module', fn).then(function (saved) {
-        var module = { exports: {} };
-        saved(module, module.exports);
-        expect(module.exports.call).be.a('function');
-      });
+    beforeEach(async function () {
+      const saved = await code.saveCode(bucket, 'module', fn);
+      const module = { exports: {} };
+      saved(module, module.exports);
+      expect(module.exports.call).be.a('function');
     });
 
-    afterEach(function () {
-      return code.deleteCode(bucket, 'module');
+    afterEach(async function () {
+      await code.deleteCode(bucket, 'module');
     });
 
     it('should load code', function () {
@@ -396,34 +393,34 @@ describe('Test code', function () {
       });
     });
 
-    it('should accept array parameter', function () {
-      return code.saveCode(bucket, 'module', function (module, exports) {
-        exports.call = function (db, data) { return data; };
-      }).then(function () {
-        return db.modules.post(bucket, ['yeah']);
-      }).then(function (result) {
-        expect(result).eqls(['yeah']);
+    it('should accept array parameter', async function () {
+      await code.saveCode(bucket, 'module', (module, exports) => {
+        exports.call = (db, data) => data;
       });
+
+      const result = await db.modules.post(bucket, ['yeah']);
+      expect(result).eqls(['yeah']);
     });
 
     if (typeof Blob !== 'undefined' && !helper.isIE11) {
       it('should accept blob parameter', async function () {
+        this.timeout(40000) // leave it for webkit debugging purposes
+        var start = Date.now()
         await code.saveCode(bucket, 'module', binaryNodeHandler);
-        const asset = await helper.asset('flames.png');
+        const asset = await helper.asset('flames.png', 'blob');
         const result = await db.modules.post(bucket, asset, { responseType: 'blob' });
         expect(result.size).eqls(asset.size);
+        await helper.sleep(2000)
       });
 
-      it('should accept base64 parameter', function () {
+      it('should accept base64 parameter', async function () {
         var svgBase64 = 'PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxIDEiPjxwYXRoIGQ9Im0wLDB2MWgxVjAiLz48L3N2Zz4=';
         var mimeType = 'image/svg+xml';
 
-        return code.saveCode(bucket, 'module', binaryNodeHandler).then(function () {
-          return db.modules.post(bucket, svgBase64, { requestType: 'base64', mimeType: mimeType, responseType: 'data-url' });
-        }).then(function (result) {
-          expect(result).string(`data:${mimeType}`);
-          expect(result).string(svgBase64);
-        });
+        await code.saveCode(bucket, 'module', binaryNodeHandler);
+        const result = await db.modules.post(bucket, svgBase64, { requestType: 'base64', mimeType: mimeType, responseType: 'data-url' });
+        expect(result).string(`data:${mimeType}`);
+        expect(result).string(svgBase64);
       });
     }
 

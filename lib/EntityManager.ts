@@ -42,7 +42,7 @@ import {
   ValidationResult,
   Validator,
 } from './intersection';
-import { appendQueryParams } from './connector/Message';
+import { appendQueryParams, CACHE_REPLACEMENT_SUPPORTED } from './connector/Message';
 
 const DB_PREFIX = '/db/';
 
@@ -1179,10 +1179,9 @@ export class EntityManager extends Lockable {
    */
   addToWhiteList(objectId: string): void {
     if (this.isCachingEnabled()) {
-      if (this.bloomFilter.contains(objectId)) {
+      if (this.bloomFilter.contains(objectId) || this.cacheBlackList.has(objectId)) {
         this.cacheWhiteList.add(objectId);
       }
-      this.cacheBlackList.delete(objectId);
     }
   }
 
@@ -1251,7 +1250,11 @@ export class EntityManager extends Lockable {
       return true;
     }
 
-    return !this.cacheWhiteList.has(id) && (this.cacheBlackList.has(id) || this.bloomFilter.contains(id));
+    if (CACHE_REPLACEMENT_SUPPORTED && this.cacheWhiteList.has(id)) {
+      return false;
+    }
+
+    return this.cacheBlackList.has(id) || this.bloomFilter.contains(id);
   }
 
   /**

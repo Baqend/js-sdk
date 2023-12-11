@@ -10,7 +10,7 @@ import {
 export type Receiver = (response: Response) => void;
 export type RequestBody = string | Blob | Buffer | ArrayBuffer | FormData | Json | JsonLike | ReadStream;
 export type RequestBodyType = 'json' | 'text' | 'blob' | 'buffer' | 'arraybuffer' | 'data-url' | 'base64' | 'form' | 'stream';
-export type ResponseBodyType = 'json' | 'text' | 'blob' | 'arraybuffer' | 'data-url' | 'base64' | 'stream';
+export type ResponseBodyType = 'json' | 'text' | 'blob' | 'arraybuffer' | 'data-url' | 'base64' | 'stream' | 'buffer';
 export type Request = {
   method: string, path: string, type?: RequestBodyType, entity?: any, headers: { [headerName: string]: string }
 };

@@ -78,9 +78,18 @@ npm run test:node
 The node tests can also be started with the build in mocha runner of IntelliJ.
 
 
-The browser based can then be started with:
+The browser based test can be used with your local installed chrome with:
 ```bash
 npm run test:browser
+```
+
+Test a specific browser engine with playwright runner use one of the following commands.
+Read more about it in the [offical documentation](https://modern-web.dev/docs/test-runner/browser-launchers/playwright/).
+
+```bash
+npm run test:browser -- --playwright --browsers chromium
+npm run test:browser -- --playwright --browsers firefox
+npm run test:browser -- --playwright --browsers webkit
 ```
 
 
