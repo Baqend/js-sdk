@@ -19,6 +19,8 @@ default:
 variables:
   FF_NETWORK_PER_BUILD: "true"
   CI_DEBUG_SERVICES: "true"
+  ORESTES_BRANCH: "fix-device-interface-type"
+  NODE_BRANCH: "master"
 
 stages:
   - build
@@ -68,29 +70,23 @@ node-test-job:
   stage: test
   dependencies:
     - build-job
+  variables:
+    TEST_SERVER: "https://local.baqend.com:8443/v1"
   parallel:
     matrix:
-      - NODE_VERSION: [ 16 ]
+      - NODE_VERSION: [ 16, 18, 20 ]
   services:
     - name: public.ecr.aws/docker/library/mongo:4
       alias: mongo
     - public.ecr.aws/docker/library/redis:5.0
-    - name: docker.baqend.com/baqend/node14:master
+    - name: "${CI_REGISTRY}/team-backend/orestes/orestes-node:${NODE_BRANCH}"
       alias: node
-      command: ["tcp://local.baqend.com:8081", "http://local.baqend.com:8080/v1", "debug"]
-    - name: docker.baqend.com/baqend/orestes:2023-34-change-docker-file-16ccb2e4-testing
+      command: [ "tcp://local.baqend.com:8081", "http://local.baqend.com:8080/v1", "debug" ]
+      pull_policy: [always, if-not-present]
+    - name: "${CI_REGISTRY}/team-backend/orestes/orestes-server:${ORESTES_BRANCH}"
       alias: local.baqend.com
-      command:
-        - "--config"
-        - "/opt/baqend/lib/conf/config.json"
-        - "--with-mongo"
-        - "--with-gridfs"
-        - "--with-sns"
-        - "--log-level"
-        - "trace"
-        - "--debug"
-        - "--dashboard"
-        - "/opt/baqend/node_modules/baqend-dash/dist"
+      command: [ "--config", "conf/config.json", "--with-mongo", "--with-gridfs", "--with-sns" ]
+      pull_policy: [always, if-not-present]
   script:
     - npm run test:node
   artifacts:
@@ -101,47 +97,36 @@ node-test-job:
 
 
 web-test-job:
+  image: mcr.microsoft.com/playwright:v1.38.0-jammy
   stage: test
   dependencies:
     - build-job
   variables:
     TEST_SERVER: "https://local.baqend.com:8443/v1"
-    SE_OPTS: "--log-level FINE"
-    ORESTES_CONFIGURATION : $ORESTES_CONFIGURATION_JSON
+    # DEBUG: pw:api
   parallel:
     matrix:
-      - BROWSER: [ Chrome ]
+      - BROWSER: [ Chromium, Firefox, Webkit ]
   services:
     - name: public.ecr.aws/docker/library/mongo:4
       alias: mongo
     - public.ecr.aws/docker/library/redis:5.0
-    - name: docker.baqend.com/baqend/node14:master
+    - name: "${CI_REGISTRY}/team-backend/orestes/orestes-node:${NODE_BRANCH}"
       alias: node
-      command: ["tcp://local.baqend.com:8081", "http://local.baqend.com:8080/v1", "debug"]
-    - name: docker.baqend.com/baqend/orestes:2023-34-change-docker-file-16ccb2e4-testing
+      command: [ "tcp://local.baqend.com:8081", "http://local.baqend.com:8080/v1", "debug" ]
+      pull_policy: [always, if-not-present]
+    - name: "${CI_REGISTRY}/team-backend/orestes/orestes-server:${ORESTES_BRANCH}"
       alias: local.baqend.com
-      command:
-        - "--config"
-        - "/opt/baqend/lib/conf/config.json"
-        - "--with-mongo"
-        - "--with-gridfs"
-        - "--with-sns"
-        - "--log-level"
-        - "trace"
-        - "--debug"
-        - "--dashboard"
-        - "/opt/baqend/node_modules/baqend-dash/dist"
+      # we need to disabled http2, otherwise the query spec "should allow large query" and the code spec "should accept blob parameter" are failing in webkit
+      command: [ "--config", "conf/config.json", "--with-mongo", "--with-gridfs", "--with-sns", "--debug", "--http2=false" ]
+      pull_policy: [always, if-not-present]
   script:
-    # we need to patch the browserstack runner to allow localhost connections until the issue is resolved
-    # https://github.com/modernweb-dev/web/issues/2429
-    - sed -i "s/\.replace(.*, localIp)//" node_modules/@web/test-runner-browserstack/dist/browserstackLauncher.js
-    - cat node_modules/@web/test-runner-browserstack/dist/browserstackLauncher.js
-    - npm run test:browserstack
+    - npm run test:playwright -- --debug
   artifacts:
     when: always
     reports:
       junit:
-        - ./browserstack-result.xml
+        - ./playwright-result.xml
 
 release:
   image: public.ecr.aws/docker/library/node:18

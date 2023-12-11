@@ -67,6 +67,12 @@ describe('Test Push Notifications', function () {
   });
 
   it('should save registration in cookie', function () {
+    if (helper.isWebKit) {
+      // TODO: we are currently using 3rd party cookies to store the device registration state
+      // TODO: which is not supported by Webkit anymore
+      return this.skip();
+    }
+
     var deviceId;
     return db.Device.register('Android', TEST_GCM_DEVICE).then(function (device) {
       deviceId = device.id;
@@ -123,24 +129,30 @@ describe('Test Push Notifications', function () {
     }
   });
 
-  it('should remove cookie if device cannot be found', function () {
-    return db.Device.register('Android', TEST_GCM_DEVICE).then(function () {
-      return new DB.EntityManagerFactory({ host: env.TEST_SERVER, staleness: 0 }).createEntityManager(true).ready();
-    }).then(function (newDB) {
-      expect(newDB.isDeviceRegistered).be.true;
-      expect(newDB.Device.isRegistered).be.true;
-      expect(newDB.Device.me).be.ok;
+  it('should remove cookie if device cannot be found', async function () {
+    if (helper.isWebKit) {
+      // TODO: we are currently using 3rd party cookies to store the device registration state
+      // TODO: which is not supported by Webkit anymore
+      return this.skip();
+    }
 
-      return newDB.Device.me.delete({ force: true });
-    }).then(function () {
-      DB.connector.Connector.connections = {};
-      return new DB.EntityManagerFactory({ host: env.TEST_SERVER, staleness: 0 }).createEntityManager(true).ready();
-    })
-      .then(function (newDB) {
-        expect(newDB.isDeviceRegistered).be.false;
-        expect(newDB.Device.isRegistered).be.false;
-        expect(newDB.Device.me).be.null;
-      });
+    await db.Device.register('Android', TEST_GCM_DEVICE);
+    const newDB= await new DB.EntityManagerFactory({ host: env.TEST_SERVER, staleness: 0 })
+      .createEntityManager(true)
+      .ready();
+    expect(newDB.isDeviceRegistered).be.true;
+    expect(newDB.Device.isRegistered).be.true;
+    expect(newDB.Device.me).be.ok;
+
+    await newDB.Device.me.delete({ force: true });
+    DB.connector.Connector.connections = {};
+    const newDB2 = await new DB.EntityManagerFactory({ host: env.TEST_SERVER, staleness: 0 })
+      .createEntityManager(true)
+      .ready();
+
+    expect(newDB2.isDeviceRegistered).be.false;
+    expect(newDB2.Device.isRegistered).be.false;
+    expect(newDB2.Device.me).be.null;
   });
 
   if (typeof ArrayBuffer === 'undefined') {
