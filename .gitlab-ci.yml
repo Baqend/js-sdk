@@ -3,7 +3,8 @@ workflow:
     - if: $CI_PIPELINE_SOURCE == "merge_request_event"
     - if: $CI_COMMIT_BRANCH && $CI_OPEN_MERGE_REQUESTS
       when: never
-    - if: $CI_COMMIT_BRANCH
+    # run pipeline only on MRs and main branches
+    - if: $CI_COMMIT_REF_PROTECTED
 
 default:
   tags:
@@ -15,6 +16,10 @@ default:
       - .npm/
       - node_modules/
     policy: pull
+  retry:
+    max: 2
+    when:
+      - runner_system_failure
 
 variables:
   FF_NETWORK_PER_BUILD: "true"
