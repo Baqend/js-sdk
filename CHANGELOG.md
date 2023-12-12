@@ -1,3 +1,25 @@
+# 3.3.0 (2023-12-12)
+
+
+### Bug Fixes
+
+* add network fail handler c446d66
+* cache replacement handling in webkit based engines e6d7241
+
+
+### Features
+
+* **cli:** create the file bucket on deployments if it doesn't exist eb2b1c8
+* **cli:** implement new input dialogues 5f13265
+* **cli:** improve the sso login flow 49e4c84
+* **cli:** improve typings generation 736eed6
+* **cli:** make generated typing constructors more future complete 8344185
+* **cli:** make generated typings JSON Objects / Arrays more typescript friendly 9ffb5b6
+* **cli:** migrate to the new token endpoint 1a233a7
+* **cli:** sync schema ACLs back by the deploy command af73e0b
+* implement support for Blob's in Node.js bbd8536
+* **messages:** generate new version of message from current server ae1e699
+
 <a name="v3.2.0"></a>
 # v3.2.0 (2022-5-20)
 
