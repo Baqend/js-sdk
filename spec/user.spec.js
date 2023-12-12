@@ -7,15 +7,20 @@ describe('Test user and roles', function () {
   var RENEW_TIMEOUT = 2000;
   this.timeout(RENEW_TIMEOUT * 5);
 
-  before(function () {
-    emf = new DB.EntityManagerFactory({ host: env.TEST_SERVER, tokenStorage: helper.rootTokenStorage });
-    return emf.createEntityManager().ready().then(function () {
-      var userEntity = emf.metamodel.entity('User');
-      if (!userEntity.getAttribute('email')) {
-        userEntity.addAttribute(new DB.metamodel.SingularAttribute('email', emf.metamodel.baseType(String)));
-        return emf.metamodel.save();
-      }
+  before(async function () {
+    emf = new DB.EntityManagerFactory({
+      host: env.TEST_SERVER,
+      tokenStorage: await helper.rootTokenStorage,
     });
+    return emf.createEntityManager()
+      .ready()
+      .then(function () {
+        var userEntity = emf.metamodel.entity('User');
+        if (!userEntity.getAttribute('email')) {
+          userEntity.addAttribute(new DB.metamodel.SingularAttribute('email', emf.metamodel.baseType(String)));
+          return emf.metamodel.save();
+        }
+      });
   });
 
   beforeEach(function () {
@@ -73,14 +78,18 @@ describe('Test user and roles', function () {
       });
     });
 
-    it('should fail to register if username is missing', function () {
+    it('should fail to register if username is missing', async function () {
       var user = { foobar: helper.makeLogin() };
-      return expect(db.User.register(user, 'secret')).be.rejected;
+      try {
+        await db.User.register(user, 'secret');
+        expect.fail();
+      } catch {
+      }
     });
 
     it('should logout an user', function () {
       var login = helper.makeLogin();
-      return db.User.register(login, 'secret').then(function (user) {
+      return db.User.register(login, 'secret').then(function ( ) {
         return db.User.logout();
       }).then(function () {
         expect(db.User.me).be.null;
@@ -101,16 +110,18 @@ describe('Test user and roles', function () {
       return promise;
     });
 
-    it('should not register an existing user', function () {
+    it('should not register an existing user', async function () {
       var login = helper.makeLogin();
-      return db.User.register(login, 'secret').then(function (user) {
-        return db.User.logout();
-      }).then(function () {
-        return expect(db.User.register(login, 'secret')).be.rejected;
-      }).then(function () {
-        expect(db.token).be.null;
-        expect(db.User.me).be.null;
-      });
+      await db.User.register(login, 'secret');
+      await db.User.logout();
+
+      try {
+        await db.User.register(login, 'secret');
+        expect.fail();
+      } catch {}
+
+      expect(db.token).be.null;
+      expect(db.User.me).be.null;
     });
 
     it('should login with valid credentials', function () {
@@ -138,24 +149,29 @@ describe('Test user and roles', function () {
       });
     });
 
-    it('should not login an unknown user', function () {
+    it('should not login an unknown user', async function () {
       var login = helper.makeLogin();
-      expect(db.User.login(login, 'secret')).be.rejected;
+      try {
+        await db.User.login(login, 'secret');
+        expect.fail();
+      } catch { }
     });
 
-    it('should not login with invalid credentials', function () {
+    it('should not login with invalid credentials', async function () {
       var login = helper.makeLogin();
-      return db.User.register(login, 'secret').then(function (u) {
-        return db.User.logout();
-      }).then(function () {
-        return expect(db.User.login(login, 'hackit')).be.rejected;
-      });
+      await db.User.register(login, 'secret');
+      await db.User.logout();
+
+      try {
+        await db.User.login(login, 'hackit');
+        expect.fail();
+      } catch {}
     });
 
     it('should not login twice', function () {
       var login = helper.makeLogin();
-      return db.User.register(login, 'secret').then(function (u) {
-        expect(function () {
+      return db.User.register(login, 'secret').then(function () {
+        return expect(function () {
           db.User.login(login, 'secret');
         }).throw(Error);
       }).then(function () {
@@ -164,9 +180,9 @@ describe('Test user and roles', function () {
         return db.User.login(login, 'secret');
       })
         .then(function () {
-          expect(function () {
-            db.User.login(login, 'secret');
-          }).throw(Error);
+          return expect(function () {
+            return db.User.login(login, 'secret');
+          }).to.throw(Error);
         });
     });
 
@@ -216,107 +232,105 @@ describe('Test user and roles', function () {
       });
     });
 
-    it('should change password', function () {
+    it('should change password', async function () {
       var oldLogin = helper.makeLogin();
       var oldToken;
-      return db.User.register(oldLogin, 'secret').then(function () {
-        oldToken = db.token;
-        return helper.sleep(RENEW_TIMEOUT);
-      }).then(function () {
-        return db.me.newPassword('secret', 'newSecret');
-      }).then(function () {
-        expect(oldToken).not.eqls(db.token);
-        return db.User.logout();
-      })
-        .then(function () {
-          return db.User.login(oldLogin, 'newSecret');
-        })
-        .then(function () {
-          return db.User.logout();
-        })
-        .then(function () {
-          return expect(db.User.login(oldLogin, 'secret')).be.rejected;
-        });
+      await db.User.register(oldLogin, 'secret');
+      oldToken = db.token;
+      await helper.sleep(RENEW_TIMEOUT);
+      await db.me.newPassword('secret', 'newSecret');
+      expect(oldToken).not.eqls(db.token);
+      await db.User.logout();
+      await db.User.login(oldLogin, 'newSecret');
+      await db.User.logout();
+      try {
+        await db.User.login(oldLogin, 'secret');
+        expect.fail();
+      } catch {}
     });
 
-    it('should keep user login when newPassword is called with invalid credentials', function () {
+    it('should keep user login when newPassword is called with invalid credentials', async function () {
       var oldLogin = helper.makeLogin();
       var oldToken;
-      return db.User.register(oldLogin, 'secret').then(function () {
-        oldToken = db.token;
-        return helper.sleep(RENEW_TIMEOUT);
-      }).then(function () {
-        return expect(db.me.newPassword('wrong-secret', 'newSecret')).rejectedWith('User name or password is incorrect');
-      }).then(function () {
-        expect(oldToken).eqls(db.token);
-        expect(db.me.username).eqls(oldLogin);
-      });
+      await db.User.register(oldLogin, 'secret');
+      oldToken = db.token;
+      await helper.sleep(RENEW_TIMEOUT);
+
+      try {
+        await db.me.newPassword('wrong-secret', 'newSecret');
+        expect.fail();
+      } catch (e) {
+        expect(e.message).to.contain('User name or password is incorrect');
+      }
+
+      expect(oldToken).eqls(db.token);
+      expect(db.me.username).eqls(oldLogin);
     });
 
-    it('should be allowed to change password as root', function () {
+    it('should be allowed to change password as root', async function () {
       var oldLogin = helper.makeLogin();
       var oldToken;
-      return db.User.register(oldLogin, 'secret').then(function () {
-        return db.User.logout();
-      }).then(function () {
-        return db.User.login('root', 'root');
-      }).then(function () {
-        oldToken = db.token;
-        expect(db.me.username).eqls('root');
-        return db.User.newPassword(oldLogin, '', 'newSecret');
-      })
-        .then(function () {
-          expect(db.me.username).eqls('root');
-          expect(db.token).eqls(oldToken);
-          return db.User.logout();
-        })
-        .then(function () {
-          return expect(db.User.login(oldLogin, 'newSecret')).be.fulfilled.then(function () { return db.User.logout(); });
-        })
-        .then(function () {
-          return expect(db.User.login(oldLogin, 'secret')).be.rejected;
-        });
+      await db.User.register(oldLogin, 'secret');
+      await db.User.logout();
+      await db.User.login('root', 'root');
+      oldToken = db.token;
+      expect(db.me.username).eqls('root');
+      await db.User.newPassword(oldLogin, '', 'newSecret');
+
+      expect(db.me.username).eqls('root');
+      expect(db.token).eqls(oldToken);
+      await db.User.logout();
+
+      await expect(await db.User.login(oldLogin, 'newSecret')).be.ok;
+      await db.User.logout();
+      try {
+        await db.User.login(oldLogin, 'secret');
+        expect.fail();
+      } catch {}
     });
 
-    it('should not be allowed to insert user', function () {
+    it('should not be allowed to insert user', async function () {
       var name = helper.makeLogin();
       var newUser = db.User.fromJSON({
         username: name,
       });
 
-      return expect(newUser.save()).be.rejected;
+      try {
+        await newUser.save();
+        expect.fail();
+      } catch {}
     });
 
-    it('should not be allowed to register with an empty password', function () {
-      return expect(db.User.register(helper.makeLogin(), '')).be.rejected;
+    it('should not be allowed to register with an empty password', async function () {
+      try {
+        await db.User.register(helper.makeLogin(), '');
+        expect.fail();
+      } catch {}
     });
 
-    it('should fail change username with email verification disabled', function () {
+    it('should fail change username with email verification disabled', async function () {
       var login = helper.makeLogin().concat('@baqend.com');
       var newLogin = helper.makeLogin().concat('@baqend.com');
-      return db.User.register(login, 'secret').then(function () {
-        return db.User.logout();
-      }).then(function () {
-        return db.User.login('root', 'root');
-      }).then(function () {
-        expect(db.me.username).eqls('root');
-        return expect(db.User.changeUsername(login, newLogin, 'secret')).be.rejectedWith('Email verification not enabled');
-      });
+      await db.User.register(login, 'secret');
+      await db.User.logout();
+      await db.User.login('root', 'root');
+      expect(db.me.username).eqls('root');
+      try {
+        await db.User.changeUsername(login, newLogin, 'secret');
+        expect.fail();
+      } catch (e) {
+        expect(e.message).to.contain('Email verification not enabled');
+      }
     });
 
-    it('should create api token for root', function () {
-      return db.User.login('root', 'root').then(function () {
-        return db.User.me.requestAPIToken();
-      }).then(function (apiToken) {
-        expect(apiToken).not.be.null;
-        return db.User.requestAPIToken(db.User.me);
-      }).then(function (apiToken) {
-        expect(apiToken).not.be.null;
-        return db.User.requestAPIToken('1');
-      })
-        .then(function (apiToken) {
-          expect(apiToken).not.be.null;
-        });
+    it('should create api token for root', async function () {
+      await db.User.login('root', 'root');
+      let apiToken = await db.User.me.requestAPIToken();
+      expect(apiToken).not.be.null;
+      apiToken = await db.User.requestAPIToken(db.User.me);
+      expect(apiToken).not.be.null;
+      apiToken = await db.User.requestAPIToken('1');
+      expect(apiToken).not.be.null;
     });
 
     it('should create api token for other user', function () {
@@ -336,18 +350,22 @@ describe('Test user and roles', function () {
         });
     });
 
-    it('should only be allowed for admins to create API token', function () {
+    it('should only be allowed for admins to create API token', async function () {
       var user = helper.makeLogin();
-      return db.User.register(user, 'secret').then(function () {
-        return expect(db.User.me.requestAPIToken()).be.rejected;
-      });
+      await db.User.register(user, 'secret');
+      try {
+        await db.User.me.requestAPIToken();
+        expect.fail();
+      } catch {}
     });
 
-    it('should only be allowed for admins to revoke tokens', function () {
+    it('should only be allowed for admins to revoke tokens', async function () {
       var user = helper.makeLogin();
-      return db.User.register(user, 'secret').then(function () {
-        return expect(db.User.revokeAllTokens(db.User.me)).be.rejected;
-      });
+      await db.User.register(user, 'secret');
+      try {
+        await db.User.revokeAllTokens(db.User.me);
+        expect.fail();
+      } catch {}
     });
 
     it('should return a new token if revoking own tokens', function () {
@@ -364,12 +382,9 @@ describe('Test user and roles', function () {
   });
 
   describe('on global DB', function () {
-    before(function () {
-      if (!DB.isReady) { DB.connect(env.TEST_SERVER); }
-
-      return DB.ready().then(function () {
-        return DB.User.logout();
-      });
+    before(async function () {
+      await helper.ensureGlobalConnected();
+      await DB.User.logout();
     });
 
     afterEach(function () {
@@ -396,17 +411,19 @@ describe('Test user and roles', function () {
         });
     });
 
-    it('should fail change username with email verification disabled', function () {
+    it('should fail change username with email verification disabled', async function () {
       var login = helper.makeLogin().concat('@baqend.com');
       var newLogin = helper.makeLogin().concat('@baqend.com');
-      return db.User.register(login, 'secret').then(function () {
-        return db.User.logout();
-      }).then(function () {
-        return db.User.login('root', 'root');
-      }).then(function () {
-        expect(db.me.username).eqls('root');
-        return expect(db.User.me.changeUsername(newLogin, 'secret')).be.rejectedWith('Email verification not enabled');
-      });
+      await db.User.register(login, 'secret');
+      await db.User.logout();
+      await db.User.login('root', 'root');
+      expect(db.me.username).eqls('root');
+      try {
+        await db.User.me.changeUsername(newLogin, 'secret');
+        expect.fail();
+      } catch (e) {
+        expect(e.message).to.contain('Email verification not enabled');
+      }
     });
 
     it('should remove token if token is invalid', function () {
@@ -457,8 +474,8 @@ describe('Test user and roles', function () {
         expect(DB.me).be.ok;
         expect(DB.token).be.ok;
         return DB.logout();
-      }).then(function () {
-        return expect(DB.renew()).become(null);
+      }).then(async function () {
+        expect(await DB.renew()).be.null;
       });
     });
 

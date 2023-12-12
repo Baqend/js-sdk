@@ -3,12 +3,13 @@ import { ChildProcess } from 'child_process';
 import crypto from 'crypto';
 import { createServer } from 'http';
 import os from 'os';
+import inquirer from 'inquirer';
 import {
   EntityManager, EntityManagerFactory, intersection, binding,
 } from 'baqend';
 import * as helper from './helper';
 import {
-  isFile, readFile, readInput,
+  isFile, readFile, readModuleFile,
 } from './helper';
 
 const { TokenStorage } = intersection;
@@ -111,9 +112,10 @@ function getLocalCredentials(appInfo: AppInfo): Credentials | null {
   return null;
 }
 
-function getInputCredentials(appInfo: AppInfo, authProvider?: string, showLoginInfo?: boolean): Promise<Credentials> {
+async function getInputCredentials(appInfo: AppInfo, authProvider?: string, showLoginInfo?: boolean):
+Promise<Credentials> {
   if (!process.stdout.isTTY) {
-    return Promise.reject(new Error('Can\'t interactive login into baqend, no tty session was detected.'));
+    throw new Error('Can\'t interactive login into baqend, no tty session was detected.');
   }
 
   if (showLoginInfo) {
@@ -122,27 +124,27 @@ function getInputCredentials(appInfo: AppInfo, authProvider?: string, showLoginI
 
   const options = ['password', 'google', 'facebook', 'github'];
 
-  let result = Promise.resolve(String(options.indexOf(authProvider || 'password') + 1));
+  let result = authProvider || 'password';
   if (!appInfo.isCustomHost && options.length > 1 && !authProvider) {
-    console.log('Choose how you want to login:');
-    options.forEach((provider, index) => {
-      console.log(`${index + 1}. Login with ${provider}`);
-    });
-    result = readInput(`Type 1-${options.length}: `);
+    const responses = await inquirer.prompt([{
+      name: 'loginType',
+      message: 'Choose how you want to login:',
+      type: 'list',
+      default: 'google',
+      choices: options.map((op) => ({ name: op })),
+    }]);
+    result = responses.loginType as string;
   }
 
-  return result.then((option): Promise<Credentials> => {
-    if (option === '1') {
-      return readInputCredentials(appInfo);
-    }
+  if (!result) {
+    throw new Error('No valid login option was chosen.');
+  }
 
-    const provider = options[Number(option) - 1];
-    if (!provider) {
-      throw new Error('No valid login option was chosen.');
-    }
+  if (result === 'password') {
+    return readInputCredentials(appInfo);
+  }
 
-    return requestSSOCredentials(appInfo, provider);
-  });
+  return requestSSOCredentials(appInfo, result);
 }
 
 function requestSSOCredentials(appInfo: AppInfo, oAuthProvider: string, oAuthOptions: binding.OAuthOptions = {}):
@@ -176,23 +178,31 @@ Promise<TokenCredentials> {
     });
 }
 
-function oAuthHandler(host: string, port: number): Promise<TokenCredentials> {
+async function oAuthHandler(host: string, port: number): Promise<TokenCredentials> {
+  const htmlTemplate = await readModuleFile('./sso.html');
+
   return new Promise((resolve, reject) => {
     const server = createServer((req, res) => {
       const url = new URL(req.url!, `http://${host}:${port}`);
-      let done = false;
-      if (url.searchParams.has('errorMessage')) {
-        reject(new Error(url.searchParams.get('errorMessage')!));
-        done = true;
+      const errorMessage = url.searchParams.get('errorMessage');
+
+      let text: string | null = null;
+      if (errorMessage) {
+        reject(new Error(errorMessage));
+        text = `<h1>An error has occurred</h1><p>${errorMessage}</p>`;
       } else if (url.searchParams.has('token')) {
         resolve({ token: url.searchParams.get('token')! });
-        done = true;
+        text = '<h1>Continue within the CLI</h1><p>You can close this window now.</p>';
       }
 
-      if (done) {
+      if (text) {
+        // eslint-disable-next-line no-template-curly-in-string
+        const html = htmlTemplate.replace('${content}', text);
         res.writeHead(200, { 'Content-Type': 'text/html' });
-        res.end('<!DOCTYPE html><html><head></head><body><h1>Continue within the CLI!</h1></a></body></html>');
-        server.close();
+        res.end(html);
+        setTimeout(() => {
+          server.close();
+        });
       } else {
         res.writeHead(404);
         res.end();
@@ -288,14 +298,9 @@ export function login(args: AccountArgs): Promise<EntityManager> {
     });
 }
 
-function bbqAppLogin(db: EntityManager, appName: string) {
-  return db.modules.get('apps', { app: appName }).then((result: { name: string, token: string }) => {
-    if (!result) {
-      throw new Error(`App (${appName}) not found.`);
-    }
-
-    return appConnect({ host: result.name, isCustomHost: false, app: appName }, { token: result.token });
-  });
+async function bbqAppLogin(db: EntityManager, appName: string) {
+  const { token } = await db.modules.get('token', { app: appName });
+  return appConnect({ host: appName, isCustomHost: false, app: appName }, { token });
 }
 
 export function logout(args: AccountArgs) {
@@ -338,10 +343,11 @@ export function openDashboard(args: AccountArgs) {
   });
 }
 
-export function listApps(args: AccountArgs) {
-  return connect(args)
-    .then((db) => getApps(db))
-    .then((apps) => apps.forEach((app) => console.log(app)));
+export async function listApps(args: AccountArgs) {
+  const db = await connect(args);
+  let apps = await getApps(db);
+  apps = apps.sort();
+  apps.forEach((app) => console.log(app));
 }
 
 export function whoami(args: AccountArgs) {
@@ -349,8 +355,15 @@ export function whoami(args: AccountArgs) {
     .then((db) => console.log(db.User.me!.username), () => console.log('You are not logged in.'));
 }
 
-function getApps(db: EntityManager): Promise<string[]> {
-  return db.modules.get('apps').then((apps: ({ name: string })[]) => apps.map((app) => app.name));
+export async function getApps(db: EntityManager): Promise<string[]> {
+  let query = db.App.find()
+    .eq('status', 'running');
+
+  if (db.User.me?.username?.endsWith('@baqend.com')) {
+    query = query.eq('owner', db.User.me);
+  }
+
+  return (await query.resultList()).map((app: { name: string }) => app.name);
 }
 
 function getDefaultApp(db: EntityManager) {
@@ -362,12 +375,11 @@ function getDefaultApp(db: EntityManager) {
   });
 }
 
-function readInputCredentials(appInfo: AppInfo): Promise<UsernamePasswordCredentials> {
-  return helper.readInput(appInfo.isCustomHost ? 'Username: ' : 'E-Mail: ')
-    .then((username: string) => helper.readInput('Password: ', true).then((password) => {
-      console.log();
-      return { username, password };
-    }));
+async function readInputCredentials(appInfo: AppInfo): Promise<UsernamePasswordCredentials> {
+  return inquirer.prompt([
+    { name: 'username', type: 'input', message: appInfo.isCustomHost ? 'Username:' : 'E-Mail:' },
+    { name: 'password', type: 'password', message: 'Password:' },
+  ]);
 }
 
 function decrypt(input: string) {

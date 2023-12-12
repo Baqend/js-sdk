@@ -430,8 +430,11 @@ describe('Test metamodel classes', function () {
 describe('Test Metamodel', function () {
   var metamodel;
 
-  beforeEach(function () {
-    var emf = new DB.EntityManagerFactory({ host: env.TEST_SERVER, tokenStorage: helper.rootTokenStorage });
+  beforeEach(async function () {
+    var emf = new DB.EntityManagerFactory({
+      host: env.TEST_SERVER,
+      tokenStorage: await helper.rootTokenStorage,
+    });
     metamodel = emf.createMetamodel();
   });
 
@@ -475,13 +478,17 @@ describe('Test Metamodel', function () {
     }).throw('Metamodel is not initialized.');
   });
 
-  it('should allow modification when used by an EntityManager', function () {
-    var emf = new DB.EntityManagerFactory({ host: env.TEST_SERVER, tokenStorage: helper.rootTokenStorage });
+  it('should allow modification when used by an EntityManager', async function () {
+    var emf = new DB.EntityManagerFactory({
+      host: env.TEST_SERVER,
+      tokenStorage: await helper.rootTokenStorage,
+    });
     var em = emf.createEntityManager();
 
-    return emf.ready().then(function () {
-      return emf.metamodel.save();
-    });
+    return emf.ready()
+      .then(function () {
+        return emf.metamodel.save();
+      });
   });
 
   it('should update schema', function () {
@@ -598,8 +605,11 @@ describe('Test Metamodel', function () {
   describe('Testmodel', function () {
     var type, childType, embeddedType, metamodel;
 
-    before(function () {
-      var emf = new DB.EntityManagerFactory({ host: env.TEST_SERVER, tokenStorage: helper.rootTokenStorage });
+    before(async function () {
+      var emf = new DB.EntityManagerFactory({
+        host: env.TEST_SERVER,
+        tokenStorage: await helper.rootTokenStorage,
+      });
       metamodel = emf.metamodel;
       metamodel.init([]);
       metamodel.addType(type = new DB.metamodel.EntityType('jstest.Person', metamodel.entity(Object)));
@@ -753,51 +763,66 @@ describe('Test Metamodel', function () {
       });
     }
 
-    before(function () {
-      var staticEmf = new DB.EntityManagerFactory({ host: env.TEST_SERVER, tokenStorage: helper.rootTokenStorage });
+    before(async function () {
+      var staticEmf = new DB.EntityManagerFactory({
+        host: env.TEST_SERVER,
+        tokenStorage: await helper.rootTokenStorage,
+      });
 
       return Promise.all([
         createUser(staticEmf, helper.makeLogin()),
         createUser(staticEmf, helper.makeLogin()),
         createUser(staticEmf, helper.makeLogin()),
-      ]).then(function (users) {
-        user1 = users[0];
-        user2 = users[1];
-        user3 = users[2];
+      ])
+        .then(function (users) {
+          user1 = users[0];
+          user2 = users[1];
+          user3 = users[2];
 
-        var metamodel = staticEmf.createMetamodel();
-        metamodel.init([]);
+          var metamodel = staticEmf.createMetamodel();
+          metamodel.init([]);
 
-        var type, embeddedType;
-        metamodel.addType(type = new DB.metamodel.EntityType(SchemaAclPersonName, metamodel.entity(Object)));
-        metamodel.addType(embeddedType = new DB.metamodel.EmbeddableType(SchemaAclEmbeddedPersonName));
+          var type,
+            embeddedType;
+          metamodel.addType(type = new DB.metamodel.EntityType(SchemaAclPersonName, metamodel.entity(Object)));
+          metamodel.addType(embeddedType = new DB.metamodel.EmbeddableType(SchemaAclEmbeddedPersonName));
 
-        type.addAttribute(new DB.metamodel.SingularAttribute('name', metamodel.baseType(String)));
-        embeddedType.addAttribute(new DB.metamodel.SingularAttribute('name', metamodel.baseType(String)));
+          type.addAttribute(new DB.metamodel.SingularAttribute('name', metamodel.baseType(String)));
+          embeddedType.addAttribute(new DB.metamodel.SingularAttribute('name', metamodel.baseType(String)));
 
-        type.insertPermission.denyAccess(user2);
-        type.updatePermission.denyAccess(user2).denyAccess(user3);
-        type.deletePermission.denyAccess(user2).denyAccess(user3).allowAccess(user1);
-        type.queryPermission.allowAccess(user2);
-        type.schemaSubclassPermission.allowAccess(user1).allowAccess(user3);
-        type.schemaAddPermission.allowAccess(user1);
-        type.schemaReplacePermission.allowAccess(user1);
+          type.insertPermission.denyAccess(user2);
+          type.updatePermission.denyAccess(user2)
+            .denyAccess(user3);
+          type.deletePermission.denyAccess(user2)
+            .denyAccess(user3)
+            .allowAccess(user1);
+          type.queryPermission.allowAccess(user2);
+          type.schemaSubclassPermission.allowAccess(user1)
+            .allowAccess(user3);
+          type.schemaAddPermission.allowAccess(user1);
+          type.schemaReplacePermission.allowAccess(user1);
 
-        embeddedType.schemaAddPermission.allowAccess(user1);
-        embeddedType.schemaReplacePermission.allowAccess(user1);
+          embeddedType.schemaAddPermission.allowAccess(user1);
+          embeddedType.schemaReplacePermission.allowAccess(user1);
 
-        return metamodel.save();
-      }).then(function () {
-        emf = new DB.EntityManagerFactory({ host: env.TEST_SERVER, staleness: 0 });
-        // db and emf shares the same login credentials
-        db = emf.createEntityManager(true);
-        return db.ready().then(function () {
-          obj = new db[SchemaAclPersonName]();
-          return obj.insert();
+          return metamodel.save();
+        })
+        .then(function () {
+          emf = new DB.EntityManagerFactory({
+            host: env.TEST_SERVER,
+            staleness: 0,
+          });
+          // db and emf shares the same login credentials
+          db = emf.createEntityManager(true);
+          return db.ready()
+            .then(function () {
+              obj = new db[SchemaAclPersonName]();
+              return obj.insert();
+            });
+        })
+        .then(function () {
+          return db.User.logout();
         });
-      }).then(function () {
-        return db.User.logout();
-      });
     });
 
     it('should convert acls', function () {
@@ -840,42 +865,41 @@ describe('Test Metamodel', function () {
         });
       });
 
-      it('should deny schema add', function () {
-        return metamodel.load().then(function () {
-          return expect(metamodel.save()).be.rejected;
-        });
+      it('should deny schema add', async function () {
+        await metamodel.load();
+        try {
+          await metamodel.save();
+          expect.fail();
+        } catch {}
       });
 
-      it('should allow schema subclassing', function () {
-        return metamodel.load().then(function () {
-          var AclPerson = metamodel.entity(SchemaAclPersonName);
+      it('should allow schema subclassing', async function () {
+        await metamodel.load();
+        var AclPerson = metamodel.entity(SchemaAclPersonName);
 
-          var child = new DB.metamodel.EntityType(helper.randomize('SchemaAclChildPerson'), AclPerson);
-          child.schemaReplacePermission.allowAccess(db.User.me);
-          metamodel.addType(child);
+        var child = new DB.metamodel.EntityType(helper.randomize('SchemaAclChildPerson'), AclPerson);
+        child.schemaReplacePermission.allowAccess(db.User.me);
+        metamodel.addType(child);
 
-          return expect(metamodel.save(child)).be.fulfilled;
-        });
+        await metamodel.save(child);
       });
 
-      it('should allow object load', function () {
-        return expect(db[SchemaAclPersonName].load(obj.id)).be.fulfilled;
+      it('should allow object load', async function () {
+        expect(await db[SchemaAclPersonName].load(obj.id)).be.ok;
       });
 
-      it('should allow object creation', function () {
-        return expect(new db[SchemaAclPersonName]().insert()).be.fulfilled;
+      it('should allow object creation', async function () {
+        expect(await new db[SchemaAclPersonName]().insert()).be.ok;
       });
 
-      it('should allow object update', function () {
-        return new db[SchemaAclPersonName]().insert().then(function (obj) {
-          return expect(obj.save()).be.fulfilled;
-        });
+      it('should allow object update', async function () {
+        const o = await new db[SchemaAclPersonName]().insert();
+        expect(await o.save()).be.ok;
       });
 
-      it('should allow object removal', function () {
-        return new db[SchemaAclPersonName]().insert().then(function (obj) {
-          return expect(obj.delete()).be.fulfilled;
-        });
+      it('should allow object removal', async function () {
+        const o = await new db[SchemaAclPersonName]().insert();
+        expect(await o.delete()).be.ok;
       });
     });
 
@@ -900,44 +924,55 @@ describe('Test Metamodel', function () {
         });
       });
 
-      it('should deny schema add', function () {
-        return metamodel.load().then(function () {
-          return expect(metamodel.save()).be.rejected;
-        });
+      it('should deny schema add', async function () {
+        await metamodel.load();
+        try {
+          await metamodel.save();
+          expect.fail();
+        } catch {}
       });
 
-      it('should deny schema subclassing', function () {
-        return metamodel.load().then(function () {
-          var AclPerson = metamodel.entity(SchemaAclPersonName);
+      it('should deny schema subclassing', async function () {
+        await metamodel.load();
+        var AclPerson = metamodel.entity(SchemaAclPersonName);
 
-          var rnd = Math.floor(Math.random() * 1000000);
-          var child = new DB.metamodel.EntityType(`SchemaAclChildPerson${rnd}`, AclPerson);
-          child.schemaReplacePermission.allowAccess(db.User.me);
-          metamodel.addType(child);
+        var rnd = Math.floor(Math.random() * 1000000);
+        var child = new DB.metamodel.EntityType(`SchemaAclChildPerson${rnd}`, AclPerson);
+        child.schemaReplacePermission.allowAccess(db.User.me);
+        metamodel.addType(child);
 
-          return expect(metamodel.save(child)).be.rejected;
-        });
+        try {
+          await metamodel.save(child);
+          expect.fail();
+        } catch {}
       });
 
-      it('should allow object load', function () {
-        return expect(db[SchemaAclPersonName].load(obj.id)).be.fulfilled;
+      it('should allow object load', async function () {
+        expect(await db[SchemaAclPersonName].load(obj.id)).be.ok;
       });
 
-      it('should deny object creation', function () {
-        return expect(new db[SchemaAclPersonName]().insert()).be.rejected;
+      it('should deny object creation', async function () {
+        try {
+          await new db[SchemaAclPersonName]().insert();
+          expect.fail();
+        } catch {}
       });
 
-      it('should deny object update', function () {
-        return db[SchemaAclPersonName].load(obj.id).then(function (obj) {
-          obj.name = 'New Name';
-          return expect(obj.save()).be.rejected;
-        });
+      it('should deny object update', async function () {
+        const o = await db[SchemaAclPersonName].load(obj.id);
+        o.name = 'New Name';
+        try {
+          await o.save();
+          expect.fail();
+        } catch {}
       });
 
-      it('should deny object removal', function () {
-        return db[SchemaAclPersonName].load(obj.id).then(function (obj) {
-          return expect(obj.delete()).be.rejected;
-        });
+      it('should deny object removal', async function () {
+        const o = await db[SchemaAclPersonName].load(obj.id);
+        try {
+          await o.delete();
+          expect.fail();
+        } catch {}
       });
     });
 
@@ -962,54 +997,62 @@ describe('Test Metamodel', function () {
         });
       });
 
-      it('should deny schema add', function () {
-        return metamodel.load().then(function () {
-          var AclPerson = metamodel.entity(SchemaAclPersonName);
-          return expect(metamodel.save(AclPerson)).be.rejected;
-        });
+      it('should deny schema add', async function () {
+        await metamodel.load();
+        var AclPerson = metamodel.entity(SchemaAclPersonName);
+        try {
+          await metamodel.save(AclPerson);
+          expect.fail();
+        } catch {}
       });
 
-      it('should deny schema replace', function () {
-        return metamodel.load().then(function () {
-          var AclPerson = metamodel.entity(SchemaAclPersonName);
-          var json = AclPerson.toJSON();
-          json.operation = 'replaceClass';
-          return expect(metamodel.update(json)).be.rejected;
-        });
+      it('should deny schema replace', async function () {
+        await metamodel.load();
+        var AclPerson = metamodel.entity(SchemaAclPersonName);
+        var json = AclPerson.toJSON();
+        json.operation = 'replaceClass';
+        try {
+          await metamodel.update(json);
+          expect.fail();
+        } catch {}
       });
 
-      it('should allow schema subclassing', function () {
-        return metamodel.load().then(function () {
-          var AclPerson = metamodel.entity(SchemaAclPersonName);
+      it('should allow schema subclassing', async function () {
+        await metamodel.load();
+        var AclPerson = metamodel.entity(SchemaAclPersonName);
 
-          var rnd = Math.floor(Math.random() * 1000000);
-          var child = new DB.metamodel.EntityType(`SchemaAclChildPerson${rnd}`, AclPerson);
-          child.schemaReplacePermission.allowAccess(db.User.me);
-          metamodel.addType(child);
+        var rnd = Math.floor(Math.random() * 1000000);
+        var child = new DB.metamodel.EntityType(`SchemaAclChildPerson${rnd}`, AclPerson);
+        child.schemaReplacePermission.allowAccess(db.User.me);
+        metamodel.addType(child);
 
-          return expect(metamodel.save(child)).be.fulfilled;
-        });
+        expect(await metamodel.save(child)).be.ok;
       });
 
-      it('should allow object load', function () {
-        return expect(db[SchemaAclPersonName].load(obj.id)).be.fulfilled;
+      it('should allow object load', async function () {
+        expect(await db[SchemaAclPersonName].load(obj.id)).be.ok;
       });
 
-      it('should allow object creation', function () {
-        return expect(new db[SchemaAclPersonName]().insert()).be.fulfilled;
+      it('should allow object creation', async function () {
+        expect(await new db[SchemaAclPersonName]().insert()).be.ok;
       });
 
-      it('should deny object update', function () {
-        return db[SchemaAclPersonName].load(obj.id).then(function (obj) {
-          obj.name = 'New Name';
-          return expect(obj.save()).be.rejected;
-        });
+      it('should deny object update', async function () {
+        const o = await db[SchemaAclPersonName].load(obj.id);
+        o.name = 'New Name';
+
+        try {
+          await o.save();
+          expect.fail();
+        } catch {}
       });
 
-      it('should deny object removal', function () {
-        return db[SchemaAclPersonName].load(obj.id).then(function (obj) {
-          return expect(obj.delete()).be.rejected;
-        });
+      it('should deny object removal', async function () {
+        const o = await db[SchemaAclPersonName].load(obj.id);
+        try {
+          await o.delete();
+          expect.fail();
+        } catch {}
       });
     });
   });

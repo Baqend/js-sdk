@@ -117,6 +117,18 @@ export const Connect = Message.create<Connect>({
   status: [200],
 });
 
+interface ConnectViaPost {
+  /**
+   * Connects a browser to this server via a post request
+   */
+  new(): Message;
+}
+export const ConnectViaPost = Message.create<ConnectViaPost>({
+  method: 'POST',
+  path: '/connect',
+  status: [200],
+});
+
 interface Status {
   /**
    * Gets the status of the server health
@@ -820,18 +832,17 @@ interface OAuth2 {
    * This resource is should be invoked by the provider with a redirect after the user granted permission.
    *
    * @param provider The OAuth provider
-   * @param device_code The device_code wich was received from the device OAuth request
    * @param state Additional form encoded state. Can contain an optional redirect (url) that will be called after login with the user token attached as query parameter.
-   * @param code The code wich was received from the normal OAuth flow
+   * @param code The code written by the provider
    * @param oauth_verifier OAuth 1.0 code
    * @param oauth_token OAuth 1.0 identifier
    * @param error_description The error description of the oauth provider
    */
-  new(provider: string, device_code?: string, state?: string, code?: string, oauth_verifier?: string, oauth_token?: string, error_description?: string): Message;
+  new(provider: string, state?: string, code?: string, oauth_verifier?: string, oauth_token?: string, error_description?: string): Message;
 }
 export const OAuth2 = Message.create<OAuth2>({
   method: 'GET',
-  path: '/db/User/OAuth/:provider?device_code=&state=&code=&oauth_verifier=&oauth_token=&error_description=',
+  path: '/db/User/OAuth/:provider?state=&code=&oauth_verifier=&oauth_token=&error_description=',
   status: [200],
 });
 
@@ -849,6 +860,19 @@ export const OAuth1 = Message.create<OAuth1>({
   method: 'GET',
   path: '/db/User/OAuth1/:provider',
   status: [200],
+});
+
+interface DeletePassword {
+  /**
+   * Deletes the password of the currently logged in user
+   * Method to delete the password of the currently logged in user
+   */
+  new(): Message;
+}
+export const DeletePassword = Message.create<DeletePassword>({
+  method: 'DELETE',
+  path: '/db/User/password',
+  status: [204],
 });
 
 interface UserToken {
@@ -879,6 +903,22 @@ export const RevokeUserToken = Message.create<RevokeUserToken>({
   method: 'DELETE',
   path: '/db/User/:oid/token',
   status: [204],
+});
+
+interface AssumeRole {
+  /**
+   * Assumes a role
+   * Assumes a role if it is permitted to the requesting user and returns a new token wich represents
+   * the assumed role
+   *
+   * @param oid The unique role identifier
+   */
+  new(oid: string): Message;
+}
+export const AssumeRole = Message.create<AssumeRole>({
+  method: 'POST',
+  path: '/db/Role/:oid/assume',
+  status: [200],
 });
 
 interface GetBaqendCode {
@@ -1219,6 +1259,22 @@ export const RevalidateAssets = Message.create<RevalidateAssets>({
   status: [202],
 });
 
+interface EditRevalidationJob {
+  /**
+   * Changes the status
+   * Change the status of the given revalidation job
+   *
+   * @param id The status id
+   * @param body The massage Content
+   */
+  new(id: string, body?: json): Message;
+}
+export const EditRevalidationJob = Message.create<EditRevalidationJob>({
+  method: 'POST',
+  path: '/asset/revalidate/:id',
+  status: [204],
+});
+
 interface GetRevalidationStatus {
   /**
    * Gets the status
@@ -1435,50 +1491,180 @@ export const UploadAPNSCertificate = Message.create<UploadAPNSCertificate>({
   status: [204],
 });
 
-interface Install {
+interface ConfigAPI {
   /**
-   * Provides the speed kit installation script
-   * Provides the speed kit installation script
+   * Installation Project
+   * ##GetInstallationByDomainAndConfigVersion : Returns the complete Installation Object as it would do via the CRUD API
    *
-   * @param x ignored - Workaround to allow regex in path. TODO: Allow regex for all path in restful-jetty
-   * @param d The domain to get the corresponding config
+   * @param domain domain to be searched
+   * @param configVersion configVersion to be searched
    */
-  new(x: string, d?: string): Message;
+  new(domain: string, configVersion: string): Message;
 }
-export const Install = Message.create<Install>({
+export const ConfigAPI = Message.create<ConfigAPI>({
   method: 'GET',
-  path: '/speedkit?d=',
+  path: '/speedkit/installation/:domain/:configVersion',
   status: [200],
 });
 
-interface SW {
+interface GetInstallationById {
   /**
-   * Provides the service worker script
-   * Provides the service worker script
+   * Returns the complete Installation Object which had the given Id as it would do via the CRUD API
    *
-   * @param x ignored - Workaround to allow regex in path. TODO: Allow regex for all path in restful-jetty
-   * @param r String The ID of the Speed Kit install object
-   * @param v The version of a released Speed Kit version
+   * @param id id to be searched
    */
-  new(x: string, r?: string, v?: string): Message;
+  new(id: string): Message;
 }
-export const SW = Message.create<SW>({
+export const GetInstallationById = Message.create<GetInstallationById>({
   method: 'GET',
-  path: '/speedkit?r=&v=',
+  path: '/speedkit/installation/:id',
   status: [200],
 });
 
-interface Beacon {
+interface CreateNewInstallation {
   /**
-   * Insert RUM Beacon
-   * Inserts a RUM Beacon in JSON format.
+   * Creates Installation object properties and returns the updated version
+   *
+   * @param domain domain to be used to create new installation
+   * @param body The massage Content
+   */
+  new(domain: string, body?: json): Message;
+}
+export const CreateNewInstallation = Message.create<CreateNewInstallation>({
+  method: 'POST',
+  path: '/speedkit/installation/:domain',
+  status: [200],
+});
+
+interface UpdateInstallationByDomainAndConfigVersion {
+  /**
+   * Updates an existing installtion version
+   *
+   * @param domain domain to be searched
+   * @param configVersion configVersion to be searched
+   * @param body The massage Content
+   */
+  new(domain: string, configVersion: string, body?: json): Message;
+}
+export const UpdateInstallationByDomainAndConfigVersion = Message.create<UpdateInstallationByDomainAndConfigVersion>({
+  method: 'PUT',
+  path: '/speedkit/installation/:domain/:configVersion',
+  status: [200],
+});
+
+interface UpdateInstallationById {
+  /**
+   * Updates an existing installtion version
+   *
+   * @param id id to be searched
+   * @param body The massage Content
+   */
+  new(id: string, body?: json): Message;
+}
+export const UpdateInstallationById = Message.create<UpdateInstallationById>({
+  method: 'PUT',
+  path: '/speedkit/installation/:id',
+  status: [200],
+});
+
+interface CloneInstallationByDomainAndConfigVersion {
+  /**
+   * Clone existing installation, update it and return the cloned version with the updated properties
+   *
+   * @param domain domain
+   * @param configVersion configVersion the configuration version
+   */
+  new(domain: string, configVersion: string): Message;
+}
+export const CloneInstallationByDomainAndConfigVersion = Message.create<CloneInstallationByDomainAndConfigVersion>({
+  method: 'POST',
+  path: '/speedkit/installation/:domain/:configVersion/clone',
+  status: [200],
+});
+
+interface CloneInstallationById {
+  /**
+   * Clone existing installation, update it and return the cloned version with the updated properties
+   *
+   * @param id id to be searched
+   */
+  new(id: string): Message;
+}
+export const CloneInstallationById = Message.create<CloneInstallationById>({
+  method: 'POST',
+  path: '/speedkit/installation/:id/clone',
+  status: [200],
+});
+
+interface ActivateInstallationByDomainAndConfigVersion {
+  /**
+   * Activate a selected speedKit install configuration version by selecting the current active version of the same domain
+   *
+   * @param domain domain to be activated
+   * @param configVersion configVersion to be activated (current active version of the same domain)
+   */
+  new(domain: string, configVersion: string): Message;
+}
+export const ActivateInstallationByDomainAndConfigVersion = Message.create<ActivateInstallationByDomainAndConfigVersion>({
+  method: 'POST',
+  path: '/speedkit/installation/:domain/:configVersion/activate',
+  status: [200],
+});
+
+interface ActivateInstallationById {
+  /**
+   * Activate a selected speedKit install configuration version by selecting the current active version of the same domain
+   *
+   * @param id Id of a Speed Kit Installation to be activated
+   */
+  new(id: string): Message;
+}
+export const ActivateInstallationById = Message.create<ActivateInstallationById>({
+  method: 'POST',
+  path: '/speedkit/installation/:id/activate',
+  status: [200],
+});
+
+interface FindSpecificInstallation {
+  /**
+   * Search for a specific installation
+   *
+   * @param domain domain to be used to filter
+   * @param status status to be used to filter
+   * @param start start the amount of configs to skip
+   * @param count count the amount of configs to return
+   */
+  new(domain?: string, status?: string, start?: number, count?: number): Message;
+}
+export const FindSpecificInstallation = Message.create<FindSpecificInstallation>({
+  method: 'GET',
+  path: '/speedkit/installation?domain=&status=&start=0&count=-1',
+  status: [200],
+});
+
+interface GetAllDomains {
+  /**
+   * Queries the Database for all configured domains
+   */
+  new(): Message;
+}
+export const GetAllDomains = Message.create<GetAllDomains>({
+  method: 'GET',
+  path: '/speedkit/installation/domain',
+  status: [200],
+});
+
+interface Mail {
+  /**
+   * Endpoint to send e-mails
+   * Send an e-mail with the data given from the object
    *
    * @param body The massage Content
    */
   new(body?: json): Message;
 }
-export const Beacon = Message.create<Beacon>({
+export const Mail = Message.create<Mail>({
   method: 'POST',
-  path: '/rum/pi',
+  path: '/mail',
   status: [200],
 });

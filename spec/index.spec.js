@@ -1,5 +1,3 @@
-'use strict';
-
 if (typeof module !== 'undefined') {
   require('./node');
 }
@@ -11,17 +9,25 @@ describe('Test Index', function () {
 
   var db, personType, meta;
 
-  before(function () {
-    var emf = new DB.EntityManagerFactory({ host: env.TEST_SERVER, schema: [], tokenStorage: helper.rootTokenStorage });
+  before(async function () {
+    var emf = new DB.EntityManagerFactory({
+      host: env.TEST_SERVER,
+      schema: [],
+      tokenStorage: await helper.rootTokenStorage,
+    });
     meta = emf.metamodel;
 
     meta.addType(personType = new DB.metamodel.EntityType(helper.randomize('IndexPerson'), meta.entity(Object)));
     personType.addAttribute(new DB.metamodel.SingularAttribute('name', meta.baseType(String)));
 
-    return meta.save().then(function () {
-      db = new DB.EntityManagerFactory({ host: env.TEST_SERVER, staleness: 0 }).createEntityManager();
-      return db.ready();
-    });
+    return meta.save()
+      .then(function () {
+        db = new DB.EntityManagerFactory({
+          host: env.TEST_SERVER,
+          staleness: 0,
+        }).createEntityManager();
+        return db.ready();
+      });
   });
 
   afterEach(function () {
@@ -81,8 +87,9 @@ describe('Test Index', function () {
       .then(function () {
         return helper.sleep(sleepTime);
       })
-      .then(function () {
-        return expect(meta.getIndexes(personType.name)).eventually.have.length(1);
+      .then(async function () {
+        const index = await meta.getIndexes(personType.name);
+        expect(index).have.length(1);
       });
   });
 
@@ -96,8 +103,8 @@ describe('Test Index', function () {
     }).then(function () {
       return helper.sleep(sleepTime);
     })
-      .then(function () {
-        return expect(meta.getIndexes(personType.name)).eventually.have.length(1);
+      .then(async function () {
+        expect(await meta.getIndexes(personType.name)).have.length(1);
       });
   });
 
@@ -141,15 +148,18 @@ describe('Test Index', function () {
     });
   });
 
-  it('should not allowed to create an unsupported index', function () {
+  it('should not allowed to create an unsupported index', async function () {
     var index = new DB.metamodel.DbIndex([
       { name: 'text' },
     ]);
 
-    return expect(meta.createIndex(personType.name, index)).be.rejected;
+    try {
+      await meta.createIndex(personType.name, index);
+      expect.fail();
+    } catch {}
   });
 
-  it('should not allowed to use illegal arguments', function () {
+  it('should not allowed to use illegal arguments', async function () {
     var index = new DB.metamodel.DbIndex([
       {
         name: DB.metamodel.DbIndex.DESC,
@@ -157,23 +167,35 @@ describe('Test Index', function () {
       },
     ]);
 
-    return expect(meta.createIndex(personType.name, index)).be.rejected.then(function () {
-      index = new DB.metamodel.DbIndex([]);
-      expect(index.hasKey('test')).be.false;
-      return expect(meta.createIndex(personType.name, index)).be.rejected;
-    });
+    try {
+      await meta.createIndex(personType.name, index);
+      expect.fail();
+    } catch {}
+
+    index = new DB.metamodel.DbIndex([]);
+    expect(index.hasKey('test')).be.false;
+
+    try {
+      await meta.createIndex(personType.name, index);
+      expect.fail();
+    } catch {}
   });
 
-  it('should create unique index', function () {
+  it('should create unique index', async function () {
     var index = new DB.metamodel.DbIndex('name', true);
-    return meta.createIndex(personType.name, index).then(function () {
-      return helper.sleep(sleepTime);
-    }).then(function () {
-      var person1 = new db[personType.name]();
-      var person2 = new db[personType.name]();
-      person1.name = 'foobar';
-      person2.name = 'foobar';
-      return expect(Promise.all([person1.insert(), person2.insert()])).be.rejected;
-    });
+    await meta.createIndex(personType.name, index);
+    await helper.sleep(sleepTime);
+
+    var person1 = new db[personType.name]();
+    person1.name = 'foobar';
+    await person1.insert();
+
+    var person2 = new db[personType.name]();
+    person2.name = 'foobar';
+
+    try {
+      await person2.insert();
+      expect.fail();
+    } catch {}
   });
 });

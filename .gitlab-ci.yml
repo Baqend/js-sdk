@@ -1,0 +1,155 @@
+workflow:
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+    - if: $CI_COMMIT_BRANCH && $CI_OPEN_MERGE_REQUESTS
+      when: never
+    # run pipeline only on MRs and main branches
+    - if: $CI_COMMIT_REF_PROTECTED
+
+default:
+  tags:
+    - glexecutor-docker
+  image: public.ecr.aws/docker/library/node:18
+  cache: # Cache modules in between jobs, update also the build-job job!
+    key: $CI_COMMIT_REF_SLUG
+    paths:
+      - .npm/
+      - node_modules/
+    policy: pull
+  retry:
+    max: 2
+    when:
+      - runner_system_failure
+
+variables:
+  FF_NETWORK_PER_BUILD: "true"
+  CI_DEBUG_SERVICES: "true"
+  ORESTES_BRANCH: "master"
+  NODE_BRANCH: "master"
+
+stages:
+  - build
+  - validate
+  - test
+  - release
+
+build-job:
+  stage: build
+  cache: # Cache modules in between jobs, update als the default job!
+    key: $CI_COMMIT_REF_SLUG
+    paths:
+      - .npm/
+      - node_modules/
+    policy: pull-push
+  script:
+    - npm ci --cache .npm --prefer-offline
+    - npm install --silent websocket
+    - npm run dist
+  artifacts:
+    paths:
+      - dist
+      - commonjs
+    expire_in: 30 mins
+
+lint-job:
+  stage: validate
+  script:
+    # prepare linting for the cli
+    - npm link .
+    - npm run lint
+  allow_failure: true
+
+commitlint:
+  image: public.ecr.aws/docker/library/node:18
+  cache: []
+  stage: validate
+  before_script:
+    - npm install -g @commitlint/{config-conventional,cli}
+  script:
+    - commitlint --from="$CI_MERGE_REQUEST_DIFF_BASE_SHA" --verbose
+  rules:
+    - if: $CI_MERGE_REQUEST_IID != null
+
+node-test-job:
+  image: public.ecr.aws/docker/library/node:$NODE_VERSION
+  stage: test
+  dependencies:
+    - build-job
+  variables:
+    TEST_SERVER: "https://local.baqend.com:8443/v1"
+  parallel:
+    matrix:
+      - NODE_VERSION: [ 16, 18, 20 ]
+  services:
+    - name: public.ecr.aws/docker/library/mongo:4
+      alias: mongo
+    - public.ecr.aws/docker/library/redis:5.0
+    - name: "${CI_REGISTRY}/team-backend/orestes/orestes-node:${NODE_BRANCH}"
+      alias: node
+      command: [ "tcp://local.baqend.com:8081", "http://local.baqend.com:8080/v1", "debug" ]
+      pull_policy: [always, if-not-present]
+    - name: "${CI_REGISTRY}/team-backend/orestes/orestes-server:${ORESTES_BRANCH}"
+      alias: local.baqend.com
+      command: [ "--config", "conf/config.json", "--with-mongo", "--with-gridfs", "--with-sns" ]
+      pull_policy: [always, if-not-present]
+  script:
+    - npm run test:node
+  artifacts:
+    when: always
+    reports:
+      junit:
+        - ./node-result.xml
+
+
+web-test-job:
+  image: mcr.microsoft.com/playwright:v1.38.0-jammy
+  stage: test
+  dependencies:
+    - build-job
+  variables:
+    TEST_SERVER: "https://local.baqend.com:8443/v1"
+    # DEBUG: pw:api
+  parallel:
+    matrix:
+      - BROWSER: [ Chromium, Firefox, Webkit ]
+  services:
+    - name: public.ecr.aws/docker/library/mongo:4
+      alias: mongo
+    - public.ecr.aws/docker/library/redis:5.0
+    - name: "${CI_REGISTRY}/team-backend/orestes/orestes-node:${NODE_BRANCH}"
+      alias: node
+      command: [ "tcp://local.baqend.com:8081", "http://local.baqend.com:8080/v1", "debug" ]
+      pull_policy: [always, if-not-present]
+    - name: "${CI_REGISTRY}/team-backend/orestes/orestes-server:${ORESTES_BRANCH}"
+      alias: local.baqend.com
+      # we need to disabled http2, otherwise the query spec "should allow large query" and the code spec "should accept blob parameter" are failing in webkit
+      command: [ "--config", "conf/config.json", "--with-mongo", "--with-gridfs", "--with-sns", "--debug", "--http2=false" ]
+      pull_policy: [always, if-not-present]
+  script:
+    - npm run test:playwright -- --debug
+  artifacts:
+    when: always
+    reports:
+      junit:
+        - ./playwright-result.xml
+
+release:
+  image: public.ecr.aws/docker/library/node:18
+  stage: release
+  cache: []
+  variables:
+    GIT_AUTHOR_NAME: ci@baqend.com
+    GIT_AUTHOR_EMAIL: Baqend CI
+    GIT_COMMITTER_EMAIL: ci@baqend.com
+    GIT_COMMITTER_NAME: Baqend CI
+  before_script:
+    - apt-get update
+    - apt-get install -y awscli
+    - npm install -g semantic-release @semantic-release/{gitlab,changelog,git,exec}
+    - npm ci
+    - npm install --silent websocket
+  script:
+    - semantic-release --repository-url "${CI_PROJECT_URL}.git"
+  rules:
+    - if: $CI_COMMIT_BRANCH == "main"
+    - if: $CI_COMMIT_BRANCH == "prerelease"

@@ -88,6 +88,10 @@ export class NodeConnector extends Connector {
 
     if (type === 'stream') {
       entity.pipe(req);
+    } else if (type === 'blob') {
+      entity.arrayBuffer()
+        .then((buffer: Buffer) => req.end(Buffer.from(buffer)))
+        .catch((e: Error) => req.destroy(e))
     } else if (type === 'buffer') {
       req.end(entity);
     } else if (type) {
@@ -167,6 +171,12 @@ export class NodeConnector extends Connector {
           break;
         case 'text':
           break;
+        case 'blob':
+          if (typeof Blob !== 'undefined') {
+            mimeType = mimeType || entity.type;
+            break;
+          }
+          // fall through
         default:
           throw new Error(`The request type ${type} is not supported`);
       }
@@ -193,6 +203,11 @@ export class NodeConnector extends Connector {
       }
       case 'arraybuffer':
         return entity.buffer.slice(entity.byteOffset, entity.byteOffset + entity.byteLength);
+      case 'blob':
+        if (typeof Blob !== 'undefined') {
+          return new Blob([entity.buffer], { type: response.headers['content-type'] });
+        }
+        // fall through
       default:
         return entity;
     }

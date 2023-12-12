@@ -1,5 +1,3 @@
-'use strict';
-
 if (typeof module !== 'undefined') {
   require('./node');
 }
@@ -44,8 +42,8 @@ describe('Test logging', function () {
     var msg = helper.randomize('my string');
     db.log('test message %s', msg);
 
-    return findLogByMessage('test message ' + msg).then(function (entry) {
-      expect(entry.message).equal('test message ' + msg);
+    return findLogByMessage(`test message ${msg}`).then(function (entry) {
+      expect(entry.message).equal(`test message ${msg}`);
     });
   });
 
@@ -53,8 +51,8 @@ describe('Test logging', function () {
     var str = helper.randomize('my string');
     db.log('test message %d and %s', 5, str);
 
-    return findLogByMessage('test message 5 and ' + str).then(function (entry) {
-      expect(entry.message).equal('test message 5 and ' + str);
+    return findLogByMessage(`test message 5 and ${str}`).then(function (entry) {
+      expect(entry.message).equal(`test message 5 and ${str}`);
     });
   });
 
@@ -62,7 +60,7 @@ describe('Test logging', function () {
     var json = { str: helper.randomize('my string ') };
     db.log('test message %j', json);
 
-    var msg = 'test message {"str":"' + json.str + '"}';
+    var msg = `test message {"str":"${json.str}"}`;
     return findLogByMessage(msg).then(function (entry) {
       expect(entry.message).equal(msg);
     });
@@ -184,9 +182,10 @@ describe('Test logging', function () {
     var msg = helper.randomize('my string ');
     db.log('warn', msg);
 
-    return expect(helper.sleep(sleepTime).then(function () {
-      return db['logs.AppLog'].find().equal('message', msg).singleResult();
-    })).rejectedWith(Error);
+    expect(async function () {
+      await helper.sleep(sleepTime);
+      await db['logs.AppLog'].find().equal('message', msg).singleResult();
+    }).to.throw;
   });
 
   it('should queue logs while connecting', function () {
@@ -217,12 +216,11 @@ describe('Test logging', function () {
     var msg = helper.randomize('my string');
     db.log('test message %s', msg, 'test1', 2, true);
 
-    return findLogByMessage('test message ' + msg + ', test1, 2').then(function (entry) {
-      expect(entry.message).equal('test message ' + msg + ', test1, 2');
+    return findLogByMessage(`test message ${msg}, test1, 2`).then(function (entry) {
+      expect(entry.message).equal(`test message ${msg}, test1, 2`);
       expect(entry.data).eql({ data: true });
     });
   });
-
 
   function findLogByMessage(msg) {
     return helper.sleep(sleepTime).then(function () {

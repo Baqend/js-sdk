@@ -6,41 +6,50 @@ describe('Test Push Notifications', function () {
   var emf, db, lock;
 
   var TEST_GCM_DEVICE = 'APA91bFBRJGMI2OkQxhV3peP4ncZOIxGJBJ8s0tkKyWvzQErpZmuSzMzm6ugz3rOauMQ1CRui0bBsEQvuN0W8X1wTP547C6MSNcErnNYXyvc1F5eKZCs-GAtE_NcESolea2AM6_cRe9R';
-  var TEST_GCM_APIKEY = 'AAAAGvyekVM:APA91bHPRl-MulY1xAoH2LlGpvvUezPc_unKxfooN7G6rAVyKRINhoriPKrHUd5g5fdSyL3xl3B4NteDFMYXe589-UOtx0TXudwWjtG3eNUEhNXdsftC6BmLJEzxiiywSUzsa8Stogw8';
+  var TEST_GCM_APIKEY = 'AAAAiHTmunA:APA91bF91CeP1L9QjhrxI2VTQpcf2L39CZY1zBragj4KwUiuXgZYfu4IKtT_S5he1sIHINkunGWpQEo1bsHLbWdTrKUW2Op7ykUBn9JCMKjYrgjUxwPbRyFudxd-ouz3TuYynKQa8xX0';
 
-  before(function () {
+  before(async function () {
     this.timeout(40000);
 
     var retires = 0;
-    emf = new DB.EntityManagerFactory({ host: env.TEST_SERVER, tokenStorage: helper.rootTokenStorage, staleness: 0 });
-    return emf.ready().then(function () {
-      if (!emf.metamodel.entity('Lock')) {
-        var Lock = new DB.metamodel.EntityType('Lock', emf.metamodel.entity(Object));
-        emf.metamodel.addType(Lock);
-        return emf.metamodel.save(Lock);
-      }
-    }).then(function () {
-      db = emf.createEntityManager();
-      lock = new db.Lock({ id: 'push' });
-      return createLock();
-    }).then(function () {
-      var msg = new DB.message.GCMAKey();
-      msg.entity(TEST_GCM_APIKEY, 'text');
-      return emf.send(msg);
-    })
-      .then(function () {
-        return db.Device.loadWebPushKey().catch(function () {
-          var msg = new DB.message.VAPIDKeys();
-          return emf.send(msg);
-        });
-      });
+    emf = new DB.EntityManagerFactory({
+      host: env.TEST_SERVER,
+      tokenStorage: await helper.rootTokenStorage,
+      staleness: 0,
+    });
+
+    await emf.ready();
+
+    if (!emf.metamodel.entity('Lock')) {
+      var Lock = new DB.metamodel.EntityType('Lock', emf.metamodel.entity(Object));
+      emf.metamodel.addType(Lock);
+      await emf.metamodel.save(Lock);
+    }
+
+    db = emf.createEntityManager();
+    lock = new db.Lock({ id: 'push' });
+    await createLock();
+
+    var msg = new DB.message.GCMAKey();
+    msg.entity(TEST_GCM_APIKEY, 'text');
+    await emf.send(msg);
+
+    try {
+      await db.Device.loadWebPushKey();
+    } catch {
+      await emf.send(new DB.message.VAPIDKeys());
+    }
 
     function createLock() {
-      return lock.insert().catch(function (e) {
-        retires += 1;
-        if (retires > 60) { throw e; }
-        return helper.sleep(500).then(createLock);
-      });
+      return lock.insert()
+        .catch(function (e) {
+          retires += 1;
+          if (retires > 60) {
+            throw e;
+          }
+          return helper.sleep(500)
+            .then(createLock);
+        });
     }
   });
 
@@ -58,6 +67,12 @@ describe('Test Push Notifications', function () {
   });
 
   it('should save registration in cookie', function () {
+    if (helper.isWebKit) {
+      // TODO: we are currently using 3rd party cookies to store the device registration state
+      // TODO: which is not supported by Webkit anymore
+      return this.skip();
+    }
+
     var deviceId;
     return db.Device.register('Android', TEST_GCM_DEVICE).then(function (device) {
       deviceId = device.id;
@@ -104,29 +119,40 @@ describe('Test Push Notifications', function () {
       });
   });
 
-  it('should not be allowed to insert device', function () {
+  it('should not be allowed to insert device', async function () {
     var device = new db.Device();
-    return expect(device.save()).to.rejected;
+    try {
+      await device.save();
+      expect.fail();
+    } catch (e) {
+      expect(e.message).include('are not allowed');
+    }
   });
 
-  it('should remove cookie if device cannot be found', function () {
-    return db.Device.register('Android', TEST_GCM_DEVICE).then(function () {
-      return new DB.EntityManagerFactory({ host: env.TEST_SERVER, staleness: 0 }).createEntityManager(true).ready();
-    }).then(function (newDB) {
-      expect(newDB.isDeviceRegistered).be.true;
-      expect(newDB.Device.isRegistered).be.true;
-      expect(newDB.Device.me).be.ok;
+  it('should remove cookie if device cannot be found', async function () {
+    if (helper.isWebKit) {
+      // TODO: we are currently using 3rd party cookies to store the device registration state
+      // TODO: which is not supported by Webkit anymore
+      return this.skip();
+    }
 
-      return newDB.Device.me.delete({ force: true });
-    }).then(function () {
-      DB.connector.Connector.connections = {};
-      return new DB.EntityManagerFactory({ host: env.TEST_SERVER, staleness: 0 }).createEntityManager(true).ready();
-    })
-      .then(function (newDB) {
-        expect(newDB.isDeviceRegistered).be.false;
-        expect(newDB.Device.isRegistered).be.false;
-        expect(newDB.Device.me).be.null;
-      });
+    await db.Device.register('Android', TEST_GCM_DEVICE);
+    const newDB= await new DB.EntityManagerFactory({ host: env.TEST_SERVER, staleness: 0 })
+      .createEntityManager(true)
+      .ready();
+    expect(newDB.isDeviceRegistered).be.true;
+    expect(newDB.Device.isRegistered).be.true;
+    expect(newDB.Device.me).be.ok;
+
+    await newDB.Device.me.delete({ force: true });
+    DB.connector.Connector.connections = {};
+    const newDB2 = await new DB.EntityManagerFactory({ host: env.TEST_SERVER, staleness: 0 })
+      .createEntityManager(true)
+      .ready();
+
+    expect(newDB2.isDeviceRegistered).be.false;
+    expect(newDB2.Device.isRegistered).be.false;
+    expect(newDB2.Device.me).be.null;
   });
 
   if (typeof ArrayBuffer === 'undefined') {

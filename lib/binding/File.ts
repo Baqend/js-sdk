@@ -3,7 +3,7 @@ import { PersistentError } from '../error';
 import { Acl } from '../Acl';
 import {
   uuid, trailingSlashIt,
-  Json, JsonArray, JsonMap,
+  Json, JsonArray, JsonMap, isNode,
 } from '../util';
 import * as message from '../message';
 import {
@@ -148,7 +148,7 @@ export class File {
 
   private [ID]: string;
 
-  private [METADATA]: FileMetadata;
+  private [METADATA]: FileMetadata | null = null;
 
   private [DATA]: FileData | null = null;
 
@@ -179,7 +179,7 @@ export class File {
       throw new Error('A folder has no mimeType');
     }
     this.checkAvailable();
-    return this[METADATA].mimeType;
+    return this[METADATA]!.mimeType;
   }
 
   /**
@@ -187,7 +187,7 @@ export class File {
    */
   get acl(): Acl | undefined {
     this.checkAvailable();
-    return this[METADATA].acl;
+    return this[METADATA]!.acl;
   }
 
   /**
@@ -199,7 +199,7 @@ export class File {
       throw new Error('A folder has no lastModified');
     }
     this.checkAvailable();
-    return this[METADATA].lastModified as Date;
+    return this[METADATA]!.lastModified as Date;
   }
 
   /**
@@ -211,7 +211,7 @@ export class File {
       throw new Error('A folder has no creation date');
     }
     this.checkAvailable();
-    return this[METADATA].createdAt as Date;
+    return this[METADATA]!.createdAt as Date;
   }
 
   /**
@@ -222,7 +222,7 @@ export class File {
       throw new Error('A folder has no eTag');
     }
     this.checkAvailable();
-    return this[METADATA].eTag;
+    return this[METADATA]!.eTag;
   }
 
   /**
@@ -235,7 +235,7 @@ export class File {
     }
 
     this.checkAvailable();
-    return this[METADATA].headers!!;
+    return this[METADATA]!.headers!;
   }
 
   /**
@@ -246,7 +246,7 @@ export class File {
       throw new Error('A folder has no size');
     }
     this.checkAvailable();
-    return this[METADATA].size;
+    return this[METADATA]!.size;
   }
 
   /**
@@ -403,7 +403,7 @@ export class File {
       throw new Error('A folder cannot be downloaded');
     }
 
-    const type = opt.type || 'blob';
+    const type = opt.type || (isNode ? 'buffer' : 'blob');
 
     const downloadMessage = new message.DownloadFile(this.bucket, this.key)
       .responseType(type);
@@ -657,7 +657,7 @@ export class File {
    */
   toJSON(): JsonMap {
     this.checkAvailable();
-    const meta = this[METADATA];
+    const meta = this[METADATA] ?? {};
 
     return {
       id: this.id,

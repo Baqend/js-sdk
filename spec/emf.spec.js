@@ -1,5 +1,3 @@
-'use strict';
-
 if (typeof module !== 'undefined') {
   require('./node');
 }
@@ -32,11 +30,16 @@ describe('Test EntityManagerFactory', function () {
   });
 
   it('should reject connect to invalid destination', function () {
-    this.timeout(30000);
+    if (helper.isFirefox) {
+      // FF can't connect to unresolvable destinations in playwright container
+      return this.skip();
+    }
+
+    this.timeout(40000);
 
     expect(emf.isReady).be.false;
 
-    var connectPromise = emf.connect('http://example.test/');
+    var connectPromise = emf.connect('http://example.local/');
     var em = emf.createEntityManager();
 
     return Promise.all([

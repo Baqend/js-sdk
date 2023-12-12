@@ -8,7 +8,9 @@
 /spec-ts/*.js
 /lib/*.js
 /cli/*.js
+/certs
 .DS_Store
 *.iml
+*result.xml
 
 .watchmanconfig
