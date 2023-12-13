@@ -1,0 +1,1 @@
+export type Base64<ImageType extends string> = `data:image/${ImageType};base64${string}`;

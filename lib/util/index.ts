@@ -10,3 +10,5 @@ export { Class } from './Class';
 export { deprecated } from './deprecated';
 export { trailingSlashIt } from './trailingSlashIt';
 export { openWindow, OpenWindowHandler } from './openWindow';
+export { Base64 } from './Base64';
+export { MFAResponse } from './Mfa';

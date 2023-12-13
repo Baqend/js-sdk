@@ -11,3 +11,6 @@ global.Baqend = require('..');
 // initialize tests
 global.env = require('./env');
 global.helper = require('./helper');
+
+// init helper libs
+global.OTPAuth = require('otpauth');
