@@ -1,36 +1,25 @@
 import * as messages from './message';
 import {
-  FileFactory,
-  UserFactory,
-  Entity,
-  ManagedFactory,
-  EntityFactory,
   DeviceFactory,
-  LoginOption, OAuthOptions,
+  Entity,
+  EntityFactory,
+  FileFactory,
+  LoginOption,
+  ManagedFactory,
+  OAuthOptions,
+  UserFactory,
 } from './binding';
-import {
-  atob,
-  Class, deprecated,
-  isNode,
-  JsonMap,
-  Lockable,
-  uuid,
-  openWindow,
-} from './util';
-import {
-  Message, StatusCode, Connector, OAuthMessage, RestSpecification
-} from './connector';
+import { atob, Class, deprecated, isNode, JsonMap, Lockable, openWindow, uuid, } from './util';
+import { Connector, Message, OAuthMessage, RestSpecification, StatusCode } from './connector';
 import { BloomFilter } from './caching';
 import { GeoPoint } from './GeoPoint';
 import type { ConnectData, EntityManagerFactory } from './EntityManagerFactory';
 import * as model from './model';
 import type { Metamodel } from './metamodel';
+import { EntityType, ManagedType, MapAttribute, PluralAttribute, } from './metamodel';
 
 import { Builder } from './query';
 import { EntityExistsError, IllegalEntityError, PersistentError } from './error';
-import {
-  MapAttribute, EntityType, ManagedType, PluralAttribute,
-} from './metamodel';
 
 import {
   Code,
@@ -44,8 +33,8 @@ import {
 } from './intersection';
 import { appendQueryParams, CACHE_REPLACEMENT_SUPPORTED } from './connector/Message';
 import { MFAError } from './error/MFAError';
-import { Base64 } from './model/Base64';
-import { MFAResponse } from './model/Mfa';
+import { Base64 } from './util/Base64';
+import { MFAResponse } from './util/Mfa';
 
 const DB_PREFIX = '/db/';
 
@@ -962,80 +951,76 @@ export class EntityManager extends Lockable {
   }
 
   /**
-   * starts the MFA initate process
+   * Starts the MFA initiate process - note you must be logged in, to start the mfa setup process
+   *
+   * @returns A promise that resolves to an object with the following properties:
+   * - qrCode: A Base64 representation of the QR code for MFA setup.
+   * - keyUri: The URI for the MFA secret key.
    * @example
-   * const resp = await initMFA()
-   * const user = await resp.submitCode(code)
+   * const { qrCode, keyUri } = await db.initMFA();
+   * const code = await setupMFADevice(qrCode, keyUri);
+   * const user = await db.finishMFA(code);
    */
-  async initMFA() {
-    return await this._initMFA() as MFAResponse;
+  async initMFA(): Promise<MFAResponse> {
+    return this.send(new messages.MFAInitChallenge()).then((resp) => {
+      return {
+        qrCode: resp.entity.qrCode as Base64<'png'>,
+        keyUri: resp.entity.keyUri as string
+      };
+    });
   }
 
   /**
-   * Submit a verification code
-   * @async
-   * @param code - a 6 digit verification code
-   * @param token - a MFA token you obtain during the login process
+   * Finishes the MFA (Multi-Factor Authentication) initiation process.
+   *
+   * @param code - The verification code for MFA.
+   * @returns A promise that resolves with the user object of the logged-in user.
+   */
+  public finishMFA(code: number): Promise<model.User> {
+    return this.send(new messages.MFAInitFinish({ code })).then((resp) => {
+      return this.User.me!; // to be here user is already logged in;
+    });
+  }
+
+  /**
+   * Submit a verification code after a login
+   *
+   * @param code - A 6 digit verification code
+   * @param token - An MFA token obtained during the login process
+   * @return The logged-in user object
    */
   async submitMFACode(code: number, token: string): Promise<model.User > {
-    const login = this.tokenStorage.temporary || false;
-    const MFARest: RestSpecification = {
-      method: 'POST',
-      path: '/db/User/mfa/token',
-      status: [200],
-    };
-    const MFA = Message.create<{ new(body?: { authToken:string, code:number, global:boolean }): Message }>(MFARest);
-    const msg = new MFA({
+    const loginType = this.tokenStorage.temporary ? LoginOption.SESSION_LOGIN : LoginOption.PERSIST_LOGIN;
+    const msg = new messages.MFAToken({
       authToken: token,
       code,
-      global: login,
+      global: loginType === LoginOption.PERSIST_LOGIN,
     });
-    return this.withLock(() => this._userRequest(msg, login)) as Promise< model.User>;
+    return this.withLock(() => this._userRequest(msg, loginType)) as Promise< model.User>;
   }
 
-  private _initMFA(code?: number) {
-    const MFARest: RestSpecification = {
-      method: code ? 'POST' : 'GET',
-      path: '/db/User/mfa/init',
-      status: [200],
-    };
-    const MFA = Message.create<{ new(body?: { code?:number }): Message }>(MFARest);
-    const msg = new MFA({ code });
-    return this.send(msg).then((resp) => {
-      if (code) {
-        return this.User.me as model.User; // to be here user is already logged in;
-      }
-      const retObj: MFAResponse = {
-        qrCode: resp.entity.qrCode as Base64<'png'>,
-        keyUri: resp.entity.keyUri as string,
-        submitCode: this._initMFA.bind(this) as (code: number) => Promise<model.User>,
-      };
-      return retObj;
-    });
-  }
+  /**
+   * Disables Multi-Factor Authentication for the currently logged in user.
+   *
+   * @throws {PersistentError} - Thrown when the user is not logged in.
+   * @return A promise that resolves when Multi-Factor Authentication is successfully disabled.
+   */
+  disableMFA(): Promise<any> {
+    if (!this.User.me)
+      throw new PersistentError('User not Logged in');
 
-  disableMFA() {
-    if (!this.User.me) throw new PersistentError('User not Logged in');
-    const MFARest: RestSpecification = {
-      method: 'DELETE',
-      path: '/db/User/mfa',
-      status: [204],
-    };
-    const MFA = Message.create<{ new(): Message }>(MFARest);
-    return this.send(new MFA());
+    return this.send(new messages.MFADelete());
   }
 
   /**
    * Returns the current MFA status of the user
+   *
+   * @returns A promise that resolves to the MFA status of the user.
+   * Possible values are 'ENABLED' if MFA is enabled, 'DISABLED' if MFA is
+   * disabled, or 'PENDING' if MFA status is pending.
    */
   getMFAStatus(): Promise<'ENABLED' | 'DISABLED' | 'PENDING'> {
-    const MFARest: RestSpecification = {
-      method: 'GET',
-      path: '/db/User/mfa/status',
-      status: [200],
-    };
-    const MFA = Message.create<{ new(): Message }>(MFARest);
-    return this.send(new MFA()).then((resp) => resp.entity);
+    return this.send(new messages.MFAStatus()).then((resp) => resp.entity);
   }
 
   loginWithOAuth(provider: string, options: OAuthOptions): any | string | Promise<model.User | null> {
@@ -1173,10 +1158,6 @@ export class EntityManager extends Lockable {
     return this.send(msg, !login)
       .then(
         (response) => {
-          if (response.status === StatusCode.FORBIDDEN) {
-            const { data } = response.entity
-             throw new MFAError(data['baqend-mfa-auth-token']); // If MFA is required: throw an error containing the auth token
-          }
           return response.entity ? this._updateUser(response.entity, login) : null;
         },
         (e) => {
@@ -1185,6 +1166,11 @@ export class EntityManager extends Lockable {
               this._logout();
             }
             return null;
+          }
+
+          if (e.status === StatusCode.FORBIDDEN) {
+            const { data } = e;
+            throw new MFAError(data['baqend-mfa-auth-token']); // If MFA is required: throw an error containing the auth token
           }
 
           throw e;

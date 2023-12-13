@@ -2,6 +2,8 @@ if (typeof module !== 'undefined') {
   require('./node');
 }
 
+/* global OTPAuth */
+
 describe('Test user and roles', function () {
   var emf, db;
   var RENEW_TIMEOUT = 2000;
@@ -249,198 +251,140 @@ describe('Test user and roles', function () {
       } catch {}
     });
 
-    it('should create user with MFA disabled', function() {
+    it('should create user with MFA disabled', async function() {
       var login = helper.makeLogin()
-
-      return db.User.register(login, 'secret')
-          .then(function() {
-            return db.getMFAStatus()
-          })
-          .then(function(response) {
-            expect(response).be.equal('DISABLED')
-          })
+      await db.User.register(login, 'secret')
+      var response = await db.getMFAStatus()
+      expect(response).be.equal('DISABLED')
     })
 
-    it('should init MFA', function () {
-      const OTPAuth = require('otpauth');
+    it('should init MFA', async function () {
       var login = helper.makeLogin()
 
-      return db.User.register(login, 'secret')
-          .then(function () {
-            return db.initMFA()
-          })
-          .then(function(response) {
-            const { keyUri, submitCode } = response
+      await db.User.register(login, 'secret');
+      const response1 = await db.initMFA();
 
-            // Create second factorm through usage of the keyUri and use it to create the code
-            // to confirm mfa activation
-            const totp = OTPAuth.URI.parse(keyUri)
-            const code = totp.generate()
+      const { keyUri} = response1;
 
-            return submitCode(code)
-          })
-          .then(function(response) {
-            return db.getMFAStatus()
-          })
-          .then(function(mfaStatus) {
-            expect(mfaStatus).to.equal('REQUIRED')
-          })
+      const totp = OTPAuth.URI.parse(keyUri);
+      const code = totp.generate();
+
+      await db.finishMFA(code);
+      const mfaStatus = await db.getMFAStatus();
+
+      expect(mfaStatus).to.equal('REQUIRED');
     })
 
-    it('should not init MFA with false code', function () {
-      const OTPAuth = require('otpauth');
+    it('should not init MFA with false code', async function () {
+      const login = helper.makeLogin();
+      await db.User.register(login, 'secret');
+      const responseInitMFA = await db.initMFA();
+      const { keyUri } = responseInitMFA;
+      const code = '123456';
+
+      try {
+        await db.finishMFA(code);
+        expect.fail('Invalid code was accepted');
+      } catch (response) {
+        expect(response.status).to.equal(400);
+        expect(response.message).to.equal('MFA code invalid');
+      }
+    })
+
+    it('should disable MFA', async function () {
+      const login = helper.makeLogin();
+      await db.User.register(login, 'secret');
+
+      let response = await db.initMFA();
+
+      const { keyUri } = response;
+      const totp = OTPAuth.URI.parse(keyUri);
+      const code = totp.generate();
+      await db.finishMFA(code);
+
+      let mfaStatus = await db.getMFAStatus();
+      expect(mfaStatus).to.equal('REQUIRED');
+
+      await db.disableMFA();
+
+      mfaStatus = await db.getMFAStatus();
+      expect(mfaStatus).to.equal('DISABLED');
+    })
+
+    it('should require MFA code during login', async function () {
       var login = helper.makeLogin()
 
-      return db.User.register(login, 'secret')
-          .then(function () {
-            return db.initMFA()
-          })
-          .then(function(response) {
-            const { keyUri, submitCode } = response
-            const code = '123456'
-            return submitCode(code)
-          })
-          .then(function(response) {
-            expect.fail('Invalid code was accepted')
-          })
-          .catch(function(response) {
-            expect(response.status).to.equal(400)
-            expect(response.message).to.equal('MFA code invalid')
-          })
+      let user = await db.User.register(login, 'secret')
+      const response1 = await db.initMFA()
+      const { keyUri } = response1
+
+      // Create second factor through usage of the keyUri and use it to create the code
+      // to confirm mfa activation
+      let totp = OTPAuth.URI.parse(keyUri)
+      const code = totp.generate()
+      user = await db.finishMFA(code)
+      expect(user.username).eq(login)
+
+      const mfaStatus = await db.getMFAStatus()
+
+      expect(mfaStatus).to.equal('REQUIRED')
+      await db.User.logout()
+      expect(db.User.me).to.equal(null)
+
+      try {
+        await db.User.login(login, 'secret')
+
+        // if the login proceeds without mfa, throw error
+        expect.fail('login proceeded without mfa')
+      } catch (mfaError) {
+        const { message, token } = mfaError
+        expect(message).to.equal('MFA Required')
+        const code = totp.generate()
+
+        const codeResponse = await db.submitMFACode(code, token)
+
+        expect(codeResponse).equals(user)
+        expect(codeResponse.username).eq(login)
+      }
     })
 
-    it('should disable MFA', function () {
-      const OTPAuth = require('otpauth');
-      var login = helper.makeLogin()
-
-      return db.User.register(login, 'secret')
-          .then(function () {
-            return db.initMFA()
-          })
-          .then(function(response) {
-            const { keyUri, submitCode } = response
-
-            // Create second factorm through usage of the keyUri and use it to create the code
-            // to confirm mfa activation
-            const totp = OTPAuth.URI.parse(keyUri)
-            const code = totp.generate()
-
-            return submitCode(code)
-          })
-          .then(function(response) {
-            return db.getMFAStatus()
-          })
-          .then(function(mfaStatus) {
-            expect(mfaStatus).to.equal('REQUIRED')
-
-            return db.disableMFA()
-          })
-          .then(function(response) {
-            return db.getMFAStatus()
-          })
-          .then(function(mfaStatus) {
-            expect(mfaStatus).to.equal('DISABLED')
-          })
-    })
-
-    it('should require MFA code during login', function () {
-      const OTPAuth = require('otpauth')
-      var login = helper.makeLogin()
-      var totp
-      var user
-
-      return db.User.register(login, 'secret')
-          .then(function(newUser) {
-            user = newUser
-            return db.initMFA()
-          })
-          .then(function(response) {
-            const { keyUri, submitCode } = response
-
-            // Create second factor through usage of the keyUri and use it to create the code
-            // to confirm mfa activation
-            totp = OTPAuth.URI.parse(keyUri)
-            const code = totp.generate()
-
-            return submitCode(code)
-          })
-          .then(function(response) {
-            user = response
-            return db.getMFAStatus()
-          })
-          .then(function(mfaStatus) {
-            expect(mfaStatus).to.equal('REQUIRED')
-
-            return db.User.logout()
-          })
-          .then(function(response) {
-            expect(db.User.me).to.equal(null)
-            return db.User.login(login, 'secret')
-          })
-          .then(function(response) {
-            expect.fail('login proceeded without mfa')
-          })
-          .catch(function(response) {
-            const { message, token } = response
-            expect(message).to.equal('MFA Required')
-            const code = totp.generate()
-            return db.submitMFACode(code, token)
-                .then(function(response) {
-                  expect(response).equals(user)
-                })
-          })
-    })
-
-    it("should prevent mfa login without a valid code", function () {
-      const OTPAuth = require("otpauth");
+    it("should prevent mfa login without a valid code", async function () {
       var login = helper.makeLogin();
-      var user;
 
-      return db.User.register(login, "secret")
-          .then(function (newUser) {
-            user = newUser;
-            return db.initMFA();
-          })
-          .then(function (response) {
-            const { keyUri, submitCode } = response;
+      await db.User.register(login, "secret");
 
-            // Create second factorm through usage of the keyUri and use it to create the code
-            // to confirm mfa activation
-            const totp = OTPAuth.URI.parse(keyUri);
-            const code = totp.generate();
+      const response = await db.initMFA();
 
-            return submitCode(code);
-          })
-          .then(function (response) {
-            user = response;
-            return db.getMFAStatus();
-          })
-          .then(function (mfaStatus) {
-            expect(mfaStatus).to.equal("REQUIRED");
+      const { keyUri } = response;
+      const totp = OTPAuth.URI.parse(keyUri);
+      const code = totp.generate();
 
-            return db.User.logout();
-          })
-          .then(function (response) {
-            expect(db.User.me).to.equal(null);
-            return db.User.login(login, "secret");
-          })
-          .then(function (response) {
-            expect.fail("login proceeded without mfa");
-          })
-          .catch(function (response) {
-            const { message, token } = response;
-            expect(message).to.equal("MFA Required");
+      const user = await db.finishMFA(code);
+      const mfaStatus = await db.getMFAStatus();
 
-            const code = '123456'
-            return db.submitMFACode(code, token)
-                .then(function (response) {
-                  expect.fail("login proceeded without valid code");
-                })
-                .catch(function (response) {
-                  expect(response.status).to.equal(400)
-                  expect(response.message).to.equal('MFA code invalid')
-                })
-          });
+      expect(mfaStatus).to.equal("REQUIRED");
+
+      await db.User.logout();
+      expect(db.User.me).to.equal(null);
+
+      try {
+        await db.User.login(login, "secret");
+        expect.fail("login proceeded without mfa");
+
+      } catch (mfaError) {
+        const { message, token } = mfaError;
+        expect(message).to.equal("MFA Required");
+
+        const code = '123456';
+
+        try {
+          await db.submitMFACode(code, token);
+          expect.fail("login proceeded without valid code");
+        } catch (response) {
+          expect(response.status).to.equal(400);
+          expect(response.message).to.equal('MFA code invalid');
+        }
+      }
     });
 
     it('should keep user login when newPassword is called with invalid credentials', async function () {
