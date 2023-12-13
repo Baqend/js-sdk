@@ -1,3 +1,10 @@
+# 3.4.0 (2023-12-13)
+
+
+### Features
+
+* Integrate initial support for MFA.  df270ee
+
 # 3.3.0 (2023-12-12)
 
 
