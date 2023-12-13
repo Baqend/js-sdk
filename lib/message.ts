@@ -905,6 +905,72 @@ export const RevokeUserToken = Message.create<RevokeUserToken>({
   status: [204],
 });
 
+interface MFAInitChallenge {
+  /**
+   * Starts MFA initialization
+   * Method to create a MFA
+   */
+  new(): Message;
+}
+export const MFAInitChallenge = Message.create<MFAInitChallenge>({
+  method: 'GET',
+  path: '/db/User/mfa/init',
+  status: [200],
+});
+
+interface MFAInitFinish {
+  /**
+   * Finishes MFA initialization
+   * Method to create a MFA
+   *
+   * @param body The massage Content
+   */
+  new(body?: json): Message;
+}
+export const MFAInitFinish = Message.create<MFAInitFinish>({
+  method: 'POST',
+  path: '/db/User/mfa/init',
+  status: [200],
+});
+
+interface MFAToken {
+  /**
+   * Finalize the generation of the shared secret for MFA
+   *
+   * @param body The massage Content
+   */
+  new(body?: json): Message;
+}
+export const MFAToken = Message.create<MFAToken>({
+  method: 'POST',
+  path: '/db/User/mfa/token',
+  status: [200],
+});
+
+interface MFADelete {
+  /**
+   * Deletes the users mfaSecret and mfaService
+   */
+  new(): Message;
+}
+export const MFADelete = Message.create<MFADelete>({
+  method: 'DELETE',
+  path: '/db/User/mfa',
+  status: [204],
+});
+
+interface MFAStatus {
+  /**
+   * Returns the current state of MFA
+   */
+  new(): Message;
+}
+export const MFAStatus = Message.create<MFAStatus>({
+  method: 'GET',
+  path: '/db/User/mfa/status',
+  status: [200],
+});
+
 interface AssumeRole {
   /**
    * Assumes a role

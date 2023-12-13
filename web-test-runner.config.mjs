@@ -15,6 +15,7 @@ export default {
       <body>
         <script defer src="./node_modules/rxjs/bundles/rxjs.umd.min.js"></script>
         <script defer src="./node_modules/validator/validator.js"></script>
+        <script defer src="./node_modules/otpauth/dist/otpauth.umd.js"></script>
         <script defer src="./node_modules/chai/chai.js"></script>
         <script type="module">
             import * as Baqend from './dist/baqend.es2015.js'
