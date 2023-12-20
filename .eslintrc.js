@@ -18,7 +18,7 @@ module.exports = {
     node: true,
   },
 
-  ignorePatterns: ['dist/**', 'doc/**', 'commonjs/**', 'lib/**/*.js', 'cli/**/*.js'],
+  ignorePatterns: ['dist/**', 'doc/**', 'commonjs/**', 'lib/**/*.js', 'cli/**/*.js', 'oauth.js'],
 
   rules: {
     // enforce consistent linebreak style
