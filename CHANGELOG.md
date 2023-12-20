@@ -1,3 +1,10 @@
+## 3.4.1 (2023-12-20)
+
+
+### Bug Fixes
+
+* restore the oauth resource 34fdfd7
+
 # 3.4.0 (2023-12-13)
 
 
