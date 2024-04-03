@@ -24,7 +24,7 @@ default:
 variables:
   FF_NETWORK_PER_BUILD: "true"
   CI_DEBUG_SERVICES: "true"
-  ORESTES_BRANCH: "master"
+  ORESTES_BRANCH: "80-sns-endpoint-configuration"
   NODE_BRANCH: "master"
 
 stages:
@@ -87,7 +87,17 @@ node-test-job:
     - name: public.ecr.aws/localstack/localstack:latest
       alias: localstack
       variables:
-        SERVICES: s3
+        SERVICES: s3,sns
+    - name: public.ecr.aws/aws-cli/aws-cli:latest
+      entrypoint:
+        - '/bin/bash'
+        - '-c'
+        - |
+          curl --retry 5 --retry-max-time 120 http://localstack:4566; # wait for localstack to come up
+          aws --endpoint-url=http://localstack:4566 s3 mb s3://asset-files;
+          aws --endpoint-url=http://localstack:4566 s3api put-object --bucket=asset-files --key status;
+      command: ["--endpoint-url=http://localstack:4566", "s3api", "put-object", "s3://asset-files"]
+      alias: orestes-init
     - name: "${CI_REGISTRY}/team-backend/orestes/orestes-node:${NODE_BRANCH}"
       alias: node
       command: [ "tcp://local.baqend.com:8081", "http://local.baqend.com:8080/v1", "debug" ]
@@ -102,9 +112,11 @@ node-test-job:
         AWS_SECRET_ACCESS_KEY: anysecret
         ORESTES_AWS_S3_ENABLED: "true"
         ORESTES_AWS_S3_ENDPOINT: http://localstack:4566
-        ORESTES_AWS_S3_BUCKET: baqend-files-213945670716
+        ORESTES_AWS_S3_BUCKET: asset-files
         ORESTES_STATE_LOCATION: memory:/
         ORESTES_BLOOMFILTER_LOCATION: memory:/
+        ORESTES_AWS_SNS_ENABLED: "true"
+        ORESTES_AWS_SNS_ENDPOINT: "http://localstack:4566"
   script:
     - npm run test:node
   artifacts:
@@ -129,15 +141,40 @@ web-test-job:
     - name: public.ecr.aws/docker/library/mongo:4
       alias: mongo
     - public.ecr.aws/docker/library/redis:5.0
+    - name: public.ecr.aws/localstack/localstack:latest
+      alias: localstack
+      variables:
+        SERVICES: s3,sns
+    - name: public.ecr.aws/aws-cli/aws-cli:latest
+      entrypoint:
+        - '/bin/bash'
+        - '-c'
+        - |
+          curl --retry 5 --retry-max-time 120 http://localstack:4566; # wait for localstack to come up
+          aws --endpoint-url=http://localstack:4566 s3 mb s3://asset-files;
+          aws --endpoint-url=http://localstack:4566 s3api put-object --bucket=asset-files --key status;
+      command: ["--endpoint-url=http://localstack:4566", "s3api", "put-object", "s3://asset-files"]
+      alias: orestes-init
     - name: "${CI_REGISTRY}/team-backend/orestes/orestes-node:${NODE_BRANCH}"
       alias: node
       command: [ "tcp://local.baqend.com:8081", "http://local.baqend.com:8080/v1", "debug" ]
       pull_policy: [always, if-not-present]
     - name: "${CI_REGISTRY}/team-backend/orestes/orestes-server:${ORESTES_BRANCH}"
       alias: local.baqend.com
-      # we need to disabled http2, otherwise the query spec "should allow large query" and the code spec "should accept blob parameter" are failing in webkit
-      command: [ "--config", "conf/config.json", "--with-mongo", "--with-gridfs", "--with-sns", "--debug", "--http2=false" ]
       pull_policy: [always, if-not-present]
+      variables:
+        ORESTES_MONGO_ENABLED: "true"
+        ORESTES_MONGO_SERVERS: "tcp://mongo:27017"
+        AWS_ACCESS_KEY_ID: anykey
+        AWS_SECRET_ACCESS_KEY: anysecret
+        ORESTES_AWS_S3_ENABLED: "true"
+        ORESTES_AWS_S3_ENDPOINT: http://localstack:4566
+        ORESTES_AWS_S3_BUCKET: asset-files
+        ORESTES_STATE_LOCATION: memory:/
+        ORESTES_BLOOMFILTER_LOCATION: memory:/
+        ORESTES_AWS_SNS_ENABLED: "true"
+        ORESTES_AWS_SNS_ENDPOINT: "http://localstack:4566"
+        ORESTES_HTTP_HTTP2: "false" # we need to disabled http2, otherwise the query spec "should allow large query" and the code spec "should accept blob parameter" are failing in webkit
   script:
     - npm run test:playwright -- --debug
   artifacts:
