@@ -84,14 +84,27 @@ node-test-job:
     - name: public.ecr.aws/docker/library/mongo:4
       alias: mongo
     - public.ecr.aws/docker/library/redis:5.0
+    - name: public.ecr.aws/localstack/localstack:latest
+      alias: localstack
+      variables:
+        SERVICES: s3
     - name: "${CI_REGISTRY}/team-backend/orestes/orestes-node:${NODE_BRANCH}"
       alias: node
       command: [ "tcp://local.baqend.com:8081", "http://local.baqend.com:8080/v1", "debug" ]
       pull_policy: [always, if-not-present]
     - name: "${CI_REGISTRY}/team-backend/orestes/orestes-server:${ORESTES_BRANCH}"
       alias: local.baqend.com
-      command: [ "--config", "conf/config.json", "--with-mongo", "--with-gridfs", "--with-sns" ]
       pull_policy: [always, if-not-present]
+      variables:
+        ORESTES_MONGO_ENABLED: "true"
+        ORESTES_MONGO_SERVERS: "tcp://mongo:27017"
+        AWS_ACCESS_KEY_ID: anykey
+        AWS_SECRET_ACCESS_KEY: anysecret
+        ORESTES_AWS_S3_ENABLED: "true"
+        ORESTES_AWS_S3_ENDPOINT: http://localstack:4566
+        ORESTES_AWS_S3_BUCKET: baqend-files-213945670716
+        ORESTES_STATE_LOCATION: memory:/
+        ORESTES_BLOOMFILTER_LOCATION: memory:/
   script:
     - npm run test:node
   artifacts:
