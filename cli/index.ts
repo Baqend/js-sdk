@@ -21,7 +21,12 @@ export function run() {
     .command('login [app]')
     .option('--auth <auth>', 'The authentication method to use for the login. Can be password, google, facebook or gitHub.')
     .description('Logs you in and locally saves your credentials')
-    .action((app, options) => account.persistLogin({ app, ...options, ...program.opts() }));
+    .action((app, options) =>
+      account.persistLogin({ app, ...options, ...program.opts() }).then(credentials => {
+        if (credentials) {
+          console.log('You have successfully been logged in.')
+        }
+      }));
   program
     .command('register')
     .description('Registers an account and locally saves your credentials')

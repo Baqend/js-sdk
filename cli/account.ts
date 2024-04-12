@@ -21,7 +21,7 @@ const PROFILE_DEFAULT_KEY = 'N2Ki=za[8iy4ff4jYn/3,y;';
 const bbqHost = 'bbq';
 
 export type AccountArgs = {
-  app?: string,
+  app?: string | null,
   username?: string,
   password?: string,
   token?: string,
@@ -98,6 +98,14 @@ function getProfileCredentials(appInfo: AppInfo): Promise<Credentials | null> {
       console.log('Storing username/password in the baqend profile will not be supported in future version.');
       console.log('Logout and login again to fix this issue.');
       credentials.password = decrypt(credentials.password);
+    }
+
+    if ('token' in credentials) {
+      const { createdAt, expireAt } = TokenStorage.parse(credentials.token);
+      // validate token expiration
+      if (createdAt + (24 * 60 * 60 * 1000) < Date.now()) {
+        return null
+      }
     }
 
     return credentials;
@@ -224,7 +232,7 @@ function getCredentials(appInfo: AppInfo, args: AccountArgs): Promise<Credential
 
   if (!args.skipInput && process.stdout.isTTY) {
     providers = providers
-      .then((credentials) => credentials || getInputCredentials(appInfo, args.auth, true));
+      .then((credentials) => credentials || persistLogin({  ...appInfo, ...args }));
   }
 
   return providers;
@@ -321,9 +329,15 @@ export function persistLogin(args: AccountArgs) {
   }
 
   return Promise.resolve(credentials)
-    .then((creds: Credentials) => appConnect(appInfo, creds)
-      .then((db) => saveCredentials(appInfo, 'token' in creds ? creds : { token: db.token! })))
-    .then(() => console.log('You have successfully been logged in.'));
+    .then((creds: Credentials) => {
+      return appConnect(appInfo, creds)
+        .then((db) => {
+          const tokenCredentials: TokenCredentials = 'token' in creds ? creds : { token: db.token! };
+          saveCredentials(appInfo, tokenCredentials);
+          return tokenCredentials;
+        })
+      }
+    );
 }
 
 export function openApp(app: string) {
