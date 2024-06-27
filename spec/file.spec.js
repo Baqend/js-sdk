@@ -580,7 +580,7 @@ describe('Test file', function () {
         await new rootDb.File(file.id).upload({ data: flames });
         expect.fail();
       } catch (e) {
-        expect(e.message).to.contain(`Unique index violation. Another object already exists with the same value of the newly created/modified object FileMetadata: ${file.id}`);
+        expect(e.message).to.contain(`Unique index violation. Another object already exists with the same value of the newly created/modified object FileRef: ${file.id}`);
       }
     });
 
