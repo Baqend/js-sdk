@@ -1,3 +1,10 @@
+# 3.5.0 (2024-06-27)
+
+
+### Features
+
+* migrate orestes to new config api 9b1e748
+
 ## 3.4.1 (2023-12-20)
 
 
