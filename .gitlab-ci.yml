@@ -24,7 +24,7 @@ default:
 variables:
   FF_NETWORK_PER_BUILD: "true"
   CI_DEBUG_SERVICES: "true"
-  ORESTES_BRANCH: "80-sns-endpoint-configuration"
+  ORESTES_BRANCH: "master"
   NODE_BRANCH: "master"
 
 stages:
