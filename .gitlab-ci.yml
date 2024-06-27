@@ -184,7 +184,7 @@ web-test-job:
         - ./playwright-result.xml
 
 release:
-  image: public.ecr.aws/docker/library/node:18
+  image: public.ecr.aws/docker/library/node:lts
   stage: release
   cache: []
   variables:
