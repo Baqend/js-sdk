@@ -320,24 +320,18 @@ export function logout(args: AccountArgs) {
   });
 }
 
-export function persistLogin(args: AccountArgs) {
+export async function persistLogin(args: AccountArgs) {
   const appInfo = getAppInfo(args);
-  let credentials: Credentials | Promise<Credentials> | null = getArgsCredentials(args);
+  let credentials: Credentials | null = getArgsCredentials(args);
 
   if (!credentials) {
-    credentials = getInputCredentials(appInfo, args.auth, false);
+    credentials = await getInputCredentials(appInfo, args.auth, false);
   }
 
-  return Promise.resolve(credentials)
-    .then((creds: Credentials) => {
-      return appConnect(appInfo, creds)
-        .then((db) => {
-          const tokenCredentials: TokenCredentials = 'token' in creds ? creds : { token: db.token! };
-          saveCredentials(appInfo, tokenCredentials);
-          return tokenCredentials;
-        })
-      }
-    );
+  const db = await appConnect(appInfo, credentials)
+  const tokenCredentials: TokenCredentials = 'token' in credentials ? credentials : { token: db.token! };
+  await saveCredentials(appInfo, tokenCredentials);
+  return tokenCredentials;
 }
 
 export function openApp(app: string) {
