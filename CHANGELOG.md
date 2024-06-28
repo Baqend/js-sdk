@@ -1,3 +1,10 @@
+# 3.6.0 (2024-06-28)
+
+
+### Features
+
+* **cli:** start auto login if the persisted token is expired 61185ce
+
 # 3.5.0 (2024-06-27)
 
 
