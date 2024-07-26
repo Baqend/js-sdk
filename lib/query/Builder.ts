@@ -1,19 +1,13 @@
-import { Observable, Subscription } from 'rxjs';
 import { Filter } from './Filter';
 import { Condition } from './Condition';
 import { Operator } from './Operator';
 import {
-  CompleteCallback,
   FailCallback,
-  NextEventCallback,
-  NextResultCallback,
   Query,
-  EventStreamOptions,
-  ResultStreamOptions, ResultOptions, ResultListCallback, SingleResultCallback, CountCallback, flatArgs,
+  ResultOptions, ResultListCallback, SingleResultCallback, CountCallback, flatArgs,
 } from './Query';
 import type { Entity } from '../binding';
 import { Node } from './Node';
-import { RealtimeEvent } from './RealtimeEvent';
 
 /**
  * The Query Builder allows creating filtered and combined queries
@@ -45,29 +39,6 @@ export class Builder<T extends Entity> extends Query<T> {
    */
   nor(...args: Array<Query<T> | Query<T>[]>): Operator<T> {
     return this.addOperator('$nor', flatArgs(args));
-  }
-
-  /**
-   * @inheritDoc
-   */
-  eventStream(options?: EventStreamOptions): Observable<RealtimeEvent<T>>;
-  eventStream(options?: EventStreamOptions | NextEventCallback<T>, onNext?: NextEventCallback<T> | FailCallback,
-    onError?: FailCallback | CompleteCallback, onComplete?: CompleteCallback): Subscription;
-  eventStream(options?: EventStreamOptions | NextEventCallback<T>, onNext?: NextEventCallback<T> | FailCallback,
-    onError?: FailCallback | CompleteCallback,
-    onComplete?: CompleteCallback): Subscription | Observable<RealtimeEvent<T>> {
-    return this.where({}).eventStream(options, onNext, onError, onComplete);
-  }
-
-  /**
-   * @inheritDoc
-   */
-  resultStream(options?: ResultStreamOptions): Observable<T[]>;
-  resultStream(options?: ResultStreamOptions | NextResultCallback<T>, onNext?: NextResultCallback<T> | FailCallback,
-    onError?: FailCallback | CompleteCallback, onComplete?: CompleteCallback): Subscription;
-  resultStream(options?: ResultStreamOptions | NextResultCallback<T>, onNext?: NextResultCallback<T> | FailCallback,
-    onError?: FailCallback | CompleteCallback, onComplete?: CompleteCallback): Subscription | Observable<T[]> {
-    return this.where({}).resultStream(options, onNext, onError, onComplete);
   }
 
   /**

@@ -1,14 +1,13 @@
 import { EntityManager } from './EntityManager';
 import * as message from './message';
 import {
-  Connector, Message, Response, WebSocketConnector,
+  Connector, Message, Response,
 } from './connector';
 import { JsonMap, Lockable } from './util';
 import { TokenStorage, TokenStorageFactory, Code } from './intersection';
 import { Metamodel } from './metamodel';
 
 const CONNECTED = Symbol('Connected');
-const WS = Symbol('WebSocket');
 
 export type ConnectData = {
   bloomFilterRefresh?: number,
@@ -17,7 +16,6 @@ export type ConnectData = {
   device?: JsonMap,
   user?: JsonMap,
   bloomFilter?: JsonMap,
-  websocket?: string,
 };
 
 export class EntityManagerFactory extends Lockable {
@@ -35,26 +33,7 @@ export class EntityManagerFactory extends Lockable {
 
   public connectData: ConnectData | null = null;
 
-  private [WS]?: WebSocketConnector;
-
   private [CONNECTED]?: () => any;
-
-  /**
-   * Retrieves the websocket connection if the websocket SDK is available
-   */
-  get websocket(): WebSocketConnector {
-    if (!this[WS]) {
-      const { secure } = this.connection!;
-      let url;
-      if (this.connectData!.websocket) {
-        url = (secure ? 'wss:' : 'ws:') + this.connectData!.websocket;
-      } else {
-        url = `${this.connection!.origin.replace(/^http/, 'ws') + this.connection!.basePath}/events`;
-      }
-      this[WS] = WebSocketConnector.create(url);
-    }
-    return this[WS]!!;
-  }
 
   /**
    * Creates a new EntityManagerFactory connected to the given destination

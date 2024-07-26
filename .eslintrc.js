@@ -45,7 +45,7 @@ module.exports = {
 
   overrides: [
     {
-      files: ['lib/**/*.ts', 'realtime/*.js', 'connect.js'],
+      files: ['lib/**/*.ts', 'connect.js'],
       parserOptions: {
         sourceType: 'module',
         ecmaVersion: 2015,

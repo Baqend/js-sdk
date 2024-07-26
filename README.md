@@ -142,34 +142,6 @@ properly.
 We have improved the typescript support by providing better typings. You may experience some new typescript 
 errors since the typings are more precise in many cases.
 
-Baqend Real-Time SDK
---------------------
-If you want to use real-time queries, you must include [Rx.js](https://github.com/ReactiveX/rxjs) in your project 
-as well. The realtime components are now core part of v3 release of the SDK and no alternative module must be 
-used. 
-
-The Rx.js module will be loaded as a optional peer dependency from the global Rx variable 
-or will be required via. `require('rxjs')` call.
-If rxjs can't be loaded the realtime components of the SDK will throw an exception.
-
-You can use the unpkg CDN to get all dependencies:
-```html
-<script type="text/javascript" src="https://unpkg.com/rxjs/bundles/rxjs.umd.min.js"></script>
-<!-- include the SDK after rxjs -->
-<script type="module">
-import { db } from 'https://unpkg.com/baqend@3/dist/baqend.es2015.js';
-
-await db.connect('<your-app>');
-const observable = db.MyClass.find().resultStream();
-observable.subscribe((result) => {
-    result.forEach(object => {
-        ...
-    })
-})
-</script>
-```
-
-
 Usage in Node.js
 ----------------
 
@@ -205,8 +177,6 @@ await db.connect('example');
 await db.User.find()
    ...
 ```
-
-Note: The Baqend Real-Time SDK can be used by just installing Rx.js as well `npm install rxjs`
 
 License
 -------
