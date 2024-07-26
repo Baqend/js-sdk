@@ -109,7 +109,6 @@ module.exports = {
         Promise: true,
         Set: true,
         Baqend: true,
-        rxjs: true,
       },
 
       env: {
