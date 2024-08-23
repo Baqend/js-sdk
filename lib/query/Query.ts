@@ -1,9 +1,7 @@
-import { Observable, Subscription } from 'rxjs';
 import { Entity } from '../binding';
 import type { EntityManager } from '../EntityManager';
 import { Class } from '../util';
 import { PersistentError } from '../error';
-import { MatchType, Operation, RealtimeEvent } from './RealtimeEvent';
 import type { Node } from './Node';
 
 /**
@@ -138,129 +136,6 @@ export abstract class Query<T extends Entity> {
   abstract singleResult(doneCallback?: SingleResultCallback<T>, failCallback?: FailCallback): Promise<T | null>;
 
   /**
-   * Returns an observable that receives change events for a real-time query
-   *
-   * Multiple subscriptions can be created on top of this observable:
-   *
-   * <pre><code>
-   * var query = DB.Todo.find();
-   * var options = { ... };
-   * var stream = query.eventStream(options);
-   * var sub = stream.subscribe(onNext, onError, onComplete);
-   * var otherSub = stream.subscribe(otherOnNext, otherOnError, otherOnComplete);
-   * </code></pre>
-   *
-   * @param [options] options to narrow down the events you will receive
-   * @param [options.initial=true] whether or not you want to receive the initial result set (i.e. the
-   * entities matching the query at subscription time)
-   * @param [options.matchTypes=['all']] the match types you are interested in; accepts the
-   * default ('all'/['all']) or any combination of 'match', 'add', 'change', 'changeIndex' and 'remove'
-   * @param [options.operations=['any']] the operations you are interested in; accepts the
-   * default ('any'/['any']) or any combination of 'insert', 'update', 'delete' and 'none'
-   * @return an observable
-   */
-  abstract eventStream(options?: EventStreamOptions): Observable<RealtimeEvent<T>>;
-
-  /**
-   * Returns a subscription that handles change events for a real-time query.
-   *
-   * The underlying stream object is hidden. To create multiple subscriptions on the same stream, create the stream
-   * object first and then subscribe to the stream (see the other signature {@link #eventStream(options)}).
-   * @param [options] options to narrow down the events you will receive
-   * @param [options.initial=true] whether or not you want to receive the initial result set (i.e. the
-   * entities matching the query at subscription time)
-   * @param [options.matchTypes=['all']] the match types you are interested in; accepts the
-   * default ('all'/['all']) or any combination of 'match', 'add', 'change', 'changeIndex' and 'remove'
-   * @param [options.operations=['any']] the operations you are interested in; accepts the
-   * default ('any'/['any']) or any combination of 'insert', 'update', 'delete' and 'none'
-   * @param onNext Called when an event is received
-   * @param onError Called when there is a server-side error
-   * @param onComplete Called when the network connection is closed (e.g. because of
-   * lost Wi-Fi connection)
-   * @return a real-time query subscription
-   */
-  abstract eventStream(options?: EventStreamOptions, onNext?: NextEventCallback<T>, onError?: FailCallback,
-    onComplete?: CompleteCallback): Subscription;
-
-  /**
-   * Returns a subscription that handles change events for a real-time query.
-   *
-   * The underlying stream object is hidden. To create multiple subscriptions on the same stream, create the stream
-   * object first and then subscribe to the stream (see the other signature {@link #eventStream(options)}).
-   *
-   * @param onNext Called when an event is received
-   * @param onError Called when there is a server-side error
-   * @param onComplete Called when the network connection is closed (e.g. because of
-   * lost Wi-Fi connection)
-   * @return a real-time query subscription
-   */
-  abstract eventStream(onNext?: NextEventCallback<T>, onError?: FailCallback,
-    onComplete?: CompleteCallback): Subscription;
-
-  /**
-   * Returns an observable that receives the complete real-time query result
-   *
-   * The full result is received initially (i.e. on subscription) and on every change.
-   *
-   * <pre><code>
-   * var query = DB.Todo.find();
-   * var stream = query.resultStream();
-   * var sub = stream.subscribe(onNext, onError, onComplete);
-   * var otherSub = stream.subscribe(otherOnNext, otherOnError, otherOnComplete);
-   * </code></pre>
-   *
-   * @param [options] additional options
-   * @param [options.reconnects=-1] the number of times that a real-time query subscription should be renewed
-   * after connection loss, before it is downgraded to a regular query that does not maintain itself; negative numbers
-   * represent infinite reconnection attempts
-   * @return an observable on which multiple subscriptions can be created on
-   */
-  abstract resultStream(options?: ResultStreamOptions): Observable<T[]>;
-
-  /**
-   * Returns a subscription that handles the complete real-time query result
-   *
-   * The full result is received initially (i.e. on subscription) and on every change.
-   *
-   * The underlying stream object is hidden. To create multiple subscriptions on the same stream, create the stream
-   * object first and then subscribe to the stream (see the other signature {@link #resultStream(options)}).
-   *
-   * @param [options] additional options
-   * @param [options.reconnects=-1] the number of times that a real-time query subscription should be renewed
-   * after connection loss, before it is downgraded to a regular query that does not maintain itself; negative numbers
-   * represent infinite reconnection attempts
-   * @param onNext Called when the query result changes in any way
-   * @param onError Called when there is a server-side error
-   * @param onComplete Called when the network connection is closed (e.g. because of
-   * network timeout or lost Wi-Fi connection) and the specified number of reconnects have been exhausted; will never be
-   * called when infinite reconnects are configured (default)
-   * @return a real-time query subscription handling complete query results.
-   */
-  abstract resultStream(options?: ResultStreamOptions, onNext?: NextResultCallback<T>, onError?: FailCallback,
-    onComplete?: CompleteCallback): Subscription;
-
-  /**
-   * Returns a subscription that handles the complete real-time query result
-   *
-   * The full result is received initially (i.e. on subscription) and on every change.
-   *
-   * The underlying stream object is hidden. To create multiple subscriptions on the same stream, create the stream
-   * object first and then subscribe to the stream (see the other signature {@link #resultStream(options)}).
-   *
-   * As the real-time query will reconnect infinitely often, there is no onComplete callback. (In other words, the
-   * observable will never complete.)
-   *
-   * @param onNext Called when the query result changes in any way
-   * @param onError Called when there is a server-side error
-   * @param onComplete Called when the network connection is closed (e.g. because of
-   * network timeout or lost Wi-Fi connection) and the specified number of reconnects have been exhausted; will never be
-   * called when infinite reconnects are configured (default)
-   * @return a real-time query subscription handling complete query results.
-   */
-  abstract resultStream(onNext?: NextResultCallback<T>, onError?: FailCallback,
-    onComplete?: CompleteCallback): Subscription;
-
-  /**
    * Execute the query that returns the matching objects count.
    * @param doneCallback Called when the operation succeed.
    * @param failCallback Called when there is a server-side error
@@ -282,19 +157,6 @@ export function flatArgs(args: any[]) {
 }
 
 export type ResultOptions = { depth?: number | boolean };
-/**
- * @param initial Indicates whether or not the initial result set should be delivered on creating the subscription.
- * @param matchTypes A list of match types.
- * @param operations A list of operations.
- * @param reconnects The number of reconnects.
- */
-export type EventStreamOptions = {
-  initial?: boolean,
-  matchTypes?: 'all' | MatchType[],
-  operations?: 'any' | Operation[],
-  reconnects?: number
-};
-export type ResultStreamOptions = { reconnects?: number };
 
 /**
  * The resultList callback is called, when the asynchronous query operation completes successfully
@@ -323,19 +185,6 @@ export type CountCallback = (count: number) => Promise<any> | any;
  * @return A Promise, result or undefined
  */
 export type FailCallback = (error: PersistentError) => Promise<any> | any;
-
-/**
- * This callback is called whenever the result of the real-time query changes. The received event contains information
- * on how the query result changed.
- * @param event The real-time query event
- */
-export type NextEventCallback<T extends Entity> = (event: RealtimeEvent<T>) => Promise<any> | any;
-
-/**
- * This callback is called whenever the result of the real-time query changes. The full result set is received.
- * @param result The updated real-time query result
- */
-export type NextResultCallback<T> = (result: T[]) => any;
 
 /**
  * This callback is called when the network connection is closed (e.g. because of network timeout or lost Wi-Fi

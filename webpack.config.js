@@ -52,7 +52,6 @@ function bundleLib(target) {
       umdNamedDefine: target !== 'es2015',
     },
     externals: {
-      rxjs: 'rxjs',
       validator: 'validator',
     },
     resolve: {

@@ -10,6 +10,5 @@
   },
   "files": [
     "typings.spec.ts",
-    "realtime.spec.ts"
   ]
 }

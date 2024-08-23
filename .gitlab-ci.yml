@@ -43,7 +43,6 @@ build-job:
     policy: pull-push
   script:
     - npm ci --cache .npm --prefer-offline
-    - npm install --silent websocket
     - npm run dist
   artifacts:
     paths:
@@ -197,7 +196,6 @@ release:
     - apt-get install -y awscli
     - npm install -g semantic-release @semantic-release/{gitlab,changelog,git,exec}
     - npm ci
-    - npm install --silent websocket
   script:
     - semantic-release --repository-url "${CI_PROJECT_URL}.git"
   rules:
