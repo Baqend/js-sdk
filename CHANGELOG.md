@@ -1,3 +1,10 @@
+# 3.7.0 (2024-08-23)
+
+
+### Features
+
+* drop real-time support \n\n BREAKING CHANGE: the functions for eventStream and resultStream have been removed without replacement ed62ea4
+
 # 3.6.0 (2024-06-28)
 
 
