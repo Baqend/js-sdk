@@ -15,7 +15,6 @@
     "./lib/util/atob.ts": "./lib/util/atob-browser.ts",
     "./lib/util/is-node.ts": "./lib/util/is-node-browser.ts",
     "./lib/util/hmac.ts": "./lib/util/hmac-browser.ts",
-    "./lib/util/websocket.ts": "./lib/util/websocket-browser.ts",
     "./lib/connector/NodeConnector": false,
     "./lib/connector/FetchConnector": false
   },
@@ -24,7 +23,6 @@
     "./commonjs/lib/util/atob.js": "./commonjs/lib/util/atob-rn.js",
     "./commonjs/lib/util/is-node.js": "./commonjs/lib/util/is-node-browser.js",
     "./commonjs/lib/util/hmac.js": "./commonjs/lib/util/hmac-browser.js",
-    "./commonjs/lib/util/websocket.ts": "./commonjs/lib/util/websocket-browser.ts",
     "./commonjs/lib/connector/XMLHttpConnector": false,
     "./commonjs/lib/connector/IFrameConnector": false
   },
@@ -48,11 +46,9 @@
     "inquirer": "^8.2.5",
     "open": "^8.4.2",
     "rimraf": "^3.0.2",
-    "rxjs": "^6.6.7",
     "tslib": "^2.6.0",
     "uuid": "^8.3.2",
-    "validator": "^13.9.0",
-    "websocket": "^1.0.35"
+    "validator": "^13.9.0"
   },
   "repository": {
     "type": "git",
@@ -76,7 +72,6 @@
     "@types/uuid": "^8.3.4",
     "@types/validator": "^13.7.17",
     "@types/webpack": "^4.41.33",
-    "@types/websocket": "^1.0.5",
     "@typescript-eslint/eslint-plugin": "^6.5.0",
     "@typescript-eslint/parser": "^6.5.0",
     "@web/test-runner": "^0.17.0",

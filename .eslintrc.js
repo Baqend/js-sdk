@@ -45,7 +45,7 @@ module.exports = {
 
   overrides: [
     {
-      files: ['lib/**/*.ts', 'realtime/*.js', 'connect.js'],
+      files: ['lib/**/*.ts', 'connect.js'],
       parserOptions: {
         sourceType: 'module',
         ecmaVersion: 2015,
@@ -109,7 +109,6 @@ module.exports = {
         Promise: true,
         Set: true,
         Baqend: true,
-        rxjs: true,
       },
 
       env: {

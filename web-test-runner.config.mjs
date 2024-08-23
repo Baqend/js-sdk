@@ -13,7 +13,6 @@ export default {
   testRunnerHtml: testFramework =>
     `<html>
       <body>
-        <script defer src="./node_modules/rxjs/bundles/rxjs.umd.min.js"></script>
         <script defer src="./node_modules/validator/validator.js"></script>
         <script defer src="./node_modules/otpauth/dist/otpauth.umd.js"></script>
         <script defer src="./node_modules/chai/chai.js"></script>

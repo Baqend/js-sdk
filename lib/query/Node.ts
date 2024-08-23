@@ -1,25 +1,17 @@
-import { Observable, Subscription } from 'rxjs';
 import { Entity } from '../binding';
 
 import { JsonMap } from '../util';
 import {
-  CompleteCallback,
   CountCallback,
-  EventStreamOptions,
   FailCallback,
-  NextEventCallback,
-  NextResultCallback,
   Query,
   ResultListCallback,
   ResultOptions,
-  ResultStreamOptions,
   SingleResultCallback,
 } from './Query';
 import * as message from '../message';
 import type { FilterObject } from './Filter';
-import { RealtimeEvent } from './RealtimeEvent';
 import { Metadata } from '../intersection';
-import { Stream } from './Stream';
 
 /**
  * A Query Node saves the state of the query being built
@@ -41,45 +33,6 @@ export class Node<T extends Entity> extends Query<T> {
    * The properties which should be used sort the result
    */
   public order: { [field: string]: 1 | -1 } = {};
-
-  eventStream(options?: EventStreamOptions): Observable<RealtimeEvent<T>>;
-  eventStream(options?: EventStreamOptions | NextEventCallback<T>, onNext?: NextEventCallback<T> | FailCallback,
-    onError?: FailCallback | CompleteCallback, onComplete?: CompleteCallback): Subscription;
-  eventStream(options?: EventStreamOptions | NextEventCallback<T>, onNext?: NextEventCallback<T> | FailCallback,
-    onError?: FailCallback | CompleteCallback, onComplete?: CompleteCallback):
-    Observable<RealtimeEvent<T>> | Subscription {
-    if (options instanceof Function) {
-      return this.eventStream({}, options as NextEventCallback<T>, onNext as FailCallback, onError as CompleteCallback);
-    }
-
-    const observable = Stream.createEventStream<T>(this.entityManager, this.createRealTimeQuery(), options);
-
-    if (onNext instanceof Function) {
-      return observable.subscribe(onNext as NextEventCallback<T>, onError, onComplete);
-    }
-
-    return observable;
-  }
-
-  resultStream(options?: ResultStreamOptions): Observable<T[]>;
-  resultStream(options?: ResultStreamOptions | NextResultCallback<T>, onNext?: NextResultCallback<T> | FailCallback,
-    onError?: FailCallback | CompleteCallback, onComplete?: CompleteCallback): Subscription;
-  resultStream(options?: ResultStreamOptions | NextResultCallback<T>, onNext?: NextResultCallback<T> | FailCallback,
-    onError?: FailCallback | CompleteCallback, onComplete?: CompleteCallback): Observable<T[]> | Subscription {
-    if (options instanceof Function) {
-      return this.resultStream(
-        {}, options as NextResultCallback<T>, onNext as FailCallback, onError as CompleteCallback,
-      );
-    }
-
-    const observable = Stream.createResultStream<T>(this.entityManager, this.createRealTimeQuery(), options);
-
-    if (onNext instanceof Function) {
-      return observable.subscribe(onNext as NextResultCallback<T>, onError, onComplete);
-    }
-
-    return observable;
-  }
 
   /**
    * @inheritDoc
@@ -206,33 +159,6 @@ export class Node<T extends Entity> extends Query<T> {
     }
 
     return Promise.resolve([]);
-  }
-
-  private createRealTimeQuery(this: Node<any>): JsonMap {
-    const type = this.resultClass ? this.entityManager.metamodel.entity(this.resultClass) : null;
-    if (!type) {
-      throw new Error('Only typed queries can be executed.');
-    }
-
-    const query: JsonMap = {
-      bucket: type.name,
-      query: this.serializeQuery(),
-    };
-
-    const sort = this.serializeSort();
-    if (sort && sort !== '{}') {
-      query.sort = sort;
-    }
-
-    if (this.maxResults > 0) {
-      query.limit = this.maxResults;
-    }
-
-    if (this.firstResult > 0) {
-      query.offset = this.firstResult;
-    }
-
-    return query;
   }
 
   addOrder(fieldOrSort: string | { [field: string]: 1 | -1 }, order?: 1 | -1): this {
