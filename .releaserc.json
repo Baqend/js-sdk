@@ -4,12 +4,17 @@
     { "name": "prerelease", "channel": "pre", "prerelease": true }
   ],
   "plugins": [
-    "@semantic-release/commit-analyzer",
+    [ "@semantic-release/commit-analyzer",
+      {
+        "preset": "conventionalcommits"
+      }
+    ],
     [
     "@semantic-release/release-notes-generator",
       {
         "linkCompare": false,
-        "linkReferences": false
+        "linkReferences": false,
+        "preset": "conventionalcommits"
       }
     ],
     [
