@@ -3,7 +3,9 @@
 
 ### Features
 
-* drop real-time support \n\n BREAKING CHANGE: the functions for eventStream and resultStream have been removed without replacement ed62ea4
+* drop real-time support
+
+BREAKING CHANGE: the functions for eventStream and resultStream have been removed without replacement ed62ea4
 
 # 3.6.0 (2024-06-28)
 
