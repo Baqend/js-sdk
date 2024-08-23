@@ -1,3 +1,13 @@
+# 4.0.0 (2024-08-23)
+
+
+* fix!: drop real-time support b9bb305
+
+
+### BREAKING CHANGES
+
+* remove eventStream and resultStream without replacement
+
 # 3.7.0 (2024-08-23)
 
 
