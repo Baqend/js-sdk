@@ -194,7 +194,7 @@ release:
   before_script:
     - apt-get update
     - apt-get install -y awscli
-    - npm install -g semantic-release @semantic-release/{gitlab,changelog,git,exec}
+    - npm install -g semantic-release @semantic-release/{gitlab,changelog,git,exec} conventional-changelog-conventionalcommits
     - npm ci
   script:
     - semantic-release --repository-url "${CI_PROJECT_URL}.git"
