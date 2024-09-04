@@ -472,12 +472,13 @@ interface AdhocQuery {
    * @param sort The sort object
    * @param eager indicates if the query result should be sent back as ids or as objects
    * @param hinted indicates whether the query should be cached even when capacity limit is reached
+   * @param triggeredBy indicates who or what triggred the query
    */
-  new(bucket: string, q: string, start?: number, count?: number, sort?: string, eager?: boolean, hinted?: boolean): Message;
+  new(bucket: string, q: string, start?: number, count?: number, sort?: string, eager?: boolean, hinted?: boolean, triggeredBy?: string): Message;
 }
 export const AdhocQuery = Message.create<AdhocQuery>({
   method: 'GET',
-  path: '/db/:bucket/query?q&start=0&count=-1&sort=&eager=&hinted=',
+  path: '/db/:bucket/query?q&start=0&count=-1&sort=&eager=&hinted=&triggeredBy=',
   status: [200],
 });
 

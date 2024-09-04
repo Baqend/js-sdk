@@ -935,4 +935,39 @@ describe('Test Query', function () {
         });
     });
   });
+
+  describe("native query", function () {
+    var localEmf;
+
+    before(async function () {
+      expect(await helper.rootTokenStorage).be.ok;
+
+      localEmf = new DB.EntityManagerFactory({
+        host: env.TEST_SERVER,
+        tokenStorage: await helper.rootTokenStorage,
+      });
+      metamodel = localEmf.metamodel;
+
+      await localEmf.ready();
+    });
+
+    it("should create simple query sql with where clause name", async function () {
+      this.timeout(300000);
+
+      const newDb = localEmf.createEntityManager();
+      await newDb.User.login("root", "root");
+
+      return newDb["rum.Pi"]
+          .find()
+          .where(
+              "SELECT * FROM rum.pi WHERE date BETWEEN '2024-06-17' AND '2024-06-18' limit 5",
+          )
+          .resultList()
+          .then(function (response) {
+            console.log(response);
+            expect(response).not.empty;
+          });
+    });
+  });
+
 });
