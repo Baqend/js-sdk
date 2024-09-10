@@ -49,9 +49,7 @@ export class Node<T extends Entity> extends Query<T> {
       throw new Error('Only typed queries can be executed.');
     }
 
-    const backendType = type.getMetadata("backendType");
-
-    const query = this.serializeQuery(backendType);
+    const query = this.serializeQuery();
     const sort = this.serializeSort();
 
     const uriSize = (this.entityManager.connection?.host.length || 0) + query.length + sort.length;
@@ -65,7 +63,7 @@ export class Node<T extends Entity> extends Query<T> {
     }
 
     return this.entityManager.send(msg)
-      .then((response) => this.createResultList(response.entity, options as ResultOptions, backendType))
+      .then((response) => this.createResultList(response.entity, options as ResultOptions))
       .then(doneCallback as ResultListCallback<T>, failCallback);
   }
 
@@ -84,9 +82,7 @@ export class Node<T extends Entity> extends Query<T> {
       throw new Error('Only typed queries can be executed.');
     }
 
-    const backendType = type.getMetadata("backendType");
-
-    const query = this.serializeQuery(backendType);
+    const query = this.serializeQuery();
     const sort = this.serializeSort();
 
     const uriSize = (this.entityManager.connection?.host.length || 0) + query.length;
@@ -99,7 +95,7 @@ export class Node<T extends Entity> extends Query<T> {
     }
 
     return this.entityManager.send(msg)
-      .then((response) => this.createResultList(response.entity, options as ResultOptions, backendType))
+      .then((response) => this.createResultList(response.entity, options as ResultOptions))
       .then((list) => (list.length ? list[0] : null))
       .then(doneCallback as SingleResultCallback<T>, failCallback);
   }
@@ -114,7 +110,7 @@ export class Node<T extends Entity> extends Query<T> {
       throw new Error('Only typed queries can be executed.');
     }
 
-    const query = this.serializeQuery(null);
+    const query = this.serializeQuery();
 
     const uriSize = (this.entityManager.connection?.host.length || 0) + query.length;
     let msg;
@@ -130,75 +126,36 @@ export class Node<T extends Entity> extends Query<T> {
       .then(doneCallback, failCallback);
   }
 
-  private serializeQuery(backendType: string | null): string {
-    if (backendType === "analytics") {
-      let queryString = "";
-
-      // Helper function to safely get nested property
-      const getNestedProperty = (obj: any, path: string) => {
-        return path
-          .split(".")
-          .reduce(
-            (prev, curr) =>
-              prev && prev[curr] !== undefined ? prev[curr] : undefined,
-            obj,
-          );
-      };
-
-      // Try to find the query string in known locations
-      const possiblePaths = ["filter", "query", "statement", "sql"];
-
-      for (const path of possiblePaths) {
-        const value = getNestedProperty(this, path);
-        if (typeof value === "string") {
-          queryString = value;
-          break;
-        } else if (typeof value === "object" && value !== null) {
-          // If it's an object, try to concatenate its values
-          const sortedKeys = Object.keys(value).sort(
-            (a, b) => Number(a) - Number(b),
-          );
-          queryString = sortedKeys.map((key) => value[key]).join("");
-          break;
-        }
+  private serializeQuery() {
+    return JSON.stringify(this, function argSerializer(this: FilterObject, k, v) {
+      // this referees here to the object which owns the key k
+      const typedValue = this[k];
+      if (typedValue instanceof Date) {
+        return { $date: v };
+      } if (typedValue instanceof Entity) {
+        return typedValue.id;
       }
-
-      return queryString;
-    } else {
-      return JSON.stringify(this, function argSerializer(this: FilterObject, k, v) {
-        // this referees here to the object which owns the key k
-        const typedValue = this[k];
-        if (typedValue instanceof Date) {
-          return { $date: v };
-        } if (typedValue instanceof Entity) {
-          return typedValue.id;
-        }
-        return v;
-      });
-    }
+      return v;
+    });
   }
 
   private serializeSort() {
     return JSON.stringify(this.order);
   }
 
-  createResultList(result: JsonMap[], options: ResultOptions, backendType: string | null): Promise<any[]> {
+  private createResultList(result: JsonMap[], options: ResultOptions): Promise<T[]> {
     if (result.length) {
-      if (backendType === "analytics") {
-        return Promise.resolve(result);
-      } else {
-        return Promise.all<T | null>(result.map((el: JsonMap) => {
-          if (el.id) {
-            const entity: T = this.entityManager.getReference(this.resultClass, el.id as string);
-            const metadata = Metadata.get(entity);
-            metadata.type.fromJsonValue(metadata, el, entity, { persisting: true });
-            return this.entityManager.resolveDepth(entity, options);
-          }
+      return Promise.all<T | null>(result.map((el: JsonMap) => {
+        if (el.id) {
+          const entity: T = this.entityManager.getReference(this.resultClass, el.id as string);
+          const metadata = Metadata.get(entity);
+          metadata.type.fromJsonValue(metadata, el, entity, { persisting: true });
+          return this.entityManager.resolveDepth(entity, options);
+        }
 
-          return this.entityManager.load<T>(Object.keys(el)[0]);
-        }))
-          .then((objects) => objects.filter((val: T | null) => !!val) as T[]);
-      }
+        return this.entityManager.load<T>(Object.keys(el)[0]);
+      }))
+        .then((objects) => objects.filter((val: T | null) => !!val) as T[]);
     }
 
     return Promise.resolve([]);

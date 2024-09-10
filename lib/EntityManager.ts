@@ -18,7 +18,7 @@ import * as model from './model';
 import type { Metamodel } from './metamodel';
 import { EntityType, ManagedType, MapAttribute, PluralAttribute, } from './metamodel';
 
-import { Builder } from './query';
+import {Builder, Query} from './query';
 import { EntityExistsError, IllegalEntityError, PersistentError } from './error';
 
 import {
@@ -35,6 +35,7 @@ import { appendQueryParams, CACHE_REPLACEMENT_SUPPORTED } from './connector/Mess
 import { MFAError } from './error/MFAError';
 import { Base64 } from './util/Base64';
 import { MFAResponse } from './util/Mfa';
+import * as message from "./message";
 
 const DB_PREFIX = '/db/';
 
@@ -1396,6 +1397,25 @@ export class EntityManager extends Lockable {
 
     const msg = new messages.RevokeUserToken(userObj.key!);
     return this.send(msg);
+  }
+
+  executeQuery<T extends Entity>(resultClass: Class<T>, query: string, triggeredBy?: string): Promise<any[]> {
+    const type = resultClass ? this.metamodel.entity(resultClass) : null;
+    const backendType = type?.getMetadata("backendType")
+
+    if (!type || !backendType || backendType !== "analytics") {
+      throw new Error("Only analytics entities can execute queries")
+    }
+
+    const uriSize = (this.connection?.host.length || 0) + query.length;
+    let msg;
+    if (uriSize > Query.MAX_URI_SIZE) {
+      msg = new message.ExecuteQueryPOST(type.name, query, triggeredBy).entity(query, 'text');
+    } else {
+      msg = new message.ExecuteQuery (type.name, query, triggeredBy);
+    }
+
+    return this.send(msg).then((response) => response.entity);
   }
 
   private _getUserReference(entityClass: Class<model.User> | string, user: string | model.User): model.User {

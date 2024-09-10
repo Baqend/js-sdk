@@ -472,13 +472,12 @@ interface AdhocQuery {
    * @param sort The sort object
    * @param eager indicates if the query result should be sent back as ids or as objects
    * @param hinted indicates whether the query should be cached even when capacity limit is reached
-   * @param triggeredBy indicates who or what triggred the query
    */
-  new(bucket: string, q: string, start?: number, count?: number, sort?: string, eager?: boolean, hinted?: boolean, triggeredBy?: string): Message;
+  new(bucket: string, q: string, start?: number, count?: number, sort?: string, eager?: boolean, hinted?: boolean): Message;
 }
 export const AdhocQuery = Message.create<AdhocQuery>({
   method: 'GET',
-  path: '/db/:bucket/query?q&start=0&count=-1&sort=&eager=&hinted=&triggeredBy=',
+  path: '/db/:bucket/query?q&start=0&count=-1&sort=&eager=&hinted=',
   status: [200],
 });
 
@@ -1733,5 +1732,39 @@ interface Mail {
 export const Mail = Message.create<Mail>({
   method: 'POST',
   path: '/mail',
+  status: [200],
+});
+
+interface ExecuteQuery {
+  /**
+   * Executes a raw query
+   * Executes the given query and returns a list of matching objects.
+   *
+   * @param bucket The bucket name
+   * @param q The query
+   * @param triggeredBy Who or what triggered the query
+   */
+  new(bucket: string, q: string, triggeredBy?: string): Message;
+}
+export const ExecuteQuery = Message.create<ExecuteQuery>({
+  method: 'GET',
+  path: '/db/:bucket/query?q&triggeredBy=',
+  status: [200],
+});
+
+interface ExecuteQueryPOST {
+  /**
+   * Executes a raw query
+   * Executes the given query and returns a list of matching objects.
+   *
+   * @param bucket The bucket name
+   * @param body The massage Content
+   * @param triggeredBy Who or what triggered the query
+   */
+  new(bucket: string, body?: string, triggeredBy?: string): Message;
+}
+export const ExecuteQueryPOST = Message.create<ExecuteQueryPOST>({
+  method: 'POST',
+  path: '/db/:bucket/query?triggeredBy=',
   status: [200],
 });

@@ -955,17 +955,15 @@ describe('Test Query', function () {
       this.timeout(300000);
 
       const newDb = localEmf.createEntityManager();
-      await newDb.User.login("root", "root");
+      await newDb.User.login("root", "root")
 
-      return newDb["rum.Pi"]
-          .find()
-          .where(
-              "SELECT * FROM rum.pi WHERE date BETWEEN '2024-06-17' AND '2024-06-18' limit 5",
+      return newDb["rum.Pi"].executeQuery(
+              "SELECT * FROM rum.pi WHERE date BETWEEN '2024-06-17' AND '2024-06-18' AND app = 'def-shop' limit 5",
+              "by-me"
           )
-          .resultList()
           .then(function (response) {
-            console.log(response);
             expect(response).not.empty;
+            expect(response[0].app).equals("def-shop");
           });
     });
   });
