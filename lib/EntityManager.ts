@@ -1399,7 +1399,7 @@ export class EntityManager extends Lockable {
     return this.send(msg);
   }
 
-  executeQuery<T extends Entity>(resultClass: Class<T>, query: string, triggeredBy?: string): Promise<any[]> {
+  executeQuery<T extends Entity>(resultClass: Class<T>, query: string, triggeredBy: string): Promise<any[]> {
     const type = resultClass ? this.metamodel.entity(resultClass) : null;
     const backendType = type?.getMetadata("backendType")
 
@@ -1410,7 +1410,7 @@ export class EntityManager extends Lockable {
     const uriSize = (this.connection?.host.length || 0) + query.length;
     let msg;
     if (uriSize > Query.MAX_URI_SIZE) {
-      msg = new message.ExecuteQueryPOST(type.name, query, triggeredBy).entity(query, 'text');
+      msg = new message.ExecuteQueryPOST(type.name, triggeredBy, query).entity(query, 'text');
     } else {
       msg = new message.ExecuteQuery (type.name, query, triggeredBy);
     }

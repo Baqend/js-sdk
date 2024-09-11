@@ -83,7 +83,7 @@ export class EntityFactory<T extends Entity> extends ManagedFactory<T> {
    * @param query The query to be executed
    * @param triggeredBy Who or what triggered this query
    */
-  executeQuery(query: string, triggeredBy?: string): Promise<any[]> {
+  executeQuery(query: string, triggeredBy: string): Promise<any[]> {
     return this.db.executeQuery(this.managedType.typeConstructor, query, triggeredBy);
   }
 }

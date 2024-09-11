@@ -1744,7 +1744,7 @@ interface ExecuteQuery {
    * @param q The query
    * @param triggeredBy Who or what triggered the query
    */
-  new(bucket: string, q: string, triggeredBy?: string): Message;
+  new(bucket: string, q: string, triggeredBy: string): Message;
 }
 export const ExecuteQuery = Message.create<ExecuteQuery>({
   method: 'GET',
@@ -1761,7 +1761,7 @@ interface ExecuteQueryPOST {
    * @param body The massage Content
    * @param triggeredBy Who or what triggered the query
    */
-  new(bucket: string, body?: string, triggeredBy?: string): Message;
+  new(bucket: string, triggeredBy: string, body?: string) : Message;
 }
 export const ExecuteQueryPOST = Message.create<ExecuteQueryPOST>({
   method: 'POST',
