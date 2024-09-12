@@ -141,18 +141,6 @@ export const Status = Message.create<Status>({
   status: [200],
 });
 
-interface EventsUrl {
-  /**
-   * Gets the event Endpoint
-   */
-  new(): Message;
-}
-export const EventsUrl = Message.create<EventsUrl>({
-  method: 'GET',
-  path: '/events-url',
-  status: [200],
-});
-
 interface BannedIp {
   /**
    * Determines whether the IP has exceeded its rate limit
@@ -472,12 +460,13 @@ interface AdhocQuery {
    * @param sort The sort object
    * @param eager indicates if the query result should be sent back as ids or as objects
    * @param hinted indicates whether the query should be cached even when capacity limit is reached
+   * @param triggeredBy indicating who or what that triggered the query
    */
-  new(bucket: string, q: string, start?: number, count?: number, sort?: string, eager?: boolean, hinted?: boolean): Message;
+  new(bucket: string, q: string, start?: number, count?: number, sort?: string, eager?: boolean, hinted?: boolean, triggeredBy?: string): Message;
 }
 export const AdhocQuery = Message.create<AdhocQuery>({
   method: 'GET',
-  path: '/db/:bucket/query?q&start=0&count=-1&sort=&eager=&hinted=',
+  path: '/db/:bucket/query?q&start=0&count=-1&sort=&eager=&hinted=&triggeredBy=',
   status: [200],
 });
 
@@ -490,13 +479,14 @@ interface AdhocQueryPOST {
    * @param start The offset to start from
    * @param count The number of objects to list
    * @param sort The sort object
+   * @param triggeredBy Who or what that triggered the query
    * @param body The massage Content
    */
-  new(bucket: string, start?: number, count?: number, sort?: string, body?: string): Message;
+  new(bucket: string, start?: number, count?: number, sort?: string, triggeredBy?: string, body?: string): Message;
 }
 export const AdhocQueryPOST = Message.create<AdhocQueryPOST>({
   method: 'POST',
-  path: '/db/:bucket/query?start=0&count=-1&sort=',
+  path: '/db/:bucket/query?start=0&count=-1&sort=&triggeredBy=',
   status: [200],
 });
 
@@ -1668,12 +1658,13 @@ interface ActivateInstallationByDomainAndConfigVersion {
    *
    * @param domain domain to be activated
    * @param configVersion configVersion to be activated (current active version of the same domain)
+   * @param testing for switch between testing and active installation status
    */
-  new(domain: string, configVersion: string): Message;
+  new(domain: string, configVersion: string, testing?: string): Message;
 }
 export const ActivateInstallationByDomainAndConfigVersion = Message.create<ActivateInstallationByDomainAndConfigVersion>({
   method: 'POST',
-  path: '/speedkit/installation/:domain/:configVersion/activate',
+  path: '/speedkit/installation/:domain/:configVersion/activate?testing=',
   status: [200],
 });
 
@@ -1682,12 +1673,13 @@ interface ActivateInstallationById {
    * Activate a selected speedKit install configuration version by selecting the current active version of the same domain
    *
    * @param id Id of a Speed Kit Installation to be activated
+   * @param testing for switch between testing and active installation status
    */
-  new(id: string): Message;
+  new(id: string, testing?: string): Message;
 }
 export const ActivateInstallationById = Message.create<ActivateInstallationById>({
   method: 'POST',
-  path: '/speedkit/installation/:id/activate',
+  path: '/speedkit/installation/:id/activate?testing=',
   status: [200],
 });
 
@@ -1720,6 +1712,20 @@ export const GetAllDomains = Message.create<GetAllDomains>({
   status: [200],
 });
 
+interface DeactivateTestingInstallationById {
+  /**
+   * Deactivate a selected SpeedKit intallation
+   *
+   * @param id Id of a Speed Kit Installation to be deactivated
+   */
+  new(id: string): Message;
+}
+export const DeactivateTestingInstallationById = Message.create<DeactivateTestingInstallationById>({
+  method: 'PUT',
+  path: '/speedkit/installation/:id/deactivate',
+  status: [200],
+});
+
 interface Mail {
   /**
    * Endpoint to send e-mails
@@ -1732,39 +1738,5 @@ interface Mail {
 export const Mail = Message.create<Mail>({
   method: 'POST',
   path: '/mail',
-  status: [200],
-});
-
-interface ExecuteQuery {
-  /**
-   * Executes a raw query
-   * Executes the given query and returns a list of matching objects.
-   *
-   * @param bucket The bucket name
-   * @param q The query
-   * @param triggeredBy Who or what triggered the query
-   */
-  new(bucket: string, q: string, triggeredBy: string): Message;
-}
-export const ExecuteQuery = Message.create<ExecuteQuery>({
-  method: 'GET',
-  path: '/db/:bucket/query?q&triggeredBy=',
-  status: [200],
-});
-
-interface ExecuteQueryPOST {
-  /**
-   * Executes a raw query
-   * Executes the given query and returns a list of matching objects.
-   *
-   * @param bucket The bucket name
-   * @param body The massage Content
-   * @param triggeredBy Who or what triggered the query
-   */
-  new(bucket: string, triggeredBy: string, body?: string) : Message;
-}
-export const ExecuteQueryPOST = Message.create<ExecuteQueryPOST>({
-  method: 'POST',
-  path: '/db/:bucket/query?triggeredBy=',
   status: [200],
 });
