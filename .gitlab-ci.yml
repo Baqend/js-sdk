@@ -26,6 +26,8 @@ variables:
   CI_DEBUG_SERVICES: "true"
   ORESTES_BRANCH: "master"
   NODE_BRANCH: "master"
+  AWS_ACCESS_KEY_ID: "localstack"
+  AWS_SECRET_ACCESS_KEY: "localstack"
 
 stages:
   - build
