@@ -1,3 +1,9 @@
+## 4.1.0 (2024-11-19)
+
+### Features
+
+* implement raw / analytics queries via existing query interface be67b64
+
 # 4.0.0 (2024-08-23)
 
 
