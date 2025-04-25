@@ -959,7 +959,8 @@ describe('Test Query', function () {
 
       return newDb["rum.Pi"].executeQuery(
               "SELECT * FROM rum.pi WHERE date BETWEEN '2024-06-17' AND '2024-06-18' AND app = 'def-shop' limit 5",
-              "by-me"
+              "by-me",
+          "1"
           )
           .then(function (response) {
             expect(response).not.empty;
