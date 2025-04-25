@@ -462,11 +462,11 @@ interface AdhocQuery {
    * @param hinted indicates whether the query should be cached even when capacity limit is reached
    * @param triggeredBy indicating who or what that triggered the query
    */
-  new(bucket: string, q: string, start?: number, count?: number, sort?: string, eager?: boolean, hinted?: boolean, triggeredBy?: string): Message;
+  new(bucket: string, q: string, start?: number, count?: number, sort?: string, eager?: boolean, hinted?: boolean, triggeredBy?: string, ttl?:string): Message;
 }
 export const AdhocQuery = Message.create<AdhocQuery>({
   method: 'GET',
-  path: '/db/:bucket/query?q&start=0&count=-1&sort=&eager=&hinted=&triggeredBy=',
+  path: '/db/:bucket/query?q&start=0&count=-1&sort=&eager=&hinted=&triggeredBy=&ttl=',
   status: [200],
 });
 
@@ -482,11 +482,11 @@ interface AdhocQueryPOST {
    * @param triggeredBy Who or what that triggered the query
    * @param body The massage Content
    */
-  new(bucket: string, start?: number, count?: number, sort?: string, triggeredBy?: string, body?: string): Message;
+  new(bucket: string, start?: number, count?: number, sort?: string, triggeredBy?: string, ttl?:string,  body?: string): Message;
 }
 export const AdhocQueryPOST = Message.create<AdhocQueryPOST>({
   method: 'POST',
-  path: '/db/:bucket/query?start=0&count=-1&sort=&triggeredBy=',
+  path: '/db/:bucket/query?start=0&count=-1&sort=&triggeredBy=&ttl=',
   status: [200],
 });
 

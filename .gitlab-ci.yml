@@ -94,7 +94,7 @@ node-test-job:
         - '/bin/bash'
         - '-c'
         - |
-          curl --retry 5 --retry-max-time 120 http://localstack:4566; # wait for localstack to come up
+          curl --retry 12 --retry-all-errors --retry-max-time 120 http://localstack:4566; # wait for localstack to come up
           aws --endpoint-url=http://localstack:4566 s3 mb s3://asset-files;
           aws --endpoint-url=http://localstack:4566 s3api put-object --bucket=asset-files --key status;
       command: ["--endpoint-url=http://localstack:4566", "s3api", "put-object", "s3://asset-files"]
@@ -151,7 +151,7 @@ web-test-job:
         - '/bin/bash'
         - '-c'
         - |
-          curl --retry 5 --retry-max-time 120 http://localstack:4566; # wait for localstack to come up
+          curl --retry 12 --retry-all-errors --retry-max-time 120 http://localstack:4566; # wait for localstack to come up
           aws --endpoint-url=http://localstack:4566 s3 mb s3://asset-files;
           aws --endpoint-url=http://localstack:4566 s3api put-object --bucket=asset-files --key status;
       command: ["--endpoint-url=http://localstack:4566", "s3api", "put-object", "s3://asset-files"]
