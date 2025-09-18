@@ -394,9 +394,7 @@ export class EntityManager extends Lockable {
    *
    * After the close method has been invoked, all methods on the EntityManager instance
    * and any Query and TypedQuery objects obtained from it will throw the IllegalStateError
-   * except for transaction, and isOpen (which will return false). If this method
-   * is called when the entity manager is associated with an active transaction,
-   * the persistence context remains managed until the transaction completes.
+   * and isOpen (which will return false).
    *
    * @return
    */
