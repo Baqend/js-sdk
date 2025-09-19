@@ -194,6 +194,7 @@ release:
     GIT_COMMITTER_EMAIL: ci@baqend.com
     GIT_COMMITTER_NAME: Baqend CI
   before_script:
+    - export GITLAB_TOKEN=$SEMANTIC_RELEASE
     - apt-get update
     - apt-get install -y awscli
     - npm install -g semantic-release @semantic-release/{gitlab,changelog,git,exec} conventional-changelog-conventionalcommits
