@@ -25,7 +25,6 @@ variables:
   FF_NETWORK_PER_BUILD: "true"
   CI_DEBUG_SERVICES: "true"
   ORESTES_BRANCH: "master"
-  NODE_BRANCH: "master"
   AWS_ACCESS_KEY_ID: "localstack"
   AWS_SECRET_ACCESS_KEY: "localstack"
 
@@ -71,16 +70,16 @@ commitlint:
   rules:
     - if: $CI_MERGE_REQUEST_IID != null
 
-node-test-job:
-  image: public.ecr.aws/docker/library/node:$NODE_VERSION
+.test-template:
   stage: test
+  tags:
+    - singletask
   dependencies:
     - build-job
   variables:
     TEST_SERVER: "https://local.baqend.com:8443/v1"
-  parallel:
-    matrix:
-      - NODE_VERSION: [ 16, 18, 20 ]
+    ORESTES_HTTP_HTTP2: "true"
+    ORESTES_TOKEN: $ORESTES_NODE_TESTING_TOKEN
   services:
     - name: public.ecr.aws/docker/library/mongo:4
       alias: mongo
@@ -99,9 +98,12 @@ node-test-job:
           aws --endpoint-url=http://localstack:4566 s3api put-object --bucket=asset-files --key status;
       command: ["--endpoint-url=http://localstack:4566", "s3api", "put-object", "s3://asset-files"]
       alias: orestes-init
-    - name: "${CI_REGISTRY}/team-backend/orestes/orestes-node:${NODE_BRANCH}"
+    - name: "${CI_REGISTRY}/team-backend/orestes/orestes-server/node:22-${ORESTES_BRANCH}"
       alias: node
-      command: [ "tcp://local.baqend.com:8081", "http://local.baqend.com:8080/v1", "debug" ]
+      variables:
+        ORESTES_HOST: "http://local.baqend.com:8080/v1"
+        DEBUG: "true"
+        TOKEN: "${ORESTES_TOKEN}"
       pull_policy: [always, if-not-present]
     - name: "${CI_REGISTRY}/team-backend/orestes/orestes-server:${ORESTES_BRANCH}"
       alias: local.baqend.com
@@ -118,68 +120,38 @@ node-test-job:
         ORESTES_BLOOMFILTER_LOCATION: memory:/
         ORESTES_AWS_SNS_ENABLED: "true"
         ORESTES_AWS_SNS_ENDPOINT: "http://localstack:4566"
-  script:
-    - npm run test:node
+        ORESTES_NODE_ADDRESS: "http://node:3000"
+        ORESTES_HTTP_HTTP2: $ORESTES_HTTP_HTTP2
   artifacts:
     when: always
+
+node-test-job:
+  extends: .test-template
+  image: public.ecr.aws/docker/library/node:$NODE_VERSION
+  parallel:
+    matrix:
+      - NODE_VERSION: [ 18, 20, 22 ]
+  script:
+    - env
+    - npm run test:node
+  artifacts:
     reports:
       junit:
         - ./node-result.xml
 
 
 web-test-job:
+  extends: .test-template
   image: mcr.microsoft.com/playwright:v1.38.0-jammy
-  stage: test
-  dependencies:
-    - build-job
   variables:
-    TEST_SERVER: "https://local.baqend.com:8443/v1"
     # DEBUG: pw:api
+    ORESTES_HTTP_HTTP2: "false" # we need to disabled http2, otherwise the query spec "should allow large query" and the code spec "should accept blob parameter" are failing in webkit
   parallel:
     matrix:
       - BROWSER: [ Chromium, Firefox, Webkit ]
-  services:
-    - name: public.ecr.aws/docker/library/mongo:4
-      alias: mongo
-    - public.ecr.aws/docker/library/redis:5.0
-    - name: public.ecr.aws/localstack/localstack:latest
-      alias: localstack
-      variables:
-        SERVICES: s3,sns
-    - name: public.ecr.aws/aws-cli/aws-cli:latest
-      entrypoint:
-        - '/bin/bash'
-        - '-c'
-        - |
-          curl --retry 12 --retry-all-errors --retry-max-time 120 http://localstack:4566; # wait for localstack to come up
-          aws --endpoint-url=http://localstack:4566 s3 mb s3://asset-files;
-          aws --endpoint-url=http://localstack:4566 s3api put-object --bucket=asset-files --key status;
-      command: ["--endpoint-url=http://localstack:4566", "s3api", "put-object", "s3://asset-files"]
-      alias: orestes-init
-    - name: "${CI_REGISTRY}/team-backend/orestes/orestes-node:${NODE_BRANCH}"
-      alias: node
-      command: [ "tcp://local.baqend.com:8081", "http://local.baqend.com:8080/v1", "debug" ]
-      pull_policy: [always, if-not-present]
-    - name: "${CI_REGISTRY}/team-backend/orestes/orestes-server:${ORESTES_BRANCH}"
-      alias: local.baqend.com
-      pull_policy: [always, if-not-present]
-      variables:
-        ORESTES_MONGO_ENABLED: "true"
-        ORESTES_MONGO_SERVERS: "tcp://mongo:27017"
-        AWS_ACCESS_KEY_ID: anykey
-        AWS_SECRET_ACCESS_KEY: anysecret
-        ORESTES_AWS_S3_ENABLED: "true"
-        ORESTES_AWS_S3_ENDPOINT: http://localstack:4566
-        ORESTES_AWS_S3_BUCKET: asset-files
-        ORESTES_STATE_LOCATION: memory:/
-        ORESTES_BLOOMFILTER_LOCATION: memory:/
-        ORESTES_AWS_SNS_ENABLED: "true"
-        ORESTES_AWS_SNS_ENDPOINT: "http://localstack:4566"
-        ORESTES_HTTP_HTTP2: "false" # we need to disabled http2, otherwise the query spec "should allow large query" and the code spec "should accept blob parameter" are failing in webkit
   script:
     - npm run test:playwright -- --debug
   artifacts:
-    when: always
     reports:
       junit:
         - ./playwright-result.xml
