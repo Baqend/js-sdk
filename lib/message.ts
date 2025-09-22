@@ -606,34 +606,6 @@ export const GetQueryParameters = Message.create<GetQueryParameters>({
   status: [200],
 });
 
-interface NewTransaction {
-  /**
-   * Starts a new Transaction
-   */
-  new(): Message;
-}
-export const NewTransaction = Message.create<NewTransaction>({
-  method: 'POST',
-  path: '/transaction',
-  status: [201],
-});
-
-interface CommitTransaction {
-  /**
-   * Commits the transaction
-   * If the transaction can be completed a list of all changed objects with their updated versions are returned.
-   *
-   * @param tid The transaction id
-   * @param body The massage Content
-   */
-  new(tid: string, body?: json): Message;
-}
-export const CommitTransaction = Message.create<CommitTransaction>({
-  method: 'PUT',
-  path: '/transaction/:tid/committed',
-  status: [200],
-});
-
 interface UpdatePartially {
   /**
    * Update the object
