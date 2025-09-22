@@ -1,3 +1,9 @@
+## 4.2.0 (2025-09-22)
+
+### Features
+
+* **athena:** add ttl param to query request 4407d18
+
 ## 4.1.0 (2024-11-19)
 
 ### Features
