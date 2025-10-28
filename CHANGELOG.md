@@ -1,3 +1,9 @@
+## 4.2.2 (2025-10-28)
+
+### Bug Fixes
+
+* update messages to correctly reflect the server API ab6bd40
+
 ## 4.2.1 (2025-10-28)
 
 ### Bug Fixes
