@@ -461,8 +461,9 @@ interface AdhocQuery {
    * @param eager indicates if the query result should be sent back as ids or as objects
    * @param hinted indicates whether the query should be cached even when capacity limit is reached
    * @param triggeredBy indicating who or what that triggered the query
+   * @param ttl The ttl for the athena query in a duration syntax. Can't be lower than 1m
    */
-  new(bucket: string, q: string, start?: number, count?: number, sort?: string, eager?: boolean, hinted?: boolean, triggeredBy?: string, ttl?:string): Message;
+  new(bucket: string, q: string, start?: number, count?: number, sort?: string, eager?: boolean, hinted?: boolean, triggeredBy?: string, ttl?: string): Message;
 }
 export const AdhocQuery = Message.create<AdhocQuery>({
   method: 'GET',
@@ -480,10 +481,10 @@ interface AdhocQueryPOST {
    * @param count The number of objects to list
    * @param sort The sort object
    * @param triggeredBy Who or what that triggered the query
-   * @param ttl The time to live of the query in athena
+   * @param ttl The ttl for the athena query in a duration syntax. Can't be lower than 1m
    * @param body The massage Content
    */
-  new(bucket: string, start?: number, count?: number, sort?: string, triggeredBy?: string, ttl?: string,  body?: string): Message;
+  new(bucket: string, start?: number, count?: number, sort?: string, triggeredBy?: string, ttl?: string, body?: string): Message;
 }
 export const AdhocQueryPOST = Message.create<AdhocQueryPOST>({
   method: 'POST',
@@ -1033,6 +1034,18 @@ interface GetAllModules {
 export const GetAllModules = Message.create<GetAllModules>({
   method: 'GET',
   path: '/code',
+  status: [200],
+});
+
+interface GetAllCodeContent {
+  /**
+   * List all available modules
+   */
+  new(): Message;
+}
+export const GetAllCodeContent = Message.create<GetAllCodeContent>({
+  method: 'GET',
+  path: '/code-content',
   status: [200],
 });
 
@@ -1690,12 +1703,13 @@ interface DeactivateTestingInstallationById {
    * Deactivate a selected SpeedKit intallation
    *
    * @param id Id of a Speed Kit Installation to be deactivated
+   * @param force set to 'true' to deactivate an ACTIVE installation (admin only)
    */
-  new(id: string): Message;
+  new(id: string, force?: string): Message;
 }
 export const DeactivateTestingInstallationById = Message.create<DeactivateTestingInstallationById>({
   method: 'PUT',
-  path: '/speedkit/installation/:id/deactivate',
+  path: '/speedkit/installation/:id/deactivate?force=',
   status: [200],
 });
 
@@ -1711,5 +1725,41 @@ interface Mail {
 export const Mail = Message.create<Mail>({
   method: 'POST',
   path: '/mail',
+  status: [200],
+});
+
+interface Ready {
+  /**
+   * Readiness
+   */
+  new(): Message;
+}
+export const Ready = Message.create<Ready>({
+  method: 'GET',
+  path: '/-/ready',
+  status: [200],
+});
+
+interface Live {
+  /**
+   * Liveness
+   */
+  new(): Message;
+}
+export const Live = Message.create<Live>({
+  method: 'GET',
+  path: '/-/live',
+  status: [200],
+});
+
+interface Startup {
+  /**
+   * Startup
+   */
+  new(): Message;
+}
+export const Startup = Message.create<Startup>({
+  method: 'GET',
+  path: '/-/startup',
   status: [200],
 });
