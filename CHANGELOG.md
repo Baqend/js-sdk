@@ -1,3 +1,9 @@
+## 4.2.1 (2025-10-28)
+
+### Bug Fixes
+
+* switch ahdoc query post paramters f564630
+
 ## 4.2.0 (2025-09-22)
 
 ### Features
