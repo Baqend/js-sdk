@@ -1411,7 +1411,7 @@ export class EntityManager extends Lockable {
     const uriSize = (this.connection?.host.length || 0) + query.length;
     let msg;
     if (uriSize > Query.MAX_URI_SIZE) {
-      msg = new messages.AdhocQueryPOST(type.name, undefined, undefined, undefined, triggeredBy, query, ttl)
+      msg = new messages.AdhocQueryPOST(type.name, undefined, undefined, undefined, triggeredBy, ttl, query)
         .entity(query, 'text');
     } else {
       msg = new message.AdhocQuery(type.name,

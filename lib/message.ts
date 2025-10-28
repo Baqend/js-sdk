@@ -480,9 +480,10 @@ interface AdhocQueryPOST {
    * @param count The number of objects to list
    * @param sort The sort object
    * @param triggeredBy Who or what that triggered the query
+   * @param ttl The time to live of the query in athena
    * @param body The massage Content
    */
-  new(bucket: string, start?: number, count?: number, sort?: string, triggeredBy?: string, ttl?:string,  body?: string): Message;
+  new(bucket: string, start?: number, count?: number, sort?: string, triggeredBy?: string, ttl?: string,  body?: string): Message;
 }
 export const AdhocQueryPOST = Message.create<AdhocQueryPOST>({
   method: 'POST',
