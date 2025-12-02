@@ -1,6 +1,6 @@
 /* eslint-disable no-await-in-loop, no-return-await, @typescript-eslint/return-await */
 import fs from 'fs';
-import glob from 'glob';
+import { glob } from 'glob';
 import { join as pathJoin } from 'path';
 import readline from 'readline';
 import { EntityManager, intersection } from 'baqend';
@@ -55,13 +55,7 @@ Promise<void> {
     await ensureRootBucket(db, bucket);
   }
 
-  const files = await (new Promise<string[]>((resolve, reject) => {
-    glob(pattern, { nodir: true, cwd }, (er, fileList) => {
-      if (er) reject(er);
-      else resolve(fileList);
-    });
-  }));
-
+  const files = await glob(pattern);
   const result = await uploadFiles(db, bucket, files, cwd);
   if (result && result.length > 0) {
     console.log('File deployment completed.');

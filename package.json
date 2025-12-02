@@ -42,7 +42,7 @@
   "types": "./commonjs/lib/index.d.ts",
   "dependencies": {
     "commander": "^7.2.0",
-    "glob": "^7.2.3",
+    "glob": "^10.5.0",
     "inquirer": "^8.2.5",
     "open": "^8.4.2",
     "rimraf": "^3.0.2",
