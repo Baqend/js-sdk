@@ -1,3 +1,9 @@
+## 4.2.3 (2025-12-04)
+
+### Bug Fixes
+
+* upgrade glob to 10.5.0 a7b884b
+
 ## 4.2.2 (2025-10-28)
 
 ### Bug Fixes
