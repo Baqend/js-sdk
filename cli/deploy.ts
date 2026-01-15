@@ -55,7 +55,7 @@ Promise<void> {
     await ensureRootBucket(db, bucket);
   }
 
-  const files = await glob(pattern);
+  const files = await glob(pattern, { nodir: true, cwd });
   const result = await uploadFiles(db, bucket, files, cwd);
   if (result && result.length > 0) {
     console.log('File deployment completed.');
