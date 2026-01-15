@@ -1,3 +1,9 @@
+## 4.2.4 (2026-01-15)
+
+### Bug Fixes
+
+* **cli:** restore glob options in file deployment 99bc74e
+
 ## 4.2.3 (2025-12-04)
 
 ### Bug Fixes
