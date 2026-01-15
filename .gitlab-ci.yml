@@ -167,6 +167,7 @@ release:
     GIT_COMMITTER_NAME: Baqend CI
   before_script:
     - export GITLAB_TOKEN=$SEMANTIC_RELEASE
+    - git remote set-url origin "https://oauth2:${SEMANTIC_RELEASE}@${CI_SERVER_HOST}/${CI_PROJECT_PATH}.git"
     - apt-get update
     - apt-get install -y awscli
     - npm install -g semantic-release @semantic-release/{gitlab,changelog,git,exec} conventional-changelog-conventionalcommits
