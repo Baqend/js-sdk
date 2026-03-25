@@ -40,11 +40,22 @@ export class Permission {
 
   /**
    * Gets whenever all users and roles have the permission to perform the operation
+   *
+   * Public access is expressed explicitly by the wildcard allow rule
+   * (`{'*': 'allow'}`). For backwards compatibility an empty rule set (no
+   * allow rules at all) is still treated as public, matching object/file
+   * instance ACLs and pre-migration server payloads. A wildcard deny rule
+   * (`{'*': 'deny'}`) or any specific allow rule means access is not public.
+   *
    * @return <code>true</code> If public access is allowed
    */
   isPublicAllowed(): boolean {
-    if ('*' in this.rules) {
+    if (this.rules['*'] === 'deny') {
       return false;
+    }
+
+    if (this.rules['*'] === 'allow') {
+      return true;
     }
 
     return !this.allRules().some((ref) => this.rules[ref] === 'allow');
@@ -53,16 +64,20 @@ export class Permission {
   /**
    * Sets whenever all users and roles should have the permission to perform the operation
    *
-   * Note: All other allow rules will be removed.
+   * Public access is represented explicitly as a wildcard allow rule
+   * (`{'*': 'allow'}`) so it can be distinguished from an unconfigured
+   * permission (empty rules) over the wire. Any other allow rules become
+   * redundant and are removed; existing deny rules are kept.
    *
    * @return
    */
   setPublicAllowed(): void {
     this.allRules().forEach((ref) => {
-      if (this.rules[ref] === 'allow') {
+      if (ref !== '*' && this.rules[ref] === 'allow') {
         delete this.rules[ref];
       }
     });
+    this.rules['*'] = 'allow';
   }
 
   /**
@@ -135,9 +150,14 @@ export class Permission {
 
   /**
    * A Json representation of the set of rules
-   * @return
+   * @return A Json representation of the rules, or `undefined` when no rules
+   *         are set so the key can be omitted from serialized schema JSON and
+   *         server-side defaults take effect
    */
-  toJSON(): JsonMap {
+  toJSON(): JsonMap | undefined {
+    if (Object.keys(this.rules).length === 0) {
+      return undefined;
+    }
     return { ...this.rules };
   }
 

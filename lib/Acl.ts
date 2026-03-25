@@ -191,8 +191,8 @@ export class Acl {
    */
   toJSON(): JsonMap {
     return {
-      read: this.read.toJSON(),
-      write: this.write.toJSON(),
+      read: this.read.toJSON() || {},
+      write: this.write.toJSON() || {},
     };
   }
 

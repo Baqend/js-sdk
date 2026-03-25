@@ -356,16 +356,23 @@ export class EntityType<T extends Entity> extends ManagedType<T> {
   toJSON(): JsonMap {
     const { acl, ...json } = super.toJSON();
 
+    const schemaSubclass = this.schemaSubclassPermission.toJSON();
+    const load = this.loadPermission.toJSON();
+    const insert = this.insertPermission.toJSON();
+    const update = this.updatePermission.toJSON();
+    const del = this.deletePermission.toJSON();
+    const query = this.queryPermission.toJSON();
+
     return {
       ...json,
       acl: {
         ...acl as object,
-        schemaSubclass: this.schemaSubclassPermission.toJSON(),
-        load: this.loadPermission.toJSON(),
-        insert: this.insertPermission.toJSON(),
-        update: this.updatePermission.toJSON(),
-        delete: this.deletePermission.toJSON(),
-        query: this.queryPermission.toJSON(),
+        ...(schemaSubclass && { schemaSubclass }),
+        ...(load && { load }),
+        ...(insert && { insert }),
+        ...(update && { update }),
+        ...(del && { delete: del }),
+        ...(query && { query }),
       },
     };
   }

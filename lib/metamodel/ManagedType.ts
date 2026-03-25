@@ -273,12 +273,15 @@ export abstract class ManagedType<T extends Managed> extends Type<T> {
       }
     });
 
+    const schemaAdd = this.schemaAddPermission.toJSON();
+    const schemaReplace = this.schemaReplacePermission.toJSON();
+
     return {
       class: this.ref,
       fields,
       acl: {
-        schemaAdd: this.schemaAddPermission.toJSON(),
-        schemaReplace: this.schemaReplacePermission.toJSON(),
+        ...(schemaAdd && { schemaAdd }),
+        ...(schemaReplace && { schemaReplace }),
       },
       ...(this.superType && { superClass: this.superType.ref }),
       ...(this.isEmbeddable && { embedded: true }),

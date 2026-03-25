@@ -425,6 +425,135 @@ describe('Test metamodel classes', function () {
       expect(names).length(0);
     });
   });
+
+  describe('Serialization', function () {
+    it('Permission.toJSON() should return undefined when rules are empty', function () {
+      var permission = new DB.intersection.Permission();
+      expect(permission.toJSON()).be.undefined;
+    });
+
+    it('Permission.toJSON() should return the rules map when non-empty', function () {
+      var permission = new DB.intersection.Permission();
+      permission.rules = { '/db/User/1': 'allow' };
+      expect(permission.toJSON()).eql({ '/db/User/1': 'allow' });
+    });
+
+    it('Permission.setPublicAllowed() should represent public as a wildcard allow rule', function () {
+      var permission = new DB.intersection.Permission();
+      permission.setPublicAllowed();
+      expect(permission.rules).eql({ '*': 'allow' });
+    });
+
+    it('Permission.setPublicAllowed() should drop other allow rules but keep deny rules', function () {
+      var permission = new DB.intersection.Permission();
+      permission.rules = { '/db/User/1': 'allow', '/db/User/2': 'deny' };
+      permission.setPublicAllowed();
+      expect(permission.rules).eql({ '/db/User/2': 'deny', '*': 'allow' });
+    });
+
+    it('Permission.toJSON() should emit the wildcard allow rule for a public permission', function () {
+      var permission = new DB.intersection.Permission();
+      permission.setPublicAllowed();
+      expect(permission.toJSON()).eql({ '*': 'allow' });
+    });
+
+    it('Permission.isPublicAllowed() should treat empty rules as public (legacy/instance ACLs)', function () {
+      var permission = new DB.intersection.Permission();
+      expect(permission.isPublicAllowed()).be.true;
+    });
+
+    it('Permission.isPublicAllowed() should treat a wildcard allow rule as public', function () {
+      var permission = new DB.intersection.Permission();
+      permission.rules = { '*': 'allow' };
+      expect(permission.isPublicAllowed()).be.true;
+    });
+
+    it('Permission.isPublicAllowed() should treat a wildcard deny rule as not public', function () {
+      var permission = new DB.intersection.Permission();
+      permission.rules = { '*': 'deny' };
+      expect(permission.isPublicAllowed()).be.false;
+    });
+
+    it('Permission.isPublicAllowed() should treat a specific allow rule as not public', function () {
+      var permission = new DB.intersection.Permission();
+      permission.rules = { '/db/User/1': 'allow' };
+      expect(permission.isPublicAllowed()).be.false;
+    });
+
+    it('Permission should round-trip a public permission through fromJSON/toJSON', function () {
+      var permission = DB.intersection.Permission.fromJSON({ '*': 'allow' });
+      expect(permission.isPublicAllowed()).be.true;
+      expect(permission.toJSON()).eql({ '*': 'allow' });
+    });
+
+    it('EntityType.toJSON() should omit empty permission keys from the acl', function () {
+      metamodel.init([]);
+      var entity = metamodel.entity(DB.metamodel.EntityType.Object.ref);
+      var acl = entity.toJSON().acl;
+
+      expect(acl).not.have.property('schemaSubclass');
+      expect(acl).not.have.property('load');
+      expect(acl).not.have.property('insert');
+      expect(acl).not.have.property('update');
+      expect(acl).not.have.property('delete');
+      expect(acl).not.have.property('query');
+    });
+
+    it('EntityType.toJSON() should include only populated permission keys in the acl', function () {
+      metamodel.fromJSON([{ class: '/db/test.PermEntity', fields: {} }]);
+      var entity = metamodel.entity('/db/test.PermEntity');
+
+      entity.loadPermission.rules = { '/db/User/u1': 'allow' };
+      entity.deletePermission.rules = { '/db/User/u2': 'deny' };
+
+      var acl = entity.toJSON().acl;
+      expect(acl).have.property('load').eql({ '/db/User/u1': 'allow' });
+      expect(acl).have.property('delete').eql({ '/db/User/u2': 'deny' });
+      expect(acl).not.have.property('schemaSubclass');
+      expect(acl).not.have.property('insert');
+      expect(acl).not.have.property('update');
+      expect(acl).not.have.property('query');
+    });
+
+    it('EntityType.toJSON() should emit a public permission as a wildcard allow rule', function () {
+      metamodel.fromJSON([{ class: '/db/test.PermPublicEntity', fields: {} }]);
+      var entity = metamodel.entity('/db/test.PermPublicEntity');
+
+      entity.insertPermission.setPublicAllowed();
+
+      var acl = entity.toJSON().acl;
+      expect(acl).have.property('insert').eql({ '*': 'allow' });
+      expect(acl).not.have.property('load');
+      expect(acl).not.have.property('update');
+      expect(acl).not.have.property('delete');
+      expect(acl).not.have.property('query');
+    });
+
+    it('ManagedType.toJSON() should omit empty schemaAdd/schemaReplace from the acl', function () {
+      metamodel.fromJSON([{ class: '/db/test.PermEmbeddable', embedded: true, fields: {} }]);
+      var embeddable = metamodel.embeddable('/db/test.PermEmbeddable');
+      var acl = embeddable.toJSON().acl;
+
+      expect(acl).not.have.property('schemaAdd');
+      expect(acl).not.have.property('schemaReplace');
+    });
+
+    it('ManagedType.toJSON() should include only populated schema permission keys', function () {
+      metamodel.fromJSON([{ class: '/db/test.PermEmbeddable2', embedded: true, fields: {} }]);
+      var embeddable = metamodel.embeddable('/db/test.PermEmbeddable2');
+
+      embeddable.schemaAddPermission.rules = { '/db/User/u1': 'allow' };
+
+      var acl = embeddable.toJSON().acl;
+      expect(acl).have.property('schemaAdd').eql({ '/db/User/u1': 'allow' });
+      expect(acl).not.have.property('schemaReplace');
+    });
+
+    it('Acl.toJSON() should return {read:{}, write:{}} when permissions are empty', function () {
+      var acl = new DB.Acl();
+      expect(acl.toJSON()).eql({ read: {}, write: {} });
+    });
+  });
 });
 
 describe('Test Metamodel', function () {
