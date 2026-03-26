@@ -1,3 +1,11 @@
+## 4.2.5 (2026-03-26)
+
+### Bug Fixes
+
+* **ci:** pin LocalStack to v4.12 for SNS compatibility 4a3b125
+* **ci:** pin LocalStack to v4.14 to avoid auth requirement f6664e6
+* clean up stale entity reference after failed partialUpdate on non-existing object 89e5a9f
+
 ## 4.2.4 (2026-01-15)
 
 ### Bug Fixes
