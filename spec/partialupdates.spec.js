@@ -901,5 +901,30 @@ describe('Test Partial Updates', function () {
           expect(loadedFromClass.name).to.equal('Unloaded KSM');
         });
     });
+
+    it('should allow creating an object after a failed partialUpdate on the same non-existing id', async function () {
+      var nonExistingKey = `non_existing_${Math.round(Math.random() * Date.now())}`;
+      var nonExistingId = `/db/PartialUpdatePerson/${nonExistingKey}`;
+
+      // partialUpdate on a non-existing object should fail with 404
+      try {
+        await db.PartialUpdatePerson.partialUpdate(nonExistingKey)
+          .set('name', 'Ghost')
+          .execute();
+        expect.fail('partialUpdate should have thrown');
+      } catch (e) {
+        expect(e.status).to.equal(404);
+      }
+
+      // After the failed partialUpdate, creating an object with the same id should succeed
+      var person = new db.PartialUpdatePerson({
+        key: nonExistingKey,
+        name: 'Created After Failed Update',
+        age: 30,
+      });
+      await person.save({ force: true });
+      expect(person.name).to.equal('Created After Failed Update');
+      expect(person.version).to.be.ok;
+    });
   });
 });

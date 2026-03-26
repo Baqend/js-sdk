@@ -3,6 +3,7 @@ import { JsonMap } from '../util';
 import * as message from '../message';
 import { Entity } from '../binding';
 import { Metadata } from '../intersection';
+import { StatusCode } from '../connector';
 
 export class EntityPartialUpdateBuilder<T extends Entity> extends PartialUpdateBuilder<T> {
   /**
@@ -26,6 +27,11 @@ export class EntityPartialUpdateBuilder<T extends Entity> extends PartialUpdateB
         // Update the entity’s values
         state.type.fromJsonValue(state, response.entity, this.entity, { persisting: true });
         return this.entity;
+      }, (e) => {
+        if (e.status === StatusCode.OBJECT_NOT_FOUND) {
+          state.db.removeReference(this.entity);
+        }
+        throw e;
       })
     ));
   }
