@@ -84,7 +84,7 @@ commitlint:
     - name: public.ecr.aws/docker/library/mongo:4
       alias: mongo
     - public.ecr.aws/docker/library/redis:5.0
-    - name: public.ecr.aws/localstack/localstack:4.14
+    - name: public.ecr.aws/localstack/localstack:4.12
       alias: localstack
       variables:
         SERVICES: s3,sns
