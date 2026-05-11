@@ -6,6 +6,7 @@ import {
 import { PersistentError } from '../error';
 
 import { Message } from './Message';
+import { SDK_VERSION } from '../version';
 
 export class NodeConnector extends Connector {
   private cookie: string | null;
@@ -21,6 +22,16 @@ export class NodeConnector extends Connector {
     super(host, port, secure, basePath);
     this.cookie = null;
     this.http = secure ? https : http;
+  }
+
+  /**
+   * @inheritDoc
+   */
+  prepareRequest(message: Message): Promise<Message> | Message {
+    if (!message.header('user-agent')) {
+      message.header('user-agent', `baqend-sdk-js/${SDK_VERSION}`);
+    }
+    return super.prepareRequest(message);
   }
 
   /**

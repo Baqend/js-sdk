@@ -1,6 +1,7 @@
 /* eslint-disable no-await-in-loop, no-return-await, @typescript-eslint/return-await */
 import fs from 'fs';
 import { glob } from 'glob';
+import { lookup as lookupMimeType } from 'mime-types';
 import { join as pathJoin } from 'path';
 import readline from 'readline';
 import { EntityManager, intersection } from 'baqend';
@@ -162,7 +163,11 @@ async function uploadFile(db: EntityManager, bucket: string, filePath: string, c
   for (let retires = 3; ; retires -= 1) {
     try {
       const file = new db.File({
-        path: `/${bucket}/${filePath}`, data: fs.createReadStream(fullFilePath), size: st.size, type: 'stream',
+        path: `/${bucket}/${filePath}`,
+        data: fs.createReadStream(fullFilePath),
+        size: st.size,
+        type: 'stream',
+        mimeType: lookupMimeType(filePath) || 'application/octet-stream',
       });
 
       return await file.upload({ force: true });

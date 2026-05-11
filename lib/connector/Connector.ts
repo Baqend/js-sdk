@@ -201,6 +201,8 @@ export abstract class Connector {
         message.mimeType('application/json;charset=utf-8');
       } else if (type === 'text') {
         message.mimeType('text/plain;charset=utf-8');
+      } else if (type === 'stream') {
+        message.mimeType('application/octet-stream');
       }
     }
 
