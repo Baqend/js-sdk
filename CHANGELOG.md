@@ -1,3 +1,9 @@
+## 4.2.6 (2026-05-12)
+
+### Bug Fixes
+
+* set Content-Type and User-Agent headers on file upload PUT requests 64c89f8
+
 ## 4.2.5 (2026-03-26)
 
 ### Bug Fixes
