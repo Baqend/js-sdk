@@ -81,6 +81,23 @@ export class Permission {
   }
 
   /**
+   * Revokes public access by removing the wildcard allow rule.
+   *
+   * This is the inverse of {@link setPublicAllowed}. Only the public wildcard
+   * allow rule (`{'*': 'allow'}`) is removed; a wildcard deny rule
+   * (`{'*': 'deny'}`) and all user/role specific rules are left untouched. If no
+   * allow rules remain afterwards the permission serializes as omitted, so the
+   * server applies its default unless access is granted to specific users/roles.
+   *
+   * @return
+   */
+  revokePublic(): void {
+    if (this.rules['*'] === 'allow') {
+      delete this.rules['*'];
+    }
+  }
+
+  /**
    * Returns the actual rule of the given user or role.
    * @param userOrRole The user or role to check for
    * @return The actual access rule or undefined if no rule was found

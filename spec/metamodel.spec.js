@@ -457,6 +457,36 @@ describe('Test metamodel classes', function () {
       expect(permission.toJSON()).eql({ '*': 'allow' });
     });
 
+    it('Permission.revokePublic() should remove the wildcard allow rule', function () {
+      var permission = new DB.intersection.Permission();
+      permission.setPublicAllowed();
+      permission.revokePublic();
+      expect(permission.rules).eql({});
+    });
+
+    it('Permission.revokePublic() should keep deny rules and specific allow rules', function () {
+      var permission = new DB.intersection.Permission();
+      permission.rules = { '*': 'allow', '/db/User/1': 'deny', '/db/Role/2': 'allow' };
+      permission.revokePublic();
+      expect(permission.rules).eql({ '/db/User/1': 'deny', '/db/Role/2': 'allow' });
+    });
+
+    it('Permission.revokePublic() should not touch a wildcard deny rule', function () {
+      var permission = new DB.intersection.Permission();
+      permission.rules = { '*': 'deny' };
+      permission.revokePublic();
+      expect(permission.rules).eql({ '*': 'deny' });
+    });
+
+    it('Permission.revokePublic() then allowAccess() should yield a non-public permission', function () {
+      var permission = new DB.intersection.Permission();
+      permission.setPublicAllowed();
+      permission.revokePublic();
+      permission.allowAccess('/db/Role/1');
+      expect(permission.isPublicAllowed()).be.false;
+      expect(permission.toJSON()).eql({ '/db/Role/1': 'allow' });
+    });
+
     it('Permission.isPublicAllowed() should treat empty rules as public (legacy/instance ACLs)', function () {
       var permission = new DB.intersection.Permission();
       expect(permission.isPublicAllowed()).be.true;
