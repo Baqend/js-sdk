@@ -27,7 +27,8 @@ describe('Test Bloomfilter', function () {
         return metamodel.save();
       })
       .then(function () {
-        db = emf.createEntityManager();
+        // newly created buckets grant CRUD to admins only by default, so run the fixtures as root
+        db = emf.createEntityManager(true);
       });
   });
 

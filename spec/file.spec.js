@@ -11,6 +11,12 @@ describe('Test file', function () {
   this.timeout(20 * 1000);
 
   var flames, emf, rootDb;
+  // setPublicAllowed() mutates in place and returns void, so build it here
+  function publicPermission() {
+    var permission = new DB.util.Permission();
+    permission.setPublicAllowed();
+    return permission;
+  }
   var dataBase64 = 'data:image/gif;base64,R0lGODlhDAAeALMAAGUJC/SHGvJZI18NDP347fifGeyqlfqqFdjHx/FhIu98HuLY1/NwHvN5G2AMDP///yH5BAAAAAAALAAAAAAMAB4AAARM8MlJ63SWOpzf3t3HVSKolab0qel6mS7LxR6I0OuCw2k9967dj+cYvFAUAJKEGnkKh0OJQggEHgSaRNHoPBheSsJrEIQf5nD6zKZEAAA7';
   var dataSvg = 'data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%201%201%22%3E%3Cpath%20d%3D%22m0%2C0v1h1V0%22%2F%3E%3C%2Fsvg%3E';
   var dataSvgTotal = 86;
@@ -35,6 +41,14 @@ describe('Test file', function () {
       return emf.createEntityManager().ready().then(function (em) {
         return em.User.login('root', 'root').then(function () {
           rootDb = em;
+          // www defaults to admin-only; make it public so anonymous downloads work
+          return rootDb.File.saveMetadata('www', {
+            load: publicPermission(),
+            insert: publicPermission(),
+            update: publicPermission(),
+            delete: publicPermission(),
+            query: publicPermission(),
+          });
         });
       });
     });
@@ -1137,11 +1151,12 @@ describe('Test file', function () {
         return rootDb.File.saveMetadata('www', {}).then(function () {
           return rootDb.File.loadMetadata('www');
         }).then(function (acls) {
-          acls.load = new rootDb.util.Permission();
-          acls.insert = new rootDb.util.Permission();
-          acls.delete = new rootDb.util.Permission();
-          acls.query = new rootDb.util.Permission();
-          acls.update = new rootDb.util.Permission();
+          // public access is now an explicit wildcard; an empty rule set means admin-only
+          acls.load = publicPermission();
+          acls.insert = publicPermission();
+          acls.delete = publicPermission();
+          acls.query = publicPermission();
+          acls.update = publicPermission();
           return rootDb.File.saveMetadata('www', acls);
         }).then(function () {
           return rootDb.File.loadMetadata('www');
@@ -1175,7 +1190,14 @@ describe('Test file', function () {
             expect(acls.update.isPublicAllowed()).to.be.false;
           })
           .then(function () {
-            return rootDb.File.saveMetadata('www', {});
+            // restore public www so later (anonymous) download/caching tests keep working
+            return rootDb.File.saveMetadata('www', {
+              load: publicPermission(),
+              insert: publicPermission(),
+              update: publicPermission(),
+              delete: publicPermission(),
+              query: publicPermission(),
+            });
           });
       });
 
@@ -1262,7 +1284,8 @@ describe('Test file', function () {
 
       before(function () {
         return rootDb.File.saveMetadata(bucket, {
-          load: new DB.util.Permission(),
+          // public bucket load so the object-level ACLs below govern access (buckets default to admin-only)
+          load: publicPermission(),
           insert: new DB.util.Permission().allowAccess(db1.User.me).allowAccess(db2.User.me),
           update: new DB.util.Permission().allowAccess(db1.User.me).allowAccess(db2.User.me),
           delete: new DB.util.Permission().allowAccess(db1.User.me).allowAccess(db2.User.me),

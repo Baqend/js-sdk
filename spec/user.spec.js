@@ -730,31 +730,42 @@ describe('Test user and roles', function () {
   });
 
   describe('roles', function () {
-    var user1, user2, user3;
+    var user1, user2, user3, adminDb;
+
+    before(async function () {
+      // Role inserts/updates are admin-or-Node only; a dedicated root login avoids stale-token renewal errors here
+      var adminEmf = new DB.EntityManagerFactory({
+        host: env.TEST_SERVER,
+        tokenStorage: new DB.util.TokenStorage(),
+      });
+      adminDb = await adminEmf.createEntityManager(true).ready();
+      await adminDb.User.login('root', 'root');
+    });
 
     beforeEach(function () {
-      user1 = new db.User();
+      // register via admin so the users share the db that owns the roles below
+      user1 = new adminDb.User();
       user1.username = helper.makeLogin();
 
-      user2 = new db.User();
+      user2 = new adminDb.User();
       user2.username = helper.makeLogin();
 
-      user3 = new db.User();
+      user3 = new adminDb.User();
       user3.username = helper.makeLogin();
 
-      return db.User.register(user1, user1.username, db.User.LoginOption.NO_LOGIN).then(function (usr) {
+      return adminDb.User.register(user1, user1.username, adminDb.User.LoginOption.NO_LOGIN).then(function (usr) {
         user1 = usr;
-        return db.User.register(user2, user2.username, db.User.LoginOption.NO_LOGIN);
+        return adminDb.User.register(user2, user2.username, adminDb.User.LoginOption.NO_LOGIN);
       }).then(function (usr) {
         user2 = usr;
-        return db.User.register(user3, user3.username, db.User.LoginOption.NO_LOGIN);
+        return adminDb.User.register(user3, user3.username, adminDb.User.LoginOption.NO_LOGIN);
       }).then(function (usr) {
         user3 = usr;
       });
     });
 
     it('should save and load', function () {
-      var role = new db.Role();
+      var role = new adminDb.Role();
       role.addUser(user1);
       role.addUser(user3);
 
@@ -779,16 +790,26 @@ describe('Test user and roles', function () {
 
     it('should renew token', function () {
       var login = helper.makeLogin();
-      var oldToken;
+      var oldToken, role;
       return db.User.register(login, 'secret').then(function () {
         return helper.sleep(RENEW_TIMEOUT);
       }).then(function () {
         oldToken = db.token;
-        var role = new db.Role();
-        role.addUser(user1);
+        // Role inserts are admin-or-Node only, so add the user to an admin-created role
+        role = new adminDb.Role();
+        role.addUser(adminDb.getReference(db.me.id));
         return role.insert();
       }).then(function () {
-        expect(oldToken).not.eqls(db.token);
+        // the role was granted on a different session, so db keeps its old token until it renews
+        expect(db.token).eqls(oldToken);
+        return db.renew();
+      }).then(function () {
+        // renewing reissues the token, and the reissued session reflects the new role membership
+        expect(db.token).not.eqls(oldToken);
+        // Role load is public, so the regular user session can read its own membership
+        return db.Role.load(role.id, { refresh: true });
+      }).then(function (reloaded) {
+        expect(reloaded.hasUser(db.getReference(db.me.id))).be.true;
       });
     });
   });

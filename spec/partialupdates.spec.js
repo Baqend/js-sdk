@@ -52,7 +52,7 @@ describe('Test Partial Updates', function () {
     var db, p0;
 
     before(function () {
-      db = emf.createEntityManager();
+      db = emf.createEntityManager(true);
 
       p0 = new db.PartialUpdatePerson({
         key: 'partial_update_p0',
@@ -336,8 +336,8 @@ describe('Test Partial Updates', function () {
     beforeEach(function () {
       key = `partial_update_${Math.round(Math.random() * Date.now())}`;
 
-      db = emf.createEntityManager();
-      db2 = emf.createEntityManager();
+      db = emf.createEntityManager(true);
+      db2 = emf.createEntityManager(true);
 
       p0 = new db.PartialUpdatePerson({
         key: key,

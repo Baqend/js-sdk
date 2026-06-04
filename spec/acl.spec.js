@@ -3,28 +3,37 @@ if (typeof module !== 'undefined') {
 }
 
 describe('Test Acl', function () {
-  var db, emf;
+  var db, adminDb, emf;
   before(async function () {
     emf = new DB.EntityManagerFactory({ host: env.TEST_SERVER, tokenStorage: await helper.rootTokenStorage });
     return emf.ready().then(function () {
       var { metamodel } = emf;
-      if (!metamodel.managedType('AclPerson')) {
-        var AclPerson = new DB.metamodel.EntityType('AclPerson', metamodel.entity(Object));
+      var AclPerson = metamodel.managedType('AclPerson');
+      if (!AclPerson) {
+        AclPerson = new DB.metamodel.EntityType('AclPerson', metamodel.entity(Object));
         AclPerson.addAttribute(new DB.metamodel.SingularAttribute('name', metamodel.baseType(String)));
         AclPerson.addAttribute(new DB.metamodel.SingularAttribute('age', metamodel.baseType(Number)));
         metamodel.addType(AclPerson);
-        return metamodel.save();
       }
-    }).then(function () {
-      return createUserDb().then(function (em) {
-        db = em;
+      // open the bucket publicly (unconditionally, to heal a pre-existing
+      // admin-only one) for the object-level ACL tests
+      ['insert', 'update', 'delete', 'load', 'query'].forEach(function (op) {
+        AclPerson[`${op}Permission`].setPublicAllowed();
       });
+      return metamodel.save();
+    }).then(function () {
+      adminDb = emf.createEntityManager(true);
+      return Promise.all([
+        adminDb.ready(),
+        createUserDb().then(function (em) { db = em; }),
+      ]);
     });
   });
 
   after(function () {
     var user = db.User.me;
-    if (user) { return user.delete(); }
+    // the User bucket only allows admins to delete, so remove the test user as admin
+    if (user) { return adminDb.User.load(user.id).then(function (u) { return u && u.delete(); }); }
   });
 
   function createUserDb() {
@@ -124,7 +133,8 @@ describe('Test Acl', function () {
     });
 
     it('should be modifiable', function () {
-      var role = new db.Role();
+      // Role inserts/updates are admin-or-Node only, so create the role as admin
+      var role = new adminDb.Role();
       role.name = 'AclRole';
       return role.save().then(function () {
         var acl = new db.AclPerson().acl
@@ -300,16 +310,17 @@ describe('Test Acl', function () {
         db2 = arr[0];
         db3 = arr[1];
 
-        role23 = new db.Role();
+        // Role inserts/updates are admin-or-Node only, so create roles as admin
+        role23 = new adminDb.Role();
         role23.name = 'Role2_3';
-        role23.addUser(db.getReference(db2.me.id));
-        role23.addUser(db.getReference(db3.me.id));
+        role23.addUser(adminDb.getReference(db2.me.id));
+        role23.addUser(adminDb.getReference(db3.me.id));
         var promise1 = role23.save();
 
-        role13 = new db.Role();
+        role13 = new adminDb.Role();
         role13.name = 'Role1_3';
-        role13.addUser(db.User.me);
-        role13.addUser(db.getReference(db3.me.id));
+        role13.addUser(adminDb.getReference(db.me.id));
+        role13.addUser(adminDb.getReference(db3.me.id));
         var promise2 = role13.save();
 
         return Promise.all([promise1, promise2]);
@@ -323,9 +334,10 @@ describe('Test Acl', function () {
     });
 
     after(function () {
+      // the User bucket only allows admins to delete, so remove the test users as admin
       return Promise.all([
-        db2.User.me.delete(),
-        db3.User.me.delete(),
+        adminDb.User.load(db2.me.id).then(function (u) { return u && u.delete(); }),
+        adminDb.User.load(db3.me.id).then(function (u) { return u && u.delete(); }),
       ]);
     });
 

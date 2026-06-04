@@ -89,7 +89,8 @@ describe('Test entity type', function () {
         return metamodel.save();
       })
       .then(function () {
-        return emf.createEntityManager();
+        // newly created buckets grant CRUD to admins only by default, so run the type CRUD as root
+        return emf.createEntityManager(true);
       })
       .then(function (entityManager) {
         em = entityManager;

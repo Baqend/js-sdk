@@ -28,7 +28,7 @@ describe('Test code', function () {
     var handlers = ['insert', 'update', 'delete', 'validate'];
 
     before(function () {
-      db = emf.createEntityManager();
+      db = emf.createEntityManager(true);
       code = db.code;
       entityType = db.metamodel.entity(personType.typeConstructor);
     });
@@ -267,7 +267,7 @@ describe('Test code', function () {
         };
       };
       bucket = helper.randomize('code.Test');
-      db = emf.createEntityManager();
+      db = emf.createEntityManager(true);
       code = db.code;
       entityType = db.metamodel.entity(personType.typeConstructor);
     });

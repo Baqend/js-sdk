@@ -26,7 +26,8 @@ describe('Test Push Notifications', function () {
       await emf.metamodel.save(Lock);
     }
 
-    db = emf.createEntityManager();
+    // the Lock fixture bucket only allows admin writes, so create it as root
+    db = emf.createEntityManager(true);
     lock = new db.Lock({ id: 'push' });
     await createLock();
 
@@ -58,7 +59,8 @@ describe('Test Push Notifications', function () {
   });
 
   beforeEach(function () {
-    db = emf.createEntityManager();
+    // the Device bucket only grants CRUD to admins by default, so register devices as root
+    db = emf.createEntityManager(true);
     return db.ready();
   });
 
@@ -86,9 +88,8 @@ describe('Test Push Notifications', function () {
   });
 
   it('should push message', function () {
-    return db.login('root', 'root').then(function () {
-      return db.Device.register('Android', TEST_GCM_DEVICE);
-    }).then(function () {
+    // db already runs as root (see beforeEach), so register and push directly
+    return db.Device.register('Android', TEST_GCM_DEVICE).then(function () {
       return db.Device.find().equal('deviceOs', 'Android').resultList();
     }).then(function (result) {
       expect(result).length.at.least(1);
@@ -120,7 +121,9 @@ describe('Test Push Notifications', function () {
   });
 
   it('should not be allowed to insert device', async function () {
-    var device = new db.Device();
+    // use a non-admin db so the register-only rule is verified for a regular user, not just root
+    var anonDb = await emf.createEntityManager().ready();
+    var device = new anonDb.Device();
     try {
       await device.save();
       expect.fail();
@@ -144,7 +147,8 @@ describe('Test Push Notifications', function () {
     expect(newDB.Device.isRegistered).be.true;
     expect(newDB.Device.me).be.ok;
 
-    await newDB.Device.me.delete({ force: true });
+    // deleting a Device is admin-only, so remove it through the root db
+    await db.Device.me.delete({ force: true });
     DB.connector.Connector.connections = {};
     const newDB2 = await new DB.EntityManagerFactory({ host: env.TEST_SERVER, staleness: 0 })
       .createEntityManager(true)

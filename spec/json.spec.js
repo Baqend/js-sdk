@@ -75,8 +75,8 @@ describe('Test toJSON and fromJSON', function () {
     });
     return emf.metamodel.save()
       .then(function () {
-        db = emf.createEntityManager();
-        db2 = emf.createEntityManager();
+        db = emf.createEntityManager(true);
+        db2 = emf.createEntityManager(true);
         expect(db.isReady).be.true;
         expect(db2.isReady).be.true;
       });

@@ -949,6 +949,8 @@ describe('Test Metamodel', function () {
           type.addAttribute(new DB.metamodel.SingularAttribute('name', metamodel.baseType(String)));
           embeddedType.addAttribute(new DB.metamodel.SingularAttribute('name', metamodel.baseType(String)));
 
+          // buckets default to admin-only; grant public load so every user can read objects
+          type.loadPermission.setPublicAllowed();
           type.insertPermission.denyAccess(user2);
           type.updatePermission.denyAccess(user2)
             .denyAccess(user3);

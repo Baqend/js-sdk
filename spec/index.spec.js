@@ -20,14 +20,13 @@ describe('Test Index', function () {
     meta.addType(personType = new DB.metamodel.EntityType(helper.randomize('IndexPerson'), meta.entity(Object)));
     personType.addAttribute(new DB.metamodel.SingularAttribute('name', meta.baseType(String)));
 
-    return meta.save()
-      .then(function () {
-        db = new DB.EntityManagerFactory({
-          host: env.TEST_SERVER,
-          staleness: 0,
-        }).createEntityManager();
-        return db.ready();
-      });
+    await meta.save();
+    db = new DB.EntityManagerFactory({
+      host: env.TEST_SERVER,
+      staleness: 0,
+      tokenStorage: await helper.rootTokenStorage,
+    }).createEntityManager(true);
+    return db.ready();
   });
 
   afterEach(function () {

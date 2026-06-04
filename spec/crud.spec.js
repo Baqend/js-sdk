@@ -56,8 +56,9 @@ describe('Test crud', function () {
   });
 
   beforeEach(function () {
-    db = emf.createEntityManager();
-    db2 = emf.createEntityManager();
+    // newly created buckets grant CRUD to admins only by default, so run the fixtures as root
+    db = emf.createEntityManager(true);
+    db2 = emf.createEntityManager(true);
     return Promise.all([db.ready(), db2.ready()]);
   });
 

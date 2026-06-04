@@ -52,7 +52,7 @@ describe('Test Query', function () {
     var db;
 
     before(function () {
-      db = emf.createEntityManager();
+      db = emf.createEntityManager(true);
     });
 
     it('should create simple query', function () {
@@ -552,7 +552,7 @@ describe('Test Query', function () {
     var db, p0, p1, p2, p3;
 
     before(function () {
-      db = emf.createEntityManager();
+      db = emf.createEntityManager(true);
 
       p0 = new db.QueryPerson({
         key: 'query_p0',
@@ -884,7 +884,7 @@ describe('Test Query', function () {
     });
 
     it('should load depth objects', function () {
-      const newDb = emf.createEntityManager();
+      const newDb = emf.createEntityManager(true);
 
       return newDb.QueryPerson.find()
         .in('age', 33)
@@ -902,7 +902,7 @@ describe('Test Query', function () {
     });
 
     it('should load infinite depth objects', function () {
-      const newDb = emf.createEntityManager();
+      const newDb = emf.createEntityManager(true);
 
       return newDb.QueryPerson.find()
         .in('age', 33)
@@ -920,7 +920,7 @@ describe('Test Query', function () {
     });
 
     it('should load single-result depth objects', function () {
-      const newDb = emf.createEntityManager();
+      const newDb = emf.createEntityManager(true);
 
       return newDb.QueryPerson.find()
         .in('age', 33)

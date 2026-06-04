@@ -31,7 +31,7 @@ describe('Test validate', function () {
 
     return metamodel.save()
       .then(function () {
-        db = emf.createEntityManager();
+        db = emf.createEntityManager(true);
       });
   });
 
