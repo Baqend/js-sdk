@@ -8,17 +8,17 @@ describe('Test Acl', function () {
     emf = new DB.EntityManagerFactory({ host: env.TEST_SERVER, tokenStorage: await helper.rootTokenStorage });
     return emf.ready().then(function () {
       var { metamodel } = emf;
-      var AclPerson = metamodel.managedType('AclPerson');
-      if (!AclPerson) {
-        AclPerson = new DB.metamodel.EntityType('AclPerson', metamodel.entity(Object));
-        AclPerson.addAttribute(new DB.metamodel.SingularAttribute('name', metamodel.baseType(String)));
-        AclPerson.addAttribute(new DB.metamodel.SingularAttribute('age', metamodel.baseType(Number)));
-        metamodel.addType(AclPerson);
+      var aclPerson = metamodel.managedType('AclPerson');
+      if (!aclPerson) {
+        aclPerson = new DB.metamodel.EntityType('AclPerson', metamodel.entity(Object));
+        aclPerson.addAttribute(new DB.metamodel.SingularAttribute('name', metamodel.baseType(String)));
+        aclPerson.addAttribute(new DB.metamodel.SingularAttribute('age', metamodel.baseType(Number)));
+        metamodel.addType(aclPerson);
       }
       // open the bucket publicly (unconditionally, to heal a pre-existing
       // admin-only one) for the object-level ACL tests
       ['insert', 'update', 'delete', 'load', 'query'].forEach(function (op) {
-        AclPerson[`${op}Permission`].setPublicAllowed();
+        aclPerson[`${op}Permission`].setPublicAllowed();
       });
       return metamodel.save();
     }).then(function () {
@@ -391,6 +391,81 @@ describe('Test Acl', function () {
       expect(await db.AclPerson.load(id, { refresh: true })).property('id', id);
       expect(await db2.AclPerson.load(id, { refresh: true })).be.null;
       expect(await db3.AclPerson.load(id, { refresh: true })).be.null;
+    });
+
+    it('should deny write access by user', async function () {
+      var obj = new db.AclPerson();
+      obj.acl.allowReadAccess(db2.User.me) // db2 may read...
+        .allowWriteAccess(db.User.me); // ...but only the owner may write
+
+      await obj.save();
+      var { id } = obj;
+
+      var asDb2 = await db2.AclPerson.load(id, { refresh: true });
+      asDb2.name = 'mutated by db2';
+      try {
+        await asDb2.save();
+        expect.fail('write should be denied for a user without write access');
+      } catch (e) {
+        if (e.name === 'AssertionError') throw e;
+        // the server rejects the write with an InvalidPermissionModification (462)
+        expect(e.status).to.equal(462);
+      }
+    });
+  });
+
+  describe('Bucket secure default', function () {
+    // unlike the object-level tests above, this bucket is left untouched so it keeps the
+    // server's admin-only secure default; the sessions are created after the schema save
+    // so both pick up the new type binding
+    var typeName, userDb, adminTypeDb;
+    before(async function () {
+      var { metamodel } = emf;
+      var type = new DB.metamodel.EntityType(helper.randomize('SecureDefaultPerson'), metamodel.entity(Object));
+      type.addAttribute(new DB.metamodel.SingularAttribute('name', metamodel.baseType(String)));
+      metamodel.addType(type);
+      typeName = type.name;
+      await metamodel.save();
+      userDb = await createUserDb();
+      adminTypeDb = await emf.createEntityManager(true).ready();
+    });
+
+    after(function () {
+      // the User bucket only allows admins to delete, so remove the test user as admin
+      return adminDb.User.load(userDb.me.id).then(function (u) { return u && u.delete(); });
+    });
+
+    it('should deny insert for a non-admin but allow an admin', async function () {
+      var denied = new userDb[typeName]();
+      denied.name = 'denied';
+      try {
+        await denied.insert();
+        expect.fail('insert should be denied on an admin-only bucket');
+      } catch (e) {
+        if (e.name === 'AssertionError') throw e;
+        expect(e.message).to.include('not allowed');
+      }
+
+      var allowed = new adminTypeDb[typeName]();
+      allowed.name = 'allowed';
+      await allowed.insert();
+      expect(allowed.id).be.ok;
+    });
+
+    it('should deny load for a non-admin but allow an admin', async function () {
+      var obj = new adminTypeDb[typeName]();
+      obj.name = 'load-target';
+      await obj.insert();
+
+      try {
+        await userDb[typeName].load(obj.id, { refresh: true });
+        expect.fail('load should be denied on an admin-only bucket');
+      } catch (e) {
+        if (e.name === 'AssertionError') throw e;
+        expect(e.message).to.include('not allowed');
+      }
+
+      expect(await adminTypeDb[typeName].load(obj.id, { refresh: true })).have.property('id', obj.id);
     });
   });
 });
