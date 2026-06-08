@@ -813,4 +813,52 @@ describe('Test user and roles', function () {
       });
     });
   });
+
+  describe('transparent token renewal', function () {
+    var renewType, originalShortLifetime;
+
+    before(async function () {
+      // a publicly writable bucket the non-admin user can insert into
+      var type = new DB.metamodel.EntityType(helper.randomize('RenewPublic'), emf.metamodel.entity(Object));
+      type.addAttribute(new DB.metamodel.SingularAttribute('name', emf.metamodel.baseType(String)));
+      emf.metamodel.addType(type);
+      renewType = type.name;
+      ['insert', 'update', 'delete', 'load', 'query'].forEach(function (op) {
+        type[`${op}Permission`].setPublicAllowed();
+      });
+      await emf.metamodel.save();
+      // expire the short token life immediately so any authenticated write reissues the token
+      originalShortLifetime = await setShortLifetime(0);
+    });
+
+    after(function () {
+      return setShortLifetime(originalShortLifetime); // restore the default short token lifetime
+    });
+
+    function setShortLifetime(value) {
+      return emf.send(new DB.message.GetOrestesConfig()).then(function (res) {
+        var config = res.entity;
+        var previous = config.token.shortLifetime;
+        config.token.shortLifetime = value;
+        return emf.send(new DB.message.UpdateOrestesConfig(config).ifMatch(config.revision.version))
+          .then(function () { return previous; });
+      });
+    }
+
+    it('should transparently renew the token on a public bucket write by a non-admin', async function () {
+      var db = emf.createEntityManager();
+      await db.ready();
+      await db.User.register(helper.makeLogin(), 'secret');
+      // sleep so the reissued token carries a later timestamp and differs from the old one
+      await helper.sleep(RENEW_TIMEOUT);
+
+      var oldToken = db.token;
+      var obj = new db[renewType]();
+      obj.name = 'renew';
+      await obj.insert();
+
+      // the expired short life makes the server reissue the token on the write, adopted without renew()
+      expect(db.token).not.eqls(oldToken);
+    });
+  });
 });
