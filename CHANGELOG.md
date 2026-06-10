@@ -1,3 +1,9 @@
+## 4.3.1 (2026-06-10)
+
+### Bug Fixes
+
+* exclude local-only and dev files from the published npm package 8993192
+
 ## 4.3.0 (2026-06-10)
 
 ### Features
