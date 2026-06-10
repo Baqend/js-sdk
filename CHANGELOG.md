@@ -1,3 +1,13 @@
+## 4.3.0 (2026-06-10)
+
+### Features
+
+* add Permission.revokePublic() to clear the public wildcard c6e7053
+
+### Bug Fixes
+
+* represent public permission as explicit wildcard allow rule e216efe, closes orestes-server#388 post-#388 team-backend/orestes/orestes-server#388
+
 ## 4.2.6 (2026-05-12)
 
 ### Bug Fixes
