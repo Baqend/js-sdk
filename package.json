@@ -8,6 +8,20 @@
     "email": "info@baqend.com"
   },
   "homepage": "https://www.baqend.com",
+  "files": [
+    "commonjs",
+    "lib",
+    "dist",
+    "esm",
+    "doc",
+    "cli",
+    "spec",
+    "spec-ts",
+    "connect.js",
+    "CHANGELOG.md",
+    "CONTRIBUTING.md",
+    "README-ACTIAN.md"
+  ],
   "main": "./commonjs/lib/index.js",
   "module": "./dist/baqend.es2015.js",
   "browser": {
