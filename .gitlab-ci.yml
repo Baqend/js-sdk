@@ -98,14 +98,14 @@ commitlint:
           aws --endpoint-url=http://localstack:4566 s3api put-object --bucket=asset-files --key status;
       command: ["--endpoint-url=http://localstack:4566", "s3api", "put-object", "s3://asset-files"]
       alias: orestes-init
-    - name: "${CI_REGISTRY}/team-backend/orestes/orestes-server/node:22-${ORESTES_BRANCH}"
+    - name: "${CI_REGISTRY}/platform-core-services/core-services/orestes/orestes-server/node:22-${ORESTES_BRANCH}"
       alias: node
       variables:
         ORESTES_HOST: "http://local.baqend.com:8080/v1"
         DEBUG: "true"
         TOKEN: "${ORESTES_TOKEN}"
       pull_policy: [always, if-not-present]
-    - name: "${CI_REGISTRY}/team-backend/orestes/orestes-server:${ORESTES_BRANCH}"
+    - name: "${CI_REGISTRY}/platform-core-services/core-services/orestes/orestes-server:${ORESTES_BRANCH}"
       alias: local.baqend.com
       pull_policy: [always, if-not-present]
       variables:
